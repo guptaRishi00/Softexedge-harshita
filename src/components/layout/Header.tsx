@@ -106,7 +106,7 @@ export default function Header() {
             {/* Contact Us Button - Styled as requested */}
             <Link
               href="/contact-us"
-              className={`relative px-6 py-2 bg-white hover:bg-linear-to-r hover:from-[#3445E7] hover:via-[#2F85EA] hover:to-[#07D6F3] hover:text-white text-black font-semibold overflow-hidden group transition-all duration-300 hover:scale-105 rounded-full`}
+              className={`relative px-4 py-3 bg-white hover:bg-linear-to-r hover:from-[#3445E7] hover:via-[#2F85EA] hover:to-[#07D6F3] hover:text-white text-black font-semibold overflow-hidden group transition-all duration-300 hover:scale-105 rounded-full`}
             >
               <span
                 className={`relative z-10 group-hover:text-white font-semibold`}
@@ -261,7 +261,7 @@ export default function Header() {
               <Link
                 href="/contact-us"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="relative px-6 py-3 border border-white text-white font-semibold rounded-full overflow-hidden group transition-all duration-300 text-center"
+                className="relative px-5 py-3 border border-white text-white font-semibold rounded-full overflow-hidden group transition-all duration-300 text-center"
               >
                 <span className="absolute inset-0 w-0 bg-linear-to-r from-[#a881fb] to-[#d0bfff] transition-all duration-[250ms] ease-out group-hover:w-full"></span>
                 <span

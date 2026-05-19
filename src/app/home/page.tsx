@@ -1,17 +1,21 @@
-import NewsGridSection from "@/components/garbage/NewsGridSection";
-import AboutSection from "@/components/home/AboutSection";
+"use client";
+
+import Lenis from "lenis";
+import { useEffect } from "react";
+
 import Herosection from "@/components/home/Herosection";
-import ServicesSection from "@/components/home/ServicesSection";
-import TextMarquee from "@/components/home/TextMarquee";
-import VideoSection from "@/components/home/VideoSection";
-import Footer from "@/components/layout/Footer";
 import LogoLoop from "@/components/ui/LogoLoop";
+import Footer from "@/components/layout/Footer";
+
 import {
   SiNextdotjs,
   SiReact,
   SiTailwindcss,
   SiTypescript,
 } from "react-icons/si";
+import AboutSection from "@/components/home/AboutSection";
+import StatsSection from "@/components/home/StatsSection";
+import ServiceSection from "@/components/home/ServiceSection";
 
 export default function HomePage() {
   const techLogos = [
@@ -29,23 +33,34 @@ export default function HomePage() {
     },
   ];
 
+  useEffect(() => {
+    const lenis = new Lenis();
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
+
   return (
     <main className="space-y-14 px-3 py-3">
       <Herosection />
 
-      {/* Trusted By Section */}
       <section className="flex items-center gap-8 overflow-hidden px-6 py-4">
-        {/* Label */}
         <div className="shrink-0">
           <p className="text-sm font-medium tracking-wide text-black/60 uppercase">
             Trusted By
           </p>
         </div>
 
-        {/* Divider */}
         <div className="h-6 w-px bg-black/10" />
 
-        {/* Logo Loop */}
         <div className="relative min-w-0 flex-1 overflow-hidden">
           <LogoLoop
             logos={techLogos}
@@ -63,11 +78,9 @@ export default function HomePage() {
       </section>
 
       <AboutSection />
-      <VideoSection />
-      <ServicesSection />
-      <TextMarquee />
-      <NewsGridSection />
-      <Footer />
+      <StatsSection />
+      <ServiceSection />
+      {/* <Footer /> */}
     </main>
   );
 }
