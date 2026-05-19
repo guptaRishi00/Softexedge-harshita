@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
+import { useRef } from "react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -24,15 +24,17 @@ export default function StatsSection() {
       const rows = gsap.utils.toArray<HTMLElement>(".stat-row");
 
       rows.forEach((row, index) => {
+        const isMobile = window.innerWidth < 768;
+        const shiftAmount = isMobile ? 35 : 120;
         const direction = index % 2 === 0 ? 1 : -1;
 
         gsap.fromTo(
           row,
           {
-            x: 200 * direction,
+            x: shiftAmount * direction,
           },
           {
-            x: -150 * direction,
+            x: -shiftAmount * direction,
             ease: "none",
             scrollTrigger: {
               trigger: row,
@@ -50,7 +52,8 @@ export default function StatsSection() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full bg-white text-black overflow-hidden"
+      id="stats"
+      className="relative w-full bg-white text-black overflow-hidden py-20 md:py-32"
     >
       <div className="relative z-10 max-w-7xl mx-auto px-4 flex flex-col gap-16 md:gap-24">
         {stats.map((stat, index) => (

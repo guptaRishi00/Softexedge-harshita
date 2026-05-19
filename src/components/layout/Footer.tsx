@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import {
+  FaArrowUp,
   FaFacebookF,
   FaInstagram,
   FaLinkedinIn,
-  FaYoutube,
-  FaXTwitter,
   FaTiktok,
-  FaArrowUp,
+  FaXTwitter,
+  FaYoutube,
 } from "react-icons/fa6";
 
 const columnOne = ["Services", "Work", "About", "Culture", "Meet The Risers"];
@@ -52,7 +52,7 @@ const socials = [
 
 export default function Footer() {
   return (
-    <footer className="px-2 pb-2">
+    <footer id="contact" className="w-full">
       <div className="overflow-hidden rounded-[20px] bg-black text-white">
         {/* Top */}
         <div className="grid grid-cols-1 gap-14 px-6 py-8 md:px-8 lg:grid-cols-[1fr_1fr] lg:gap-20">

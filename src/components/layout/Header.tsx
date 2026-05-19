@@ -1,27 +1,24 @@
 "use client";
 import {
-  Navbar as AceternityNavbar,
-  NavBody,
-  NavItems,
-  MobileNav,
-  MobileNavHeader,
-  MobileNavToggle,
-  MobileNavMenu,
-  NavItem,
-} from "@/components/ui/resizable-navbar";
-import {
-  useScroll,
-  useMotionValueEvent,
-  motion,
   AnimatePresence,
+  motion,
 } from "framer-motion";
-import { useState } from "react";
 import Image from "next/image";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCallback, useState } from "react";
+import {
+  Navbar as AceternityNavbar,
+  MobileNav,
+  MobileNavHeader,
+  MobileNavMenu,
+  MobileNavToggle,
+  NavBody,
+  type NavItem,
+  NavItems,
+} from "@/components/ui/resizable-navbar";
+import DynamicButton from "../ui/DynamicButton";
 
-// Custom Logo Component moved outside to prevent re-creation during render
 const CustomLogo = () => (
   <Link href="/" className="flex items-center gap-2 group">
     <Image
@@ -34,61 +31,71 @@ const CustomLogo = () => (
   </Link>
 );
 
+const navItems: NavItem[] = [
+  {
+    name: "Services",
+    link: "#services",
+    sections: [
+      {
+        items: [
+          {
+            name: "Branding & Identity",
+            link: "#services",
+          },
+          {
+            name: "Digital Experiences",
+            link: "#services",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    name: "About Us",
+    link: "#about",
+  },
+  {
+    name: "Case Studies",
+    link: "#portfolio",
+  },
+  {
+    name: "Book Consultation",
+    link: "#contact",
+  },
+];
+
 export default function Header() {
-  const navItems: NavItem[] = [
-    {
-      name: "Services",
-      link: "#",
-      sections: [
-        {
-          items: [
-            {
-              name: "Software Development",
-              link: "/our-services/graphic-design",
-            },
-            { name: "Branding & Design", link: "/our-services/video-editing" },
-            {
-              name: "Social Media Management",
-              link: "/our-services/social-media-management",
-            },
-            {
-              name: "Performance Marketing",
-              link: "/our-services/performance-marketing",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      name: "About Us",
-      link: "/about",
-    },
-    {
-      name: "Case Studies",
-      link: "/case-studies",
-    },
-    {
-      name: "Book Consultation",
-      link: "/case-studies",
-    },
-  ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesExpanded, setIsServicesExpanded] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const pathname = usePathname();
 
-  const [isScrolled, setIsScrolled] = useState(false);
-  const { scrollY } = useScroll();
+  // Scroll state is tracked by the Navbar component and passed down as `visible`
+  // via React.cloneElement — no duplicate scroll listener needed here.
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 100);
-  });
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen((prev) => !prev);
+  }, []);
+
+  const closeMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false);
+  }, []);
+
+  const toggleServicesExpanded = useCallback(() => {
+    setIsServicesExpanded((prev) => !prev);
+  }, []);
+
+  const closeAllMenus = useCallback(() => {
+    setIsMobileMenuOpen(false);
+    setIsServicesExpanded(false);
+    setExpandedSection(null);
+  }, []);
 
   if (pathname.startsWith("/leads")) return null;
 
   return (
-    <div className={`relative w-full `}>
+    <div className="relative w-full">
       <AceternityNavbar className="z-[100]">
         {/* Desktop Navigation */}
         <NavBody className="">
@@ -98,41 +105,32 @@ export default function Header() {
 
           <NavItems
             items={navItems}
-            className={`text-[17px] font-medium text-white hover:text-gray-300 transition-colors `}
+            className="text-[17px] font-medium text-white hover:text-gray-300 transition-colors"
           />
 
-          <div className="flex items-center gap-4">
-            {/* Contact Us Button - Styled as requested */}
-            {/* Contact Us Button - Styled as requested */}
-            <Link
-              href="/contact-us"
-              className={`relative px-4 py-3 bg-white hover:bg-linear-to-r hover:from-[#3445E7] hover:via-[#2F85EA] hover:to-[#07D6F3] hover:text-white text-black font-semibold overflow-hidden group transition-all duration-300 hover:scale-105 rounded-full`}
-            >
-              <span
-                className={`relative z-10 group-hover:text-white font-semibold`}
-              >
-                Get in Touch
-              </span>
-            </Link>
-          </div>
+          <DynamicButton
+            text="Get in Touch"
+            href="#contact"
+            className="relative px-4 py-3 bg-white text-black font-semibold overflow-hidden group transition-all duration-300 rounded-full"
+            showIcon={false}
+          />
         </NavBody>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation — receives `visible` (scroll state) from Navbar via cloneElement */}
         <MobileNav>
           <MobileNavHeader
-            className={`${isScrolled ? "bg-black/90 backdrop-blur-md border-b border-white/5 shadow-2xl" : "bg-transparent"} transition-all duration-300`}
+            className="transition-all duration-300"
           >
             <CustomLogo />
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={toggleMobileMenu}
             />
           </MobileNavHeader>
 
           <MobileNavMenu
             isOpen={isMobileMenuOpen}
-            onClose={() => setIsMobileMenuOpen(false)}
-            className={!isScrolled ? "backdrop-blur-none bg-black" : ""}
+            onClose={closeMobileMenu}
           >
             {navItems.map((item, idx) => {
               const hasDropdown = item.sections && item.sections.length > 0;
@@ -146,9 +144,7 @@ export default function Header() {
                   {hasDropdown ? (
                     <div className="flex flex-col items-center">
                       <button
-                        onClick={() =>
-                          setIsServicesExpanded(!isServicesExpanded)
-                        }
+                        onClick={toggleServicesExpanded}
                         className={`flex items-center gap-2 text-neutral-300 hover:text-white py-2 text-lg `}
                       >
                         <span>{item.name}</span>
@@ -225,11 +221,7 @@ export default function Header() {
                                           <Link
                                             key={`mob-sub-${ssIdx}`}
                                             href={sub.link}
-                                            onClick={() => {
-                                              setIsMobileMenuOpen(false);
-                                              setIsServicesExpanded(false);
-                                              setExpandedSection(null);
-                                            }}
+                                            onClick={closeAllMenus}
                                             className="text-neutral-400 hover:text-white py-1 text-sm"
                                           >
                                             {sub.name}
@@ -248,7 +240,7 @@ export default function Header() {
                   ) : (
                     <Link
                       href={item.link}
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      onClick={closeMobileMenu}
                       className={`relative text-neutral-300 hover:text-white block py-2 text-lg`}
                     >
                       <span className="block">{item.name}</span>
@@ -259,8 +251,8 @@ export default function Header() {
             })}
             <div className="flex w-full flex-col gap-4 mt-4">
               <Link
-                href="/contact-us"
-                onClick={() => setIsMobileMenuOpen(false)}
+                href="#contact"
+                onClick={closeMobileMenu}
                 className="relative px-5 py-3 border border-white text-white font-semibold rounded-full overflow-hidden group transition-all duration-300 text-center"
               >
                 <span className="absolute inset-0 w-0 bg-linear-to-r from-[#a881fb] to-[#d0bfff] transition-all duration-[250ms] ease-out group-hover:w-full"></span>

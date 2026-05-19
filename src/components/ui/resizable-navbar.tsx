@@ -9,7 +9,7 @@ import {
 } from "framer-motion";
 
 import Link from "next/link";
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 
 interface NavbarProps {
   children: React.ReactNode;
@@ -47,6 +47,7 @@ interface MobileNavProps {
 interface MobileNavHeaderProps {
   children: React.ReactNode;
   className?: string;
+  visible?: boolean;
 }
 
 interface MobileNavMenuProps {
@@ -64,12 +65,9 @@ export const Navbar = ({ children, className }: NavbarProps) => {
   });
   const [visible, setVisible] = useState<boolean>(false);
 
-  useMotionValueEvent(scrollY, "change", (latest: any) => {
-    if (latest > 100) {
-      setVisible(true);
-    } else {
-      setVisible(false);
-    }
+  useMotionValueEvent(scrollY, "change", (latest: number) => {
+    const shouldBeVisible = latest > 100;
+    setVisible((prev) => (prev === shouldBeVisible ? prev : shouldBeVisible));
   });
 
   return (
@@ -263,7 +261,14 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
         className,
       )}
     >
-      {children}
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? React.cloneElement(
+              child as React.ReactElement<{ visible?: boolean }>,
+              { visible },
+            )
+          : child,
+      )}
     </div>
   );
 };
@@ -271,11 +276,15 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
 export const MobileNavHeader = ({
   children,
   className,
+  visible,
 }: MobileNavHeaderProps) => {
   return (
     <div
       className={cn(
         "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4",
+        visible
+          ? "bg-black/90 backdrop-blur-md border-b border-white/5 shadow-2xl"
+          : "bg-transparent",
         className,
       )}
     >

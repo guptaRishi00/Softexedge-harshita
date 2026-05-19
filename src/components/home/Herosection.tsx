@@ -23,18 +23,18 @@ export default function Herosection({}: any) {
               We Engineer
             </h1>
 
-            <div className="flex items-center justify-center gap-5">
+            <div className="flex items-center justify-center gap-2 md:gap-5">
               <p className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
                 Digital
               </p>
-              <div className="w-50 h-22 overflow-hidden rounded-full">
+              <div className="w-16 h-8 sm:w-24 sm:h-12 md:w-[150px] md:h-[68px] lg:w-[200px] lg:h-[90px] xl:w-[220px] xl:h-[100px] overflow-hidden rounded-full shrink-0 flex items-center justify-center border border-white/20 shadow-xl">
                 <video
                   src="/assets/hero.mp4"
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className=""
+                  className="w-full h-full object-cover"
                 />
               </div>
               <p className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
@@ -48,14 +48,15 @@ export default function Herosection({}: any) {
           </div>
         </div>
 
-        <div className="w-full flex items-center justify-between">
-          <p className="text-start text-white font-medium max-w-sm text-sm">
-            Organic media planners creating, distributing & optimising
-            search-first content for SEO, Social, PR, Ai and LLM search
+        <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 md:gap-20 px-4">
+          <p className="text-center md:text-start text-white/70 font-medium max-w-sm text-sm md:text-base leading-relaxed">
+            We design and engineer high-performance web experiences, immersive
+            interfaces, and custom creative systems for industry leaders.
           </p>
-          <p className="text-end text-white font-medium max-w-sm text-sm">
-            Organic media planners creating, distributing & optimising
-            search-first content for SEO, Social, PR, Ai and LLM search
+          <p className="text-center md:text-end text-white/70 font-medium max-w-sm text-sm md:text-base leading-relaxed">
+            From concept to cinematic deployment, we remove the friction of
+            innovation, driving digital acceleration with refined design
+            systems.
           </p>
         </div>
       </div>
