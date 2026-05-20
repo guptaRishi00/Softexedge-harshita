@@ -12,6 +12,8 @@ import StatsSection from "@/components/home/StatsSection";
 import Footer from "@/components/layout/Footer";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import LogoLoop from "@/components/ui/LogoLoop";
+import CaseStudySection from "@/components/home/CaseStudySection";
+import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 
 export default function HomePage() {
   const techLogos = [
@@ -66,11 +68,13 @@ export default function HomePage() {
           <PortfolioSection />
           <StatsSection />
           <ServiceSection />
+          <CaseStudySection />
+          <ExperimentalTestimonials />
         </div>
 
-        {/* <div className="px-3 pb-3">
+        <div className="px-3 pb-3">
           <Footer />
-        </div> */}
+        </div>
       </main>
     </SmoothScroll>
   );
