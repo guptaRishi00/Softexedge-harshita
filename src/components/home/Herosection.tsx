@@ -49,11 +49,11 @@ export default function Herosection({}: any) {
         </div>
 
         <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 md:gap-20 px-4">
-          <p className="text-center md:text-start text-white/70 font-medium max-w-sm text-sm md:text-base leading-relaxed">
+          <p className="text-center md:text-start text-white/70 font-medium max-w-sm text-sm md:text-xs leading-relaxed">
             We design and engineer high-performance web experiences, immersive
             interfaces, and custom creative systems for industry leaders.
           </p>
-          <p className="text-center md:text-end text-white/70 font-medium max-w-sm text-sm md:text-base leading-relaxed">
+          <p className="text-center md:text-end text-white/70 font-medium max-w-sm text-sm md:text-xs leading-relaxed">
             From concept to cinematic deployment, we remove the friction of
             innovation, driving digital acceleration with refined design
             systems.

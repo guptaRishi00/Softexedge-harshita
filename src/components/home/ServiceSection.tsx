@@ -118,7 +118,7 @@ export default function ServiceSection() {
       serviceRows.forEach((row: any) => {
         const giantNumber = row.querySelector(".giant-number");
 
-        // NUMBER REVEAL
+        // NUMBER REVEAL (Restored)
         gsap.fromTo(
           giantNumber,
           {
@@ -140,7 +140,7 @@ export default function ServiceSection() {
           },
         );
 
-        // SUBTLE PARALLAX
+        // SUBTLE PARALLAX (Restored so it "moves like the same")
         gsap.to(giantNumber, {
           yPercent: 15,
           ease: "none",
@@ -160,7 +160,7 @@ export default function ServiceSection() {
     <section
       ref={containerRef}
       id="services"
-      className="relative w-full min-h-screen overflow-hidden bg-white py-20 md:py-32"
+      className="relative w-full min-h-screen overflow-clip bg-white py-20 md:pt-10"
     >
       {serviceBlocks.map((block, index) => (
         <div
@@ -220,16 +220,17 @@ export default function ServiceSection() {
 
           {/* CONTENT SECTION */}
           <div className="relative flex w-full flex-col gap-10 px-6 lg:flex-row lg:gap-20 lg:px-16">
-            {/* LEFT SIDE */}
-            <div className="relative w-full overflow-visible lg:w-[35%]">
-              <div className="left-pin-target sticky top-24 flex items-start justify-center lg:justify-start">
-                <p className="giant-number pointer-events-none select-none text-[10rem] font-black leading-none tracking-[-0.08em] text-black/[0.07] md:text-[16rem] lg:text-[24rem]">
+            {/* LEFT SIDE - STICKY CONTAINER */}
+            <div className="relative w-full lg:w-[35%]">
+              {/* Added lg:sticky so it only pins on desktop and restored the smooth flex layout */}
+              <div className="left-pin-target lg:sticky lg:top-32 flex items-center justify-center lg:justify-start z-0">
+                <p className="giant-number pointer-events-none select-none text-[10rem] font-black leading-[0.7] tracking-[-0.08em] text-black/[0.07] md:text-[16rem] lg:text-[24rem]">
                   {block.id}
                 </p>
               </div>
             </div>
 
-            {/* RIGHT SIDE */}
+            {/* RIGHT SIDE - SCROLLING CONTENT */}
             <div className="relative z-10 flex w-full flex-col items-start justify-between gap-16 lg:w-[65%] lg:gap-24 lg:pb-32">
               {/* TEXT */}
               <motion.div

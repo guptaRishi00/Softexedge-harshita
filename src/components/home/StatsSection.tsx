@@ -53,7 +53,7 @@ export default function StatsSection() {
     <div
       ref={containerRef}
       id="stats"
-      className="relative w-full bg-white text-black overflow-hidden py-20 md:py-32"
+      className="relative w-full bg-white text-black overflow-hidden py-20 md:pt-20"
     >
       <div className="relative z-10 max-w-7xl mx-auto px-4 flex flex-col gap-16 md:gap-24">
         {stats.map((stat, index) => (

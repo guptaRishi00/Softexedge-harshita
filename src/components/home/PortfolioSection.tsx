@@ -18,8 +18,7 @@ const projects = [
       "Observations on exploring the intersections of music, architecture, and design - the things that shape how we build and feel.",
     tech: ["TYPESCRIPT", "TAILWIND"],
     year: "2025",
-    image:
-      "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?q=80&w=2560&auto=format&fit=crop",
+    image: "/assets/1.png",
   },
   {
     id: 2,
@@ -29,8 +28,7 @@ const projects = [
       "Modular practice management suite: digital odontogram, patient records, scheduling, billing, and staff time tracking - all in one unified interface.",
     tech: ["REACT", "NEXT.JS", "MONGODB", "NODE.JS", "TYPESCRIPT"],
     year: "2024",
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2560&auto=format&fit=crop",
+    image: "/assets/2.png",
   },
   {
     id: 3,
@@ -40,8 +38,7 @@ const projects = [
       "An app where users complete daily missions by sharing photos or videos. Document the ordinary. Make it extraordinary.",
     tech: ["REACT NATIVE", "NODE.JS", "AWS S3", "POSTGRESQL"],
     year: "2024",
-    image:
-      "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=2560&auto=format&fit=crop",
+    image: "/assets/3.png",
   },
   {
     id: 4,
@@ -51,8 +48,7 @@ const projects = [
       "The site you're looking at right now. Built to feel like something. Built to mean something. Kept raw.",
     tech: ["NEXT.JS", "TYPESCRIPT", "GSAP", "LENIS", "TAILWIND"],
     year: "2024",
-    image:
-      "https://images.unsplash.com/photo-1617791160505-6f00504e3519?q=80&w=2560&auto=format&fit=crop",
+    image: "/assets/4.png",
   },
 ];
 
@@ -65,18 +61,64 @@ export default function PortfolioSection() {
       const track = trackRef.current;
       if (!track) return;
 
+      /* HORIZONTAL SCROLL */
       gsap.to(track, {
         x: () => -(track.scrollWidth - window.innerWidth),
         ease: "none",
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
-          end: () => `+=${track.scrollWidth - window.innerWidth}`, // Sync pin duration with track scroll length
+          end: () => `+=${track.scrollWidth - window.innerWidth}`,
           pin: true,
-          scrub: 1, // Smooth scrub effect
+          scrub: 1,
           invalidateOnRefresh: true,
           anticipatePin: 1,
         },
+      });
+
+      /* TEXT REVEAL */
+      gsap.utils.toArray<HTMLElement>(".project-content").forEach((content) => {
+        const words = content.querySelectorAll(".word");
+
+        gsap.fromTo(
+          words,
+          {
+            opacity: 0,
+            y: 80,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            stagger: 0.05,
+            duration: 1,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: content,
+              start: "left center",
+              scrub: 1,
+            },
+          },
+        );
+      });
+
+      /* IMAGE PARALLAX */
+      gsap.utils.toArray<HTMLElement>(".project-image").forEach((img) => {
+        gsap.fromTo(
+          img,
+          {
+            scale: 1.15,
+          },
+          {
+            scale: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: img,
+              start: "left right",
+              end: "right left",
+              scrub: 1,
+            },
+          },
+        );
       });
     },
     { scope: containerRef },
@@ -86,7 +128,7 @@ export default function PortfolioSection() {
     <section
       ref={containerRef}
       id="portfolio"
-      className="relative h-screen w-full overflow-hidden bg-black text-[#EBE9E0]"
+      className="relative h-screen w-full overflow-hidden bg-black text-white"
     >
       <div ref={trackRef} className="flex h-full w-max">
         {projects.map((project, index) => (
@@ -94,18 +136,20 @@ export default function PortfolioSection() {
             key={project.id}
             className="relative flex h-screen w-screen shrink-0 flex-col justify-between overflow-hidden p-6 md:p-12"
           >
-            {/* Background Image & Dark Overlay */}
-            <div className="absolute inset-0 -z-20">
+            {/* BACKGROUND IMAGE */}
+            <div className="absolute inset-0 -z-20 overflow-hidden">
               <img
                 src={project.image}
                 alt={project.title}
-                className="h-full w-full object-cover"
+                className="project-image h-full w-full object-cover scale-[1.02]"
               />
-              <div className="absolute inset-0 bg-[#0a0a0a]/70 mix-blend-multiply" />
+
+              {/* SUBTLE BOTTOM GRADIENT */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
             </div>
 
-            {/* Top Indicator */}
-            <div className="z-10 flex w-full justify-between text-[10px] tracking-widest text-[#086bff] uppercase md:text-xs">
+            {/* TOP INDICATOR */}
+            <div className="z-10 flex w-full justify-between text-[10px] uppercase tracking-[0.25em] text-[#4A8CFF] md:text-xs">
               <p>
                 {index === 0
                   ? `I BUILT / P. 00${project.id}`
@@ -113,24 +157,40 @@ export default function PortfolioSection() {
               </p>
             </div>
 
-            {/* Bottom Content Area */}
-            <div className="z-10 flex w-full flex-col justify-between gap-8 md:flex-row md:items-end">
-              {/* Left Side: Info & Tech Stack */}
-              <div className="flex max-w-xl flex-col gap-4">
-                <div>
-                  <h2 className="text-2xl font-semibold text-[#66C2A5] md:text-3xl">
-                    {project.subtitle}
+            {/* CONTENT */}
+            <div className="project-content z-10 flex w-full flex-col justify-between gap-8 md:flex-row md:items-end">
+              {/* LEFT SIDE */}
+              <div className="flex max-w-xl flex-col gap-6">
+                <div className="overflow-hidden">
+                  <h2 className="text-3xl font-bold tracking-[-0.05em] text-white md:text-5xl">
+                    {project.subtitle.split(" ").map((word, i) => (
+                      <span
+                        key={i}
+                        className="word mr-3 inline-block will-change-transform"
+                      >
+                        {word}
+                      </span>
+                    ))}
                   </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-[#EBE9E0]/70 md:text-base">
-                    {project.description}
+
+                  <p className="mt-5 max-w-lg text-sm font-semibold leading-relaxed text-white/75 md:text-base">
+                    {project.description.split(" ").map((word, i) => (
+                      <span
+                        key={i}
+                        className="word mr-1 inline-block will-change-transform"
+                      >
+                        {word}
+                      </span>
+                    ))}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                {/* TECH STACK */}
+                <div className="flex flex-wrap gap-3">
                   {project.tech.map((tech) => (
                     <span
                       key={tech}
-                      className="border border-[#EBE9E0]/20 bg-black/20 px-2 py-1 text-[10px] tracking-wider text-[#EBE9E0] backdrop-blur-sm md:text-xs"
+                      className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-white backdrop-blur-md md:text-xs"
                     >
                       {tech}
                     </span>
@@ -138,28 +198,34 @@ export default function PortfolioSection() {
                 </div>
               </div>
 
-              {/* Right Side: Year & Links */}
-              <div className="flex flex-col items-start gap-3 md:items-end text-xs tracking-widest">
-                <span className="text-[#EBE9E0]/40">{project.year}</span>
+              {/* RIGHT SIDE */}
+              <div className="flex flex-col items-start gap-4 md:items-end">
+                <span className="text-sm font-semibold tracking-[0.25em] text-white/50">
+                  {project.year}
+                </span>
+
                 <a
                   href="#"
-                  className="group flex items-center gap-2 text-[#086bff] transition-colors hover:text-white"
+                  className="group flex items-center gap-2 text-sm font-semibold tracking-[0.18em] text-[#4A8CFF] transition-colors hover:text-white"
                 >
-                  <span className="border-b border-[#086bff]/30 pb-0.5 transition-colors group-hover:border-white/30">
+                  <span className="border-b border-[#4A8CFF]/30 pb-0.5 transition-colors group-hover:border-white/30">
                     VIEW PROJECT
                   </span>
-                  <span className="transition-transform group-hover:translate-x-1">
+
+                  <span className="transition-transform duration-300 group-hover:translate-x-1">
                     →
                   </span>
                 </a>
+
                 <a
                   href="#"
-                  className="group flex items-center gap-2 text-[#086bff] transition-colors hover:text-white"
+                  className="group flex items-center gap-2 text-sm font-semibold tracking-[0.18em] text-[#4A8CFF] transition-colors hover:text-white"
                 >
-                  <span className="border-b border-[#086bff]/30 pb-0.5 transition-colors group-hover:border-white/30">
+                  <span className="border-b border-[#4A8CFF]/30 pb-0.5 transition-colors group-hover:border-white/30">
                     VISIT SITE
                   </span>
-                  <span className="transition-transform group-hover:translate-x-1">
+
+                  <span className="transition-transform duration-300 group-hover:translate-x-1">
                     →
                   </span>
                 </a>

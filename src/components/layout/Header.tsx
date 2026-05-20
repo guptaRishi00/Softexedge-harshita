@@ -1,8 +1,5 @@
 "use client";
-import {
-  AnimatePresence,
-  motion,
-} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -65,7 +62,6 @@ const navItems: NavItem[] = [
 ];
 
 export default function Header() {
-
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesExpanded, setIsServicesExpanded] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -118,9 +114,7 @@ export default function Header() {
 
         {/* Mobile Navigation — receives `visible` (scroll state) from Navbar via cloneElement */}
         <MobileNav>
-          <MobileNavHeader
-            className="transition-all duration-300"
-          >
+          <MobileNavHeader className="transition-all duration-300">
             <CustomLogo />
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
@@ -128,10 +122,7 @@ export default function Header() {
             />
           </MobileNavHeader>
 
-          <MobileNavMenu
-            isOpen={isMobileMenuOpen}
-            onClose={closeMobileMenu}
-          >
+          <MobileNavMenu isOpen={isMobileMenuOpen} onClose={closeMobileMenu}>
             {navItems.map((item, idx) => {
               const hasDropdown = item.sections && item.sections.length > 0;
               const isExpanded = item.name === "Services" && isServicesExpanded;

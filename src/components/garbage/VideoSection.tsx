@@ -5,7 +5,7 @@ type Props = {};
 export default function VideoSection({}: Props) {
   return (
     <div className="mt-16">
-      <div className="group relative overflow-hidden rounded-[40px] border border-black/10 bg-black shadow-[0_30px_120px_rgba(0,0,0,0.18)]">
+      <div className="group relative overflow-hidden rounded-0 bg-black shadow-[0_30px_120px_rgba(0,0,0,0.18)]">
         {/* Video */}
         <video
           autoPlay

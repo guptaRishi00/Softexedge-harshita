@@ -1,7 +1,3 @@
-"use client";
-
-import Lenis from "lenis";
-import { useEffect } from "react";
 import {
   SiNextdotjs,
   SiReact,
@@ -40,9 +36,9 @@ export default function HomePage() {
           <Herosection />
         </div>
 
-        <section className="w-full flex items-center gap-8 overflow-hidden px-6 py-12 md:py-16 bg-white">
+        <section className="w-full flex items-center gap-8 overflow-hidden px-6 py-12 md:pt-20 bg-white">
           <div className="shrink-0">
-            <p className="text-sm font-medium tracking-wide text-black/60 uppercase">
+            <p className="text-sm font-medium tracking-wide text-black/60">
               Trusted By
             </p>
           </div>
@@ -65,10 +61,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        <AboutSection />
-        <PortfolioSection />
-        <StatsSection />
-        <ServiceSection />
+        <div className="">
+          <AboutSection />
+          <PortfolioSection />
+          <StatsSection />
+          <ServiceSection />
+        </div>
 
         {/* <div className="px-3 pb-3">
           <Footer />

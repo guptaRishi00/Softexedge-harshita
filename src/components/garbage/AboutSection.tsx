@@ -4,7 +4,7 @@ type Props = {};
 
 export default function AboutSection({}: Props) {
   return (
-    <div className="w-full flex items-start justify-between">
+    <div className="w-full flex items-start justify-between p-3 mt-10">
       <div className="rounded-xl border border-gray-200 px-3 py-1">
         <p className="text-stone-900 text-lg font-medium">About Sotexedge</p>
       </div>
