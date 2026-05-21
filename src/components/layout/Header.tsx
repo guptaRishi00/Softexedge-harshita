@@ -21,7 +21,7 @@ const CustomLogo = () => (
     <Image
       src="/assets/logoWhite.svg"
       alt="Grovio Logo"
-      width={85}
+      width={100}
       height={30}
       className="object-cover"
     />
@@ -92,12 +92,12 @@ export default function Header() {
 
   return (
     <div className="relative w-full">
-      <AceternityNavbar className="z-[100]">
+      <AceternityNavbar className="z-100">
+        {/* Desktop Navigation */}
         {/* Desktop Navigation */}
         <NavBody className="">
-          <div className="flex items-center gap-2">
-            <CustomLogo />
-          </div>
+          {/* REMOVED the <div className="flex items-center gap-2"> wrapper here */}
+          <CustomLogo />
 
           <NavItems
             items={navItems}
@@ -106,8 +106,8 @@ export default function Header() {
 
           <DynamicButton
             text="Get in Touch"
-            href="#contact"
-            className="relative px-4 py-3 bg-white text-black font-semibold overflow-hidden group transition-all duration-300 rounded-full"
+            href="/contact"
+            className="relative px-4 py-3 bg-white text-black font-semibold overflow-hidden group transition-all"
             showIcon={false}
           />
         </NavBody>

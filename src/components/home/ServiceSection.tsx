@@ -17,7 +17,7 @@ const serviceBlocks = [
   {
     id: "01",
     bannerTitle: "Digital Marketing",
-    image: "/assets/branding.webp",
+    image: "/assets/digital_creative_top.webp",
     grayscale: true,
     title: "Digital Marketing Services",
     desc: "Data-driven strategies designed to amplify your online presence, engage your target audience, and maximize ROI across all digital channels.",
@@ -230,7 +230,7 @@ export default function ServiceSection() {
               color1="#3445E7"
               color2="#2F85EA"
               color3="#07D6F3"
-              timeSpeed={0.7}
+              timeSpeed={2}
               colorBalance={-0.04}
               warpStrength={3.2}
               warpFrequency={5}
@@ -268,7 +268,7 @@ export default function ServiceSection() {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: false, margin: "-100px" }}
-              className="absolute bottom-8 left-8 z-20 flex flex-wrap items-start gap-[0.2em] text-5xl font-bold tracking-tight text-white drop-shadow-2xl md:bottom-12 md:left-16 md:text-8xl lg:text-9xl"
+              className="absolute bottom-8 left-8 z-20 flex flex-wrap items-start gap-[0.2em] text-5xl font-bold tracking-tight text-white drop-shadow-2xl md:bottom-12 md:left-16 md:text-8xl lg:text-8xl"
             >
               {block.bannerTitle.split(" ").map((word, i) => (
                 <div key={i} className="overflow-hidden pb-4">

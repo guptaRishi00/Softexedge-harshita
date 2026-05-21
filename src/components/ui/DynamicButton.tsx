@@ -15,7 +15,6 @@ interface DynamicButtonProps {
 
   glowColors?: {
     from: string;
-    via: string;
     to: string;
   };
 
@@ -32,9 +31,8 @@ export default function DynamicButton({
   showIcon = true,
 
   glowColors = {
-    from: "#3445E7",
-    via: "#3445E7",
-    to: "#07D6F3",
+    from: "#2E5BFF",
+    to: "#149CCB",
   },
 
   onClick,
@@ -47,7 +45,7 @@ export default function DynamicButton({
       target={href ? target : undefined}
       onClick={onClick}
       className={cn(
-        "group relative flex w-fit cursor-pointer items-center gap-3 overflow-hidden rounded-full bg-white px-6 py-4 text-sm font-medium text-black transition-all duration-500",
+        "group relative flex w-fit cursor-pointer items-center gap-3 overflow-hidden rounded-xl bg-white px-6 py-4 text-sm font-medium text-black transition-all",
         className,
       )}
     >
@@ -56,7 +54,7 @@ export default function DynamicButton({
         <div
           className="absolute inset-0"
           style={{
-            background: `linear-gradient(to right, ${glowColors.from},${glowColors.via}, ${glowColors.to})`,
+            background: `linear-gradient(to right, ${glowColors.from}, ${glowColors.to})`,
           }}
         />
 
@@ -64,47 +62,34 @@ export default function DynamicButton({
         <div
           className="absolute inset-0 opacity-60 blur-2xl"
           style={{
-            background: `linear-gradient(to right, ${glowColors.from}, ${glowColors.via}, ${glowColors.to})`,
+            background: `linear-gradient(to right, ${glowColors.from}, ${glowColors.to})`,
           }}
         />
       </div>
 
       {/* Shine Sweep */}
-      <div className="absolute inset-0 overflow-hidden rounded-full">
+      <div className="absolute inset-0 overflow-hidden rounded-lg">
         <div className="absolute left-[-120%] top-0 h-full w-[60%] rotate-12 bg-white/40 blur-xl transition-all duration-1000 group-hover:left-[140%]" />
       </div>
 
       {/* TYPEWRITER TEXT */}
+      {/* TEXT ANIMATION */}
       <span
         className={cn(
-          "relative z-10 flex items-center overflow-hidden",
+          "relative z-10 overflow-hidden font-medium",
           textClassName,
         )}
       >
-        <span className="relative flex">
-          {text.split("").map((char, index) => (
-            <span key={index} className="relative inline-block overflow-hidden">
-              {/* Default Character */}
-              <span
-                className="inline-block transition-all duration-300 ease-out group-hover:-translate-y-full group-hover:opacity-0"
-                style={{
-                  transitionDelay: `${index * 35}ms`,
-                }}
-              >
-                {char === " " ? "\u00A0" : char}
-              </span>
+        <span className="relative block">
+          {/* Default Text */}
+          <span className="block transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-full group-hover:opacity-0">
+            {text}
+          </span>
 
-              {/* Hover Character */}
-              <span
-                className="absolute left-0 top-full inline-block text-white opacity-0 transition-all duration-300 ease-out group-hover:top-0 group-hover:opacity-100"
-                style={{
-                  transitionDelay: `${index * 35}ms`,
-                }}
-              >
-                {char === " " ? "\u00A0" : char}
-              </span>
-            </span>
-          ))}
+          {/* Hover Text */}
+          <span className="absolute left-0 top-full block text-white opacity-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:top-0 group-hover:opacity-100">
+            {text}
+          </span>
         </span>
       </span>
 

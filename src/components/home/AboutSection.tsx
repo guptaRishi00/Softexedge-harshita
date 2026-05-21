@@ -265,11 +265,6 @@ export default function AboutSection() {
                   href="#contact"
                   className="border border-black/20 px-6 py-4 text-base"
                 />
-
-                <button className="group flex items-center gap-2 rounded-full border border-black/10 px-5 py-4 text-sm text-zinc-700 transition-all duration-300 hover:border-black/20 hover:bg-black/[0.03] hover:text-black">
-                  View Case Studies
-                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
-                </button>
               </motion.div>
             </motion.div>
           </div>

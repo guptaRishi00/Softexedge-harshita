@@ -102,10 +102,12 @@ export const Navbar = ({ children, className }: NavbarProps) => {
     >
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
-          ? React.cloneElement(
-              child as React.ReactElement<{ visible?: boolean }>,
-              { visible },
-            )
+          ? typeof child.type === "string"
+            ? child // If it's a native HTML element (like 'div'), return it as-is
+            : React.cloneElement(
+                child as React.ReactElement<{ visible?: boolean }>,
+                { visible },
+              )
           : child,
       )}
     </motion.div>
@@ -119,7 +121,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         width: visible ? "98%" : "100%",
         y: visible ? 16 : 0,
         scale: visible ? 0.96 : 1,
-        borderRadius: visible ? "20px" : "0px",
+        borderRadius: visible ? "13px" : "0px",
       }}
       transition={{
         type: "spring",
@@ -137,9 +139,8 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         visible
           ? `
             px-6 py-3
-            bg-white/50
+            bg-gray-300
             backdrop-blur-xl
-            border border-white/50
             shadow-[0_8px_40px_rgba(0,0,0,0.18)]
           `
           : `
