@@ -18,7 +18,7 @@ const projects = [
       "Observations on exploring the intersections of music, architecture, and design - the things that shape how we build and feel.",
     tech: ["TYPESCRIPT", "TAILWIND"],
     year: "2025",
-    image: "/assets/1.png",
+    image: "/assets/5.png",
   },
   {
     id: 2,
@@ -38,7 +38,7 @@ const projects = [
       "An app where users complete daily missions by sharing photos or videos. Document the ordinary. Make it extraordinary.",
     tech: ["REACT NATIVE", "NODE.JS", "AWS S3", "POSTGRESQL"],
     year: "2024",
-    image: "/assets/3.png",
+    image: "/assets/6.png",
   },
   {
     id: 4,
@@ -76,31 +76,35 @@ export default function PortfolioSection() {
         },
       });
 
-      /* TEXT REVEAL */
-      gsap.utils.toArray<HTMLElement>(".project-content").forEach((content) => {
-        const words = content.querySelectorAll(".word");
+      /* TEXT ANIMATION */
+      gsap.utils
+        .toArray<HTMLElement>(".project-content")
+        .forEach((content, index) => {
+          const words = content.querySelectorAll(".word");
 
-        gsap.fromTo(
-          words,
-          {
+          // FIRST SECTION → NO ANIMATION
+          if (index === 0) {
+            gsap.set(words, {
+              opacity: 1,
+              y: 0,
+            });
+            return;
+          }
+
+          // OTHER SECTIONS → SCROLL TRIGGERED
+          gsap.from(words, {
             opacity: 0,
-            y: 80,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            stagger: 0.05,
-            duration: 1,
-            ease: "power3.out",
+            y: 30,
+            stagger: 0.04,
+            duration: 0.8,
+            ease: "power2.out",
             scrollTrigger: {
               trigger: content,
-              start: "left center",
-              scrub: 1,
+              start: "left 75%",
+              toggleActions: "play none none none",
             },
-          },
-        );
-      });
-
+          });
+        });
       /* IMAGE PARALLAX */
       gsap.utils.toArray<HTMLElement>(".project-image").forEach((img) => {
         gsap.fromTo(

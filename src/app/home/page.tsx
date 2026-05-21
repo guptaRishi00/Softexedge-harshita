@@ -12,8 +12,8 @@ import StatsSection from "@/components/home/StatsSection";
 import Footer from "@/components/layout/Footer";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import LogoLoop from "@/components/ui/LogoLoop";
-import CaseStudySection from "@/components/home/CaseStudySection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
+import BlogSection from "@/components/home/BlogSection";
 
 export default function HomePage() {
   const techLogos = [
@@ -37,16 +37,13 @@ export default function HomePage() {
         <div className="px-3 pt-3">
           <Herosection />
         </div>
-
         <section className="w-full flex items-center gap-8 overflow-hidden px-6 py-12 md:pt-20 bg-white">
           <div className="shrink-0">
             <p className="text-sm font-medium tracking-wide text-black/60">
               Trusted By
             </p>
           </div>
-
           <div className="h-6 w-px bg-black/10" />
-
           <div className="relative min-w-0 flex-1 overflow-hidden">
             <LogoLoop
               logos={techLogos}
@@ -62,16 +59,14 @@ export default function HomePage() {
             />
           </div>
         </section>
-
         <div className="">
           <AboutSection />
           <PortfolioSection />
           <StatsSection />
           <ServiceSection />
-          <CaseStudySection />
           <ExperimentalTestimonials />
+          <BlogSection />
         </div>
-
         <div className="px-3 pb-3">
           <Footer />
         </div>

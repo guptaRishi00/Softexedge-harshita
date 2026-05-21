@@ -12,36 +12,66 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+// Updated with your specific agency services
 const serviceBlocks = [
   {
     id: "01",
-    bannerTitle: "Branding & Identity",
+    bannerTitle: "Digital Marketing",
     image: "/assets/branding.webp",
     grayscale: true,
-    title: "Designing the Future With Intelligent Creative Systems",
-    desc: "I use AI as a creative amplifier—building custom tools, producing on-brand imagery, training custom LoRAs, and designing automated workflows that accelerate output. Across image, video, audio, copy, and code, AI removes the friction once inherent in ideation and iteration.",
+    title: "Digital Marketing Services",
+    desc: "Data-driven strategies designed to amplify your online presence, engage your target audience, and maximize ROI across all digital channels.",
     items: [
-      { title: "Generative AI Systems", number: "01" },
-      { title: "Brand Strategy & Architecture", number: "02" },
-      { title: "Visual Identity Design", number: "03" },
-      { title: "Automated Workflows", number: "04" },
+      { title: "SEO Services", number: "01" },
+      { title: "Social Media Management", number: "02" },
+      { title: "Influencer Marketing", number: "03" },
+      { title: "Paid Advertising (PPC)", number: "04" },
+      { title: "Content Marketing", number: "05" },
     ],
   },
   {
     id: "02",
-    bannerTitle: "Digital Experiences",
+    bannerTitle: "Creative & Branding",
     image: "/assets/branding.webp",
     grayscale: false,
-    title: "Crafting Immersive Web & App Interfaces",
-    desc: "Every digital touchpoint should feel intentional. I design and develop high-performance, motion-rich websites and applications that do more than just function—they leave a lasting impression. From WebGL experiments to robust full-stack applications.",
+    title: "Creative & Branding Services",
+    desc: "Crafting distinct visual identities and strategic brand narratives that resonate with your audience and leave a lasting impression.",
     items: [
-      { title: "Interactive Web Design", number: "01" },
-      { title: "Full-Stack Development", number: "02" },
-      { title: "Creative Coding & WebGL", number: "03" },
-      { title: "UI/UX Systems", number: "04" },
+      { title: "Logo Design", number: "01" },
+      { title: "Poster Design", number: "02" },
+      { title: "Brand Strategy", number: "03" },
+    ],
+  },
+  {
+    id: "03",
+    bannerTitle: "Videography",
+    image: "/assets/branding.webp",
+    grayscale: true,
+    title: "Videography Services",
+    desc: "High-quality, compelling visual storytelling tailored for modern platforms, from corporate communications to viral social media content.",
+    items: [
+      { title: "Corporate Video Production", number: "01" },
+      { title: "Instagram Reels Production", number: "02" },
+      { title: "Video Ad Production", number: "03" },
+    ],
+  },
+  {
+    id: "04",
+    bannerTitle: "Development",
+    image: "/assets/branding.webp",
+    grayscale: false,
+    title: "Development Services",
+    desc: "Building robust, scalable, and intuitive digital experiences through cutting-edge web, app, and custom software engineering.",
+    items: [
+      { title: "Mobile App Development", number: "01" },
+      { title: "UI/UX Design", number: "02" },
+      { title: "Web Development", number: "03" },
+      { title: "Custom Software Development", number: "04" },
     ],
   },
 ];
+
+// --- ANIMATION VARIANTS ---
 
 const fadeUpVariant: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -62,6 +92,31 @@ const staggerContainer: Variants = {
     transition: {
       staggerChildren: 0.1,
       delayChildren: 0.2,
+    },
+  },
+};
+
+// Title Stagger Configurations for individual words
+const titleContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const titleWord: Variants = {
+  hidden: { opacity: 0, y: "100%", rotateX: -20 },
+  visible: {
+    opacity: 1,
+    y: "0%",
+    rotateX: 0,
+    transition: {
+      duration: 0.9,
+      ease: [0.16, 1, 0.3, 1],
     },
   },
 };
@@ -118,7 +173,7 @@ export default function ServiceSection() {
       serviceRows.forEach((row: any) => {
         const giantNumber = row.querySelector(".giant-number");
 
-        // NUMBER REVEAL (Restored)
+        // NUMBER REVEAL
         gsap.fromTo(
           giantNumber,
           {
@@ -140,7 +195,7 @@ export default function ServiceSection() {
           },
         );
 
-        // SUBTLE PARALLAX (Restored so it "moves like the same")
+        // SUBTLE PARALLAX
         gsap.to(giantNumber, {
           yPercent: 15,
           ease: "none",
@@ -160,7 +215,7 @@ export default function ServiceSection() {
     <section
       ref={containerRef}
       id="services"
-      className="relative w-full min-h-screen overflow-clip bg-white py-20 md:pt-10"
+      className="relative w-full min-h-screen overflow-clip bg-white py-20 md:pt-0"
     >
       {serviceBlocks.map((block, index) => (
         <div
@@ -207,14 +262,24 @@ export default function ServiceSection() {
               }`}
             />
 
+            {/* ANIMATED HERO TITLE - Set once to false */}
             <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1, delay: 0.2 }}
-              className="absolute bottom-8 left-8 z-20 flex flex-col items-start gap-3 text-5xl font-bold tracking-tight text-white drop-shadow-2xl md:bottom-12 md:left-16 md:text-8xl lg:text-9xl"
+              variants={titleContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, margin: "-100px" }}
+              className="absolute bottom-8 left-8 z-20 flex flex-wrap items-start gap-[0.2em] text-5xl font-bold tracking-tight text-white drop-shadow-2xl md:bottom-12 md:left-16 md:text-8xl lg:text-9xl"
             >
-              {block.bannerTitle}
+              {block.bannerTitle.split(" ").map((word, i) => (
+                <div key={i} className="overflow-hidden pb-4">
+                  <motion.span
+                    variants={titleWord}
+                    className="inline-block origin-bottom uppercase font-black"
+                  >
+                    {word}
+                  </motion.span>
+                </div>
+              ))}
             </motion.h1>
           </div>
 
@@ -222,9 +287,8 @@ export default function ServiceSection() {
           <div className="relative flex w-full flex-col gap-10 px-6 lg:flex-row lg:gap-20 lg:px-16">
             {/* LEFT SIDE - STICKY CONTAINER */}
             <div className="relative w-full lg:w-[35%]">
-              {/* Added lg:sticky so it only pins on desktop and restored the smooth flex layout */}
-              <div className="left-pin-target lg:sticky lg:top-32 flex items-center justify-center lg:justify-start z-0">
-                <p className="giant-number pointer-events-none select-none text-[10rem] font-black leading-[0.7] tracking-[-0.08em] text-black/[0.07] md:text-[16rem] lg:text-[24rem]">
+              <div className="left-pin-target z-0 flex items-center justify-center lg:sticky lg:top-32 lg:justify-start">
+                <p className="giant-number pointer-events-none select-none text-[10rem] font-bold leading-[0.7] tracking-[-0.08em] text-black md:text-[16rem] lg:text-[24rem]">
                   {block.id}
                 </p>
               </div>
@@ -232,19 +296,29 @@ export default function ServiceSection() {
 
             {/* RIGHT SIDE - SCROLLING CONTENT */}
             <div className="relative z-10 flex w-full flex-col items-start justify-between gap-16 lg:w-[65%] lg:gap-24 lg:pb-32">
-              {/* TEXT */}
+              {/* TEXT - Set once to false */}
               <motion.div
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, margin: "-100px" }}
+                viewport={{ once: false, margin: "-100px" }}
                 variants={staggerContainer}
                 className="flex max-w-4xl flex-col items-start gap-6"
               >
+                {/* ANIMATED SECTION TITLE */}
                 <motion.h2
-                  variants={fadeUpVariant}
-                  className="text-4xl font-bold leading-[1.1] tracking-tight text-black md:text-5xl lg:text-6xl"
+                  variants={titleContainer}
+                  className="flex flex-wrap text-4xl font-bold leading-[1.1] tracking-tight text-black md:text-5xl lg:text-6xl"
                 >
-                  {block.title}
+                  {block.title.split(" ").map((word, i) => (
+                    <div key={i} className="mr-[0.25em] overflow-hidden pb-2">
+                      <motion.span
+                        variants={titleWord}
+                        className="inline-block origin-bottom "
+                      >
+                        {word}
+                      </motion.span>
+                    </div>
+                  ))}
                 </motion.h2>
 
                 <motion.p
@@ -255,11 +329,11 @@ export default function ServiceSection() {
                 </motion.p>
               </motion.div>
 
-              {/* SERVICES */}
+              {/* SERVICES / ITEMS - Set once to false */}
               <motion.ul
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
+                viewport={{ once: false, margin: "-50px" }}
                 variants={staggerContainer}
                 className="flex w-full flex-col border-t border-black/10"
               >
@@ -267,12 +341,12 @@ export default function ServiceSection() {
                   <motion.li
                     key={i}
                     variants={fadeUpVariant}
-                    className="group relative flex cursor-pointer items-center justify-between overflow-hidden border-b border-black/10 px-6 py-6 transition-colors duration-500 ease-out hover:text-white md:px-8 md:py-8"
+                    className="group relative flex cursor-pointer items-center justify-between rounded-lg overflow-hidden border-b border-black/10 px-6 py-6 transition-colors duration-500 ease-out hover:text-white md:px-8 md:py-8"
                   >
                     {/* BG HOVER */}
-                    <div className="absolute inset-0 z-0 translate-y-full bg-black transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-y-0" />
+                    <div className="absolute inset-0 z-0 translate-y-full  rounded-lg bg-black transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-y-0" />
 
-                    {/* TITLE */}
+                    {/* ITEM TITLE */}
                     <p className="relative z-10 text-xl font-medium transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-x-4 md:text-2xl">
                       {item.title}
                     </p>

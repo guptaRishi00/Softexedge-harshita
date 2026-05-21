@@ -119,7 +119,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         width: visible ? "98%" : "100%",
         y: visible ? 16 : 0,
         scale: visible ? 0.96 : 1,
-        borderRadius: visible ? "999px" : "0px",
+        borderRadius: visible ? "20px" : "0px",
       }}
       transition={{
         type: "spring",

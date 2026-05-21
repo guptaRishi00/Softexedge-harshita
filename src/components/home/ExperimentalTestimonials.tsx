@@ -1,232 +1,205 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useEffect, useRef, useState } from "react";
 
 const testimonials = [
   {
     quote:
-      "The experience felt cinematic. Every interaction had weight, rhythm, and intention.",
-    name: "Aarav Mehta",
-    role: "Founder · Velora",
+      "SoftEXedge gives you the tools and the trust to build things you didn't think were possible at scale.",
+    name: "Alex Rivera",
+    role: "Lead Product Designer",
+    initials: "AR",
   },
   {
     quote:
-      "They transformed a simple product into something people genuinely remember.",
+      "The level of technical excellence here is unmatched. Every day is an opportunity to learn something complex.",
+    name: "Sarah Chen",
+    role: "Sr. Backend Engineer",
+    initials: "SC",
+  },
+  {
+    quote:
+      "They transformed a simple product into something people genuinely remember. The experience felt cinematic.",
     name: "Sophia Lin",
-    role: "Creative Director · Nox",
+    role: "Creative Director",
+    initials: "SL",
   },
   {
     quote:
-      "Rare combination of strong engineering and elite visual storytelling.",
+      "Rare combination of strong engineering and elite visual storytelling. The interface felt alive.",
     name: "Daniel Reeves",
     role: "CEO · Aether AI",
-  },
-  {
-    quote:
-      "The interface felt alive. Smooth, immersive, and insanely polished.",
-    name: "Noah Carter",
-    role: "Product Lead · Nexus",
+    initials: "DR",
   },
 ];
 
-// Duplicate the array to create enough content for a seamless infinite loop
-const loopedTestimonials = [...testimonials, ...testimonials, ...testimonials];
+export default function ExperimentalTestimonials() {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
-export default function TestimonialCarousel() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const marqueeTween = useRef<gsap.core.Tween | null>(null);
+  const scroll = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const scrollAmount =
+        window.innerWidth < 768 ? window.innerWidth * 0.8 : 450; // Approximate card width + gap
 
-  useEffect(() => {
-    // 1. Initialize Lenis Smooth Scrolling
-    const lenis = new Lenis({
-      lerp: 0.08, // smoothness
-      smoothWheel: true,
-    });
-
-    // Sync Lenis with GSAP ScrollTrigger
-    lenis.on("scroll", ScrollTrigger.update);
-
-    const ticker = (time: number) => {
-      lenis.raf(time * 1000);
-    };
-
-    gsap.ticker.add(ticker);
-    gsap.ticker.lagSmoothing(0);
-
-    // 2. Setup GSAP Animations
-    let ctx = gsap.context(() => {
-      // Animate the entire track fading in
-      gsap.fromTo(
-        trackRef.current,
-        { opacity: 0, y: 30 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 75%",
-          },
-        },
-      );
-
-      // Infinite Marquee Animation
-      // We have 3 sets of items. We move exactly 1/3 of the total width to create a perfect loop.
-      marqueeTween.current = gsap.to(trackRef.current, {
-        xPercent: -33.333333,
-        ease: "none",
-        duration: 30, // Change this to speed up/slow down
-        repeat: -1,
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
       });
-    }, sectionRef);
-
-    // Cleanup
-    return () => {
-      ctx.revert();
-      gsap.ticker.remove(ticker);
-      lenis.destroy();
-    };
-  }, []);
-
-  // Pause marquee on hover so users can read the cards
-  const handleMouseEnter = () => {
-    gsap.to(marqueeTween.current, {
-      timeScale: 0,
-      duration: 0.5,
-      ease: "power2.out",
-    });
+    }
   };
 
-  const handleMouseLeave = () => {
-    gsap.to(marqueeTween.current, {
-      timeScale: 1,
-      duration: 0.5,
-      ease: "power2.in",
-    });
-  };
+  // AUTO SCROLL LOGIC
+  useEffect(() => {
+    if (isPaused) return;
+
+    const autoScrollInterval = setInterval(() => {
+      if (scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } =
+          scrollContainerRef.current;
+
+        // Added a 20px buffer to ensure rounding errors don't prevent the rewind
+        if (scrollLeft + clientWidth >= scrollWidth - 20) {
+          scrollContainerRef.current.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          scroll("right");
+        }
+      }
+    }, 3500);
+
+    return () => clearInterval(autoScrollInterval);
+  }, [isPaused]);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative overflow-hidden bg-white py-20 md:py-28 text-black"
-    >
-      {/* Background blur orbs */}
-      <div className="pointer-events-none absolute left-[-5%] top-10 h-[20rem] w-[20rem] rounded-full bg-black/[0.03] blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 right-[-5%] h-[15rem] w-[15rem] rounded-full bg-black/[0.04] blur-3xl" />
-
-      {/* Heading (Framer Motion) */}
-      <div className="mx-auto mb-12 md:mb-16 max-w-7xl px-6 relative z-10">
+    <section className="relative overflow-hidden bg-white py-20 text-black md:py-32">
+      <div className="mx-auto flex w-full flex-col gap-12 px-10 lg:flex-row lg:items-center lg:gap-20">
+        {/* LEFT COLUMN: Title & Navigation */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, margin: "-50px" }}
+          className="flex w-full flex-col lg:w-1/3 lg:shrink-0"
         >
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.35em] text-zinc-400">
-            Testimonials
-          </p>
-          <h2 className="max-w-4xl text-[11vw] font-black uppercase leading-[0.85] tracking-[-0.04em] md:text-[6rem]">
-            PEOPLE
-            <br />
-            TALK.
+          <h2 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-[4rem] lg:leading-[1.1]">
+            Voices of the <br />
+            <span className="text-[#3445E7]">Collective</span>
           </h2>
-        </motion.div>
-      </div>
 
-      {/* Auto-moving Carousel */}
-      <div className="relative w-full">
-        {/* Container with Edge Masks for smooth fade in/out */}
-        <div className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent_0%,white_10%,white_90%,transparent_100%)]">
-          <div
-            ref={trackRef}
-            className="flex w-max gap-4 md:gap-6 px-6 py-8"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onTouchStart={handleMouseEnter}
-            onTouchEnd={handleMouseLeave}
-          >
-            {loopedTestimonials.map((item, index) => (
-              <div
-                key={index}
-                className="shrink-0 flex items-center justify-center"
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-zinc-500">
+            Don't just take our word for it. Hear from the visionaries building
+            our future every day.
+          </p>
+
+          {/* Navigation Arrows */}
+          <div className="mt-10 flex items-center gap-4">
+            <button
+              onClick={() => scroll("left")}
+              className="group flex h-14 w-14 items-center justify-center rounded-full border border-zinc-200 bg-white text-black transition-all hover:border-black hover:bg-black hover:text-white active:scale-95"
+              aria-label="Previous Testimonial"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform group-hover:-translate-x-1"
               >
-                {/* Individual Card (Framer Motion) */}
-                <motion.div
-                  whileHover={{
-                    y: -10,
-                    rotate: index % 2 === 0 ? -1.5 : 1.5,
-                    scale: 1.02,
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 20,
-                  }}
-                  className="group relative flex flex-col justify-between w-[75vw] md:w-[420px] h-full min-h-[320px] overflow-hidden rounded-[2rem] border border-zinc-200 bg-zinc-50 p-6 md:p-8 shadow-sm hover:shadow-xl hover:shadow-black/5 transition-shadow duration-500 cursor-grab active:cursor-grabbing"
-                >
-                  {/* Subtle noise glow */}
-                  <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100">
-                    <div className="absolute left-[-20%] top-[-20%] h-48 w-48 rounded-full bg-black/[0.04] blur-2xl" />
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+            <button
+              onClick={() => scroll("right")}
+              className="group flex h-14 w-14 items-center justify-center rounded-full border border-zinc-200 bg-white text-black transition-all hover:border-black hover:bg-black hover:text-white active:scale-95"
+              aria-label="Next Testimonial"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform group-hover:translate-x-1"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+        </motion.div>
+
+        {/* RIGHT COLUMN: Carousel Cards */}
+        <div
+          className="w-full lg:w-2/3"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
+        >
+          {/* Scroll Container */}
+          {/* ADDED: py-10 to prevent shadow clipping, and pr-[15vw] so the last card doesn't hit a wall */}
+          <div
+            ref={scrollContainerRef}
+            className="flex w-full snap-x snap-mandatory gap-6 overflow-x-auto py-10 pr-[10vw] lg:pr-[25vw] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {testimonials.map((item, index) => (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.6,
+                  delay: index * 0.1,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                viewport={{ once: true, margin: "-50px" }}
+                key={index}
+                className="group relative flex h-auto min-h-[340px] w-[85vw] shrink-0 snap-start flex-col justify-between rounded-3xl border border-zinc-200 bg-zinc-50 p-8 shadow-sm transition-all hover:-translate-y-2 hover:shadow-xl hover:shadow-black/5 md:w-[420px]"
+              >
+                {/* Outlined Quote Icon (Top Right) */}
+                <div className="absolute right-8 top-8 text-zinc-200 transition-colors group-hover:text-zinc-300">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" />
+                    <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
+                  </svg>
+                </div>
+
+                {/* Quote Text */}
+                <p className="relative z-10 mt-8 max-w-[90%] text-xl font-medium leading-relaxed tracking-tight text-zinc-900 md:text-2xl">
+                  "{item.quote}"
+                </p>
+
+                {/* Bottom Profile */}
+                <div className="mt-12 flex items-center gap-4">
+                  {/* Avatar Placeholder */}
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-sm font-bold text-zinc-500">
+                    {item.initials}
                   </div>
-
-                  {/* Top Quote Mark */}
-                  <div className="mb-8 flex items-start justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400">
-                      0{(index % testimonials.length) + 1}
-                    </span>
-                    <div className="text-5xl font-serif font-black leading-[0.5] text-zinc-200">
-                      ”
-                    </div>
+                  <div>
+                    <h4 className="text-base font-bold text-zinc-900">
+                      {item.name}
+                    </h4>
+                    <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-[#3445E7]">
+                      {item.role}
+                    </p>
                   </div>
-
-                  {/* Quote */}
-                  <h3 className="max-w-xl text-xl font-black leading-[1.25] tracking-tight md:text-2xl text-zinc-900 mb-10">
-                    {item.quote}
-                  </h3>
-
-                  {/* Bottom Info */}
-                  <div className="mt-auto flex items-end justify-between border-t border-zinc-200 pt-5 relative z-10">
-                    <div>
-                      <p className="text-sm md:text-base font-bold uppercase tracking-tight text-black">
-                        {item.name}
-                      </p>
-                      <p className="mt-1 text-[10px] md:text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">
-                        {item.role}
-                      </p>
-                    </div>
-
-                    {/* Arrow Button */}
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-black/20 text-black transition-all duration-500 group-hover:border-black group-hover:bg-black group-hover:text-white">
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="7" y1="17" x2="17" y2="7"></line>
-                        <polyline points="7 7 17 7 17 17"></polyline>
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* Giant Faded Watermark */}
-                  <div className="pointer-events-none absolute bottom-[-10%] right-[-5%] text-[6rem] md:text-[7rem] font-black leading-none tracking-[-0.08em] text-black/[0.02] select-none">
-                    TALK
-                  </div>
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>
