@@ -64,7 +64,7 @@ export default function Herosection({}: any) {
       <div className="absolute z-20 p-5 w-full flex flex-col items-center justify-between gap-10 h-full">
         <Header />
 
-        <div className="w-full flex items-center justify-center text-center ">
+        <div className="w-full flex items-center justify-center text-center lg:mt-14">
           <div className="flex flex-col items-center justify-center gap-2">
             <h1 className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
               We Engineer

@@ -31,6 +31,12 @@ export interface NavItem {
     title?: string;
     items: { name: string; link: string }[];
   }[];
+  dropdownItems?: {
+    name: string;
+    link: string;
+    count?: string;
+    image?: string;
+  }[];
 }
 
 interface NavItemsProps {
@@ -61,49 +67,37 @@ interface MobileNavMenuProps {
 
 export const Navbar = ({ children, className }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
-
   const { scrollY } = useScroll();
-
   const lastScroll = useRef(0);
-
   const [visible, setVisible] = useState<boolean>(false);
   const [isHidden, setIsHidden] = useState<boolean>(false);
 
   useMotionValueEvent(scrollY, "change", (latest: number) => {
-    // Floating navbar after scroll
     const shouldBeVisible = latest > 80;
-
     setVisible((prev) => (prev === shouldBeVisible ? prev : shouldBeVisible));
 
-    // Hide navbar on scroll down
     if (latest > lastScroll.current && latest > 120) {
       setIsHidden(true);
     } else {
       setIsHidden(false);
     }
-
     lastScroll.current = latest;
   });
 
   return (
     <motion.div
       ref={ref}
-      animate={{
-        y: isHidden ? -120 : 0,
-      }}
-      transition={{
-        duration: 0.3,
-        ease: "easeOut",
-      }}
+      animate={{ y: isHidden ? -120 : 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className={cn(
-        "fixed inset-x-0 top-0 z-[100] flex justify-center will-change-transform",
+        "fixed inset-x-0 top-0 z-[100] flex justify-center", // Removed will-change-transform to fix blur bug
         className,
       )}
     >
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
           ? typeof child.type === "string"
-            ? child // If it's a native HTML element (like 'div'), return it as-is
+            ? child
             : React.cloneElement(
                 child as React.ReactElement<{ visible?: boolean }>,
                 { visible },
@@ -118,16 +112,14 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   return (
     <motion.div
       initial={{
-        width: visible ? "98%" : "100%",
+        width: visible ? "95%" : "100%",
         y: visible ? 16 : 0,
-        scale: visible ? 0.96 : 1,
-        borderRadius: visible ? "20px" : "0px",
+        borderRadius: visible ? "12px" : "0px",
       }}
       animate={{
-        width: visible ? "98%" : "100%",
+        width: visible ? "95%" : "100%", // Using width instead of scale fixes Safari/Chrome backdrop-blur bugs
         y: visible ? 16 : 0,
-        scale: visible ? 0.96 : 1,
-        borderRadius: visible ? "13px" : "0px",
+        borderRadius: visible ? "12px" : "0px",
       }}
       transition={{
         type: "spring",
@@ -135,33 +127,21 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         damping: 28,
       }}
       className={cn(
-        `
-        fixed left-1/2 top-0 z-50
-        hidden lg:flex
-        -translate-x-1/2
-        items-center justify-between
-        transition-all
-        `,
+        `fixed left-1/2 top-0 z-50 hidden lg:flex -translate-x-1/2 items-center justify-between transition-colors duration-300`,
         visible
-          ? `
-            px-6 py-3
-            bg-gray-300
-            backdrop-blur-xl
-            shadow-[0_8px_40px_rgba(0,0,0,0.18)]
-          `
-          : `
-            px-10 py-8
-            bg-transparent
-          `,
+          ? `px-6 py-3 bg-gray-200 backdrop-blur-2xl`
+          : `px-10 py-8 bg-transparent`,
         className,
       )}
     >
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
-          ? React.cloneElement(
-              child as React.ReactElement<{ visible?: boolean }>,
-              { visible },
-            )
+          ? typeof child.type === "string"
+            ? child
+            : React.cloneElement(
+                child as React.ReactElement<{ visible?: boolean }>,
+                { visible },
+              )
           : child,
       )}
     </motion.div>
@@ -184,23 +164,39 @@ export const NavItems = ({
         className,
       )}
     >
+      {/* CINEMATIC BACKDROP BLUR - Dims the entire screen behind the mega menu */}
+      <AnimatePresence>
+        {hovered !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="fixed left-1/2 top-1/2 h-[300vh] w-[300vw] -translate-x-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-md -z-10 pointer-events-none"
+          />
+        )}
+      </AnimatePresence>
+
       {items.map((item, idx) => {
         const hasDropdown =
           (item.subItems && item.subItems.length > 0) ||
-          (item.sections && item.sections.length > 0);
+          (item.sections && item.sections.length > 0) ||
+          (item.dropdownItems && item.dropdownItems.length > 0);
 
         return (
+          // FIX 1: Removed 'relative' from here. Now the absolute dropdown centers to the Screen, not the Link!
           <div
             key={`link-container-${idx}`}
             onMouseEnter={() => setHovered(idx)}
-            className="relative py-1"
+            className="py-1"
           >
             <Link
               onClick={onItemClick}
               className={cn(
                 "relative px-4 py-2 transition-colors flex items-center gap-1 group",
-                visible
-                  ? "text-black hover:text-black"
+                // FIX: If the navbar is visible OR this specific item is open, force black text.
+                visible || hovered === idx
+                  ? "text-black"
                   : "text-white hover:text-black",
               )}
               href={item.link}
@@ -208,7 +204,7 @@ export const NavItems = ({
               {hovered === idx && (
                 <motion.div
                   layoutId="hovered"
-                  className="absolute inset-0 h-full w-full rounded-full bg-gray-100"
+                  className="absolute inset-0 h-full w-full rounded-full bg-white shadow-md"
                 />
               )}
 
@@ -238,70 +234,134 @@ export const NavItems = ({
             <AnimatePresence>
               {hasDropdown && hovered === idx && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  initial={{ opacity: 0, y: 15, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  exit={{ opacity: 0, y: 15, scale: 0.98 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   className={cn(
-                    "absolute top-full left-1/2 -translate-x-1/2 pt-2 z-[110]",
-                    item.sections
-                      ? item.sections.length > 1
-                        ? "w-[650px]"
-                        : "w-[320px]"
-                      : "w-64",
+                    "absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 z-[110]",
+                    item.dropdownItems
+                      ? "w-[90vw] max-w-[1400px]" // Perfect Mega Menu Width
+                      : item.sections
+                        ? item.sections.length > 1
+                          ? "w-[650px]"
+                          : "w-[320px]"
+                        : "w-64",
                   )}
                 >
-                  <div className="bg-white backdrop-blur-xl border border-[#1b38f4]/20 rounded-2xl overflow-hidden p-6 shadow-2xl">
-                    {item.sections ? (
-                      <div
-                        className={cn(
-                          "grid gap-10",
-                          item.sections.length > 1
-                            ? "grid-cols-2"
-                            : "grid-cols-1",
-                        )}
-                      >
-                        {item.sections.map((section, sIdx) => (
-                          <div
-                            key={`section-${sIdx}`}
-                            className="flex flex-col gap-4"
-                          >
-                            {section.title && (
-                              <h3 className="text-[13px] uppercase tracking-[0.25em] text-zinc-900 font-bold px-4 pt-2">
-                                {section.title}
-                              </h3>
-                            )}
+                  {/* FULL WIDTH WHITE THEME GRID */}
+                  {item.dropdownItems ? (
+                    <div className="bg-white border border-black/5 rounded-[2rem] overflow-hidden p-3 shadow-[0_40px_100px_rgba(0,0,0,0.15)] grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {item.dropdownItems.map((sub, sIdx) => (
+                        <Link
+                          key={`sub-${sIdx}`}
+                          href={sub.link}
+                          onClick={onItemClick}
+                          className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-zinc-50 border border-black/5 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
+                        >
+                          {/* Hover Image */}
+                          {sub.image && (
+                            <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
+                              <img
+                                src={sub.image}
+                                alt={sub.name}
+                                className="h-full w-full object-cover  scale-105 transition-transform duration-700 ease-out group-hover:scale-100"
+                              />
+                              {/* Dark gradient so white text pops on hover */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                            </div>
+                          )}
 
-                            <div className="flex flex-col gap-1">
-                              {section.items.map((sub, ssIdx) => (
-                                <Link
-                                  key={`sub-${ssIdx}`}
-                                  href={sub.link}
-                                  onClick={onItemClick}
-                                  className="block px-4 py-3 text-[16px] font-medium text-zinc-900 hover:text-white hover:bg-linear-to-r hover:from-[#3445E7] hover:via-[#2F85EA] hover:to-[#07D6F3] rounded-xl transition-all duration-200"
-                                >
-                                  {sub.name}
-                                </Link>
-                              ))}
+                          {/* Content Layer */}
+                          {/* Content Layer */}
+                          <div className="relative z-10 flex h-full flex-col justify-between text-zinc-900 transition-colors duration-400 group-hover:text-white">
+                            <div className="flex justify-between items-start w-full">
+                              {/* 1. UPDATED: Gradient Text on Hover */}
+                              <span className="text-xl lg:text-2xl font-bold tracking-tight max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1 bg-gradient-to-r from-zinc-900 to-zinc-900 group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
+                                {sub.name}
+                              </span>
+
+                              {sub.count && (
+                                <span className="text-[12px] font-bold text-zinc-400 transition-colors duration-400 group-hover:text-white/80">
+                                  {sub.count}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Hover Arrow Indicator */}
+                            {/* 2. OPTIONAL: I also matched the arrow color to your gradient! */}
+                            <div className="flex justify-start group-hover:text-[#149CCB] transition-colors duration-400">
+                              <svg
+                                className="w-6 h-6 opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                />
+                              </svg>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        {item.subItems?.map((sub, sIdx) => (
-                          <Link
-                            key={`sub-${sIdx}`}
-                            href={sub.link}
-                            onClick={onItemClick}
-                            className="block px-4 py-3 text-[16px] font-medium text-zinc-400 hover:text-white hover:bg-[#1b38f4]/25 rounded-xl transition-all duration-200"
-                          >
-                            {sub.name}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    /* STANDARD LIGHT THEME DROPDOWN */
+                    <div className="bg-white border border-black/5 rounded-2xl overflow-hidden p-6 shadow-2xl">
+                      {item.sections ? (
+                        <div
+                          className={cn(
+                            "grid gap-10",
+                            item.sections.length > 1
+                              ? "grid-cols-2"
+                              : "grid-cols-1",
+                          )}
+                        >
+                          {item.sections.map((section, sIdx) => (
+                            <div
+                              key={`section-${sIdx}`}
+                              className="flex flex-col gap-4"
+                            >
+                              {section.title && (
+                                <h3 className="text-[13px] uppercase tracking-[0.25em] text-zinc-900 font-bold px-4 pt-2">
+                                  {section.title}
+                                </h3>
+                              )}
+                              <div className="flex flex-col gap-1">
+                                {section.items.map((sub, ssIdx) => (
+                                  <Link
+                                    key={`sub-${ssIdx}`}
+                                    href={sub.link}
+                                    onClick={onItemClick}
+                                    className="block px-4 py-3 text-[16px] font-medium text-zinc-900 hover:text-white hover:bg-gradient-to-r hover:from-[#3445E7] hover:via-[#2F85EA] hover:to-[#07D6F3] rounded-xl transition-all duration-200"
+                                  >
+                                    {sub.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-2">
+                          {item.subItems?.map((sub, sIdx) => (
+                            <Link
+                              key={`sub-${sIdx}`}
+                              href={sub.link}
+                              onClick={onItemClick}
+                              className="block px-4 py-3 text-[16px] font-medium text-zinc-500 hover:text-black hover:bg-zinc-100 rounded-xl transition-all duration-200"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -323,10 +383,12 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
     >
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
-          ? React.cloneElement(
-              child as React.ReactElement<{ visible?: boolean }>,
-              { visible },
-            )
+          ? typeof child.type === "string"
+            ? child
+            : React.cloneElement(
+                child as React.ReactElement<{ visible?: boolean }>,
+                { visible },
+              )
           : child,
       )}
     </div>
