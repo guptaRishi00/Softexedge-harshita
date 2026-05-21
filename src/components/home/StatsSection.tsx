@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -93,22 +94,22 @@ export default function StatsSection() {
             {/* NUMBER */}
             <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-16">
               <h2
-                className="
-                  animated-gradient-text
-                  flex items-start
-                  bg-gradient-to-r
-                  from-[#3445E7]
-                  via-[#07D6F3]
-                  to-[#3445E7]
-                  bg-[size:200%_auto]
-                  bg-clip-text
-                  text-[8rem]
-                  font-bold
-                  leading-[0.8]
-                  tracking-tighter
-                  text-transparent
-                  md:text-[14rem]
-                "
+                className={cn(
+                  "animated-gradient-text",
+                  "flex items-start",
+                  "bg-gradient-to-r",
+                  "from-[#3445E7]",
+                  "via-[#07D6F3]",
+                  "to-[#3445E7]",
+                  "bg-[size:200%_auto]",
+                  "bg-clip-text",
+                  "text-[8rem]",
+                  "font-bold",
+                  "leading-[0.8]",
+                  "tracking-tighter",
+                  "text-transparent",
+                  "md:text-[14rem]",
+                )}
               >
                 {stat.number}
 

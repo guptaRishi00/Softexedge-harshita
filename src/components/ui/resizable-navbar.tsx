@@ -117,6 +117,12 @@ export const Navbar = ({ children, className }: NavbarProps) => {
 export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   return (
     <motion.div
+      initial={{
+        width: visible ? "98%" : "100%",
+        y: visible ? 16 : 0,
+        scale: visible ? 0.96 : 1,
+        borderRadius: visible ? "20px" : "0px",
+      }}
       animate={{
         width: visible ? "98%" : "100%",
         y: visible ? 16 : 0,

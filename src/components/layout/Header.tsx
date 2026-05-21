@@ -21,8 +21,9 @@ const CustomLogo = () => (
     <Image
       src="/assets/logoWhite.svg"
       alt="Grovio Logo"
-      width={100}
+      width={85}
       height={30}
+      style={{ width: "110px", height: "auto" }}
       className="object-cover"
     />
   </Link>
@@ -107,7 +108,7 @@ export default function Header() {
           <DynamicButton
             text="Get in Touch"
             href="/contact"
-            className="relative px-4 py-3 bg-white text-black font-semibold overflow-hidden group transition-all"
+            className="px-4 py-3"
             showIcon={false}
           />
         </NavBody>
