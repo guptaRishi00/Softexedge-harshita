@@ -2,8 +2,10 @@
 
 import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
+import DynamicButton from "../ui/DynamicButton";
 
-// Data matching the structure in your reference image
+// Reduced to exactly two posts for the new layout
 const blogPosts = [
   {
     id: 1,
@@ -12,22 +14,17 @@ const blogPosts = [
     author: "Carrie Rose",
     readTime: "15 mins",
     tag: "Resources",
-    image: "/assets/branding.webp", // Replace with your actual image path
+    image:
+      "https://plus.unsplash.com/premium_photo-1726739717949-6c5079fa9a08?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Z29vZ2xlJTIwYWl8ZW58MHx8MHx8fDA%3D",
   },
   {
     id: 2,
-    title: "Rise at Seven Appoints Hollie Lovell as Senior Operations Lead",
-    author: "Ray Saddiq",
-    readTime: "3 mins",
-    image: "/assets/branding.webp",
-  },
-  {
-    id: 3,
     title:
       "Rise at Seven Exits Sheffield and Triples Manchester as new HQ as they go for global expansion",
     author: "Ray Saddiq",
-    readTime: "2 mins",
-    image: "/assets/branding.webp",
+    readTime: "8 mins",
+    tag: "Company News",
+    image: "/assets/google.webp",
   },
 ];
 
@@ -44,12 +41,12 @@ const staggerContainer: Variants = {
 };
 
 const fadeUpVariant: Variants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.6,
+      duration: 0.7,
       ease: [0.16, 1, 0.3, 1],
     },
   },
@@ -57,54 +54,40 @@ const fadeUpVariant: Variants = {
 
 export default function BlogSection() {
   return (
-    <section className="w-full bg-[#F8F9FA] py-20 text-black md:py-32">
-      <div className="mx-auto max-w-[90rem] px-6">
+    <section className="w-full bg-[#f8f9fa] py-20 text-black md:py-32">
+      <div className="mx-auto w-full px-6 md:px-10">
         {/* HEADER */}
-        <div className="mb-12 flex flex-col items-start justify-between gap-6 md:mb-16 md:flex-row md:items-end">
+        <div className="mb-12 flex flex-col items-start justify-between gap-8 md:mb-20 md:flex-row md:items-end">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             viewport={{ once: true, margin: "-50px" }}
+            className="flex flex-col items-start"
           >
-            <h2 className="text-6xl font-medium tracking-tighter md:text-7xl lg:text-[5.5rem]">
-              Blogs
+            <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
+              Thoughts & <br />
+              {/* BRAND TEXT GRADIENT APPLIED HERE */}
+              <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+                Perspectives.
+              </span>
             </h2>
           </motion.div>
 
-          <motion.a
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            viewport={{ once: true, margin: "-50px" }}
-            href="#"
-            className="group flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-800 transition-all hover:border-black hover:bg-black hover:text-white"
-          >
-            Explore More Thoughts
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="transition-transform group-hover:-translate-y-[2px] group-hover:translate-x-[2px]"
-            >
-              <path d="M7 7h10v10" />
-              <path d="M7 17 17 7" />
-            </svg>
-          </motion.a>
+          <DynamicButton
+            href="/blog"
+            text="Explore all articles"
+            className="border border-black/20 rounded-2xl py-5 text-sm"
+          />
         </div>
 
-        {/* 3-COLUMN GRID */}
+        {/* 2-COLUMN GRID */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 gap-6 md:grid-cols-3"
+          className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:gap-16"
         >
           {blogPosts.map((post) => (
             <motion.article
@@ -113,17 +96,16 @@ export default function BlogSection() {
               className="group flex cursor-pointer flex-col"
             >
               {/* IMAGE CONTAINER */}
-              {/* The aspect-[4/5] gives it that tall, editorial look from the screenshot */}
-              <div className="relative mb-5 w-full overflow-hidden rounded-[2rem] aspect-[4/4.5] md:aspect-[4/4.5] bg-zinc-200">
-                {/* Optional Tag (e.g., "Resources") */}
+              <div className="relative mb-6 w-full overflow-hidden rounded-[2rem] aspect-[4/3] lg:aspect-[16/10] bg-zinc-200 border border-black/5">
+                {/* Floating Tag */}
                 {post.tag && (
-                  <div className="absolute left-5 top-5 z-20 rounded-full bg-white/20 px-4 py-1.5 text-xs font-semibold text-white backdrop-blur-md border border-white/20">
+                  <div className="absolute left-6 top-6 z-20 rounded-full bg-white/90 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-900 shadow-sm backdrop-blur-md">
                     {post.tag}
                   </div>
                 )}
 
-                {/* Hover overlay to darken slightly on interaction */}
-                <div className="absolute inset-0 z-10 bg-black/0 transition-colors duration-500 group-hover:bg-black/10" />
+                {/* Subtle Hover overlay */}
+                <div className="absolute inset-0 z-10 bg-black/0 transition-colors duration-500 group-hover:bg-black/5" />
 
                 <Image
                   src={post.image}
@@ -134,17 +116,16 @@ export default function BlogSection() {
               </div>
 
               {/* CARD CONTENT */}
-              <div className="flex flex-col px-1">
+              <div className="flex flex-col px-2">
                 {/* Meta details: Author & Read Time */}
-                <div className="mb-3 flex items-center gap-4 text-[13px] font-semibold text-zinc-500">
+                <div className="mb-4 flex items-center gap-4 text-sm font-medium text-zinc-500">
                   {/* Author */}
-                  <div className="flex items-center gap-2">
-                    <div className="h-5 w-5 overflow-hidden rounded-full bg-zinc-300">
-                      {/* Using a generic SVG placeholder for the avatar */}
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-zinc-200 text-zinc-400">
                       <svg
                         viewBox="0 0 24 24"
                         fill="currentColor"
-                        className="text-zinc-500"
+                        className="h-4 w-4"
                       >
                         <path
                           fillRule="evenodd"
@@ -156,27 +137,17 @@ export default function BlogSection() {
                     <span>{post.author}</span>
                   </div>
 
+                  {/* Bullet Separator */}
+                  <div className="h-1 w-1 rounded-full bg-zinc-300" />
+
                   {/* Read Time */}
                   <div className="flex items-center gap-1.5">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                    <span>{post.readTime}</span>
+                    <span>{post.readTime} read</span>
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-[1.35rem] font-medium leading-[1.15] tracking-tight text-zinc-900 transition-colors group-hover:text-[#3445E7]">
+                <h3 className="text-2xl font-medium leading-[1.3] tracking-tight text-zinc-900 transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] group-hover:bg-clip-text group-hover:text-transparent lg:text-[1.75rem]">
                   {post.title}
                 </h3>
               </div>

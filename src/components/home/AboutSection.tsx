@@ -4,54 +4,40 @@ import DynamicButton from "../ui/DynamicButton";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
-/* =========================================
-   EASING
-========================================= */
-const smoothEase = [0.16, 1, 0.3, 1] as const;
-const exitEase = [0.7, 0, 0.84, 0] as const;
+const premiumEase = [0.22, 1, 0.36, 1] as const;
+const exitEase = [0.32, 0, 0.67, 0] as const;
 
-/* =========================================
-   ROTATING WORD COMPONENT
-========================================= */
-function RotatingWord({ words }: { words: string[] }) {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % words.length);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [words.length]);
+function RotatingWord({
+  words,
+  activeIndex,
+}: {
+  words: string[];
+  activeIndex: number;
+}) {
+  const index = activeIndex % words.length;
 
   return (
-    <span className="relative inline-flex overflow-hidden align-bottom">
-      <AnimatePresence mode="wait">
+    <span className="relative flex items-center justify-center overflow-hidden px-2 -mx-2 py-2 -my-2">
+      <AnimatePresence mode="popLayout">
         <motion.span
           key={index}
           initial={{
+            // Start completely below the visible area
             y: "100%",
-            opacity: 0,
-            rotateX: -90,
-            filter: "blur(8px)",
+            // Removed opacity: 0 and filter: blur
           }}
           animate={{
             y: "0%",
-            opacity: 1,
-            rotateX: 0,
-            filter: "blur(0px)",
           }}
           exit={{
+            // Slide completely above the visible area
             y: "-100%",
-            opacity: 0,
-            rotateX: 90,
-            filter: "blur(8px)",
           }}
           transition={{
-            duration: 0.7,
-            ease: smoothEase,
+            duration: 0.5,
+            ease: premiumEase,
           }}
-          className="inline-block bg-gradient-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] bg-clip-text text-transparent"
+          className="block bg-linear-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] bg-clip-text px-2 py-2 text-transparent"
         >
           {words[index]}
         </motion.span>
@@ -60,129 +46,87 @@ function RotatingWord({ words }: { words: string[] }) {
   );
 }
 
-/* =========================================
-   SECTION VARIANTS
-========================================= */
 const sectionVariants: Variants = {
-  hidden: {
-    opacity: 0,
-    y: 100,
-    filter: "blur(12px)",
-  },
+  hidden: { opacity: 0, y: 60, filter: "blur(8px)" },
   visible: {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 1,
-      ease: smoothEase,
+      duration: 1.2,
+      ease: premiumEase,
       staggerChildren: 0.15,
     },
   },
   exit: {
     opacity: 0,
-    y: -80,
-    filter: "blur(10px)",
-    transition: {
-      duration: 0.7,
-      ease: exitEase,
-    },
+    y: -40,
+    filter: "blur(4px)",
+    transition: { duration: 0.8, ease: exitEase },
   },
 };
 
-/* =========================================
-   WORD CONTAINER
-========================================= */
 const wordContainer: Variants = {
   hidden: {},
   visible: {
-    transition: {
-      staggerChildren: 0.06,
-      delayChildren: 0.2,
-    },
+    transition: { staggerChildren: 0.08, delayChildren: 0.2 },
   },
 };
 
-/* =========================================
-   WORD ANIMATION
-========================================= */
 const wordAnimation: Variants = {
-  hidden: {
-    opacity: 0,
-    y: 80,
-    rotateX: -90,
-    filter: "blur(10px)",
-  },
+  hidden: { opacity: 0, y: 40, filter: "blur(8px)" },
   visible: {
     opacity: 1,
     y: 0,
-    rotateX: 0,
     filter: "blur(0px)",
-    transition: {
-      duration: 0.8,
-      ease: smoothEase,
-    },
+    transition: { duration: 1, ease: premiumEase },
   },
 };
 
-/* =========================================
-   TEXT REVEAL
-========================================= */
 const textReveal: Variants = {
-  hidden: {
-    opacity: 0,
-    y: 40,
-    filter: "blur(8px)",
-  },
+  hidden: { opacity: 0, y: 30, filter: "blur(4px)" },
   visible: {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
-    transition: {
-      duration: 0.8,
-      ease: smoothEase,
-    },
+    transition: { duration: 1, ease: premiumEase },
   },
 };
 
 const initialCards = [
   {
     id: 1,
-    url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop",
+    url: "https://images.unsplash.com/photo-1773332611612-ffdaa753afb1?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwcm9maWxlLXBhZ2V8Mjd8fHxlbnwwfHx8fHw%3D",
   },
   {
     id: 2,
-    url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop",
+    url: "/assets/a.jpg",
   },
   {
     id: 3,
-    url: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop",
+    url: "https://images.unsplash.com/photo-1773332598289-ed0444ad1d6f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwcm9maWxlLXBhZ2V8NHx8fGVufDB8fHx8fA%3D%3D",
   },
 ];
 
 export default function AboutSection() {
-  const [cards, setCards] = useState(initialCards);
+  const [frontIndex, setFrontIndex] = useState(0);
 
-  /* =========================================
-     CARD LOOP
-  ========================================= */
   useEffect(() => {
     const interval = setInterval(() => {
-      setCards((prevCards) => {
-        const newCards = [...prevCards];
-
-        const first = newCards.shift();
-
-        if (first) {
-          newCards.push(first);
-        }
-
-        return newCards;
-      });
-    }, 3000);
+      setFrontIndex((prev) => prev + 1);
+    }, 4500);
 
     return () => clearInterval(interval);
   }, []);
+
+  const visibleCards = [0, 1, 2].map((offset) => {
+    const card = initialCards[(frontIndex + offset) % initialCards.length];
+    return {
+      ...card,
+      offset,
+      uniqueId: frontIndex + offset,
+    };
+  });
 
   return (
     <motion.section
@@ -194,7 +138,6 @@ export default function AboutSection() {
       viewport={{ once: false, amount: 0.2 }}
       className="relative overflow-hidden bg-white px-6 py-24 text-zinc-900 before:absolute before:inset-0 before:bg-[linear-gradient(to_bottom,transparent,rgba(0,0,0,0.02))] md:px-12 lg:px-10"
     >
-      {/* NOISE */}
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-multiply" />
 
       <div className="relative z-10 mx-auto">
@@ -203,42 +146,24 @@ export default function AboutSection() {
           <div className="relative">
             <motion.p
               variants={textReveal}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: false }}
               className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500"
             >
               About The Studio
             </motion.p>
 
-            {/* WORD BY WORD TITLE */}
             <motion.h1
               variants={wordContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: false, amount: 0.2 }}
-              className="max-w-5xl text-5xl font-semibold leading-[1.1] tracking-[-0.04em] md:text-7xl lg:text-[4rem] flex flex-wrap gap-x-4"
+              className="flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 text-5xl font-semibold leading-none tracking-[-0.04em] md:text-7xl lg:text-[4rem]"
             >
-              {"Building".split(" ").map((word, index) => (
-                <motion.span
-                  key={index}
-                  variants={wordAnimation}
-                  className="inline-block"
-                >
-                  {word}
-                </motion.span>
-              ))}
+              <motion.span variants={wordAnimation} className="block">
+                Building
+              </motion.span>
 
-              <motion.span variants={wordAnimation} className="inline-block">
-                <RotatingWord
-                  words={[
-                    "cinematic",
-                    "immersive",
-                    "innovative",
-                    "dynamic",
-                    "disruptive",
-                  ]}
-                />
+              <motion.span
+                variants={wordAnimation}
+                className="block bg-linear-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] bg-clip-text py-1 text-transparent"
+              >
+                cinematic
               </motion.span>
 
               {"digital products for the next generation of"
@@ -247,13 +172,13 @@ export default function AboutSection() {
                   <motion.span
                     key={index}
                     variants={wordAnimation}
-                    className="inline-block"
+                    className="block"
                   >
                     {word}
                   </motion.span>
                 ))}
 
-              <motion.span variants={wordAnimation} className="inline-block">
+              <motion.span variants={wordAnimation} className="block">
                 <RotatingWord
                   words={[
                     "brands.",
@@ -262,16 +187,13 @@ export default function AboutSection() {
                     "founders.",
                     "creators.",
                   ]}
+                  activeIndex={frontIndex}
                 />
               </motion.span>
             </motion.h1>
 
-            {/* DESCRIPTION */}
             <motion.div
               variants={textReveal}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: false }}
               className="mt-10 max-w-2xl space-y-6"
             >
               <p className="text-base leading-relaxed text-zinc-600">
@@ -279,12 +201,11 @@ export default function AboutSection() {
                 scalable digital systems that feel sharp, intentional, and
                 unforgettable.
               </p>
-
               <div className="flex flex-wrap gap-4 pt-3">
                 <DynamicButton
                   text="Start Project"
                   href="#contact"
-                  className="border border-black/20 px-6 py-4 text-base"
+                  className="border border-black/20 rounded-2xl py-5 text-xl "
                 />
               </div>
             </motion.div>
@@ -292,91 +213,75 @@ export default function AboutSection() {
 
           {/* RIGHT VISUAL */}
           <motion.div
-            initial={{
-              opacity: 0,
-              scale: 0.9,
-              y: 80,
-            }}
-            whileInView={{
-              opacity: 1,
-              scale: 1,
-              y: 0,
-            }}
-            transition={{
-              duration: 1,
-              ease: smoothEase,
-            }}
+            initial={{ opacity: 0, scale: 0.95, y: 40 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1.2, ease: premiumEase }}
             viewport={{ once: false }}
             className="relative flex items-center justify-center pt-10"
           >
-            {/* OUTER RING */}
+            {/* RINGS */}
             <motion.div
-              animate={{
-                rotate: 360,
-              }}
-              transition={{
-                duration: 40,
-                repeat: Infinity,
-                ease: "linear",
-              }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
               className="absolute h-[520px] w-[520px] rounded-full border border-black/10"
             />
-
-            {/* INNER RING */}
             <motion.div
-              animate={{
-                rotate: -360,
-              }}
-              transition={{
-                duration: 30,
-                repeat: Infinity,
-                ease: "linear",
-              }}
+              animate={{ rotate: -360 }}
+              transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
               className="absolute h-[420px] w-[420px] rounded-full border border-black/[0.06]"
             />
 
-            {/* CARDS */}
+            {/* CARD STACK ANIMATION */}
             <div className="relative w-full max-w-[600px]">
-              <div className="relative h-[560px] w-full">
-                {cards.map((card, index) => (
-                  <motion.div
-                    key={card.id}
-                    layout
-                    animate={{
-                      y: index * -25,
-                      scale: 1 - index * 0.06,
-                      opacity: 1 - index * 0.2,
-                      zIndex: cards.length - index,
-                    }}
-                    transition={{
-                      duration: 0.8,
-                      ease: smoothEase,
-                    }}
-                    whileHover={{
-                      scale: 1.02,
-                      y: index * -30,
-                    }}
-                    className="absolute inset-0 overflow-hidden rounded-[28px] bg-zinc-200 shadow-2xl"
-                  >
-                    <img
-                      src={card.url}
-                      alt="Creative Studio"
-                      className="h-full w-full object-cover"
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                  </motion.div>
-                ))}
+              <div className="perspective-[1200px] relative h-[560px] w-full">
+                <AnimatePresence>
+                  {visibleCards.map((card) => (
+                    <motion.div
+                      key={card.uniqueId}
+                      layout
+                      initial={{
+                        y: -30,
+                        scale: 0.85,
+                        opacity: 0,
+                      }}
+                      animate={{
+                        y: card.offset * -25,
+                        scale: 1 - card.offset * 0.05,
+                        opacity: 1 - card.offset * 0.15,
+                        zIndex: 10 - card.offset,
+                        x: 0,
+                        rotateZ: 0,
+                      }}
+                      exit={{
+                        x: 1000,
+                        y: 400,
+                        rotateZ: 90,
+                        opacity: 1,
+                        scale: 1,
+                        zIndex: 50,
+                      }}
+                      transition={{
+                        duration: 3,
+                        ease: premiumEase,
+                      }}
+                      className="absolute inset-0 origin-bottom-right overflow-hidden rounded-[28px] bg-zinc-200 "
+                    >
+                      <img
+                        src={card.url}
+                        alt="Creative Studio"
+                        className="h-full w-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
 
               {/* GLOW */}
               <motion.div
-                animate={{
-                  opacity: [0.2, 0.5, 0.2],
-                  scale: [1, 1.08, 1],
-                }}
+                animate={{ opacity: [0.15, 0.4, 0.15], scale: [1, 1.05, 1] }}
                 transition={{
-                  duration: 4,
+                  duration: 5,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}

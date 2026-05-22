@@ -1,182 +1,156 @@
-// app/components/layout/Footer.tsx
+"use client";
 
 import Link from "next/link";
-import {
-  FaArrowUp,
-  FaFacebookF,
-  FaInstagram,
-  FaLinkedinIn,
-  FaTiktok,
-  FaXTwitter,
-  FaYoutube,
-} from "react-icons/fa6";
+import { useEffect, useState } from "react";
 
-const columnOne = ["Services", "Work", "About", "Culture", "Meet The Risers"];
-
-const columnTwo = ["Testimonials", "Blog & Resources", "Webinars", "Careers"];
-
-const columnThree = [
-  "Sheffield",
-  "Manchester",
-  "London",
-  "New York",
-  "Contact",
-];
-
-const socials = [
-  {
-    icon: <FaFacebookF />,
-    href: "#",
-  },
-  {
-    icon: <FaXTwitter />,
-    href: "#",
-  },
-  {
-    icon: <FaLinkedinIn />,
-    href: "#",
-  },
-  {
-    icon: <FaYoutube />,
-    href: "#",
-  },
-  {
-    icon: <FaTiktok />,
-    href: "#",
-  },
-  {
-    icon: <FaInstagram />,
-    href: "#",
-  },
+const links = [
+  { name: "Services", href: "#services" },
+  { name: "Work", href: "#portfolio" },
+  { name: "About", href: "#about" },
+  { name: "Culture", href: "#" },
+  { name: "Meet The Risers", href: "#" },
+  { name: "Contact", href: "#contact" },
+  { name: "Blog & Resources", href: "#" },
+  { name: "Careers", href: "#" },
 ];
 
 export default function Footer() {
+  const [mounted, setMounted] = useState(false);
+  const [time, setTime] = useState(new Date());
+
+  // Handle live ticking clock & prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+    const interval = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (timeZone: string) => {
+    if (!mounted) return "00:00:00 AM";
+    try {
+      return new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone,
+        hour12: true,
+      }).format(time);
+    } catch (e) {
+      return "00:00:00 AM";
+    }
+  };
+
   return (
-    <footer id="contact" className="w-full">
-      <div className="overflow-hidden rounded-[20px] bg-black text-white">
-        {/* Top */}
-        <div className="grid grid-cols-1 gap-14 px-6 py-8 md:px-8 lg:grid-cols-[1fr_1fr] lg:gap-20">
-          {/* Left */}
-          <div>
-            <h3 className="max-w-md text-[2rem] font-medium leading-[1] tracking-[-0.06em] text-white md:text-[3rem]">
-              Stay updated with Softexedge news
-            </h3>
+    <footer className="relative w-full bg-black text-white overflow-hidden pb-8 pt-16 md:pt-24 lg:pt-32">
+      {/* Subtle Noise Texture Overlay */}
+      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.06] mix-blend-overlay bg-[url('/noise.png')]" />
 
-            {/* Email Input */}
-            <div className="mt-8 flex h-[74px] items-center rounded-full bg-white/10 pl-7 pr-3 backdrop-blur-xl">
-              <input
-                type="email"
-                placeholder="Your Email Address"
-                className="h-full flex-1 bg-transparent text-lg text-white outline-none placeholder:text-white/45"
-              />
-
-              <button className="flex h-14 w-14 items-center justify-center rounded-full bg-[#c8f1e5] text-black transition hover:scale-105">
-                <FaArrowUp className="rotate-45 text-lg" />
-              </button>
-            </div>
-
-            {/* Socials */}
-            <div className="mt-5 flex flex-wrap items-center gap-2">
-              {socials.map((social, index) => (
-                <Link
-                  key={index}
-                  href={social.href}
-                  className="group flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm text-black transition hover:scale-105"
-                >
-                  <span className="text-[13px]">{social.icon}</span>
-
-                  <FaArrowUp className="rotate-45 text-[10px] transition-transform duration-300 group-hover:translate-x-[2px] group-hover:-translate-y-[2px]" />
-                </Link>
-              ))}
-            </div>
+      <div className="relative z-10 mx-auto w-full px-6 md:px-10 lg:px-16 flex flex-col">
+        {/* ROW 1: New Business & Email */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-4 md:gap-4 text-base font-medium pb-12 border-b border-white/15">
+          <div className="col-span-1">
+            <h3 className="text-white/90">New Business Inquiries</h3>
           </div>
-
-          {/* Right Links */}
-          <div className="grid grid-cols-2 gap-10 md:grid-cols-3">
-            {/* Column 1 */}
-            <div className="border-l border-white/15 pl-5">
-              <ul className="space-y-2">
-                {columnOne.map((item) => (
-                  <li key={item}>
-                    <Link
-                      href="#"
-                      className="text-xl font-medium tracking-[-0.04em] text-white/95 transition hover:text-white/60"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Column 2 */}
-            <div className="border-l border-white/15 pl-5">
-              <ul className="space-y-2">
-                {columnTwo.map((item) => (
-                  <li key={item}>
-                    <Link
-                      href="#"
-                      className="text-xl font-medium tracking-[-0.04em] text-white/95 transition hover:text-white/60"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Column 3 */}
-            <div className="border-l border-white/15 pl-5">
-              <ul className="space-y-2">
-                {columnThree.map((item) => (
-                  <li key={item}>
-                    <Link
-                      href="#"
-                      className="text-xl font-medium tracking-[-0.04em] text-white/95 transition hover:text-white/60"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="hidden md:block col-span-1" />
+          <div className="col-span-1">
+            <h3 className="text-white/50 md:text-white/90">Email</h3>
+          </div>
+          <div className="col-span-1">
+            <a
+              href="mailto:hello@softexedge.com"
+              className="text-white/90 transition-colors hover:text-white/50"
+            >
+              hello@softexedge.com
+            </a>
           </div>
         </div>
 
-        {/* Giant Brand Text */}
-        <div className="px-4 pt-10 md:px-6 lg:px-8">
-          <h1 className="select-none text-[5rem] font-semibold leading-none tracking-[-0.1em] text-white sm:text-[7rem] md:text-[10rem] lg:text-[14rem] xl:text-[18rem]">
-            Softexedge
+        {/* ROW 2: Navigation Links */}
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4 md:gap-4 text-base font-medium py-12 border-b border-white/15">
+          <div className="col-span-1">
+            <h3 className="text-white/90">Navigation</h3>
+          </div>
+
+          <div className="col-span-1 md:col-span-3">
+            <ul className="grid grid-cols-2 gap-y-4 gap-x-8 md:grid-cols-3">
+              {links.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    href={link.href}
+                    className="text-white/50 transition-colors hover:text-white"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* ROW 3: Giant Brand Name */}
+        <div className="w-full flex justify-center py-16 md:py-24 border-b border-white/15">
+          <h1 className="text-[16vw] leading-[0.75] tracking-[-0.07em] font-bold text-white select-none">
+            SOFTEXEDGE
           </h1>
         </div>
 
-        {/* Bottom */}
-        <div className="flex flex-col gap-4 px-6 pb-8 pt-3 text-sm text-white/75 md:flex-row md:items-center md:justify-between md:px-8">
-          <div className="flex flex-wrap items-center gap-3">
-            <span>© 2025 Softexedge Ltd. All rights reserved</span>
+        {/* ROW 4: Timezones & Footer Bottom */}
+        <div className="pt-12 flex flex-col gap-16 md:gap-24">
+          {/* Timezones Grid */}
+          <div className="grid grid-cols-2 gap-y-12 gap-x-8 md:grid-cols-4 text-xs font-semibold tracking-widest uppercase">
+            {/* Toronto */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <span className="block h-1.5 w-1.5 rounded-full bg-white" />
+                <span className="text-white">Toronto</span>
+              </div>
+              <div className="text-white/40 pl-4 tabular-nums">
+                {formatTime("America/Toronto")}
+              </div>
+            </div>
 
-            <span>•</span>
+            {/* Tokyo */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <span className="block h-1.5 w-1.5 rounded-full bg-white" />
+                <span className="text-white">Tokyo</span>
+              </div>
+              <div className="text-white/40 pl-4 tabular-nums">
+                {formatTime("Asia/Tokyo")}
+              </div>
+            </div>
 
-            <span>Company Number 11055187</span>
+            {/* London */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <span className="block h-1.5 w-1.5 rounded-full bg-white" />
+                <span className="text-white">London</span>
+              </div>
+              <div className="text-white/40 pl-4 tabular-nums">
+                {formatTime("Europe/London")}
+              </div>
+            </div>
 
-            <span>•</span>
-
-            <span>VAT Registered GB 322402945</span>
-
-            <span>•</span>
-
-            <Link href="#" className="hover:text-white">
-              Privacy Policy
-            </Link>
-
-            <span>•</span>
-
-            <Link href="#" className="hover:text-white">
-              Terms & Conditions
-            </Link>
+            {/* Paris */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <span className="block h-1.5 w-1.5 rounded-full bg-white" />
+                <span className="text-white">Paris</span>
+              </div>
+              <div className="text-white/40 pl-4 tabular-nums">
+                {formatTime("Europe/Paris")}
+              </div>
+            </div>
           </div>
 
-          <p className="text-white/70">Website Made By Softexedge</p>
+          {/* Legal & Social */}
+          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end text-sm font-medium text-white/40">
+            <Link href="#" className="transition-colors hover:text-white">
+              LinkedIn
+            </Link>
+
+            <p className="tracking-wide">© 2023 - 2026 Design By Softexedge</p>
+          </div>
         </div>
       </div>
     </footer>

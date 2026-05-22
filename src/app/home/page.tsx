@@ -14,6 +14,7 @@ import SmoothScroll from "@/components/layout/SmoothScroll";
 import LogoLoop from "@/components/ui/LogoLoop";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import BlogSection from "@/components/home/BlogSection";
+import ContactSection from "@/components/home/ContactSection";
 
 export default function HomePage() {
   const techLogos = [
@@ -65,9 +66,10 @@ export default function HomePage() {
           <StatsSection />
           <ServiceSection />
           <ExperimentalTestimonials />
+          <ContactSection />
           <BlogSection />
         </div>
-        <div className="px-3 pb-3">
+        <div className="">
           <Footer />
         </div>
       </main>

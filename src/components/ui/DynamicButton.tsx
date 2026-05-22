@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { IoMdArrowForward } from "react-icons/io";
+import { MdKeyboardArrowRight } from "react-icons/md";
 import { cn } from "@/lib/utils";
 
 interface DynamicButtonProps {
@@ -72,24 +72,32 @@ export default function DynamicButton({
         <div className="absolute left-[-120%] top-0 h-full w-[60%] rotate-12 bg-white/40 blur-xl transition-all duration-1000 group-hover:left-[140%]" />
       </div>
 
-      {/* TYPEWRITER TEXT */}
-      {/* TEXT ANIMATION */}
+      {/* TYPEWRITER TEXT ANIMATION */}
       <span
         className={cn(
-          "relative z-10 overflow-hidden font-medium",
+          "relative z-10 flex overflow-hidden font-semibold",
           textClassName,
         )}
       >
-        <span className="relative block">
-          {/* Default Text */}
-          <span className="block transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-full group-hover:opacity-0">
-            {text}
-          </span>
+        {/* Default Text (disappears quickly on hover) */}
+        <span className="opacity-100 transition-opacity group-hover:opacity-0">
+          {text}
+        </span>
 
-          {/* Hover Text */}
-          <span className="absolute left-0 top-full block text-white opacity-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:top-0 group-hover:opacity-100">
-            {text}
-          </span>
+        {/* Hover Text (appears letter by letter) */}
+        <span
+          className="absolute left-0 top-0 flex text-white"
+          aria-hidden="true"
+        >
+          {text.split("").map((char, index) => (
+            <span
+              key={index}
+              className="opacity-0 transition-opacity group-hover:opacity-100"
+              style={{ transitionDelay: `${index * 0.03}s` }}
+            >
+              {char === " " ? "\u00A0" : char}
+            </span>
+          ))}
         </span>
       </span>
 
@@ -97,11 +105,11 @@ export default function DynamicButton({
       {showIcon && (
         <span
           className={cn(
-            "relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black text-white transition-all duration-500 group-hover:-rotate-45 group-hover:translate-x-1 group-hover:bg-white group-hover:text-black",
+            "relative z-10 flex items-center justify-center text-black group-hover:text-white transition-colors",
             iconClassName,
           )}
         >
-          <IoMdArrowForward />
+          <MdKeyboardArrowRight size={24} />
         </span>
       )}
     </Component>
