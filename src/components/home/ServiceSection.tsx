@@ -213,7 +213,7 @@ export default function ServiceSection() {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: false, margin: "-100px" }}
-                className="absolute bottom-8 left-8 z-20 flex flex-wrap items-start gap-[0.2em] text-5xl font-bold tracking-tight text-white drop-shadow-2xl md:bottom-12 md:left-16 md:text-8xl lg:text-7xl"
+                className="absolute bottom-8 left-8 z-20 flex flex-wrap items-start gap-[0.2em] text-5xl font-bold tracking-tight text-white drop-shadow-2xl md:bottom-12 md:left-16 md:text-8xl lg:text-8xl"
               >
                 {block.bannerTitle.split(" ").map((word, i) => (
                   <div key={i} className="overflow-hidden pb-4">

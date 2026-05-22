@@ -2,6 +2,7 @@
 
 import { ArrowRight, Mail, MapPin } from "lucide-react";
 import Grainient from "@/components/ui/Grainient";
+import { MdKeyboardArrowRight } from "react-icons/md";
 
 export default function ContactSection() {
   return (
@@ -35,7 +36,9 @@ export default function ContactSection() {
               {/* Heading */}
               <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[4rem] lg:leading-[1.05]">
                 Let's build <br />
-                <span className="text-[#3445E7]">the future.</span>
+                <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-transparent bg-clip-text">
+                  the future.
+                </span>
               </h2>
 
               <p className="mt-6 max-w-md text-lg leading-relaxed text-zinc-600">
@@ -81,7 +84,7 @@ export default function ContactSection() {
 
           {/* RIGHT COLUMN: The Form Card */}
           <div className="w-full lg:w-3/5">
-            <form className="flex w-full flex-col gap-6 rounded-[2rem] border border-zinc-200 bg-white/90 p-8 shadow-xl shadow-black/5 backdrop-blur-sm md:p-12">
+            <form className="flex w-full flex-col gap-6 rounded-[2rem] border border-zinc-200 bg-white/90 p-8 md:p-12">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* Name Input */}
                 <div className="flex flex-col gap-2">
@@ -161,10 +164,10 @@ export default function ContactSection() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="group mt-4 inline-flex w-full items-center justify-center gap-4 rounded-xl bg-black px-8 py-5 text-base font-semibold text-white transition-all hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 active:scale-[0.98] sm:w-auto"
+                className="group mt-4 inline-flex w-full items-center justify-center gap-4 rounded-xl bg-black px-8 py-5 text-base font-semibold text-white transition-all hover:bg-linear-to-r from-[#2E5BFF] to-[#149CCB] cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.98] sm:w-auto"
               >
                 <span>Send Message</span>
-                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <MdKeyboardArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </button>
             </form>
           </div>
