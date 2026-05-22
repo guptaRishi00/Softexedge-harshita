@@ -158,19 +158,6 @@ export default function PortfolioSection() {
             });
           }
         });
-
-      /* =========================================
-         FLOATING TECH PILLS
-      ========================================= */
-      gsap.utils.toArray<HTMLElement>(".tech-pill").forEach((pill, i) => {
-        gsap.to(pill, {
-          y: i % 2 === 0 ? -8 : 8,
-          duration: 2.5 + i * 0.15,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-        });
-      });
     },
     { scope: containerRef },
   );
@@ -258,7 +245,7 @@ export default function PortfolioSection() {
                 </p>
 
                 {/* TECH STACK */}
-                <div className="reveal-item flex max-w-md flex-wrap gap-3">
+                <div className="reveal-item flex max-w-2xl flex-wrap gap-3">
                   {project.tech.map((tech) => (
                     <span
                       key={tech}
