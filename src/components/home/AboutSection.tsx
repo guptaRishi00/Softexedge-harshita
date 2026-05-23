@@ -153,7 +153,7 @@ export default function AboutSection() {
 
             <motion.h1
               variants={wordContainer}
-              className="flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 text-5xl font-semibold leading-none tracking-[-0.04em] md:text-7xl lg:text-[4rem]"
+              className="flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 text-5xl font-semibold leading-[0.9em] tracking-[-0.04em] md:text-7xl lg:text-[4rem]"
             >
               <motion.span variants={wordAnimation} className="block">
                 Building
@@ -205,7 +205,7 @@ export default function AboutSection() {
                 <DynamicButton
                   text="Start Project"
                   href="#contact"
-                  className="border border-black/20 rounded-2xl py-5 text-xl "
+                  className="border border-black/20 rounded-2xl py-5 text-xl hover:border-transparent"
                 />
               </div>
             </motion.div>

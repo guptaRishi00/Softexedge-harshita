@@ -91,7 +91,7 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-black py-20 text-white md:py-28"
+      className="relative w-full overflow-hidden bg-black py-20 text-white md:py-10"
     >
       {/* DOT GRID */}
       <div
@@ -107,11 +107,11 @@ export default function StatsSection() {
       />
 
       {/* BACKGROUND GLOWS */}
-      <div className="pointer-events-none absolute inset-0 z-0">
+      {/* <div className="pointer-events-none absolute inset-0 z-0">
         <div className="absolute left-1/4 top-0 h-[400px] w-[400px] rounded-full bg-[#4A8CFF]/10 blur-3xl" />
 
         <div className="absolute bottom-0 right-1/4 h-[400px] w-[400px] rounded-full bg-[#7B61FF]/10 blur-3xl" />
-      </div>
+      </div> */}
 
       {/* CONTENT */}
       <div className="relative z-10 flex w-full flex-col">
@@ -122,7 +122,7 @@ export default function StatsSection() {
           >
             {/* STATIC FULL WIDTH BORDER */}
             {index !== stats.length - 1 && (
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-white/5" />
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-white/14" />
             )}
 
             {/* MOVING CONTENT */}
@@ -140,14 +140,13 @@ export default function StatsSection() {
                 "md:flex-row",
                 "md:items-center",
                 "md:px-10",
-                "md:py-16",
+                "md:py-14",
               )}
             >
               {/* NUMBER */}
               <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-16">
                 <h2
                   className={cn(
-                    "animated-gradient-text",
                     "relative",
                     "flex",
                     "items-start",
@@ -164,16 +163,16 @@ export default function StatsSection() {
                     "tracking-[-0.04em]",
                     "text-transparent",
                     "pb-2",
-                    "md:text-[14rem]",
+                    "md:text-[9rem]",
                   )}
                 >
-                  {stat.number} +
+                  {stat.number}+
                 </h2>
               </div>
 
               {/* TEXT */}
               <div className="mt-4 w-full pl-2 md:mt-0 md:w-[45%] md:pl-10">
-                <p className="whitespace-pre-line text-3xl font-medium leading-[1.05] tracking-tight text-white/90 md:text-[4rem]">
+                <p className="whitespace-pre-line text-3xl font-bold leading-[1.05] tracking-tight text-white/90 md:text-[4rem]">
                   {stat.text}
                 </p>
               </div>

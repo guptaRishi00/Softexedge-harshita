@@ -16,7 +16,7 @@ const projects = [
     title: "Website Development",
     subtitle: "Journal on design culture",
     description:
-      "Observations on exploring the intersections of music, architecture, and design — the things that shape how we build and feel.",
+      "Observations on exploring the intersections of music, architecture, and design — the things that shape how we build and feel. Observations on exploring the intersections of music, architecture, and design — the things that shape how we build and feel.",
     tech: ["TYPESCRIPT", "TAILWIND"],
     year: "2025",
     image: "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
@@ -28,7 +28,7 @@ const projects = [
     title: "App development",
     subtitle: "Dental ERP system",
     description:
-      "Modular practice management suite: digital odontogram, patient records, scheduling, billing, and staff time tracking — all in one unified interface.",
+      "Modular practice management suite: digital odontogram, patient records, scheduling, billing, and staff time tracking — all in one unified interface. Modular practice management suite: digital odontogram, patient records, scheduling, billing, and staff time tracking — all in one unified interface.",
     tech: ["REACT", "NEXT.JS", "MONGODB", "NODE.JS", "TYPESCRIPT"],
     year: "2024",
     image: "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
@@ -40,7 +40,7 @@ const projects = [
     title: "Creative and branding",
     subtitle: "Daily photo missions",
     description:
-      "An app where users complete daily missions by sharing photos or videos. Document the ordinary. Make it extraordinary.",
+      "An app where users complete daily missions by sharing photos or videos. Document the ordinary. Make it extraordinary. An app where users complete daily missions by sharing photos or videos. Document the ordinary. Make it extraordinary. by sharing photos or videos. Document the ordinary. Make it extraordinary.",
     tech: ["REACT NATIVE", "NODE.JS", "AWS S3", "POSTGRESQL"],
     year: "2024",
     image: "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
@@ -52,7 +52,7 @@ const projects = [
     title: "Videography",
     subtitle: "This portfolio",
     description:
-      "The site you're looking at right now. Built to feel cinematic. Built to move. Built to breathe.",
+      "The site you're looking at right now. Built to feel cinematic. Built to move. Built to breathe. The site you're looking at right now. Built to feel cinematic. Built to move. Built to breathe. The site you're looking at right now. Built to feel cinematic. Built to move. Built to breathe.",
     tech: ["NEXT.JS", "TYPESCRIPT", "GSAP", "LENIS", "TAILWIND"],
     year: "2024",
     video: "/assets/video3.mp4",
@@ -64,7 +64,7 @@ const projects = [
     title: "Digital Marketing",
     subtitle: "This portfolio",
     description:
-      "The site you're looking at right now. Built to feel like something. Built to mean something.",
+      "The site you're looking at right now. Built to feel like something. Built to mean something. The site you're looking at right now. Built to feel like something. Built to mean something. The site you're looking at right now. Built to feel like something. Built to mean something.",
     tech: ["NEXT.JS", "TYPESCRIPT", "GSAP", "LENIS", "TAILWIND"],
     year: "2024",
     image: "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
@@ -135,16 +135,6 @@ export default function PortfolioSection() {
       id="portfolio"
       className="relative h-screen w-full overflow-hidden bg-[#0a0a0a] text-white"
     >
-      {/* SIDE NAVIGATION */}
-      <div className="fixed right-6 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-4 md:flex">
-        {projects.map((_, i) => (
-          <div
-            key={i}
-            className={`h-2 w-2 rounded-full transition-all duration-500 ${i === activeIndex ? "scale-125 bg-white" : "bg-white/20 hover:bg-white/40"}`}
-          />
-        ))}
-      </div>
-
       {/* TRACK */}
       <div
         ref={trackRef}
@@ -181,19 +171,18 @@ export default function PortfolioSection() {
             {/* CONTENT */}
             <div className="relative z-10 flex w-full items-end justify-between">
               {/* Left Content */}
-              <div className="flex w-3/4 lg:w-[80%] flex-col gap-8">
-                <span className="reveal-item text-[11px] font-semibold tracking-[0.3em] text-white/50">
-                  {project.category}
-                </span>
+              <div className="flex w-3/4 lg:w-[80%] flex-col gap-10">
                 <h2 className="reveal-item text-5xl md:text-7xl lg:text-[7rem] font-bold leading-[0.9] tracking-[-0.05em]">
                   {project.title}
                 </h2>
-                <p className="reveal-item text-lg md:text-2xl text-white/60">
-                  {project.subtitle}
-                </p>
-                <p className="reveal-item text-sm md:text-lg text-white/50 leading-[1.8] max-w-[85%]">
-                  {project.description}
-                </p>
+                <div className="flex flex-col items-baseline gap-3">
+                  <p className="reveal-item text-lg md:text-2xl text-white uppercase font-black tracking-wide">
+                    {project.subtitle}
+                  </p>
+                  <p className="reveal-item text-sm md:text-lg text-white/80 leading-[1.8] max-w-[85%]">
+                    {project.description}
+                  </p>
+                </div>
               </div>
 
               {/* Right CTA */}
@@ -201,6 +190,7 @@ export default function PortfolioSection() {
                 <DynamicButton
                   text="View Project"
                   className="bg-white text-black"
+                  href="/"
                 />
               </div>
             </div>

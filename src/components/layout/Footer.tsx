@@ -3,23 +3,37 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { FaFacebookF } from "react-icons/fa";
+import { LuArrowUpRight } from "react-icons/lu";
 
-const col1Links = [
-  { name: "Brand Strategy", href: "/services" },
-  { name: "Web Development", href: "/services" },
-  { name: "Brand Identity", href: "/services" },
-  { name: "eCommerce", href: "/services" },
-  { name: "User Experience", href: "/services" },
-  { name: "Web and Mobile Application", href: "/services" },
-  { name: "Visual Content", href: "/services" },
-  { name: "UI Design", href: "/services" },
+import { RiInstagramLine } from "react-icons/ri";
+
+const footerLinksCol1 = [
+  { name: "Services", href: "/services" },
+  { name: "Work", href: "#portfolio" },
+  { name: "About", href: "#about" },
+  { name: "Culture", href: "#" },
+  { name: "Meet The Team", href: "#" },
 ];
 
-const col2Links = [
-  { name: "About Us", href: "#about" },
-  { name: "Case Studies", href: "#portfolio" },
-  { name: "Book Consultation", href: "#contact" },
+const footerLinksCol2 = [
+  { name: "Testimonials", href: "#" },
+  { name: "Blog & Resources", href: "#" },
+  { name: "Webinars", href: "#" },
+  { name: "Careers", href: "#" },
+];
+
+const footerLinksCol3 = [
+  { name: "Manchester", href: "#" },
+  { name: "London", href: "#" },
+  { name: "New York", href: "#" },
+  { name: "Contact", href: "#contact" },
+];
+
+const socialLinks = [
+  { icon: <FaFacebookF size={14} />, href: "#" },
+
+  { icon: <RiInstagramLine size={14} />, href: "#" },
 ];
 
 export default function Footer() {
@@ -49,91 +63,105 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative w-full bg-black text-white overflow-hidden pb-8 pt-16 md:pt-24 lg:pt-32">
+    <footer className="relative w-full bg-[#0e0e0e] text-white overflow-hidden pb-8 pt-16 md:pt-24 lg:pt-32">
       {/* Subtle Noise Texture Overlay */}
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.06] mix-blend-overlay bg-[url('/noise.png')]" />
+      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.04] mix-blend-overlay bg-[url('/noise.png')]" />
 
       <div className="relative z-10 mx-auto w-full px-6 md:px-10 lg:px-16 flex flex-col">
-        {/* ROW 1: New Business & Email Input */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-4 md:gap-4 text-base font-medium pb-12 border-b border-white/15">
-          <div className="col-span-1 md:col-span-2 pr-8">
-            <h3 className="text-white/90 mb-4">Stay Connected</h3>
-            <form className="relative flex w-full max-w-md items-center rounded-xl border border-white/20 bg-white/5 p-1 transition-all duration-300 focus-within:border-white/50 focus-within:bg-white/10">
+        {/* TOP SECTION: Redesigned based on the image */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 border-b border-white/10 pb-16 md:pb-20">
+          {/* Column 1: Newsletter & Socials */}
+          <div className="lg:col-span-5 flex flex-col items-start lg:pr-12">
+            <h3 className="text-[2rem] leading-tight font-semibold tracking-[-0.04em] text-white mb-6">
+              Stay updated with Softexedge news
+            </h3>
+
+            {/* Email Input */}
+            <form className="relative flex w-full max-w-[420px] items-center rounded-xl bg-[#222222] p-1.5 transition-all duration-300 focus-within:ring-1 focus-within:ring-white/20">
               <input
                 type="email"
-                placeholder="Enter your email address"
-                className="w-full bg-transparent px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none"
+                placeholder="Your Email Address"
+                className="w-full bg-transparent px-5 py-3.5 text-base font-medium text-white placeholder:text-white/40 focus:outline-none"
                 required
               />
               <button
                 type="submit"
                 aria-label="Subscribe"
-                className="group relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white text-black transition-all hover:scale-105"
+                className="group flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white text-black transition-transform hover:scale-105"
               >
-                {/* Gradient Hover Effect */}
-                <div className="absolute inset-0 opacity-0 transition-opacity duration-300 bg-gradient-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] group-hover:opacity-100" />
-                <ArrowRight className="relative z-10 h-5 w-5 transition-colors group-hover:text-white" />
+                <LuArrowUpRight className="h-6 w-6 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </button>
             </form>
+
+            {/* Social Pills */}
+            <div className="mt-8 flex flex-wrap gap-2.5">
+              {socialLinks.map((social, i) => (
+                <a
+                  key={i}
+                  href={social.href}
+                  className="group flex items-center justify-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-black transition-colors hover:bg-gray-200"
+                >
+                  {social.icon}
+                  <LuArrowUpRight
+                    size={12}
+                    className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  />
+                </a>
+              ))}
+            </div>
           </div>
-          <div className="col-span-1">
-            <h3 className="text-white/50 md:text-white/90">Email</h3>
-          </div>
-          <div className="col-span-1">
-            <a
-              href="mailto:hello@softexedge.com"
-              className="text-white/90 transition-colors hover:text-white/50"
-            >
-              hello@softexedge.com
-            </a>
+
+          {/* Columns 2-4: Links Grid */}
+          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-10 lg:gap-0">
+            {/* Link Column 1 */}
+            <div className="flex flex-col gap-4 lg:border-l lg:border-white/10 lg:pl-10">
+              {footerLinksCol1.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+
+            {/* Link Column 2 */}
+            <div className="flex flex-col gap-4 lg:border-l lg:border-white/10 lg:pl-10">
+              {footerLinksCol2.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+
+            {/* Link Column 3 */}
+            <div className="flex flex-col gap-4 lg:border-l lg:border-white/10 lg:pl-10">
+              {footerLinksCol3.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* ROW 2: Navigation Links */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4 md:gap-4 text-base font-medium py-12 border-b border-white/15">
-          <div className="col-span-1">
-            <h3 className="text-white/90">Navigation</h3>
-          </div>
-
-          <div className="col-span-1 md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Column 1 Links */}
-            <ul className="flex flex-col gap-4">
-              {col1Links.map((link, index) => (
-                <li key={index}>
-                  <Link
-                    href={link.href}
-                    className="text-white/50 transition-colors hover:text-white"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            {/* Column 2 Links */}
-            <ul className="flex flex-col gap-4">
-              {col2Links.map((link, index) => (
-                <li key={index}>
-                  <Link
-                    href={link.href}
-                    className="text-white/50 transition-colors hover:text-white"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* ROW 3: Giant Brand Name */}
-        <div className="w-full flex justify-center py-16 md:py-24 border-b border-white/15">
-          <h1 className="text-[14vw] leading-[0.8] tracking-[-0.02em] font-bold bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent select-none">
+        {/* MIDDLE SECTION: Giant Brand Name */}
+        <div className="w-full flex justify-center py-16 md:py-24 border-b border-white/10">
+          <h1 className="text-[14vw] leading-[0.8] tracking-[-0.02em] font-bold text-white select-none">
             SOFTEXEDGE
           </h1>
         </div>
 
-        {/* ROW 4: Timezones & Footer Bottom */}
+        {/* BOTTOM SECTION: Timezones & Legal */}
         <div className="pt-12 flex flex-col gap-16 md:gap-24">
           {/* Timezones Grid */}
           <div className="grid grid-cols-2 gap-y-12 gap-x-8 md:grid-cols-4 text-xs font-semibold tracking-widest uppercase">
@@ -191,21 +219,11 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="transition-colors hover:text-white"
               >
-                LinkedIn
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-white"
-              >
-                Instagram
+                © {new Date().getFullYear()} Softexedge Ltd. All rights reserved
               </a>
             </div>
 
-            <p className="tracking-wide">
-              © {new Date().getFullYear()} Copyright. Made by Softexedge
-            </p>
+            <p className="tracking-wide">Made by Softexedge</p>
           </div>
         </div>
       </div>

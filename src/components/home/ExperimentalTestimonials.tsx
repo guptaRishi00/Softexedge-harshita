@@ -40,7 +40,7 @@ const duplicatedTestimonials = [...testimonials, ...testimonials];
 
 export default function ExperimentalTestimonials() {
   return (
-    <section className="relative overflow-hidden bg-black py-20 text-white md:py-32">
+    <section className="relative overflow-hidden bg-white py-20 text-zinc-900 md:py-32">
       {/* CSS Keyframes for the continuous vertical marquee */}
       <style>{`
         @keyframes scroll-y {
@@ -72,7 +72,7 @@ export default function ExperimentalTestimonials() {
               </span>
             </h2>
 
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-zinc-400">
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-zinc-600">
               Don't just take our word for it. Hear from the visionaries
               building our future every day.
             </p>
@@ -82,7 +82,7 @@ export default function ExperimentalTestimonials() {
               <DynamicButton
                 text="Let's Connect"
                 href="#contact"
-                className="px-8 py-4"
+                className="px-8 py-4 border border-zinc-200 hover:border-transparent"
               />
             </div>
           </div>
@@ -91,18 +91,18 @@ export default function ExperimentalTestimonials() {
         {/* RIGHT COLUMN: Vertical Marquee */}
         <div className="relative w-full lg:w-3/5 h-[500px] md:h-[650px] overflow-hidden">
           {/* Fade Masks for seamless vertical scrolling illusion */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-32 bg-gradient-to-b from-black to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-32 bg-gradient-to-t from-black to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-32 bg-gradient-to-b from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-32 bg-gradient-to-t from-white to-transparent" />
 
           {/* Scrolling Container */}
-          <div className="animate-scroll-y flex flex-col gap-6 pt-4 pb-6">
+          <div className="animate-scroll-y flex flex-col gap-6 pt-4 pb-6 px-1">
             {duplicatedTestimonials.map((item, index) => (
               <div
                 key={index}
-                className="group relative flex w-full shrink-0 flex-col justify-between rounded-[2rem] border border-white/10 bg-zinc-900/40 backdrop-blur-md p-8 shadow-sm transition-all hover:bg-zinc-900/60 hover:shadow-xl hover:shadow-black/50 md:p-10"
+                className="group relative flex w-full shrink-0 flex-col justify-between rounded-[2rem] border border-zinc-200 bg-zinc-50/50 backdrop-blur-md p-8 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:shadow-zinc-200/50 md:p-10"
               >
                 {/* Outlined Quote Icon (Top Right) */}
-                <div className="absolute right-8 top-8 text-white/5 transition-colors group-hover:text-white/10">
+                <div className="absolute right-8 top-8 text-zinc-200 transition-colors group-hover:text-zinc-300">
                   <svg
                     width="48"
                     height="48"
@@ -119,18 +119,18 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text */}
-                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-relaxed tracking-tight text-zinc-100 md:text-2xl">
+                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-relaxed tracking-tight text-zinc-800 md:text-2xl">
                   "{item.quote}"
                 </p>
 
                 {/* Bottom Profile */}
                 <div className="mt-12 flex items-center gap-4">
                   {/* Avatar Placeholder */}
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-zinc-300">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-100 border border-zinc-200 text-sm font-bold text-zinc-600">
                     {item.initials}
                   </div>
                   <div>
-                    <h4 className="text-base font-bold text-white">
+                    <h4 className="text-base font-bold text-zinc-900">
                       {item.name}
                     </h4>
                     <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-[#149CCB]">

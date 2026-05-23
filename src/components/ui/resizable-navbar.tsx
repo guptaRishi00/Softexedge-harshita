@@ -129,7 +129,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
       className={cn(
         `fixed left-1/2 top-0 z-50 hidden lg:flex -translate-x-1/2 items-center justify-between transition-colors duration-300`,
         visible
-          ? `px-6 py-3 bg-gray-200 backdrop-blur-2xl`
+          ? `px-6 py-3 bg-gray-400 backdrop-blur-2xl`
           : `px-10 py-8 bg-transparent`,
         className,
       )}
@@ -196,7 +196,7 @@ export const NavItems = ({
                 "relative px-4 py-2 transition-colors flex items-center gap-1 group",
                 // FIX: If the navbar is visible OR this specific item is open, force black text.
                 visible || hovered === idx
-                  ? "text-black"
+                  ? "text-white hover:text-black"
                   : "text-white hover:text-black",
               )}
               href={item.link}

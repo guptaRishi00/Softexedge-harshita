@@ -23,7 +23,7 @@ const CustomLogo = () => (
       alt="Grovio Logo"
       width={85}
       height={30}
-      style={{ width: "110px", height: "auto" }}
+      style={{ width: "90px", height: "auto" }}
       className="object-contain"
     />
   </Link>
