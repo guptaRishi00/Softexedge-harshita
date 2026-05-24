@@ -210,7 +210,7 @@ export default function ServiceSection() {
             <div className="relative flex w-full flex-col gap-10 px-6 lg:flex-row lg:gap-20 lg:px-16">
               <div className="relative w-full lg:w-[35%]">
                 <div className="left-pin-target z-0 flex overflow-visible px-8 lg:sticky lg:top-32 lg:justify-start">
-                  <p className="giant-number pointer-events-none select-none overflow-visible bg-[linear-gradient(90deg,#2E5BFF,#149CCB,#2E5BFF,#149CCB,#2E5BFF)] bg-[length:220%_100%] bg-clip-text pb-6 text-[10rem] font-black leading-none tracking-normal text-transparent animate-[gradientMove_6s_linear_infinite] md:text-[16rem] lg:text-[18rem]">
+                  <p className="giant-number pointer-events-none select-none overflow-visible bg-[linear-gradient(90deg,#2E5BFF,#149CCB,#2E5BFF,#149CCB,#2E5BFF)] bg-[length:220%_100%] bg-clip-text pb-6 text-[10rem] font-medium leading-none tracking-normal text-transparent animate-[gradientMove_6s_linear_infinite] md:text-[16rem] lg:text-[18rem]">
                     {block.id}
                   </p>
                 </div>

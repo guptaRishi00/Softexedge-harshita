@@ -1,6 +1,8 @@
+// src/components/home/BlogSection.tsx
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { motion, type Variants, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import DynamicButton from "../ui/DynamicButton";
@@ -52,7 +54,19 @@ const fadeUpVariant: Variants = {
   },
 };
 
+const rotatingWords = ["Perspectives.", "Insights.", "Ideas.", "Stories."];
+
 export default function BlogSection() {
+  const [index, setIndex] = useState(0);
+
+  // Cycle through the words every 2.5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % rotatingWords.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="w-full bg-[#f8f9fa] py-20 text-black md:py-32">
       <div className="mx-auto w-full px-6 md:px-10">
@@ -65,11 +79,22 @@ export default function BlogSection() {
             viewport={{ once: true, margin: "-50px" }}
             className="flex flex-col items-start"
           >
-            <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
+            <h2 className="text-4xl font-black tracking-tight text-zinc-900 md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
               Thoughts & <br />
-              {/* BRAND TEXT GRADIENT APPLIED HERE */}
-              <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
-                Perspectives.
+              {/* Rotating Gradient Text */}
+              <span className="inline-grid overflow-hidden py-1">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={index}
+                    initial={{ y: 30, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -30, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="col-start-1 row-start-1 bg-gradient-to-r leading-[1.3em] from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent pr-2"
+                  >
+                    {rotatingWords[index]}
+                  </motion.span>
+                </AnimatePresence>
               </span>
             </h2>
           </motion.div>

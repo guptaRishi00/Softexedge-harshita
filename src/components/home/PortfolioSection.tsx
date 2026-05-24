@@ -1,10 +1,11 @@
+// src/components/home/PortfolioSection.tsx
 "use client";
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef, useState } from "react";
-import DynamicButton from "../ui/DynamicButton"; // Import added
+import { ArrowUpRight } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -185,13 +186,15 @@ export default function PortfolioSection() {
                 </div>
               </div>
 
-              {/* Right CTA */}
+              {/* Right CTA (Minimal Arrow with Brand Gradient Hover) */}
               <div className="reveal-item pb-4">
-                <DynamicButton
-                  text="View Project"
-                  className="bg-white text-black"
+                <a
                   href="/"
-                />
+                  aria-label={`View ${project.title}`}
+                  className="group flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-transparent text-white transition-all duration-500 hover:border-none hover:bg-gradient-to-r hover:from-[#2E5BFF] hover:to-[#149CCB] md:h-20 md:w-20"
+                >
+                  <ArrowUpRight className="h-6 w-6 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 md:h-8 md:w-8" />
+                </a>
               </div>
             </div>
           </div>

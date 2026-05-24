@@ -1,7 +1,8 @@
 // src/components/home/ExperimentalTestimonials.tsx
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 import DynamicButton from "../ui/DynamicButton"; // Adjust this import path as needed
 
 const testimonials = [
@@ -38,7 +39,19 @@ const testimonials = [
 // Duplicate the array to create a seamless infinite loop
 const duplicatedTestimonials = [...testimonials, ...testimonials];
 
+const rotatingWords = ["Collective", "Visionaries", "Innovators", "Future"];
+
 export default function ExperimentalTestimonials() {
+  const [index, setIndex] = useState(0);
+
+  // Cycle through the words every 2.5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % rotatingWords.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-white py-20 text-zinc-900 md:py-32">
       {/* CSS Keyframes for the continuous vertical marquee */}
@@ -65,10 +78,22 @@ export default function ExperimentalTestimonials() {
           className="flex w-full flex-col lg:sticky lg:top-32 lg:h-[600px] lg:w-2/5 lg:shrink-0"
         >
           <div>
-            <h2 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-[4rem] lg:leading-[1.1]">
+            <h2 className="text-5xl font-black tracking-tight md:text-6xl lg:text-[4rem] lg:leading-[1.1]">
               Voices of the <br />
-              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-transparent bg-clip-text">
-                Collective
+              {/* Rotating Gradient Text */}
+              <span className="inline-grid overflow-hidden py-1">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={index}
+                    initial={{ y: 30, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -30, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="col-start-1 row-start-1 bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-transparent bg-clip-text"
+                  >
+                    {rotatingWords[index]}
+                  </motion.span>
+                </AnimatePresence>
               </span>
             </h2>
 
@@ -95,17 +120,17 @@ export default function ExperimentalTestimonials() {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-32 bg-gradient-to-t from-white to-transparent" />
 
           {/* Scrolling Container */}
-          <div className="animate-scroll-y flex flex-col gap-6 pt-4 pb-6 px-1">
+          <div className="animate-scroll-y flex flex-col gap-4 pt-4 pb-6 px-1">
             {duplicatedTestimonials.map((item, index) => (
               <div
                 key={index}
-                className="group relative flex w-full shrink-0 flex-col justify-between rounded-[2rem] border border-zinc-200 bg-zinc-50/50 backdrop-blur-md p-8 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:shadow-zinc-200/50 md:p-10"
+                className="group relative flex w-full shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-zinc-50/50 backdrop-blur-md p-6 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:shadow-zinc-200/50 md:p-8"
               >
                 {/* Outlined Quote Icon (Top Right) */}
-                <div className="absolute right-8 top-8 text-zinc-200 transition-colors group-hover:text-zinc-300">
+                <div className="absolute right-6 top-6 text-zinc-200 transition-colors group-hover:text-zinc-300">
                   <svg
-                    width="48"
-                    height="48"
+                    width="36"
+                    height="36"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -119,21 +144,21 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text */}
-                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-relaxed tracking-tight text-zinc-800 md:text-2xl">
+                <p className="relative z-10 mt-4 max-w-[90%] text-lg font-medium leading-relaxed tracking-tight text-zinc-800 md:text-xl">
                   "{item.quote}"
                 </p>
 
                 {/* Bottom Profile */}
-                <div className="mt-12 flex items-center gap-4">
+                <div className="mt-8 flex items-center gap-3">
                   {/* Avatar Placeholder */}
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-100 border border-zinc-200 text-sm font-bold text-zinc-600">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 border border-zinc-200 text-xs font-bold text-zinc-600">
                     {item.initials}
                   </div>
                   <div>
-                    <h4 className="text-base font-bold text-zinc-900">
+                    <h4 className="text-sm font-bold text-zinc-900">
                       {item.name}
                     </h4>
-                    <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-[#149CCB]">
+                    <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-[#149CCB]">
                       {item.role}
                     </p>
                   </div>

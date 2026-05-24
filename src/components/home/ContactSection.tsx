@@ -1,10 +1,25 @@
+// src/components/home/ContactSection.tsx
 "use client";
 
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Mail, MapPin } from "lucide-react";
 import Grainient from "@/components/ui/Grainient";
 import { MdKeyboardArrowRight } from "react-icons/md";
 
+const rotatingWords = ["the future.", "your vision.", "next gen.", "together."];
+
 export default function ContactSection() {
+  const [index, setIndex] = useState(0);
+
+  // Cycle through the words every 2.5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % rotatingWords.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section id="contact" className="relative w-full py-20 md:py-32">
       {/* Background Animated Gradient */}
@@ -36,8 +51,20 @@ export default function ContactSection() {
               {/* Heading */}
               <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[4rem] lg:leading-[1.05]">
                 Let's build <br />
-                <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-transparent bg-clip-text">
-                  the future.
+                {/* Rotating Gradient Text */}
+                <span className="inline-grid overflow-hidden py-1">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={index}
+                      initial={{ y: 30, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -30, opacity: 0 }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      className="col-start-1 row-start-1 leading-[1.3em] bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-transparent bg-clip-text pr-2"
+                    >
+                      {rotatingWords[index]}
+                    </motion.span>
+                  </AnimatePresence>
                 </span>
               </h2>
 
