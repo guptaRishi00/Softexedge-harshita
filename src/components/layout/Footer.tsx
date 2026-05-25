@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaFacebookF } from "react-icons/fa";
 import { LuArrowUpRight } from "react-icons/lu";
-
 import { RiInstagramLine } from "react-icons/ri";
 
 const footerLinksCol1 = [
@@ -23,16 +22,8 @@ const footerLinksCol2 = [
   { name: "Careers", href: "#" },
 ];
 
-const footerLinksCol3 = [
-  { name: "Manchester", href: "#" },
-  { name: "London", href: "#" },
-  { name: "New York", href: "#" },
-  { name: "Contact", href: "#contact" },
-];
-
 const socialLinks = [
   { icon: <FaFacebookF size={14} />, href: "#" },
-
   { icon: <RiInstagramLine size={14} />, href: "#" },
 ];
 
@@ -63,15 +54,58 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative w-full bg-[#0e0e0e] text-white overflow-hidden pb-8 pt-16 md:pt-24 lg:pt-32">
+    <footer className="relative w-full bg-black text-white overflow-hidden pb-8 pt-16 md:pt-24 lg:pt-32 rounded-[20px]">
       {/* Subtle Noise Texture Overlay */}
       <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.04] mix-blend-overlay bg-[url('/noise.png')]" />
 
       <div className="relative z-10 mx-auto w-full px-6 md:px-10 lg:px-16 flex flex-col">
         {/* TOP SECTION: Redesigned based on the image */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 border-b border-white/10 pb-16 md:pb-20">
-          {/* Column 1: Newsletter & Socials */}
-          <div className="lg:col-span-5 flex flex-col items-start lg:pr-12">
+          {/* LEFT: Columns 1-3: Links Grid */}
+          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-10 lg:gap-0">
+            {/* Link Column 1 (Removed left border since it's the first element now) */}
+            <div className="flex flex-col gap-4">
+              {footerLinksCol1.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+
+            {/* Link Column 2 */}
+            <div className="flex flex-col gap-4 lg:border-l lg:border-white/10 lg:pl-10">
+              {footerLinksCol2.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+
+            {/* Link Column 3 */}
+            {/* <div className="flex flex-col gap-4 lg:border-l lg:border-white/10 lg:pl-10">
+              {footerLinksCol3.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div> */}
+          </div>
+
+          {/* RIGHT: Column 4: Newsletter & Socials */}
+          {/* Added left padding and border to separate it from the links */}
+          <div className="lg:col-span-5 flex flex-col items-start lg:pl-12 ">
             <h3 className="text-[2rem] leading-tight font-semibold tracking-[-0.04em] text-white mb-6">
               Stay updated with Softexedge news
             </h3>
@@ -110,48 +144,6 @@ export default function Footer() {
               ))}
             </div>
           </div>
-
-          {/* Columns 2-4: Links Grid */}
-          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-10 lg:gap-0">
-            {/* Link Column 1 */}
-            <div className="flex flex-col gap-4 lg:border-l lg:border-white/10 lg:pl-10">
-              {footerLinksCol1.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* Link Column 2 */}
-            <div className="flex flex-col gap-4 lg:border-l lg:border-white/10 lg:pl-10">
-              {footerLinksCol2.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* Link Column 3 */}
-            <div className="flex flex-col gap-4 lg:border-l lg:border-white/10 lg:pl-10">
-              {footerLinksCol3.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* MIDDLE SECTION: Giant Brand Name */}
@@ -162,49 +154,59 @@ export default function Footer() {
         </div>
 
         {/* BOTTOM SECTION: Timezones & Legal */}
+        {/* BOTTOM SECTION: Timezones & Legal */}
         <div className="pt-12 flex flex-col gap-16 md:gap-24">
-          {/* Timezones Grid */}
-          <div className="grid grid-cols-2 gap-y-12 gap-x-8 md:grid-cols-4 text-xs font-semibold tracking-widest uppercase">
+          {/* Timezones Grid - Added justify-items-center to center the blocks */}
+          <div className="grid grid-cols-2 gap-y-12 gap-x-8 md:grid-cols-4 justify-items-center text-xs font-semibold tracking-widest uppercase">
             {/* Toronto */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
+            {/* Added items-center and removed pl-4 */}
+            <div className="flex flex-col items-start gap-3">
+              <div className="flex items-center gap-2">
                 <span className="block h-1.5 w-1.5 rounded-full bg-white" />
-                <span className="text-white">Toronto</span>
+                <span className="text-transparent font-black leading-none bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text">
+                  Toronto
+                </span>
               </div>
-              <div className="text-white/40 pl-4 tabular-nums">
+              <div className="text-white/40 tabular-nums">
                 {formatTime("America/Toronto")}
               </div>
             </div>
 
             {/* Tokyo */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col items-start gap-3">
+              <div className="flex items-center gap-2">
                 <span className="block h-1.5 w-1.5 rounded-full bg-white" />
-                <span className="text-white">Tokyo</span>
+                <span className="text-transparent font-black leading-none bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text">
+                  Tokyo
+                </span>
               </div>
-              <div className="text-white/40 pl-4 tabular-nums">
+              <div className="text-white/40 tabular-nums">
                 {formatTime("Asia/Tokyo")}
               </div>
             </div>
 
             {/* London */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col items-start gap-3">
+              <div className="flex items-center gap-2">
                 <span className="block h-1.5 w-1.5 rounded-full bg-white" />
-                <span className="text-white">London</span>
+                <span className="text-transparent font-black leading-none bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text">
+                  London
+                </span>
               </div>
-              <div className="text-white/40 pl-4 tabular-nums">
+              <div className="text-white/40 tabular-nums">
                 {formatTime("Europe/London")}
               </div>
             </div>
 
             {/* Paris */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col items-start gap-3">
+              <div className="flex items-center gap-2">
                 <span className="block h-1.5 w-1.5 rounded-full bg-white" />
-                <span className="text-white">Paris</span>
+                <span className="text-transparent font-black leading-none bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text">
+                  Paris
+                </span>
               </div>
-              <div className="text-white/40 pl-4 tabular-nums">
+              <div className="text-white/40 tabular-nums">
                 {formatTime("Europe/Paris")}
               </div>
             </div>

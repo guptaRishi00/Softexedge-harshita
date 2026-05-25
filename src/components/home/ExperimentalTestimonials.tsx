@@ -53,7 +53,7 @@ export default function ExperimentalTestimonials() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-white py-20 text-zinc-900 md:py-32">
+    <section className="relative overflow-hidden bg-white py-20 text-zinc-900 md:py-20">
       {/* CSS Keyframes for the continuous vertical marquee */}
       <style>{`
         @keyframes scroll-y {
@@ -61,14 +61,14 @@ export default function ExperimentalTestimonials() {
           100% { transform: translateY(-50%); }
         }
         .animate-scroll-y {
-          animation: scroll-y 35s linear infinite;
+          animation: scroll-y 40s linear infinite; /* Slightly slowed down to account for taller cards */
         }
         .animate-scroll-y:hover {
           animation-play-state: paused;
         }
       `}</style>
 
-      <div className="mx-auto flex w-full max-w-[90rem] flex-col gap-12 px-10 lg:flex-row lg:items-start lg:gap-20">
+      <div className="mx-auto flex w-full max-w-360 flex-col gap-12 px-10 lg:flex-row lg:items-start lg:gap-20">
         {/* LEFT COLUMN: Title and CTA */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
@@ -102,7 +102,6 @@ export default function ExperimentalTestimonials() {
               building our future every day.
             </p>
 
-            {/* Added Button at the end of the left div */}
             <div className="mt-10">
               <DynamicButton
                 text="Let's Connect"
@@ -114,23 +113,24 @@ export default function ExperimentalTestimonials() {
         </motion.div>
 
         {/* RIGHT COLUMN: Vertical Marquee */}
-        <div className="relative w-full lg:w-3/5 h-[500px] md:h-[650px] overflow-hidden">
+        <div className="relative w-full lg:w-3/5 h-[600px] md:h-[750px] overflow-hidden">
           {/* Fade Masks for seamless vertical scrolling illusion */}
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-32 bg-gradient-to-b from-white to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-32 bg-gradient-to-t from-white to-transparent" />
 
           {/* Scrolling Container */}
-          <div className="animate-scroll-y flex flex-col gap-4 pt-4 pb-6 px-1">
+          <div className="animate-scroll-y flex flex-col gap-6 pt-4 pb-6 px-1">
             {duplicatedTestimonials.map((item, index) => (
               <div
                 key={index}
-                className="group relative flex w-full shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-zinc-50/50 backdrop-blur-md p-6 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:shadow-zinc-200/50 md:p-8"
+                /* INCREASED HEIGHT: min-h-[350px] for mobile, min-h-[420px] for desktop */
+                className="group relative flex w-full min-h-[350px] md:min-h-[420px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-zinc-50/50 backdrop-blur-md p-8 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:shadow-zinc-200/50 md:p-10"
               >
-                {/* Outlined Quote Icon (Top Right) */}
-                <div className="absolute right-6 top-6 text-zinc-200 transition-colors group-hover:text-zinc-300">
+                {/* Outlined Quote Icon (Top Right) - Increased size to 48x48 */}
+                <div className="absolute right-8 top-8 text-zinc-200 transition-colors group-hover:text-zinc-300">
                   <svg
-                    width="36"
-                    height="36"
+                    width="48"
+                    height="48"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -143,22 +143,24 @@ export default function ExperimentalTestimonials() {
                   </svg>
                 </div>
 
-                {/* Quote Text */}
-                <p className="relative z-10 mt-4 max-w-[90%] text-lg font-medium leading-relaxed tracking-tight text-zinc-800 md:text-xl">
+                {/* Quote Text - Increased to text-xl (mobile) and text-2xl/3xl (desktop) */}
+                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-relaxed tracking-tight text-zinc-800 md:text-2xl lg:text-3xl">
                   "{item.quote}"
                 </p>
 
                 {/* Bottom Profile */}
-                <div className="mt-8 flex items-center gap-3">
-                  {/* Avatar Placeholder */}
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 border border-zinc-200 text-xs font-bold text-zinc-600">
+                <div className="mt-10 flex items-center gap-4">
+                  {/* Avatar Placeholder - Increased to h-12 w-12 */}
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-100 border border-zinc-200 text-sm font-bold text-zinc-600">
                     {item.initials}
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-zinc-900">
+                    {/* Name - Increased to text-base */}
+                    <h4 className="text-base font-bold text-zinc-900">
                       {item.name}
                     </h4>
-                    <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wider text-[#149CCB]">
+                    {/* Role - Increased to text-xs */}
+                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-700">
                       {item.role}
                     </p>
                   </div>

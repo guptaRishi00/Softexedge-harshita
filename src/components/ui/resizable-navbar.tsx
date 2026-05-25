@@ -112,14 +112,14 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   return (
     <motion.div
       initial={{
-        width: visible ? "95%" : "100%",
+        width: visible ? "90%" : "100%",
         y: visible ? 16 : 0,
         borderRadius: visible ? "12px" : "0px",
       }}
       animate={{
         width: visible ? "95%" : "100%", // Using width instead of scale fixes Safari/Chrome backdrop-blur bugs
         y: visible ? 16 : 0,
-        borderRadius: visible ? "12px" : "0px",
+        borderRadius: visible ? "10px" : "0px",
       }}
       transition={{
         type: "spring",
@@ -129,7 +129,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
       className={cn(
         `fixed left-1/2 top-0 z-50 hidden lg:flex -translate-x-1/2 items-center justify-between transition-colors duration-300`,
         visible
-          ? `px-6 py-3 bg-gray-400 backdrop-blur-2xl`
+          ? `px-6 py-3 bg-black/60 backdrop-blur-2xl`
           : `px-10 py-8 bg-transparent`,
         className,
       )}
@@ -268,7 +268,7 @@ export const NavItems = ({
                                 className="h-full w-full object-cover  scale-105 transition-transform duration-700 ease-out group-hover:scale-100"
                               />
                               {/* Dark gradient so white text pops on hover */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/50" />
                             </div>
                           )}
 
@@ -280,12 +280,6 @@ export const NavItems = ({
                               <span className="text-xl lg:text-2xl font-bold tracking-tight max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1 bg-gradient-to-r from-zinc-900 to-zinc-900 group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
                                 {sub.name}
                               </span>
-
-                              {sub.count && (
-                                <span className="text-[12px] font-bold text-zinc-400 transition-colors duration-400 group-hover:text-white/80">
-                                  {sub.count}
-                                </span>
-                              )}
                             </div>
 
                             {/* Hover Arrow Indicator */}

@@ -69,7 +69,7 @@ export default function HomePage() {
           <ContactSection />
           <BlogSection />
         </div>
-        <div className="">
+        <div className="p-3">
           <Footer />
         </div>
       </main>

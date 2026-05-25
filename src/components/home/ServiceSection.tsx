@@ -173,9 +173,9 @@ export default function ServiceSection() {
         {serviceBlocks.map((block, index) => (
           <div
             key={block.id}
-            className={`service-row relative flex w-full flex-col gap-16 lg:gap-32 ${index > 0 ? "mt-32" : ""}`}
+            className={`service-row relative flex w-full flex-col gap-16 lg:gap-20 ${index > 0 ? "mt-32" : ""}`}
           >
-            <div className="banner-container relative flex h-[400px] w-full items-center justify-center overflow-hidden lg:h-[600px] bg-zinc-900">
+            <div className="banner-container relative flex h-[300px] w-full items-center justify-center overflow-hidden lg:h-[500px] bg-zinc-900">
               <Image
                 src={block.image}
                 alt={block.bannerTitle}
@@ -208,9 +208,9 @@ export default function ServiceSection() {
             </div>
 
             <div className="relative flex w-full flex-col gap-10 px-6 lg:flex-row lg:gap-20 lg:px-16">
-              <div className="relative w-full lg:w-[35%]">
-                <div className="left-pin-target z-0 flex overflow-visible px-8 lg:sticky lg:top-32 lg:justify-start">
-                  <p className="giant-number pointer-events-none select-none overflow-visible bg-[linear-gradient(90deg,#2E5BFF,#149CCB,#2E5BFF,#149CCB,#2E5BFF)] bg-[length:220%_100%] bg-clip-text pb-6 text-[10rem] font-medium leading-none tracking-normal text-transparent animate-[gradientMove_6s_linear_infinite] md:text-[16rem] lg:text-[18rem]">
+              <div className="relative w-full lg:w-[30%]">
+                <div className="left-pin-target z-0 flex overflow-visible px-8 lg:sticky lg:top-0 lg:justify-start">
+                  <p className="giant-number pointer-events-none select-none overflow-visible bg-[linear-gradient(90deg,#2E5BFF,#149CCB,#2E5BFF,#149CCB,#2E5BFF)] bg-size-[220%_100%] bg-clip-text pb-[0.2em] text-[10rem] font-bold leading-[0.8] tracking-normal text-transparent animate-[gradientMove_6s_linear_infinite] md:text-[16rem] lg:text-[18rem]">
                     {block.id}
                   </p>
                 </div>
@@ -254,13 +254,13 @@ export default function ServiceSection() {
                   whileInView="visible"
                   viewport={{ once: false, margin: "-50px" }}
                   variants={staggerContainer}
-                  className="flex w-full flex-col border-t border-white/10"
+                  className="flex w-full flex-col border-t border-white/80"
                 >
                   {block.items.map((item, i) => (
                     <motion.li
                       key={i}
                       variants={fadeUpVariant}
-                      className="group relative flex cursor-pointer items-center justify-between overflow-hidden border-b border-white/10 px-6 py-6 text-white transition-colors duration-500 ease-out md:px-8 md:py-8"
+                      className="group relative flex cursor-pointer items-center justify-between overflow-hidden border-b border-white/80 px-6 py-6 text-white transition-colors duration-500 ease-out md:px-8 md:py-8"
                     >
                       {/* <div className="absolute inset-0 z-0 translate-y-full rounded-lg bg-white transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-y-0" /> */}
                       <p className="relative z-10 text-xl font-medium transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-x-4 md:text-2xl">

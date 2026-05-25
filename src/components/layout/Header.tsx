@@ -19,7 +19,7 @@ import DynamicButton from "../ui/DynamicButton";
 const CustomLogo = () => (
   <Link href="/" className="flex items-center gap-2 group">
     <Image
-      src="/assets/logoWhite.svg"
+      src="/assets/logo.png"
       alt="Grovio Logo"
       width={85}
       height={30}
@@ -142,7 +142,7 @@ export default function Header() {
           <DynamicButton
             text="Get in Touch"
             href="/contact"
-            className="relative px-4 py-3"
+            className="relative px-4 py-3 rounded-lg"
             showIcon={false}
           />
         </NavBody>

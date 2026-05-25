@@ -61,10 +61,10 @@ export default function Herosection({}: any) {
 
       <div className="absolute inset-0 z-10 backdrop-blur-xl" />
 
-      <div className="absolute z-20 p-5 w-full flex flex-col items-center justify-between gap-10 h-full">
+      <div className="absolute z-20 p-5 w-full flex flex-col items-center justify-center gap-10 h-full">
         <Header />
 
-        <div className="w-full flex items-center justify-center text-center lg:mt-14">
+        <div className="w-full flex items-center justify-center text-center">
           <div className="flex flex-col items-center justify-center gap-2">
             <h1 className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
               We Engineer
@@ -91,18 +91,6 @@ export default function Herosection({}: any) {
               crafted for impact
             </p>
           </div>
-        </div>
-
-        <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6 md:gap-20 px-4">
-          <p className="text-center md:text-start text-white/70 font-medium max-w-sm text-sm md:text-xs leading-relaxed">
-            We design and engineer high-performance web experiences, immersive
-            interfaces, and custom creative systems for industry leaders.
-          </p>
-          <p className="text-center md:text-end text-white/70 font-medium max-w-sm text-sm md:text-xs leading-relaxed">
-            From concept to cinematic deployment, we remove the friction of
-            innovation, driving digital acceleration with refined design
-            systems.
-          </p>
         </div>
       </div>
     </div>

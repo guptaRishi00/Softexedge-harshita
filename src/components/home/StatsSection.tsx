@@ -98,7 +98,7 @@ export default function StatsSection() {
         className="pointer-events-none absolute inset-0 z-0 opacity-[0.12]"
         style={{
           backgroundImage: "radial-gradient(#ffffff 1.5px, transparent 1.5px)",
-          backgroundSize: "32px 32px",
+          backgroundSize: "32px 35px",
           maskImage:
             "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
           WebkitMaskImage:
@@ -151,7 +151,7 @@ export default function StatsSection() {
                     "flex",
                     "items-start",
                     "overflow-visible",
-                    "bg-gradient-to-r",
+                    "bg-linear-to-r",
                     "from-[#2E5BFF]",
                     "via-[#149CCB]",
                     "to-[#2E5BFF]",
@@ -163,7 +163,7 @@ export default function StatsSection() {
                     "tracking-[-0.04em]",
                     "text-transparent",
                     "pb-2",
-                    "md:text-[9rem]",
+                    "md:text-[12rem]",
                   )}
                 >
                   {stat.number}+
