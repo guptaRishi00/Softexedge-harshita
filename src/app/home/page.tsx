@@ -15,6 +15,7 @@ import LogoLoop from "@/components/ui/LogoLoop";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import BlogSection from "@/components/home/BlogSection";
 import ContactSection from "@/components/home/ContactSection";
+import LaserFlow from "@/components/ui/LaserFlow";
 
 export default function HomePage() {
   const techLogos = [
@@ -69,7 +70,7 @@ export default function HomePage() {
           <ContactSection />
           <BlogSection />
         </div>
-        <div className="p-3">
+        <div className="p-3 w-full">
           <Footer />
         </div>
       </main>

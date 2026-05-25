@@ -1,19 +1,13 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Zalando_Sans } from "next/font/google"; // 1. Import from Google Fonts
 import "./globals.css";
 
-const satoshi = localFont({
-  src: [
-    {
-      path: "../../public/fonts/Satoshi-Variable.woff2",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/Satoshi-VariableItalic.woff2",
-      style: "italic",
-    },
-  ],
-  variable: "--font-satoshi",
+// 2. Configure the font
+const zalandoSans = Zalando_Sans({
+  subsets: ["latin"],
+  variable: "--font-zalando-sans",
+  // Optional: You can also specify weights if you don't want the variable font defaults
+  // weight: ['400', '700'],
 });
 
 export const metadata: Metadata = {
@@ -27,7 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${satoshi.variable} h-full antialiased`}>
+    // 3. Apply the CSS variable to your HTML tag
+    <html lang="en" className={`${zalandoSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

@@ -78,7 +78,7 @@ export default function ExperimentalTestimonials() {
           className="flex w-full flex-col lg:sticky lg:top-32 lg:h-[600px] lg:w-2/5 lg:shrink-0"
         >
           <div>
-            <h2 className="text-5xl font-black tracking-tight md:text-6xl lg:text-[4rem] lg:leading-[1.1]">
+            <h2 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-[4rem] lg:leading-[1.1]">
               Voices of the <br />
               {/* Rotating Gradient Text */}
               <span className="inline-grid overflow-hidden py-1">

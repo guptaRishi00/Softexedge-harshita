@@ -66,12 +66,12 @@ export default function Herosection({}: any) {
 
         <div className="w-full flex items-center justify-center text-center">
           <div className="flex flex-col items-center justify-center gap-2">
-            <h1 className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
+            <h1 className="text-4xl md:text-5xl lg:text-9xl font-medium text-white">
               We Engineer
             </h1>
 
             <div className="flex items-center justify-center gap-2 md:gap-5">
-              <p className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
+              <p className="text-4xl md:text-5xl lg:text-9xl font-medium text-white">
                 Digital
               </p>
 
@@ -82,7 +82,7 @@ export default function Herosection({}: any) {
                 />
               </div>
 
-              <p className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
+              <p className="text-4xl md:text-5xl lg:text-9xl font-medium text-white">
                 Solutions
               </p>
             </div>

@@ -5,9 +5,8 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef, useState } from "react";
-import { MdOutlineNavigateNext } from "react-icons/md";
+import { MdKeyboardArrowRight } from "react-icons/md";
 import Link from "next/link";
-import DynamicButton from "../ui/DynamicButton";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -173,30 +172,35 @@ export default function PortfolioSection() {
 
             {/* CONTENT */}
             <div className="relative z-10 flex w-full items-end justify-between">
-              <div className="flex w-full lg:w-[80%] flex-col items-start gap-6 md:gap-10">
+              <div className="flex w-full lg:w-[80%] flex-col items-start gap-6 md:gap-8">
+                {/* MINIMAL CTA MOVED ABOVE TITLE */}
+                <Link
+                  href="#"
+                  className="reveal-item group flex w-fit items-center gap-2 text-xl font-bold tracking-wide text-white transition-colors"
+                >
+                  <span className="relative overflow-hidden pb-1">
+                    View Project
+                    <span className="absolute bottom-0 left-0 h-[1.5px] w-0 bg-[#2E5BFF] transition-all duration-300 ease-out group-hover:w-full" />
+                  </span>
+
+                  <div className="relative flex h-6 w-6 items-center justify-center overflow-hidden">
+                    {/* Outgoing Arrow */}
+                    <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]" />
+
+                    {/* Incoming Arrow */}
+                    <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
+                  </div>
+                </Link>
+
                 {/* Title */}
                 <h2 className="reveal-item text-5xl md:text-7xl lg:text-[7rem] font-bold leading-[0.9] tracking-[-0.05em]">
                   {project.title}
                 </h2>
 
-                {/* Link (Invisible container, hover pe visible) */}
-                <div className="flex items-start gap-2 flex-col">
-                  <Link
-                    href="#"
-                    className="reveal-item group flex items-center gap-2 px-5 py-2.5 -ml-5 text-xl font-bold tracking-wide text-white transition-all duration-300 rounded-lg hover:bg-linear-to-r hover:from-[#2E5BFF] hover:to-[#149CCB]"
-                  >
-                    View Project
-                    <MdOutlineNavigateNext
-                      size={26}
-                      className="group-hover:text-white transition-transform duration-300 group-hover:translate-x-1"
-                    />
-                  </Link>
-
-                  {/* Description */}
-                  <p className="reveal-item max-w-[95%] lg:max-w-[85%] text-sm leading-[1.8] text-white/80 md:text-lg">
-                    {project.description}
-                  </p>
-                </div>
+                {/* Description */}
+                <p className="reveal-item max-w-[95%] lg:max-w-[85%] text-sm leading-[1.3] text-white/80 md:text-lg">
+                  {project.description}
+                </p>
               </div>
             </div>
           </div>

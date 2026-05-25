@@ -21,7 +21,7 @@ export default function ContactSection() {
   }, []);
 
   return (
-    <section id="contact" className="relative w-full py-20 bg-black md:py-32">
+    <section id="contact" className="relative w-full bg-black py-20 md:py-32">
       {/* Background Animated Gradient (Dark Theme) */}
       <div className="absolute inset-0 z-0">
         <Grainient
@@ -33,7 +33,7 @@ export default function ContactSection() {
           className="opacity-100"
         />
         {/* Optional fade mask at the top/bottom if you want it to blend into other black sections */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black to-transparent pointer-events-none" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black to-transparent" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-[90rem] px-6 md:px-10">
@@ -42,7 +42,7 @@ export default function ContactSection() {
           <div className="flex w-full flex-col justify-between lg:w-2/5">
             <div>
               {/* Tag */}
-              <div className="mb-6 inline-flex items-center justify-center rounded-md bg-white/10 border border-white/10 px-3 py-1.5 shadow-sm backdrop-blur-md">
+              <div className="mb-6 inline-flex items-center justify-center rounded-md border border-white/10 bg-white/10 px-3 py-1.5 shadow-sm backdrop-blur-md">
                 <span className="text-[11px] font-bold uppercase tracking-widest text-white">
                   Get in touch
                 </span>
@@ -60,7 +60,7 @@ export default function ContactSection() {
                       animate={{ y: 0, opacity: 1 }}
                       exit={{ y: -30, opacity: 0 }}
                       transition={{ duration: 0.4, ease: "easeOut" }}
-                      className="col-start-1 row-start-1 leading-[1.3em] bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-transparent bg-clip-text pr-2"
+                      className="col-start-1 row-start-1 bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent leading-[1.3em]"
                     >
                       {rotatingWords[index]}
                     </motion.span>
@@ -111,7 +111,7 @@ export default function ContactSection() {
 
           {/* RIGHT COLUMN: The Form Card */}
           <div className="w-full lg:w-3/5">
-            <form className="flex w-full flex-col gap-6 rounded-[2rem] border border-white/10 bg-[#0a0a0a]/60 backdrop-blur-xl p-8 md:p-12 shadow-2xl">
+            <form className="flex w-full flex-col gap-6 rounded-[2rem] border border-white/10 bg-[#0a0a0a]/60 p-8 shadow-2xl backdrop-blur-xl md:p-12">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* Name Input */}
                 <div className="flex flex-col gap-2">
@@ -199,10 +199,17 @@ export default function ContactSection() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="group mt-4 inline-flex w-full items-center justify-center gap-4 rounded-xl bg-white px-8 py-5 text-base font-semibold text-black transition-all hover:text-white hover:bg-linear-to-r hover:from-[#2E5BFF] hover:to-[#149CCB] cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black active:scale-[0.98] sm:w-auto"
+                className="group mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-4 rounded-xl bg-white px-8 py-5 text-base font-semibold text-black transition-all hover:bg-linear-to-r hover:from-[#2E5BFF] hover:to-[#149CCB] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black active:scale-[0.98] sm:w-auto"
               >
                 <span>Send Message</span>
-                <MdKeyboardArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+
+                <div className="relative flex h-5 w-5 items-center justify-center overflow-hidden">
+                  {/* Outgoing Arrow */}
+                  <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]" />
+
+                  {/* Incoming Arrow */}
+                  <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
+                </div>
               </button>
             </form>
           </div>

@@ -68,7 +68,7 @@ export default function BlogSection() {
   }, []);
 
   return (
-    <section className="w-full bg-[#f8f9fa] py-20 text-black md:py-32">
+    <section className="w-full bg-white py-20 text-black md:py-32">
       <div className="mx-auto w-full px-6 md:px-10">
         {/* HEADER */}
         <div className="mb-12 flex flex-col items-start justify-between gap-8 md:mb-20 md:flex-row md:items-end">
@@ -79,9 +79,8 @@ export default function BlogSection() {
             viewport={{ once: true, margin: "-50px" }}
             className="flex flex-col items-start"
           >
-            <h2 className="text-4xl font-black tracking-tight text-zinc-900 md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
-              Thoughts & <br />
-              {/* Rotating Gradient Text */}
+            <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
+              Thoughts &{/* Rotating Gradient Text */}
               <span className="inline-grid overflow-hidden py-1">
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -90,7 +89,7 @@ export default function BlogSection() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -30, opacity: 0 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="col-start-1 row-start-1 bg-gradient-to-r leading-[1.3em] from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent pr-2"
+                    className="col-start-1 row-start-1 bg-gradient-to-r pl-3 leading-[1.3em] from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent pr-2"
                   >
                     {rotatingWords[index]}
                   </motion.span>
@@ -121,13 +120,8 @@ export default function BlogSection() {
               className="group flex cursor-pointer flex-col"
             >
               {/* IMAGE CONTAINER */}
-              <div className="relative mb-6 w-full overflow-hidden rounded-[2rem] aspect-[4/3] lg:aspect-[16/10] bg-zinc-200 border border-black/5">
+              <div className="relative mb-6 w-full overflow-hidden rounded-[20px] aspect-[4/3] lg:aspect-[16/10] bg-zinc-200 border border-black/5">
                 {/* Floating Tag */}
-                {post.tag && (
-                  <div className="absolute left-6 top-6 z-20 rounded-full bg-white/90 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-900 shadow-sm backdrop-blur-md">
-                    {post.tag}
-                  </div>
-                )}
 
                 {/* Subtle Hover overlay */}
                 <div className="absolute inset-0 z-10 bg-black/0 transition-colors duration-500 group-hover:bg-black/5" />

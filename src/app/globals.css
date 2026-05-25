@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-satoshi), ui-sans-serif, system-ui;
+@theme {
+  /* This makes Zalando Sans the default font for your entire app */
+  --font-sans: var(--font-zalando-sans), ui-sans-serif, system-ui, sans-serif;
 }
-
 body {
   font-family: var(--font-sans);
 }
@@ -56,4 +56,3 @@ html.lenis body {
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
 }
-

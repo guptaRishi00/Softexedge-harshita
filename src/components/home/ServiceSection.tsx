@@ -7,7 +7,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { useRef } from "react";
-import DynamicButton from "../ui/DynamicButton";
+import { MdKeyboardArrowRight } from "react-icons/md";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -17,10 +17,11 @@ const serviceBlocks = [
   {
     id: "01",
     bannerTitle: "Development",
-    image: "/assets/web.jpg",
+    image:
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2000&auto=format&fit=crop",
     grayscale: false,
-    title: "Development Services",
-    desc: "Building robust, scalable, and intuitive digital experiences through cutting-edge web, app, and custom software engineering.",
+    title: "Development Services Building robust, scalable, and intuitive",
+    desc: "Building robust, scalable, and intuitive digital experiences through cutting-edge web, app, and custom software engineering.Building robust, scalable, and intuitive digital experiences through cutting-edge",
     items: [
       { title: "Mobile App Development", number: "01" },
       { title: "UI/UX Design", number: "02" },
@@ -33,7 +34,7 @@ const serviceBlocks = [
     id: "02",
     bannerTitle: "Creative & Branding",
     image:
-      "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=2000&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop",
     grayscale: false,
     title: "Creative & Branding Services",
     desc: "Crafting distinct visual identities and strategic brand narratives that resonate with your audience and leave a lasting impression.",
@@ -63,7 +64,7 @@ const serviceBlocks = [
     id: "04",
     bannerTitle: "Videography",
     image:
-      "https://images.unsplash.com/photo-1601506521937-0121a7fc2a6b?q=80&w=2000&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2000&auto=format&fit=crop",
     grayscale: false,
     title: "Videography Services",
     desc: "High-quality, compelling visual storytelling tailored for modern platforms, from corporate communications to viral social media content.",
@@ -120,6 +121,7 @@ export default function ServiceSection() {
       serviceRows.forEach((row: any) => {
         const giantNumber = row.querySelector(".giant-number");
 
+        // 🌟 ONLY PLAYS ONCE ON ENTRY (No more scrubbing) 🌟
         gsap.fromTo(
           giantNumber,
           { opacity: 0, x: -100, scale: 0.9 },
@@ -127,26 +129,15 @@ export default function ServiceSection() {
             opacity: 1,
             x: 0,
             scale: 1,
+            duration: 1.2,
             ease: "power3.out",
             scrollTrigger: {
               trigger: row,
               start: "top 80%",
-              end: "top 30%",
-              scrub: 1,
+              toggleActions: "play none none none",
             },
           },
         );
-
-        gsap.to(giantNumber, {
-          yPercent: 15,
-          ease: "none",
-          scrollTrigger: {
-            trigger: row,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          },
-        });
       });
     },
     { scope: containerRef },
@@ -184,21 +175,21 @@ export default function ServiceSection() {
                 className={`object-cover object-center opacity-60 ${block.grayscale ? "grayscale" : ""}`}
               />
 
-              {/* Gradient Overlay for text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 z-10" />
+              <div className="absolute inset-0 z-10 bg-gradient-to-t from-black via-transparent to-black/40" />
 
+              {/* 🌟 BANNER TITLE (Clean Framer Motion slide-up on entry) 🌟 */}
               <motion.h1
                 variants={titleContainer}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: false, margin: "-100px" }}
+                viewport={{ once: true, margin: "-100px" }}
                 className="absolute bottom-8 left-8 z-20 flex flex-wrap items-start gap-[0.2em] text-5xl font-bold tracking-tight text-white drop-shadow-2xl md:bottom-12 md:left-16 md:text-8xl lg:text-8xl"
               >
                 {block.bannerTitle.split(" ").map((word, i) => (
                   <div key={i} className="overflow-hidden pb-4">
                     <motion.span
                       variants={titleWord}
-                      className="inline-block origin-bottom uppercase font-black"
+                      className="inline-block origin-bottom font-black uppercase"
                     >
                       {word}
                     </motion.span>
@@ -210,24 +201,23 @@ export default function ServiceSection() {
             <div className="relative flex w-full flex-col gap-10 px-6 lg:flex-row lg:gap-20 lg:px-16">
               <div className="relative w-full lg:w-[30%]">
                 <div className="left-pin-target z-0 flex overflow-visible px-8 lg:sticky lg:top-0 lg:justify-start">
-                  <p className="giant-number pointer-events-none select-none overflow-visible bg-[linear-gradient(90deg,#2E5BFF,#149CCB,#2E5BFF,#149CCB,#2E5BFF)] bg-size-[220%_100%] bg-clip-text pb-[0.2em] text-[10rem] font-bold leading-[0.8] tracking-normal text-transparent animate-[gradientMove_6s_linear_infinite] md:text-[16rem] lg:text-[18rem]">
+                  <p className="giant-number pointer-events-none select-none overflow-visible bg-[linear-gradient(90deg,#2E5BFF,#149CCB,#2E5BFF,#149CCB,#2E5BFF)] bg-[length:220%_100%] bg-clip-text pb-6 text-[10rem] font-medium leading-[0.8] tracking-normal text-transparent animate-[gradientMove_6s_linear_infinite] md:text-[16rem] lg:text-[18rem]">
                     {block.id}
                   </p>
                 </div>
               </div>
 
-              {/* REMOVED lg:pb-32 from the right side container so the height strictly ends at the button */}
               <div className="relative z-10 flex w-full flex-col items-start justify-between gap-16 lg:w-[65%] lg:gap-24 lg:pb-5">
                 <motion.div
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: false, margin: "-100px" }}
+                  viewport={{ once: true, margin: "-100px" }}
                   variants={staggerContainer}
                   className="flex max-w-4xl flex-col items-start gap-6"
                 >
                   <motion.h2
                     variants={titleContainer}
-                    className="flex flex-wrap text-4xl font-bold leading-[1.1] tracking-tight text-white md:text-5xl lg:text-5xl"
+                    className="flex flex-wrap text-4xl font-bold leading-[0.9] tracking-tight text-white md:text-5xl lg:text-5xl"
                   >
                     {block.title.split(" ").map((word, i) => (
                       <div key={i} className="mr-[0.25em] overflow-hidden pb-2">
@@ -243,7 +233,7 @@ export default function ServiceSection() {
 
                   <motion.p
                     variants={fadeUpVariant}
-                    className="text-base leading-relaxed text-zinc-400 md:text-lg"
+                    className="text-base leading-[1.3] text-zinc-400 md:text-lg"
                   >
                     {block.desc}
                   </motion.p>
@@ -252,7 +242,7 @@ export default function ServiceSection() {
                 <motion.ul
                   initial="hidden"
                   whileInView="visible"
-                  viewport={{ once: false, margin: "-50px" }}
+                  viewport={{ once: true, margin: "-50px" }}
                   variants={staggerContainer}
                   className="flex w-full flex-col border-t border-white/50"
                 >
@@ -260,22 +250,46 @@ export default function ServiceSection() {
                     <motion.li
                       key={i}
                       variants={fadeUpVariant}
-                      className="group relative flex cursor-pointer items-center justify-between overflow-hidden border-b border-white/50 px-6 py-6 text-white transition-colors duration-500 ease-out md:px-8 md:py-8"
+                      className="group relative flex cursor-pointer items-center justify-between overflow-hidden border-b border-white/50 px-4 py-6 transition-colors duration-500 ease-out md:px-6 md:py-6"
                     >
-                      {/* <div className="absolute inset-0 z-0 translate-y-full rounded-lg bg-white transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-y-0" /> */}
-                      <p className="relative z-10 text-xl font-medium transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-x-4 md:text-lg">
-                        {item.title}
-                      </p>
+                      <div className="flex items-center">
+                        <div className="relative w-0 overflow-hidden opacity-0 transition-all duration-500 ease-[0.22,1,0.36,1] group-hover:mr-4 group-hover:w-20 group-hover:opacity-100 md:group-hover:mr-6 md:group-hover:w-32">
+                          <div className="relative h-12 w-20 overflow-hidden rounded-lg md:h-16 md:w-32">
+                            <Image
+                              src={block.image}
+                              alt={item.title}
+                              fill
+                              className="scale-110 object-cover transition-transform duration-700 ease-out group-hover:scale-100"
+                            />
+                          </div>
+                        </div>
+
+                        <p className="relative z-10 text-2xl font-medium tracking-tight text-white transition-colors duration-500 ease-[0.22,1,0.36,1] group-hover:text-white md:text-4xl lg:text-[1.5rem]">
+                          {item.title}
+                        </p>
+                      </div>
                     </motion.li>
                   ))}
 
-                  {/* Wrapped inside an li to remain valid HTML in the ul list */}
+                  {/* MINIMAL CTA WITH REACT-ICONS ARROW ANIMATION */}
                   <motion.li variants={fadeUpVariant} className="mt-10 block">
-                    <DynamicButton
-                      text="Let's Connect"
+                    <a
                       href="#contact"
-                      className=" px-8 py-4"
-                    />
+                      className="group flex w-fit items-center gap-2 text-lg font-medium text-white transition-colors"
+                    >
+                      <span className="relative overflow-hidden pb-1">
+                        Let&apos;s Connect
+                        <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-[#2E5BFF] transition-all duration-300 ease-out group-hover:w-full" />
+                      </span>
+
+                      <div className="relative flex h-6 w-6 items-center justify-center overflow-hidden">
+                        {/* Outgoing Arrow */}
+                        <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]" />
+
+                        {/* Incoming Arrow */}
+                        <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
+                      </div>
+                    </a>
                   </motion.li>
                 </motion.ul>
               </div>

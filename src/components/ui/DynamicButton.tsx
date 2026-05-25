@@ -1,3 +1,4 @@
+// src/components/ui/DynamicButton.tsx
 "use client";
 
 import Link from "next/link";
@@ -75,7 +76,7 @@ export default function DynamicButton({
       {/* TYPEWRITER TEXT ANIMATION */}
       <span
         className={cn(
-          "relative z-10 flex overflow-hidden font-semibold",
+          "relative z-10 flex overflow-hidden font-medium",
           textClassName,
         )}
       >
@@ -101,15 +102,25 @@ export default function DynamicButton({
         </span>
       </span>
 
-      {/* ICON */}
+      {/* ICON WITH ARROW ANIMATION */}
       {showIcon && (
         <span
           className={cn(
-            "relative z-10 flex items-center justify-center text-black group-hover:text-white transition-colors",
+            "relative z-10 flex h-6 w-6 items-center justify-center overflow-hidden text-black transition-colors group-hover:text-white",
             iconClassName,
           )}
         >
-          <MdKeyboardArrowRight size={24} />
+          {/* Outgoing Arrow */}
+          <MdKeyboardArrowRight
+            size={24}
+            className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]"
+          />
+
+          {/* Incoming Arrow */}
+          <MdKeyboardArrowRight
+            size={24}
+            className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0"
+          />
         </span>
       )}
     </Component>

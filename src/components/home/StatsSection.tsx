@@ -1,3 +1,4 @@
+// src/components/home/StatsSection.tsx
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -5,6 +6,8 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef } from "react";
+import PixelBlast from "../ui/PixelBlast";
+import ColorBends from "../ui/ColorBends";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -93,32 +96,39 @@ export default function StatsSection() {
       id="stats"
       className="relative w-full overflow-hidden bg-black py-20 text-white md:py-10"
     >
-      {/* DOT GRID */}
-      <div
-        className="pointer-events-none absolute inset-0 z-0 opacity-[0.12]"
-        style={{
-          backgroundImage: "radial-gradient(#ffffff 1.5px, transparent 1.5px)",
-          backgroundSize: "32px 35px",
-          maskImage:
-            "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
-        }}
-      />
-
-      {/* BACKGROUND GLOWS */}
-      {/* <div className="pointer-events-none absolute inset-0 z-0">
-        <div className="absolute left-1/4 top-0 h-[400px] w-[400px] rounded-full bg-[#4A8CFF]/10 blur-3xl" />
-
-        <div className="absolute bottom-0 right-1/4 h-[400px] w-[400px] rounded-full bg-[#7B61FF]/10 blur-3xl" />
-      </div> */}
+      {/* PIXEL BLAST BACKGROUND */}
+      <div className="absolute inset-0 flex items-center w-full justify-center gap-1">
+        <ColorBends
+          colors={["#2E5BFF", "#2E5BFF", "#2E5BFF"]}
+          rotation={90}
+          speed={0.2}
+          scale={0.5}
+          frequency={1}
+          warpStrength={1}
+          mouseInfluence={1}
+          noise={0.15}
+          parallax={0.5}
+          iterations={1}
+          intensity={1.5}
+          bandWidth={6}
+          transparent
+          autoRotate={0}
+          color="#2E5BFF"
+        />
+      </div>
 
       {/* CONTENT */}
       <div className="relative z-10 flex w-full flex-col">
         {stats.map((stat, index) => (
           <div
             key={index}
-            className={cn("stat-row", "relative", "w-full", "overflow-hidden")}
+            className={cn(
+              "stat-row",
+              "relative",
+              "w-full",
+              "overflow-hidden",
+              "pointer-events-auto",
+            )}
           >
             {/* STATIC FULL WIDTH BORDER */}
             {index !== stats.length - 1 && (

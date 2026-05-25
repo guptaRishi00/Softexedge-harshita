@@ -143,7 +143,7 @@ export default function AboutSection() {
       <div className="relative z-10 mx-auto">
         <div className="grid items-center gap-16 lg:grid-cols-[1fr_0.9fr]">
           {/* LEFT CONTENT */}
-          <div className="relative">
+          <div className="relative mt-20">
             <motion.p
               variants={textReveal}
               className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500"
@@ -153,7 +153,7 @@ export default function AboutSection() {
 
             <motion.h1
               variants={wordContainer}
-              className="flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 text-5xl font-bold leading-[0.9em] tracking-[-0.04em] md:text-7xl lg:text-[4rem]"
+              className="flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 text-5xl font-medium leading-[0.9em] tracking-[-0.04em] md:text-7xl lg:text-[4rem]"
             >
               <motion.span variants={wordAnimation} className="block">
                 Building
@@ -180,13 +180,7 @@ export default function AboutSection() {
 
               <motion.span variants={wordAnimation} className="block">
                 <RotatingWord
-                  words={[
-                    "brands.",
-                    "startups.",
-                    "visionaries.",
-                    "founders.",
-                    "creators.",
-                  ]}
+                  words={["brands.", "startups.", "founders.", "creators."]}
                   activeIndex={frontIndex}
                 />
               </motion.span>

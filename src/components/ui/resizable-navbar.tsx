@@ -204,7 +204,7 @@ export const NavItems = ({
               {hovered === idx && (
                 <motion.div
                   layoutId="hovered"
-                  className="absolute inset-0 h-full w-full rounded-full bg-white shadow-md"
+                  className="absolute inset-0 h-full w-full rounded-lg bg-white shadow-md"
                 />
               )}
 
