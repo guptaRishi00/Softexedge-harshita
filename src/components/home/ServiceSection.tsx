@@ -264,7 +264,7 @@ export default function ServiceSection() {
                           </div>
                         </div>
 
-                        <p className="relative z-10 text-2xl font-medium tracking-tight text-white transition-colors duration-500 ease-[0.22,1,0.36,1] group-hover:text-white md:text-4xl lg:text-[1.5rem]">
+                        <p className="relative z-10 text-2xl font-medium tracking-tight text-white transition-colors duration-500 ease-[0.22,1,0.36,1] group-hover:text-white md:text-4xl lg:text-[1.2rem]">
                           {item.title}
                         </p>
                       </div>
