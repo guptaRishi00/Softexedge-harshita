@@ -254,16 +254,16 @@ export default function ServiceSection() {
                   whileInView="visible"
                   viewport={{ once: false, margin: "-50px" }}
                   variants={staggerContainer}
-                  className="flex w-full flex-col border-t border-white/80"
+                  className="flex w-full flex-col border-t border-white/50"
                 >
                   {block.items.map((item, i) => (
                     <motion.li
                       key={i}
                       variants={fadeUpVariant}
-                      className="group relative flex cursor-pointer items-center justify-between overflow-hidden border-b border-white/80 px-6 py-6 text-white transition-colors duration-500 ease-out md:px-8 md:py-8"
+                      className="group relative flex cursor-pointer items-center justify-between overflow-hidden border-b border-white/50 px-6 py-6 text-white transition-colors duration-500 ease-out md:px-8 md:py-8"
                     >
                       {/* <div className="absolute inset-0 z-0 translate-y-full rounded-lg bg-white transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-y-0" /> */}
-                      <p className="relative z-10 text-xl font-medium transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-x-4 md:text-2xl">
+                      <p className="relative z-10 text-xl font-medium transition-transform duration-500 ease-[0.16,1,0.3,1] group-hover:translate-x-4 md:text-lg">
                         {item.title}
                       </p>
                     </motion.li>
