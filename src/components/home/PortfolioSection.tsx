@@ -24,7 +24,6 @@ const projects = [
     image: "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
     category: "E-COMMERCE",
     type: "image",
-    // ADDED: Unique link for this project
     href: "/work/aura-skincare",
   },
   {
@@ -38,7 +37,6 @@ const projects = [
     image: "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
     category: "ENTERPRISE",
     type: "image",
-    // ADDED: Unique link for this project
     href: "/work/finova-dashboard",
   },
   {
@@ -52,7 +50,6 @@ const projects = [
     image: "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
     category: "BRANDING",
     type: "image",
-    // ADDED: Unique link for this project
     href: "/work/lumina-festival",
   },
   {
@@ -66,7 +63,6 @@ const projects = [
     video: "/assets/video3.mp4",
     category: "CAMPAIGN",
     type: "video",
-    // ADDED: Unique link for this project
     href: "/work/nova-workspace",
   },
   {
@@ -80,7 +76,6 @@ const projects = [
     image: "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
     category: "AUTOMOTIVE",
     type: "image",
-    // ADDED: Unique link for this project
     href: "/work/zephyr-mobility",
   },
 ];
@@ -95,7 +90,9 @@ export default function PortfolioSection() {
   const { contextSafe } = useGSAP(
     () => {
       // 1. CUSTOM CURSOR TRACKING
+      let moveCursor: (e: MouseEvent) => void = () => {};
       const cursor = cursorRef.current;
+
       if (cursor) {
         gsap.set(cursor, { scale: 0, xPercent: -50, yPercent: -50 });
 
@@ -110,7 +107,7 @@ export default function PortfolioSection() {
           force3D: true,
         });
 
-        const moveCursor = (e: MouseEvent) => {
+        moveCursor = (e: MouseEvent) => {
           xTo(e.clientX);
           yTo(e.clientY);
         };
@@ -120,59 +117,63 @@ export default function PortfolioSection() {
 
       // 2. HORIZONTAL SCROLL ANIMATION
       const track = trackRef.current;
-      if (!track) return;
-
-      const totalWidth = track.scrollWidth - window.innerWidth;
-      const scrollTween = gsap.to(track, {
-        x: () => -totalWidth,
-        ease: "none",
-        force3D: true,
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: () => `+=${totalWidth}`,
-          pin: true,
-          scrub: 1,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            const newIndex = Math.round(self.progress * (projects.length - 1));
-            setActiveIndex(newIndex);
+      if (track) {
+        const totalWidth = track.scrollWidth - window.innerWidth;
+        const scrollTween = gsap.to(track, {
+          x: () => -totalWidth,
+          ease: "none",
+          force3D: true,
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top top",
+            end: () => `+=${totalWidth}`,
+            pin: true,
+            scrub: 1,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              const newIndex = Math.round(
+                self.progress * (projects.length - 1),
+              );
+              setActiveIndex(newIndex);
+            },
           },
-        },
-      });
-
-      // 3. TEXT REVEALS ON SCROLL
-      gsap.utils
-        .toArray<HTMLElement>(".project-panel")
-        .forEach((panel, index) => {
-          const isFirst = index === 0;
-          const content = panel.querySelectorAll(".reveal-item");
-          if (!isFirst) {
-            gsap.set(content, { y: 60, opacity: 0 });
-            gsap.to(content, {
-              y: 0,
-              opacity: 1,
-              duration: 1,
-              stagger: 0.08,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: panel,
-                containerAnimation: scrollTween,
-                start: "left 85%",
-                toggleActions: "play none none none",
-              },
-            });
-          }
         });
 
+        // 3. TEXT REVEALS ON SCROLL
+        gsap.utils
+          .toArray<HTMLElement>(".project-panel")
+          .forEach((panel, index) => {
+            const isFirst = index === 0;
+            const content = panel.querySelectorAll(".reveal-item");
+            if (!isFirst) {
+              gsap.set(content, { y: 60, opacity: 0 });
+              gsap.to(content, {
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                stagger: 0.08,
+                ease: "power3.out",
+                scrollTrigger: {
+                  trigger: panel,
+                  containerAnimation: scrollTween,
+                  start: "left 85%",
+                  toggleActions: "play none none none",
+                },
+              });
+            }
+          });
+      }
+
+      // CLEANUP LISTENER
       return () => {
-        window.removeEventListener("mousemove", () => {});
+        if (moveCursor) {
+          window.removeEventListener("mousemove", moveCursor);
+        }
       };
     },
     { scope: containerRef },
   );
-
   const handleMouseEnter = contextSafe(() => {
     gsap.to(cursorRef.current, {
       scale: 1,
@@ -193,6 +194,7 @@ export default function PortfolioSection() {
     <section
       ref={containerRef}
       id="portfolio"
+      onMouseLeave={handleMouseLeave}
       className="relative h-screen w-full overflow-hidden bg-[#0a0a0a] text-white"
     >
       {/* TRACK */}
@@ -204,11 +206,11 @@ export default function PortfolioSection() {
         {projects.map((project) => (
           <div
             key={project.id}
-            className="project-panel relative flex h-screen w-screen shrink-0 flex-col justify-end overflow-hidden p-8 md:p-16 lg:px-20 lg:pb-10 lg:pt-20"
+            className="project-panel relative flex h-screen w-screen shrink-0 flex-col justify-end overflow-hidden p-8 md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
           >
             {/* FULL BLEED INTERACTIVE LINK WRAPPER */}
             <Link
-              href={project.href} // UPDATED: Now dynamically routes to the specific project URL
+              href={project.href}
               className="absolute inset-0 z-20 cursor-none"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
@@ -240,20 +242,28 @@ export default function PortfolioSection() {
 
             {/* CONTENT */}
             <div className="pointer-events-none relative z-10 flex w-full items-end justify-between">
-              <div className="flex w-full flex-col items-start gap-4 md:gap-6 lg:w-[80%]">
-                <p className="reveal-item text-xs font-bold uppercase tracking-widest text-white/60 md:text-sm">
-                  {project.category}
-                </p>
-
+              <div className="flex w-full flex-col items-start gap-4 md:gap-5 lg:w-[80%]">
                 {/* Title */}
                 <h2 className="reveal-item text-5xl font-bold leading-[0.9] tracking-[-0.05em] md:text-7xl lg:text-[7rem]">
                   {project.title}
                 </h2>
 
                 {/* Description */}
-                <p className="reveal-item max-w-[95%] text-sm leading-[1.3] text-white/80 md:text-lg lg:max-w-[70%]">
+                <p className="reveal-item max-w-[95%] text-sm leading-[1.5] text-white/80 md:text-lg lg:max-w-[90%]">
                   {project.description}
                 </p>
+
+                {/* Tech Tags */}
+                <div className="reveal-item mt-2 flex flex-wrap gap-2 md:gap-3">
+                  {project.tech.map((tag, i) => (
+                    <span
+                      key={i}
+                      className="rounded-full border border-white/20 bg-black/20 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md md:text-xs"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -264,12 +274,12 @@ export default function PortfolioSection() {
       <div
         ref={cursorRef}
         className={cn(
-          "pointer-events-none fixed left-0 top-0 z-[9999] flex h-20 w-20 items-center justify-center rounded-full bg-white text-black shadow-xl",
+          "pointer-events-none fixed left-0 top-0 z-[9999] flex h-10 w-40 items-center justify-center rounded-lg bg-white text-black shadow-xl",
           "will-change-transform",
         )}
       >
         <span className="mt-px ml-1 text-[0.65rem] font-bold uppercase tracking-[0.2em]">
-          View
+          View Project
         </span>
       </div>
     </section>

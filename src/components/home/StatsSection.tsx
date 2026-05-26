@@ -89,10 +89,10 @@ export default function StatsSection() {
       className="relative w-full overflow-hidden bg-white py-20 text-black md:py-20"
     >
       {/* PIXEL BLAST BACKGROUND */}
-      {/* <div className="absolute inset-0 flex items-center w-full justify-center gap-1">
+      <div className="absolute inset-0 flex items-center w-full justify-center gap-1">
         <DotGrid
-          dotSize={4}
-          gap={22}
+          dotSize={3}
+          gap={25}
           baseColor="#E5E7EB" // Changed to light gray for light theme
           activeColor="#2E5BFF"
           proximity={150}
@@ -101,7 +101,7 @@ export default function StatsSection() {
           resistance={2000}
           returnDuration={4.4}
         />
-      </div> */}
+      </div>
 
       {/* CONTENT */}
       <div className="relative z-10 flex w-full flex-col">
@@ -140,7 +140,7 @@ export default function StatsSection() {
               )}
             >
               {/* NUMBER */}
-              <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-16">
+              <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-1">
                 <h2
                   className={cn(
                     "relative",
@@ -168,8 +168,8 @@ export default function StatsSection() {
               </div>
 
               {/* TEXT */}
-              <div className="mt-4 w-full pl-2 md:mt-0 md:w-[45%] md:pl-10">
-                <p className="whitespace-pre-line text-3xl font-bold leading-[1.05] tracking-tight text-black/90 md:text-[4rem]">
+              <div className="mt-4 w-full pl-2 md:mt-0 md:w-[90%] md:pl-1">
+                <p className="whitespace-pre-line text-3xl font-bold leading-[1.05] tracking-tight text-black/90 md:text-[5rem]">
                   {stat.text}
                 </p>
               </div>

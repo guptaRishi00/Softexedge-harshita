@@ -6,6 +6,7 @@ import { useState, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { MdKeyboardArrowRight } from "react-icons/md";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -47,10 +48,11 @@ const services = [
 export default function ServiceSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(
+  const { contextSafe } = useGSAP(
     () => {
-      // HEADER PARALLAX: Moves down slightly, feeling "pushed back" in depth
+      // 1. HEADER PARALLAX
       gsap.fromTo(
         ".service-header",
         { y: -40 },
@@ -66,7 +68,7 @@ export default function ServiceSection() {
         },
       );
 
-      // LIST PARALLAX: Moves up slightly, feeling "pulled forward"
+      // 2. LIST PARALLAX
       gsap.fromTo(
         ".service-list",
         { y: 60 },
@@ -81,25 +83,72 @@ export default function ServiceSection() {
           },
         },
       );
+
+      // 3. CUSTOM CURSOR TRACKING
+      const cursor = cursorRef.current;
+      if (cursor) {
+        gsap.set(cursor, { scale: 0, xPercent: -50, yPercent: -50 });
+
+        const xTo = gsap.quickTo(cursor, "x", {
+          duration: 0.15,
+          ease: "power3",
+          force3D: true,
+        });
+        const yTo = gsap.quickTo(cursor, "y", {
+          duration: 0.15,
+          ease: "power3",
+          force3D: true,
+        });
+
+        const moveCursor = (e: MouseEvent) => {
+          xTo(e.clientX);
+          yTo(e.clientY);
+        };
+
+        window.addEventListener("mousemove", moveCursor);
+
+        return () => {
+          window.removeEventListener("mousemove", moveCursor);
+        };
+      }
     },
     { scope: containerRef },
   );
 
+  const handleMouseEnter = contextSafe((index: number) => {
+    setHoveredIndex(index);
+    gsap.to(cursorRef.current, {
+      scale: 1,
+      duration: 0.4,
+      ease: "back.out(1.5)",
+    });
+  });
+
+  const handleMouseLeave = contextSafe(() => {
+    setHoveredIndex(null);
+    gsap.to(cursorRef.current, {
+      scale: 0,
+      duration: 0.3,
+      ease: "power3.inOut",
+    });
+  });
+
   return (
     <section
       ref={containerRef}
+      onMouseLeave={handleMouseLeave}
       className="relative w-full overflow-hidden bg-black py-32 text-white"
     >
       <div className="w-full px-4 md:px-10">
         {/* HEADER SECTION */}
-        <div className="service-header mb-20 flex w-full flex-col-reverse items-start justify-between gap-8 border-b border-white/15 pb-10 md:flex-row md:items-end">
-          <p className="max-w-md text-lg font-medium leading-relaxed text-white/60 md:text-xl">
+        <div className="service-header mb-20 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-end">
+          <h2 className="text-5xl font-bold tracking-tight text-white md:text-8xl">
+            Our Services
+          </h2>
+          <p className="max-w-md text-sm font-medium leading-relaxed text-white/60 md:text-lg">
             We merge strategic thinking with bold creative execution to deliver
             scalable digital experiences that elevate your brand.
           </p>
-          <h2 className="text-5xl font-bold tracking-tight text-white md:text-7xl">
-            Our Services
-          </h2>
         </div>
 
         {/* SERVICES LIST */}
@@ -108,9 +157,10 @@ export default function ServiceSection() {
             <a
               key={index}
               href={service.href}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              className="group flex w-full items-center justify-between border-b border-white/10 py-6 transition-colors duration-500 hover:border-white/30 last:border-b-0 md:py-10"
+              onMouseEnter={() => handleMouseEnter(index)}
+              onMouseLeave={handleMouseLeave}
+              // Made relative and removed default border classes
+              className="group relative flex w-full cursor-none items-center justify-between py-6 md:py-10"
             >
               <div className="flex items-center">
                 {/* IMAGE REVEAL CONTAINER */}
@@ -140,27 +190,34 @@ export default function ServiceSection() {
                 </h3>
               </div>
 
-              {/* HOVER ARROW INDICATOR */}
-              <div className="hidden h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white text-black opacity-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 md:flex">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="-translate-x-3 translate-y-3 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-0 group-hover:translate-y-0"
-                >
-                  <line x1="7" y1="17" x2="17" y2="7"></line>
-                  <polyline points="7 7 17 7 17 17"></polyline>
-                </svg>
-              </div>
+              {/* CUSTOM GRADIENT BORDER */}
+              {index !== services.length - 1 && (
+                <div
+                  className={cn(
+                    "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500",
+                    hoveredIndex === index
+                      ? "bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+                      : "bg-white/10",
+                  )}
+                />
+              )}
             </a>
           ))}
         </div>
+      </div>
+
+      {/* CUSTOM CURSOR FOLLOWER */}
+      <div
+        ref={cursorRef}
+        className={cn(
+          "pointer-events-none fixed left-0 top-0 z-[9999] flex h-10 w-40 items-center justify-center rounded-lg bg-white text-black shadow-xl",
+          "will-change-transform",
+        )}
+      >
+        <span className="ml-1 mt-px text-[0.65rem] font-bold uppercase tracking-[0.2em]">
+          View Project
+        </span>
+        <MdKeyboardArrowRight />
       </div>
     </section>
   );
