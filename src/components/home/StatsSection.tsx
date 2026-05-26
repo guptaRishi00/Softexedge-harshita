@@ -78,15 +78,6 @@ export default function StatsSection() {
           },
         );
       });
-
-      // ANIMATED TEXT GRADIENT
-      gsap.to(".animated-gradient-text", {
-        backgroundPosition: "200% center",
-        ease: "sine.inOut",
-        duration: 3,
-        repeat: -1,
-        yoyo: true,
-      });
     },
     { scope: containerRef },
   );
@@ -95,14 +86,14 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-black py-20 text-white md:py-20"
+      className="relative w-full overflow-hidden bg-white py-20 text-black md:py-20"
     >
       {/* PIXEL BLAST BACKGROUND */}
-      <div className="absolute inset-0 flex items-center w-full justify-center gap-1">
+      {/* <div className="absolute inset-0 flex items-center w-full justify-center gap-1">
         <DotGrid
           dotSize={4}
           gap={22}
-          baseColor="#2F293A"
+          baseColor="#E5E7EB" // Changed to light gray for light theme
           activeColor="#2E5BFF"
           proximity={150}
           shockRadius={250}
@@ -110,7 +101,7 @@ export default function StatsSection() {
           resistance={2000}
           returnDuration={4.4}
         />
-      </div>
+      </div> */}
 
       {/* CONTENT */}
       <div className="relative z-10 flex w-full flex-col">
@@ -127,7 +118,7 @@ export default function StatsSection() {
           >
             {/* STATIC FULL WIDTH BORDER */}
             {index !== stats.length - 1 && (
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-white/14" />
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-black/10" />
             )}
 
             {/* MOVING CONTENT */}
@@ -149,20 +140,16 @@ export default function StatsSection() {
               )}
             >
               {/* NUMBER */}
-              {/* NUMBER */}
-              {/* NUMBER */}
               <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-16">
                 <h2
                   className={cn(
                     "relative",
                     "flex",
-                    "items-start", // Keeps the + anchored to the top
+                    "items-start",
                     "overflow-visible",
                     "bg-linear-to-r",
                     "from-[#2E5BFF]",
-                    "via-[#149CCB]",
-                    "to-[#2E5BFF]",
-                    "bg-[size:200%_auto]",
+                    "to-[#149CCB]",
                     "bg-clip-text",
                     "text-[7rem]",
                     "font-bold",
@@ -174,7 +161,6 @@ export default function StatsSection() {
                   )}
                 >
                   {stat.number}
-                  {/* Using 0.5em makes it exactly half the size of the number automatically */}
                   <span className="text-[0.4em] font-bold tracking-[0.2em] mt-[-0.2em] ml-1">
                     +
                   </span>
@@ -183,7 +169,7 @@ export default function StatsSection() {
 
               {/* TEXT */}
               <div className="mt-4 w-full pl-2 md:mt-0 md:w-[45%] md:pl-10">
-                <p className="whitespace-pre-line text-3xl font-bold leading-[1.05] tracking-tight text-white/90 md:text-[4rem]">
+                <p className="whitespace-pre-line text-3xl font-bold leading-[1.05] tracking-tight text-black/90 md:text-[4rem]">
                   {stat.text}
                 </p>
               </div>

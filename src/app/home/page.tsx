@@ -7,7 +7,6 @@ import {
 import AboutSection from "@/components/home/AboutSection";
 import Herosection from "@/components/home/Herosection";
 import PortfolioSection from "@/components/home/PortfolioSection";
-import ServiceSection from "@/components/home/ServiceSection";
 import StatsSection from "@/components/home/StatsSection";
 import Footer from "@/components/layout/Footer";
 import SmoothScroll from "@/components/layout/SmoothScroll";
@@ -16,6 +15,7 @@ import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials
 import BlogSection from "@/components/home/BlogSection";
 import ContactSection from "@/components/home/ContactSection";
 import LaserFlow from "@/components/ui/LaserFlow";
+import ServiceSection from "@/components/home/ServiceSection";
 
 export default function HomePage() {
   const techLogos = [
@@ -65,7 +65,9 @@ export default function HomePage() {
           <AboutSection />
           <PortfolioSection />
           <StatsSection />
-          <ServiceSection />
+          <div className="p-0">
+            <ServiceSection />
+          </div>
           <ExperimentalTestimonials />
           <ContactSection />
           <BlogSection />
