@@ -98,22 +98,24 @@ export default function StatsSection() {
     >
       {/* PIXEL BLAST BACKGROUND */}
       <div className="absolute inset-0 flex items-center w-full justify-center gap-1">
-        <ColorBends
-          colors={["#2E5BFF", "#2E5BFF", "#2E5BFF"]}
-          rotation={90}
-          speed={0.2}
-          scale={0.5}
-          frequency={1}
-          warpStrength={1}
-          mouseInfluence={1}
-          noise={0.15}
-          parallax={0.5}
-          iterations={1}
-          intensity={1.5}
-          bandWidth={6}
-          transparent
-          autoRotate={0}
+        <PixelBlast
+          variant="square"
+          pixelSize={2}
           color="#2E5BFF"
+          patternScale={4}
+          patternDensity={0.25}
+          pixelSizeJitter={0.65}
+          enableRipples
+          rippleSpeed={0.4}
+          rippleThickness={0.12}
+          rippleIntensityScale={1.5}
+          liquid={false}
+          liquidStrength={0.12}
+          liquidRadius={1.2}
+          liquidWobbleSpeed={5}
+          speed={0.5}
+          edgeFade={0}
+          transparent
         />
       </div>
 
@@ -168,7 +170,7 @@ export default function StatsSection() {
                     "bg-[size:200%_auto]",
                     "bg-clip-text",
                     "text-[7rem]",
-                    "font-black",
+                    "font-medium",
                     "leading-none",
                     "tracking-[-0.04em]",
                     "text-transparent",
