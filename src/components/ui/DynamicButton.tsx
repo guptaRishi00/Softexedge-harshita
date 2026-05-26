@@ -76,7 +76,7 @@ export default function DynamicButton({
       {/* TYPEWRITER TEXT ANIMATION */}
       <span
         className={cn(
-          "relative z-10 flex overflow-hidden font-medium",
+          "relative z-10 flex overflow-hidden font-bold",
           textClassName,
         )}
       >

@@ -258,7 +258,7 @@ export default function PortfolioSection() {
                   {project.tech.map((tag, i) => (
                     <span
                       key={i}
-                      className="rounded-full border border-white/20 bg-black/20 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md md:text-xs"
+                      className="rounded-md border border-white/20 bg-black/20 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md md:text-xs"
                     >
                       {tag}
                     </span>

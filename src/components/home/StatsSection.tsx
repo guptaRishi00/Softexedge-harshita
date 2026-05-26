@@ -6,8 +6,6 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef } from "react";
-import PixelBlast from "../ui/PixelBlast";
-import ColorBends from "../ui/ColorBends";
 import DotGrid from "../ui/DotGrid";
 
 if (typeof window !== "undefined") {
@@ -161,7 +159,7 @@ export default function StatsSection() {
                   )}
                 >
                   {stat.number}
-                  <span className="text-[0.4em] font-bold tracking-[0.2em] mt-[-0.2em] ml-1">
+                  <span className="text-[0.4em] font-bold tracking-[0.2em] ml-1">
                     +
                   </span>
                 </h2>

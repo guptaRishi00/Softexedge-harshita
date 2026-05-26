@@ -14,7 +14,6 @@ import LogoLoop from "@/components/ui/LogoLoop";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import BlogSection from "@/components/home/BlogSection";
 import ContactSection from "@/components/home/ContactSection";
-import LaserFlow from "@/components/ui/LaserFlow";
 import ServiceSection from "@/components/home/ServiceSection";
 
 export default function HomePage() {
@@ -65,7 +64,7 @@ export default function HomePage() {
           <AboutSection />
           <PortfolioSection />
           <StatsSection />
-          <div className="p-0">
+          <div className="">
             <ServiceSection />
           </div>
           <ExperimentalTestimonials />

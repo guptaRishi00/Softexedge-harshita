@@ -13,7 +13,7 @@ import {
   NavBody,
   type NavItem,
   NavItems,
-} from "@/components/ui/resizable-navbar";
+} from "@/components/page/resizable-navbar";
 import DynamicButton from "../ui/DynamicButton";
 
 const CustomLogo = () => (
@@ -139,10 +139,11 @@ export default function Header() {
             items={navItems}
             className="text-[17px] font-medium text-white hover:text-gray-300 transition-colors"
           />
+          {/* ADDED: border border-white/20 hover:border-white/40 */}
           <DynamicButton
             text="Get in Touch"
             href="/contact"
-            className="relative px-4 py-3 rounded-lg"
+            className="relative px-4 py-3 rounded-lg border border-gray-300 hover:border-transparent transition-colors"
             showIcon={false}
           />
         </NavBody>
@@ -304,7 +305,7 @@ export default function Header() {
               <Link
                 href="#contact"
                 onClick={closeMobileMenu}
-                className="relative px-5 py-3 border border-white text-white font-semibold rounded-full overflow-hidden group transition-all duration-300 text-center"
+                className="relative px-5 py-3 border border-gray-800 text-white font-semibold rounded-full overflow-hidden group transition-all duration-300 text-center"
               >
                 <span className="absolute inset-0 w-0 bg-gradient-to-r from-[#a881fb] to-[#d0bfff] transition-all duration-[250ms] ease-out group-hover:w-full"></span>
                 <span
