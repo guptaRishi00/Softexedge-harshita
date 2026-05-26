@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { FaFacebookF } from "react-icons/fa";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { RiInstagramLine } from "react-icons/ri";
-import { motion, Variants } from "framer-motion"; // <-- 1. Import Variants
+import { motion, Variants } from "framer-motion";
 import Particles from "@/components/ui/Particles";
 
 const footerLinksCol1 = [
@@ -28,27 +28,35 @@ const socialLinks = [
   { icon: <RiInstagramLine size={14} />, href: "#" },
 ];
 
-// 2. Explicitly type as Variants
 const brandContainerVariants: Variants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.08,
+      staggerChildren: 0.12,
       delayChildren: 0.2,
     },
   },
 };
 
-// 3. Explicitly type as Variants and use "as const" for the ease array
 const letterVariants: Variants = {
-  hidden: { y: "120%", opacity: 0, rotate: 10 },
+  hidden: { opacity: 0, display: "none" },
   visible: {
-    y: "0%",
     opacity: 1,
-    rotate: 0,
+    display: "inline-block",
     transition: {
-      duration: 1,
-      ease: [0.22, 1, 0.36, 1] as const, // <-- 4. Fixes the TS Easing error
+      duration: 0,
+    },
+  },
+};
+
+const cursorVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: [0, 1, 0],
+    transition: {
+      repeat: Infinity,
+      duration: 0.8,
+      ease: "linear",
     },
   },
 };
@@ -95,7 +103,8 @@ export default function Footer() {
                   className="group relative w-fit text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
                 >
                   {link.name}
-                  <span className="absolute -bottom-1 left-0 h-[0.5px] w-0 bg-white transition-all duration-300 ease-out group-hover:w-full" />
+                  {/* UPDATED: Follow-through underline animation */}
+                  <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
                 </Link>
               ))}
             </div>
@@ -108,7 +117,8 @@ export default function Footer() {
                   className="group relative w-fit text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
                 >
                   {link.name}
-                  <span className="absolute -bottom-1 left-0 h-[0.5px] w-0 bg-white transition-all duration-300 ease-out group-hover:w-full" />
+                  {/* UPDATED: Follow-through underline animation */}
+                  <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
                 </Link>
               ))}
             </div>
@@ -156,35 +166,14 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* MIDDLE SECTION: Giant Brand Name with OGL Background */}
+        {/* MIDDLE SECTION: Giant Brand Name with Typewriter Effect */}
         <div className="relative flex w-full justify-center border-b border-white/10 py-24 md:py-20 overflow-hidden">
-          {/* OGL Particles Background layer */}
-          <div className="absolute inset-0 z-0">
-            <Particles
-              particleCount={400}
-              particleSpread={15}
-              speed={0.15}
-              particleColors={["#ffffff", "#2E5BFF", "#149CCB"]}
-              moveParticlesOnHover={true}
-              particleHoverFactor={2}
-              alphaParticles={true}
-              particleBaseSize={80}
-              sizeRandomness={1.2}
-              cameraDistance={25}
-              className="opacity-70"
-            />
-            {/* Fade masks to seamlessly blend the canvas into the black background */}
-            <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black to-transparent pointer-events-none" />
-            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black to-transparent pointer-events-none" />
-          </div>
-
-          {/* Foreground Animated Text */}
           <motion.h1
             variants={brandContainerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
-            className="relative z-10 flex select-none text-[13vw] font-bold leading-[0.8] tracking-[-0.02em] text-white overflow-hidden drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
+            className="relative z-10 flex select-none text-[13vw] font-bold leading-[0.8] tracking-[-0.02em] text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
           >
             {brandName.map((letter, index) => (
               <motion.span

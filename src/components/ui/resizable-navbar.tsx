@@ -194,10 +194,8 @@ export const NavItems = ({
               onClick={onItemClick}
               className={cn(
                 "relative px-4 py-2 transition-colors flex items-center gap-1 group",
-                // FIX: If the navbar is visible OR this specific item is open, force black text.
-                visible || hovered === idx
-                  ? "text-white hover:text-black"
-                  : "text-white hover:text-black",
+                // FIX: Force black text if this specific item is open, otherwise default to white
+                hovered === idx ? "text-black" : "text-white hover:text-black",
               )}
               href={item.link}
             >

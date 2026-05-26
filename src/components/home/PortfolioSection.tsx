@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef, useState } from "react";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -39,7 +40,7 @@ const projects = [
   },
   {
     id: 3,
-    title: "Creative and branding",
+    title: "Creative & Branding",
     subtitle: "Daily photo missions",
     description:
       "An app where users complete daily missions by sharing photos or videos. Document the ordinary. Make it extraordinary. An app where users complete daily missions by sharing photos or videos. Document the ordinary. Make it extraordinary. by sharing photos or videos. Document the ordinary. Make it extraordinary.",
@@ -173,23 +174,67 @@ export default function PortfolioSection() {
             {/* CONTENT */}
             <div className="relative z-10 flex w-full items-end justify-between">
               <div className="flex w-full lg:w-[80%] flex-col items-start gap-6 md:gap-8">
-                {/* MINIMAL CTA MOVED ABOVE TITLE */}
-                <Link
-                  href="#"
-                  className="reveal-item group flex w-fit items-center gap-2 text-xl font-bold tracking-wide text-white transition-colors"
-                >
-                  <span className="relative overflow-hidden pb-1">
-                    View Project
-                    <span className="absolute bottom-0 left-0 h-[1.5px] w-0 bg-[#2E5BFF] transition-all duration-300 ease-out group-hover:w-full" />
-                  </span>
+                {/* INVISIBLE-TO-PADDED BUTTON WITH ORIGINAL ARROW ANIMATION */}
+                <Link href="#" className="reveal-item block w-fit">
+                  <motion.div
+                    initial="rest"
+                    whileHover="hover"
+                    animate="rest"
+                    className="group relative flex items-center gap-1 text-xl font-bold tracking-wide text-white"
+                  >
+                    {/* Invisible expanded hit-box */}
+                    <div className="absolute left-1/2 top-1/2 h-[52px] w-[190px] -translate-x-1/2 -translate-y-1/2 z-0" />
 
-                  <div className="relative flex h-6 w-6 items-center justify-center overflow-hidden">
-                    {/* Outgoing Arrow */}
-                    <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]" />
+                    {/* Animated trail border centered over the text */}
+                    <div className="absolute left-1/2 top-1/2 h-[52px] w-[190px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
+                      <svg
+                        className="overflow-visible h-full w-full"
+                        viewBox="0 0 190 52"
+                        fill="none"
+                      >
+                        <defs>
+                          <linearGradient
+                            id={`gradient-${project.id}`}
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="0%"
+                          >
+                            <stop offset="0%" stopColor="#2E5BFF" />
+                            <stop offset="100%" stopColor="#149CCB" />
+                          </linearGradient>
+                        </defs>
 
-                    {/* Incoming Arrow */}
-                    <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
-                  </div>
+                        <motion.path
+                          d="M 1 43 L 1 9 A 8 8 0 0 1 9 1 L 181 1 A 8 8 0 0 1 189 9 L 189 43 A 8 8 0 0 1 181 51 L 9 51 A 8 8 0 0 1 1 43 Z"
+                          stroke={`url(#gradient-${project.id})`}
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          // FIX: Added opacity: 0 to the rest state to completely hide the rounded cap dot!
+                          initial={{ pathLength: 0, opacity: 0 }}
+                          variants={{
+                            rest: { pathLength: 0, opacity: 0 },
+                            hover: {
+                              pathLength: 1,
+                              opacity: 1,
+                              transition: { duration: 0.8, ease: "easeInOut" },
+                            },
+                          }}
+                        />
+                      </svg>
+                    </div>
+
+                    {/* Button text & Restored Animated Arrows */}
+                    <span className="relative z-20 flex items-center gap-2 cursor-pointer">
+                      View Project
+                      <div className="relative flex h-6 w-6 items-center justify-center overflow-hidden">
+                        {/* Outgoing Arrow */}
+                        <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]" />
+                        {/* Incoming Arrow */}
+                        <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
+                      </div>
+                    </span>
+                  </motion.div>
                 </Link>
 
                 {/* Title */}

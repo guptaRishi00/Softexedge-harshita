@@ -253,18 +253,21 @@ export default function ServiceSection() {
                       className="group relative flex cursor-pointer items-center justify-between overflow-hidden border-b border-white/50 px-4 py-6 transition-colors duration-500 ease-out md:px-6 md:py-6"
                     >
                       <div className="flex items-center">
-                        <div className="relative w-0 overflow-hidden opacity-0 transition-all duration-500 ease-[0.22,1,0.36,1] group-hover:mr-4 group-hover:w-20 group-hover:opacity-100 md:group-hover:mr-6 md:group-hover:w-32">
-                          <div className="relative h-12 w-20 overflow-hidden rounded-lg md:h-16 md:w-32">
+                        {/* FIXED: Changed md:group-hover:w-32 to md:group-hover:w-20 to exactly match the image size.
+        Adjust the mr-2 / md:group-hover:mr-4 to increase/decrease the actual text gap.
+      */}
+                        <div className="relative w-0 overflow-hidden opacity-0 transition-all duration-500 ease-[0.22,1,0.36,1] group-hover:mr-2 group-hover:w-20 group-hover:opacity-100 md:group-hover:mr-4 md:group-hover:w-20">
+                          <div className="relative h-12 w-20 overflow-hidden rounded-lg md:h-16 md:w-20">
                             <Image
                               src={block.image}
                               alt={item.title}
                               fill
-                              className="scale-110 object-cover transition-transform duration-700 ease-out group-hover:scale-100"
+                              className="scale-90 object-cover transition-transform duration-700 ease-out group-hover:scale-100"
                             />
                           </div>
                         </div>
 
-                        <p className="relative z-10 text-2xl font-medium tracking-tight text-white transition-colors duration-500 ease-[0.22,1,0.36,1] group-hover:text-white md:text-4xl lg:text-[1.2rem]">
+                        <p className="relative z-10 text-2xl font-medium tracking-tight text-white transition-colors duration-500 ease-[0.22,1,0.36,1] group-hover:text-white md:text-4xl lg:text-[2rem]">
                           {item.title}
                         </p>
                       </div>
@@ -272,7 +275,7 @@ export default function ServiceSection() {
                   ))}
 
                   {/* MINIMAL CTA WITH REACT-ICONS ARROW ANIMATION */}
-                  <motion.li variants={fadeUpVariant} className="mt-10 block">
+                  {/* <motion.li variants={fadeUpVariant} className="mt-10 block">
                     <a
                       href="#contact"
                       className="group flex w-fit items-center gap-2 text-lg font-medium text-white transition-colors"
@@ -283,14 +286,12 @@ export default function ServiceSection() {
                       </span>
 
                       <div className="relative flex h-6 w-6 items-center justify-center overflow-hidden">
-                        {/* Outgoing Arrow */}
                         <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]" />
 
-                        {/* Incoming Arrow */}
                         <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
                       </div>
                     </a>
-                  </motion.li>
+                  </motion.li> */}
                 </motion.ul>
               </div>
             </div>

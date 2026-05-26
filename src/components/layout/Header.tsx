@@ -38,7 +38,7 @@ const navItems: NavItem[] = [
       {
         name: "Brand Strategy",
         count: "/1 services",
-        link: "/services",
+        link: "/brand-strategy",
         image:
           "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=800&auto=format&fit=crop",
       },

@@ -8,6 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef } from "react";
 import PixelBlast from "../ui/PixelBlast";
 import ColorBends from "../ui/ColorBends";
+import DotGrid from "../ui/DotGrid";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -94,28 +95,20 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-black py-20 text-white md:py-10"
+      className="relative w-full overflow-hidden bg-black py-20 text-white md:py-20"
     >
       {/* PIXEL BLAST BACKGROUND */}
       <div className="absolute inset-0 flex items-center w-full justify-center gap-1">
-        <PixelBlast
-          variant="square"
-          pixelSize={2}
-          color="#2E5BFF"
-          patternScale={4}
-          patternDensity={0.25}
-          pixelSizeJitter={0.65}
-          enableRipples
-          rippleSpeed={0.4}
-          rippleThickness={0.12}
-          rippleIntensityScale={1.5}
-          liquid={false}
-          liquidStrength={0.12}
-          liquidRadius={1.2}
-          liquidWobbleSpeed={5}
-          speed={0.5}
-          edgeFade={0}
-          transparent
+        <DotGrid
+          dotSize={4}
+          gap={22}
+          baseColor="#2F293A"
+          activeColor="#2E5BFF"
+          proximity={150}
+          shockRadius={250}
+          shockStrength={1}
+          resistance={2000}
+          returnDuration={4.4}
         />
       </div>
 
@@ -156,12 +149,14 @@ export default function StatsSection() {
               )}
             >
               {/* NUMBER */}
+              {/* NUMBER */}
+              {/* NUMBER */}
               <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-16">
                 <h2
                   className={cn(
                     "relative",
                     "flex",
-                    "items-start",
+                    "items-start", // Keeps the + anchored to the top
                     "overflow-visible",
                     "bg-linear-to-r",
                     "from-[#2E5BFF]",
@@ -170,7 +165,7 @@ export default function StatsSection() {
                     "bg-[size:200%_auto]",
                     "bg-clip-text",
                     "text-[7rem]",
-                    "font-medium",
+                    "font-bold",
                     "leading-none",
                     "tracking-[-0.04em]",
                     "text-transparent",
@@ -178,7 +173,11 @@ export default function StatsSection() {
                     "md:text-[12rem]",
                   )}
                 >
-                  {stat.number}+
+                  {stat.number}
+                  {/* Using 0.5em makes it exactly half the size of the number automatically */}
+                  <span className="text-[0.4em] font-bold tracking-[0.2em] mt-[-0.2em] ml-1">
+                    +
+                  </span>
                 </h2>
               </div>
 
