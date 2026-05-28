@@ -159,15 +159,17 @@ export default function ServiceSection() {
               href={service.href}
               onMouseEnter={() => handleMouseEnter(index)}
               onMouseLeave={handleMouseLeave}
-              // Made relative and removed default border classes
-              className="group relative flex w-full cursor-none items-center justify-between py-6 md:py-10"
+              // Scaled down padding here
+              className="group relative flex w-full cursor-none items-center justify-between py-4 md:py-10"
             >
               <div className="flex items-center">
                 {/* IMAGE REVEAL CONTAINER */}
                 <div
                   className={cn(
-                    "relative h-[70px] shrink-0 overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[130px]",
-                    "w-0 group-hover:mr-6 group-hover:w-[100px] group-hover:opacity-100 md:group-hover:mr-10 md:group-hover:w-[200px]",
+                    // Scaled down base heights here
+                    "relative h-[50px] shrink-0 overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
+                    // Scaled down hover widths and margins here
+                    "w-0 group-hover:mr-4 group-hover:w-[80px] group-hover:opacity-100 md:group-hover:mr-8 md:group-hover:w-[150px]",
                   )}
                 >
                   <img
@@ -180,7 +182,8 @@ export default function ServiceSection() {
                 {/* TITLE */}
                 <h3
                   className={cn(
-                    "text-5xl font-bold leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-7xl md:text-[clamp(4rem,8vw,10rem)]",
+                    // Scaled down base sizes and clamp calculations here
+                    "text-4xl font-bold leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-6xl md:text-[clamp(3rem,6vw,7rem)]",
                     hoveredIndex !== null && hoveredIndex !== index
                       ? "text-white/20"
                       : "text-white",
@@ -210,12 +213,12 @@ export default function ServiceSection() {
       <div
         ref={cursorRef}
         className={cn(
-          "pointer-events-none fixed left-0 top-0 z-[9999] flex h-10 w-40 items-center justify-center rounded-lg bg-white text-black shadow-xl",
+          "pointer-events-none fixed left-0 top-0 z-9999 flex h-10 w-40 items-center justify-center rounded-lg bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-white",
           "will-change-transform",
         )}
       >
-        <span className="ml-1 mt-px text-[0.65rem] font-bold uppercase tracking-[0.2em]">
-          View Project
+        <span className="mt-px ml-1 text-[0.65rem] font-bold uppercase tracking-[0.2em]">
+          View Services
         </span>
         <MdKeyboardArrowRight />
       </div>

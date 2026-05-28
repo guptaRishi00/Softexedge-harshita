@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
-// Extracted exactly from your reference image
+// Extracted exactly from your reference
 const faqs = [
   {
     question: "What services do you offer?",
@@ -43,31 +43,28 @@ export default function FaqSection() {
   };
 
   return (
-    <section className="relative bg-[#0A0A0A] py-24 md:py-40 px-6 md:px-12 lg:px-20 text-white overflow-hidden">
+    <section className="relative bg-white py-24 md:py-32 px-6 md:px-12 lg:px-20 text-zinc-900 overflow-hidden">
       <div className="max-w-[1500px] mx-auto w-full flex flex-col lg:flex-row gap-16 lg:gap-24 items-start">
         {/* LEFT COLUMN: Sticky Title */}
-        <div className="w-full lg:w-[40%] lg:sticky lg:top-[20vh] flex flex-col items-start">
+        <div className="w-full lg:w-[40%] lg:sticky lg:top-5 flex flex-col items-start">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
           >
-            {/* Spaced out F A Q just like the image */}
-            <p className="text-zinc-500 font-medium tracking-[0.4em] uppercase mb-6 text-sm">
+            {/* Spaced out F A Q */}
+            <p className="text-zinc-400 font-semibold tracking-[0.4em] uppercase mb-6 text-xs">
               F A Q
             </p>
-            <h2 className="text-5xl md:text-6xl lg:text-6xl font-bold tracking-tight text-white leading-[1.05]">
-              Frequently Asked <br className="hidden lg:block" />
-              <span className="bg-gradient-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] bg-clip-text text-transparent">
-                Questions.
-              </span>
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-zinc-900 leading-[1.05]">
+              FAQ
             </h2>
           </motion.div>
         </div>
 
         {/* RIGHT COLUMN: Interactive Accordion */}
-        <div className="w-full lg:w-[60%] flex flex-col border-t border-zinc-800">
+        <div className="w-full lg:w-[95%] flex flex-col border-t border-zinc-200">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
 
@@ -82,7 +79,7 @@ export default function FaqSection() {
                   delay: index * 0.1,
                   ease: premiumEase,
                 }}
-                className="border-b border-zinc-800"
+                className="border-b border-zinc-200"
               >
                 <button
                   onClick={() => toggleFaq(index)}
@@ -91,19 +88,19 @@ export default function FaqSection() {
                   <h3
                     className={`text-2xl md:text-3xl font-medium tracking-tight transition-colors duration-300 ${
                       isOpen
-                        ? "text-white"
-                        : "text-zinc-300 group-hover:text-white"
+                        ? "text-zinc-900"
+                        : "text-zinc-500 group-hover:text-zinc-900"
                     }`}
                   >
                     {faq.question}
                   </h3>
 
                   {/* Animated +/- Icon */}
-                  <div className="relative shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full border flex items-center justify-center transition-colors duration-300 border-zinc-700 group-hover:border-zinc-500">
+                  <div className="relative shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full border flex items-center justify-center transition-colors duration-300 border-zinc-200 bg-zinc-50 group-hover:border-zinc-300 group-hover:bg-zinc-100">
                     {/* Horizontal Line (Always visible) */}
                     <motion.div
                       className={`absolute w-3 md:w-4 h-[2px] transition-colors duration-300 ${
-                        isOpen ? "bg-[#2F85EA]" : "bg-white"
+                        isOpen ? "bg-[#2E5BFF]" : "bg-zinc-900"
                       }`}
                     />
                     {/* Vertical Line (Rotates and fades out to form a minus) */}
@@ -113,7 +110,7 @@ export default function FaqSection() {
                         opacity: isOpen ? 0 : 1,
                       }}
                       transition={{ duration: 0.4, ease: premiumEase }}
-                      className="absolute w-[2px] h-3 md:h-4 bg-white"
+                      className="absolute w-[2px] h-3 md:h-4 bg-zinc-900"
                     />
                   </div>
                 </button>
@@ -128,7 +125,7 @@ export default function FaqSection() {
                       transition={{ duration: 0.5, ease: premiumEase }}
                       className="overflow-hidden"
                     >
-                      <p className="text-zinc-400 font-light text-lg md:text-xl leading-relaxed pb-10 max-w-2xl">
+                      <p className="text-zinc-600 font-light text-lg md:text-xl leading-relaxed pb-10 max-w-2xl">
                         {faq.answer}
                       </p>
                     </motion.div>

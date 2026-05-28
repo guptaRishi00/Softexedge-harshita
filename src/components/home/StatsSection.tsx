@@ -84,14 +84,14 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-white py-20 text-black md:py-20"
+      className="relative w-full overflow-hidden bg-white py-20 text-black md:py-8"
     >
       {/* PIXEL BLAST BACKGROUND */}
       <div className="absolute inset-0 flex items-center w-full justify-center gap-1">
         <DotGrid
           dotSize={3}
           gap={25}
-          baseColor="#E5E7EB" // Changed to light gray for light theme
+          baseColor="#E5E7EB"
           activeColor="#2E5BFF"
           proximity={150}
           shockRadius={250}
@@ -134,11 +134,11 @@ export default function StatsSection() {
                 "md:flex-row",
                 "md:items-center",
                 "md:px-10",
-                "md:py-14",
+                "md:py-8",
               )}
             >
               {/* NUMBER */}
-              <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-1">
+              <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-10">
                 <h2
                   className={cn(
                     "relative",
@@ -155,7 +155,7 @@ export default function StatsSection() {
                     "tracking-[-0.04em]",
                     "text-transparent",
                     "pb-2",
-                    "md:text-[12rem]",
+                    "md:text-[10rem]",
                   )}
                 >
                   {stat.number}

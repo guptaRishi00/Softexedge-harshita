@@ -47,7 +47,8 @@ const services = [
 ];
 
 export default function WhatWeDoSection() {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  // 1. Initialize with 0 so the first item is open by default
+  const [hoveredIndex, setHoveredIndex] = useState<number>(0);
 
   return (
     <section className="relative bg-black py-24 md:py-32 px-6 md:px-12 lg:px-20 text-white overflow-hidden">
@@ -62,15 +63,18 @@ export default function WhatWeDoSection() {
             className="flex flex-col items-start"
           >
             <p className="text-zinc-500 font-medium tracking-[0.1em] uppercase mb-4 text-sm">
-              What We Do
+              Sub services
             </p>
             <h2 className="text-5xl md:text-6xl lg:text-6xl font-medium leading-[1.05] tracking-tight mb-6">
-              We engineer digital advantage.
+              We engineer digital{" "}
+              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text py-1 text-transparent">
+                advantage
+              </span>
             </h2>
             <p className="text-lg text-zinc-400 font-light leading-relaxed max-w-md mb-10">
               From foundational strategy to cinematic digital platforms, we
               provide end-to-end capabilities designed to elevate your brand
-              above the noise.
+              above the noise
             </p>
 
             <DynamicButton
@@ -82,7 +86,11 @@ export default function WhatWeDoSection() {
         </div>
 
         {/* RIGHT COLUMN: Interactive Service List */}
-        <div className="w-full lg:w-[60%] flex flex-col border-t border-zinc-800 mt-4 lg:mt-0">
+        <div
+          className="w-full lg:w-[60%] flex flex-col border-t border-zinc-800 mt-4 lg:mt-0"
+          // 2. Reset back to the first item if the mouse leaves the entire list area
+          onMouseLeave={() => setHoveredIndex(0)}
+        >
           {services.map((service, index) => {
             const isHovered = hoveredIndex === index;
 
@@ -98,8 +106,7 @@ export default function WhatWeDoSection() {
                     ease: premiumEase,
                   }}
                   onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                  // Removed md:items-center, kept items-start
+                  // 3. Removed individual onMouseLeave so it doesn't flicker shut
                   className="relative flex flex-col md:flex-row items-start justify-between py-8 md:py-12 border-b border-zinc-800 transition-colors duration-500 group-hover:border-white/30 z-10 overflow-hidden"
                 >
                   {/* Hover Image Background Reveal */}
@@ -115,7 +122,7 @@ export default function WhatWeDoSection() {
                         <img
                           src={service.image}
                           alt={service.title}
-                          className="w-full h-full object-cover grayscale-[50%] opacity-40 mix-blend-screen"
+                          className="w-full h-full object-cover "
                         />
                         <div className="absolute inset-0 bg-linear-to-r from-black via-black/0 to-transparent" />
                       </motion.div>
@@ -124,11 +131,6 @@ export default function WhatWeDoSection() {
 
                   {/* Content - Top aligned using items-start */}
                   <div className="relative z-10 flex flex-col md:flex-row items-start gap-4 md:gap-10 w-full">
-                    {/* Number - Added md:mt-3 to align with the top of the 5xl title text */}
-                    <span className="text-zinc-600 font-mono text-lg transition-colors duration-300 group-hover:text-zinc-400 mt-1 md:mt-3">
-                      {service.number}
-                    </span>
-
                     {/* Title & Description Wrapper */}
                     <div className="flex-1 flex flex-col items-start gap-2">
                       <h3 className="text-3xl md:text-5xl font-medium tracking-tight text-zinc-300 transition-colors duration-300 group-hover:text-white group-hover:translate-x-2 transform">
@@ -143,7 +145,7 @@ export default function WhatWeDoSection() {
                             marginTop: isHovered ? "8px" : "0px",
                           }}
                           transition={{ duration: 0.4, ease: premiumEase }}
-                          className="text-zinc-400 text-sm md:text-base max-w-md font-light leading-relaxed"
+                          className="text-zinc-100 text-sm md:text-base max-w-md font-light leading-relaxed pl-3"
                         >
                           {service.description}
                         </motion.p>

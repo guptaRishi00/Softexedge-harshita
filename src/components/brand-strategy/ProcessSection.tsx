@@ -1,137 +1,176 @@
 "use client";
 
-import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
-import React, { useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect } from "react";
 
-const processSteps = [
+const projects = [
   {
     id: "01",
-    title: "Discovery & Alignment",
+    title: "Global FinTech Rebrand",
     description:
-      "We dive deep into your business landscape, audience, and core objectives. Stripping away assumptions to uncover the fundamental truths of your brand.",
-    image:
+      "A complete strategic and visual overhaul for a leading financial institution, modernizing their digital presence and driving a 40% increase in user engagement.",
+    images: [
       "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1556761175-4b46a572b786?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1600&auto=format&fit=crop",
+    ],
   },
   {
     id: "02",
-    title: "Strategic Architecture",
+    title: "E-Commerce Platform",
     description:
-      "Armed with data, we define your positioning, brand narrative, and the strategic blueprint. This is where we carve out your unique space in the market.",
-    image:
+      "Architecting a scalable, headless commerce experience for a luxury retail brand. The new architecture resulted in lightning-fast load times and seamless checkout flows.",
+    images: [
       "https://images.unsplash.com/photo-1555421689-491a97ff2040?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1600&auto=format&fit=crop",
+    ],
   },
   {
     id: "03",
-    title: "Creative Concepting",
+    title: "AI Healthcare App",
     description:
-      "Strategy translates into visual and verbal identity. We explore multiple creative directions, ensuring the aesthetic perfectly aligns with the strategic foundation.",
-    image:
+      "Designing an intuitive, accessible patient interface powered by machine learning. We turned complex medical data into clear, actionable insights for everyday users.",
+    images: [
       "https://images.unsplash.com/photo-1618761714954-0b8cd0026356?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?q=80&w=1600&auto=format&fit=crop",
+    ],
   },
   {
     id: "04",
-    title: "Execution & Build",
+    title: "Automotive Web3 Experience",
     description:
-      "Our designers and engineers bring the concepts to life. We build scalable, high-performance digital products and identities with obsessive attention to detail.",
-    image:
+      "A groundbreaking digital showroom allowing users to customize and mint digital assets. We pushed the boundaries of WebGL to create a highly immersive interactive environment.",
+    images: [
       "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1600&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1600&auto=format&fit=crop",
+    ],
   },
 ];
 
-const ProcessStep = ({
-  step,
-  index,
-  total,
-  progress,
+const ProjectCard = ({
+  project,
+  hoveredId,
+  setHoveredId,
 }: {
-  step: (typeof processSteps)[0];
-  index: number;
-  total: number;
-  progress: MotionValue<number>;
+  project: (typeof projects)[0];
+  hoveredId: string | null;
+  setHoveredId: (id: string | null) => void;
 }) => {
-  // FIX: Check if it's the last item.
-  // If it is, we lock the start/end to a safe [0, 1] range to prevent the offset error.
-  const isLast = index === total - 1;
-  const start = isLast ? 0 : index / (total - 1);
-  const end = isLast ? 1 : (index + 1) / (total - 1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // FIX: Only apply the scale/opacity shrink if it's NOT the last slide
-  const scale = useTransform(progress, [start, end], [1, isLast ? 1 : 0.92]);
-  const opacity = useTransform(progress, [start, end], [1, isLast ? 1 : 0.2]);
+  const isActive = hoveredId === project.id;
+  const isAnyHovered = hoveredId !== null;
 
-  // 3. Local parallax for the image as it enters the screen from the bottom
-  const targetRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ["start end", "start start"], // Tracks when the top of the section enters to when it hits the top
-  });
-  const imageY = useTransform(scrollYProgress, [0, 1], ["-20%", "0%"]);
+  // Auto-carousel timer for background images
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % project.images.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [project.images.length]);
 
   return (
-    <div
-      ref={targetRef}
-      className={`sticky top-0 h-[100dvh] w-full bg-[#0A0A0A] flex justify-center overflow-hidden ${
-        index > 0 ? "border-t border-white/5 " : ""
-      }`}
-      style={{ zIndex: index }}
+    <motion.div
+      onMouseEnter={() => setHoveredId(project.id)}
+      onMouseLeave={() => setHoveredId(null)}
+      animate={{
+        flex: isActive ? 4 : isAnyHovered ? 0.75 : 1,
+      }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="group relative flex flex-col justify-end overflow-hidden rounded-3xl bg-zinc-900 border border-white/5 cursor-pointer"
     >
-      <motion.div
-        style={{ scale, opacity }}
-        className="w-full h-full flex flex-col items-center origin-top pt-20 md:pt-32"
-      >
-        {/* Header Content */}
-        <div className="max-w-4xl text-center flex flex-col items-center z-20 px-6">
-          <div className="text-sm md:text-base font-mono tracking-[0.2em] uppercase font-semibold mb-6 flex items-center gap-2">
-            <span className="bg-gradient-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] bg-clip-text text-transparent">
-              {step.id}
-            </span>
-            <span className="text-zinc-600">/</span>
-            <span className="text-zinc-600">0{total}</span>
-          </div>
+      {/* Background Image Carousel */}
+      <div className="absolute inset-0 z-0 h-full w-full overflow-hidden bg-zinc-900">
+        <div className="relative h-full w-full transition-transform duration-700 ease-[0.22,1,0.36,1] group-hover:scale-105">
+          <AnimatePresence mode="popLayout">
+            <motion.img
+              key={currentImageIndex}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              src={project.images[currentImageIndex]}
+              alt={`${project.title} showcase`}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </AnimatePresence>
+        </div>
+      </div>
 
-          <h2 className="text-4xl md:text-6xl lg:text-[5rem] font-bold mb-6 tracking-tight text-white leading-[1.05]">
-            {step.title}
-          </h2>
+      {/* Smooth Gradient Overlay (Lightens up when not hovered for a cleaner look) */}
+      <div
+        className="absolute inset-0 z-10 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500 ease-out"
+        style={{ opacity: isActive ? 1 : 0.3 }}
+      />
 
-          <p className="text-base md:text-xl text-zinc-400 font-light max-w-2xl leading-relaxed mb-12">
-            {step.description}
-          </p>
+      {/* Content Overlay */}
+      <div className="absolute inset-x-0 bottom-0 z-20 flex w-full flex-col justify-end p-6 md:p-8">
+        {/* Project ID Indicator (Always visible) */}
+        <div className="mb-4 flex items-center gap-3">
+          <div className="h-[2px] w-6 md:w-8 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]" />
         </div>
 
-        {/* Massive Image Showcase */}
-        <div className="relative w-full max-w-[1400px] flex-1 mt-auto mx-auto overflow-hidden rounded-t-[32px] md:rounded-t-[64px] border-t border-x border-white/10 z-10 ">
-          <motion.img
-            style={{ y: imageY }}
-            src={step.image}
-            alt={step.title}
-            className="absolute top-0 left-0 w-full h-[125%] object-cover"
-          />
-        </div>
-      </motion.div>
-    </div>
+        {/* Text Container - Only mounts/shows when isActive is true */}
+        <AnimatePresence>
+          {isActive && (
+            <motion.div
+              initial={{ opacity: 0, y: 15, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: 10, height: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="flex flex-col gap-3 min-w-[250px] md:min-w-[300px]"
+            >
+              <h3 className="font-semibold tracking-tight text-white text-2xl md:text-3xl lg:text-4xl whitespace-nowrap overflow-hidden text-ellipsis">
+                {project.title}
+              </h3>
+
+              <p className="text-zinc-300 font-light leading-relaxed text-sm md:text-base line-clamp-3 md:line-clamp-2 max-w-lg">
+                {project.description}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Minimalist Arrow Icon */}
+      </div>
+    </motion.div>
   );
 };
 
 export default function ProcessSection() {
-  const containerRef = useRef<HTMLElement>(null);
-
-  // Track scroll progress across the entire parent section
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   return (
-    <section ref={containerRef} className="relative w-full bg-[#0A0A0A]">
-      {processSteps.map((step, index) => (
-        <ProcessStep
-          key={step.id}
-          step={step}
-          index={index}
-          total={processSteps.length}
-          progress={scrollYProgress}
-        />
-      ))}
+    <section className="w-full bg-[#0A0A0A] px-6 py-24 md:px-12 lg:px-20 lg:py-32">
+      <div className="mx-auto max-w-7xl">
+        {/* Section Header */}
+        <div className="mb-12 md:mb-16">
+          <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500">
+            Selected Works
+          </span>
+          <h2 className="text-4xl font-medium tracking-tight text-white md:text-5xl lg:text-7xl">
+            Our recent <br className="hidden md:block" />
+            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              transformations.
+            </span>
+          </h2>
+        </div>
+
+        {/* Flex Accordion Container */}
+        <div className="flex flex-col md:flex-row gap-4 w-full h-[800px] md:h-[500px] lg:h-[600px]">
+          {projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              hoveredId={hoveredId}
+              setHoveredId={setHoveredId}
+            />
+          ))}
+        </div>
+      </div>
     </section>
   );
 }

@@ -117,7 +117,7 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         borderRadius: visible ? "12px" : "0px",
       }}
       animate={{
-        width: visible ? "95%" : "100%", // Using width instead of scale fixes Safari/Chrome backdrop-blur bugs
+        width: visible ? "70%" : "100%", // Using width instead of scale fixes Safari/Chrome backdrop-blur bugs
         y: visible ? 16 : 0,
         borderRadius: visible ? "10px" : "0px",
       }}

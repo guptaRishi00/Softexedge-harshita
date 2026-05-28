@@ -274,7 +274,7 @@ export default function PortfolioSection() {
       <div
         ref={cursorRef}
         className={cn(
-          "pointer-events-none fixed left-0 top-0 z-[9999] flex h-10 w-40 items-center justify-center rounded-lg bg-white text-black shadow-xl",
+          "pointer-events-none fixed left-0 top-0 z-9999 flex h-10 w-33 items-center justify-center rounded-lg bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-white",
           "will-change-transform",
         )}
       >
