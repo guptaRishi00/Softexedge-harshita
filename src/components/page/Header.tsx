@@ -16,15 +16,16 @@ import {
 } from "@/components/page/resizable-navbar";
 import DynamicButton from "../ui/DynamicButton";
 
-const CustomLogo = () => (
+const CustomLogo = ({ visible }: { visible?: boolean }) => (
   <Link href="/" className="flex items-center gap-2 group">
     <Image
-      src="/assets/logoBlue.png"
+      // Switch between logos based on scroll state
+      src={visible ? "/assets/logo.png" : "/assets/logoBlue.png"}
       alt="Grovio Logo"
       width={85}
       height={30}
       style={{ width: "90px", height: "auto" }}
-      className="object-contain"
+      className="object-contain transition-all duration-300"
     />
   </Link>
 );
@@ -135,11 +136,11 @@ export default function Header() {
       <AceternityNavbar className="z-[100]">
         <NavBody>
           <CustomLogo />
+          {/* 2. Remove the hardcoded text-white from here so resizable-navbar can handle it */}
           <NavItems
             items={navItems}
-            className="text-[17px] font-medium text-white hover:text-gray-300 transition-colors"
+            className="text-[17px] font-medium transition-colors"
           />
-          {/* ADDED: border border-white/20 hover:border-white/40 */}
           <DynamicButton
             text="Get in Touch"
             href="/contact"

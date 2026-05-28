@@ -1,11 +1,9 @@
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import FaqSection from "@/components/brand-strategy/FaqSection";
-import InteractiveProcessSection from "@/components/brand-strategy/InteractiveProcessSection";
 import ProcessSection from "@/components/brand-strategy/ProcessSection";
-import ProjectsSection from "@/components/brand-strategy/ProjectsSection";
+import ProjectShowcase from "@/components/brand-strategy/ProjectShowcase";
 import StrategyHeroSection from "@/components/brand-strategy/StrategyHeroSection";
-import WhatweDoAbout from "@/components/brand-strategy/WhatWeDoAbout";
-import WhatWeDoSection from "@/components/brand-strategy/WhatWeDoSection";
+import SubServices from "@/components/brand-strategy/SubServices";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
 
@@ -16,10 +14,9 @@ export default function BrandStrategyPage({}: Props) {
     <div>
       <div className="">
         <StrategyHeroSection />
-        <WhatweDoAbout />
-        <WhatWeDoSection />
-        <InteractiveProcessSection />
+        <SubServices />
         <ProcessSection />
+        <ProjectShowcase />
         <ExperimentalTestimonials />
         <div className="p-3">
           <CtaSection />

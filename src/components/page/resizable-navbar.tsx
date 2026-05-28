@@ -194,15 +194,19 @@ export const NavItems = ({
               onClick={onItemClick}
               className={cn(
                 "relative px-4 py-2 transition-colors flex items-center gap-1 group",
-                // FIX: Force black text if this specific item is open, otherwise default to white
-                hovered === idx ? "text-black" : "text-black hover:text-black",
+                // Update this line: Handle initial black text, scrolled white text, and hovered black text
+                hovered === idx
+                  ? "text-black"
+                  : visible
+                    ? "text-white hover:text-gray-200"
+                    : "text-black hover:text-gray-800",
               )}
               href={item.link}
             >
               {hovered === idx && (
                 <motion.div
                   layoutId="hovered"
-                  className="absolute inset-0 h-full w-full rounded-lg bg-white shadow-md"
+                  className="absolute inset-0 h-full w-full rounded-lg bg-white"
                 />
               )}
 
@@ -221,7 +225,8 @@ export const NavItems = ({
                   strokeLinejoin="round"
                   className={cn(
                     "relative z-20 transition-transform duration-200",
-                    hovered === idx && "rotate-180 text-black",
+                    hovered === idx && "rotate-180",
+                    // No need to force text-black here as it inherits from the parent Link
                   )}
                 >
                   <path d="m6 9 6 6 6-6" />

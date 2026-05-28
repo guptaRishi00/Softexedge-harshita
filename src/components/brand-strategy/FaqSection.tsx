@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { MdArrowOutward } from "react-icons/md";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
-// Extracted exactly from your reference
 const faqs = [
   {
     question: "What services do you offer?",
@@ -35,7 +35,6 @@ const faqs = [
 ];
 
 export default function FaqSection() {
-  // Track which accordion item is open. Null means all are closed.
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggleFaq = (index: number) => {
@@ -43,17 +42,16 @@ export default function FaqSection() {
   };
 
   return (
-    <section className="relative bg-white py-24 md:py-32 px-6 md:px-12 lg:px-20 text-zinc-900 overflow-hidden">
-      <div className="max-w-[1500px] mx-auto w-full flex flex-col lg:flex-row gap-16 lg:gap-24 items-start">
+    <section className="relative bg-white py-24 md:py-20 px-6 md:px-12 lg:px-20 text-zinc-900 overflow-hidden">
+      <div className="max-w-375 mx-auto w-full flex flex-col lg:flex-row gap-16 lg:gap-24 items-start">
         {/* LEFT COLUMN: Sticky Title */}
-        <div className="w-full lg:w-[40%] lg:sticky lg:top-5 flex flex-col items-start">
+        <div className="w-full lg:w-[30%] lg:sticky lg:top-5 flex flex-col items-start">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
           >
-            {/* Spaced out F A Q */}
             <p className="text-zinc-400 font-semibold tracking-[0.4em] uppercase mb-6 text-xs">
               F A Q
             </p>
@@ -64,7 +62,7 @@ export default function FaqSection() {
         </div>
 
         {/* RIGHT COLUMN: Interactive Accordion */}
-        <div className="w-full lg:w-[95%] flex flex-col border-t border-zinc-200">
+        <div className="w-full lg:w-[95%] flex flex-col gap-4">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
 
@@ -79,40 +77,24 @@ export default function FaqSection() {
                   delay: index * 0.1,
                   ease: premiumEase,
                 }}
-                className="border-b border-zinc-200"
+                className="bg-zinc-100 rounded-[1rem] overflow-hidden"
               >
                 <button
                   onClick={() => toggleFaq(index)}
-                  className="w-full py-8 md:py-10 flex items-center justify-between gap-6 text-left group"
+                  className="w-full px-6 py-6 md:px-10 md:py-8 flex items-center justify-between gap-6 text-left group"
                 >
-                  <h3
-                    className={`text-2xl md:text-3xl font-medium tracking-tight transition-colors duration-300 ${
-                      isOpen
-                        ? "text-zinc-900"
-                        : "text-zinc-500 group-hover:text-zinc-900"
-                    }`}
-                  >
+                  <h3 className="text-xl md:text-2xl font-semibold tracking-tight text-zinc-900">
                     {faq.question}
                   </h3>
 
-                  {/* Animated +/- Icon */}
-                  <div className="relative shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full border flex items-center justify-center transition-colors duration-300 border-zinc-200 bg-zinc-50 group-hover:border-zinc-300 group-hover:bg-zinc-100">
-                    {/* Horizontal Line (Always visible) */}
-                    <motion.div
-                      className={`absolute w-3 md:w-4 h-[2px] transition-colors duration-300 ${
-                        isOpen ? "bg-[#2E5BFF]" : "bg-zinc-900"
-                      }`}
-                    />
-                    {/* Vertical Line (Rotates and fades out to form a minus) */}
-                    <motion.div
-                      animate={{
-                        rotate: isOpen ? 90 : 0,
-                        opacity: isOpen ? 0 : 1,
-                      }}
-                      transition={{ duration: 0.4, ease: premiumEase }}
-                      className="absolute w-[2px] h-3 md:h-4 bg-zinc-900"
-                    />
-                  </div>
+                  {/* MdArrowOutward Icon */}
+                  <motion.div
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.4, ease: premiumEase }}
+                    className="shrink-0 text-zinc-900 flex items-center justify-center"
+                  >
+                    <MdArrowOutward size={28} />
+                  </motion.div>
                 </button>
 
                 {/* Expanding Answer Section */}
@@ -123,9 +105,8 @@ export default function FaqSection() {
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.5, ease: premiumEase }}
-                      className="overflow-hidden"
                     >
-                      <p className="text-zinc-600 font-light text-lg md:text-xl leading-relaxed pb-10 max-w-2xl">
+                      <p className="text-zinc-600 font-medium text-base md:text-lg leading-relaxed px-6 pb-8 md:px-10 md:pb-10 pt-0 max-w-3xl">
                         {faq.answer}
                       </p>
                     </motion.div>
