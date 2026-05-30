@@ -1,4 +1,3 @@
-// src/components/home/ContactSection.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,7 +11,6 @@ const rotatingWords = ["the future.", "your vision.", "next gen.", "together."];
 export default function ContactSection() {
   const [index, setIndex] = useState(0);
 
-  // Cycle through the words every 2.5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % rotatingWords.length);
@@ -22,36 +20,38 @@ export default function ContactSection() {
 
   return (
     <section id="contact" className="relative w-full bg-black py-20 md:py-32">
-      {/* Background Animated Gradient (Dark Theme) */}
       <div className="absolute inset-0 z-0">
         <Grainient
           color1="#000000"
           color2="#0a0a0a"
-          color3="#051024" // Subtle deep blue tint
+          color3="#051024"
           grainAmount={0.08}
           timeSpeed={0.15}
           className="opacity-100"
         />
-        {/* Optional fade mask at the top/bottom if you want it to blend into other black sections */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black to-transparent" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-[90rem] px-6 md:px-10">
-        <div className="flex flex-col items-start gap-16 lg:flex-row lg:gap-24">
-          {/* LEFT COLUMN: Header & Contact Info */}
-          <div className="flex w-full flex-col justify-between lg:w-2/5">
-            <div>
-              {/* Tag */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
+          <div className="relative flex h-full w-full flex-col justify-between overflow-hidden rounded-[2rem] border border-white/10 p-8 shadow-2xl md:p-12">
+            <img
+              src="/assets/microsoft-copilot-qUJ8fgoaLTg-unsplash.jpg"
+              alt="Background"
+              className="absolute inset-0 z-0 h-full w-full object-cover "
+            />
+
+            <div className="absolute inset-0 z-0 bg-black/90" />
+
+            <div className="relative z-10">
               <div className="mb-6 inline-flex items-center justify-center rounded-md border border-white/10 bg-white/10 px-3 py-1.5 shadow-sm backdrop-blur-md">
                 <span className="text-[11px] font-bold uppercase tracking-widest text-white">
                   Get in touch
                 </span>
               </div>
 
-              {/* Heading */}
-              <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[5rem] lg:leading-[1.05]">
+              <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
                 Let's build <br />
-                {/* Rotating Gradient Text */}
                 <span className="inline-grid overflow-hidden py-1">
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -68,20 +68,19 @@ export default function ContactSection() {
                 </span>
               </h2>
 
-              <p className="mt-6 max-w-md text-lg leading-relaxed text-zinc-400">
+              <p className="mt-6 max-w-sm text-lg leading-relaxed text-zinc-300">
                 Whether you have a specific project in mind or just want to
                 explore possibilities, our team is ready to collaborate.
               </p>
             </div>
 
-            {/* Contact Details */}
-            <div className="mt-12 flex flex-col gap-6">
+            <div className="relative z-10 mt-12 flex flex-col gap-6">
               <div className="group flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white hover:bg-white hover:text-black">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all hover:border-white hover:bg-white hover:text-black">
                   <Mail className="h-5 w-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                  <span className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
                     Email Us
                   </span>
                   <a
@@ -94,11 +93,11 @@ export default function ContactSection() {
               </div>
 
               <div className="group flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition-all hover:border-white hover:bg-white hover:text-black">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all hover:border-white hover:bg-white hover:text-black">
                   <MapPin className="h-5 w-5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                  <span className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
                     Visit Us
                   </span>
                   <p className="text-lg font-medium text-white">
@@ -109,11 +108,9 @@ export default function ContactSection() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: The Form Card */}
-          <div className="w-full lg:w-3/5">
-            <form className="flex w-full flex-col gap-6 rounded-[2rem] border border-white/10 bg-[#0a0a0a]/60 p-8 shadow-2xl backdrop-blur-xl md:p-12">
+          <div className="h-full w-full">
+            <form className="flex h-full w-full flex-col justify-between gap-6 rounded-[2rem] border border-white/10 bg-[#0a0a0a]/60 p-8 shadow-2xl backdrop-blur-xl md:p-12">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Name Input */}
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="name"
@@ -130,7 +127,6 @@ export default function ContactSection() {
                   />
                 </div>
 
-                {/* Email Input */}
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="email"
@@ -148,7 +144,6 @@ export default function ContactSection() {
                 </div>
               </div>
 
-              {/* Service Selection */}
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="service"
@@ -179,7 +174,6 @@ export default function ContactSection() {
                 </select>
               </div>
 
-              {/* Message Textarea */}
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="message"
@@ -196,7 +190,6 @@ export default function ContactSection() {
                 ></textarea>
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 className="group mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-4 rounded-xl bg-white px-8 py-5 text-base font-semibold text-black transition-all hover:bg-linear-to-r hover:from-[#2E5BFF] hover:to-[#149CCB] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black active:scale-[0.98] sm:w-auto"
@@ -204,10 +197,7 @@ export default function ContactSection() {
                 <span>Send Message</span>
 
                 <div className="relative flex h-5 w-5 items-center justify-center overflow-hidden">
-                  {/* Outgoing Arrow */}
                   <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]" />
-
-                  {/* Incoming Arrow */}
                   <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
                 </div>
               </button>

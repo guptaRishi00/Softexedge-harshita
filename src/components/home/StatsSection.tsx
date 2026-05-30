@@ -24,7 +24,6 @@ export default function StatsSection() {
 
   useGSAP(
     () => {
-      // ONLY ANIMATE INNER CONTENT
       const rows = gsap.utils.toArray<HTMLElement>(".stat-row");
 
       rows.forEach((row, index) => {
@@ -37,7 +36,6 @@ export default function StatsSection() {
 
         if (!inner) return;
 
-        // FLOATING HORIZONTAL MOTION
         gsap.fromTo(
           inner,
           {
@@ -56,7 +54,6 @@ export default function StatsSection() {
           },
         );
 
-        // REVEAL ANIMATION
         gsap.fromTo(
           inner,
           {
@@ -84,9 +81,8 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-white py-20 text-black md:py-8"
+      className="relative w-full overflow-hidden bg-white py-20 text-black md:py-2"
     >
-      {/* PIXEL BLAST BACKGROUND */}
       <div className="absolute inset-0 flex items-center w-full justify-center gap-1">
         <DotGrid
           dotSize={3}
@@ -101,7 +97,6 @@ export default function StatsSection() {
         />
       </div>
 
-      {/* CONTENT */}
       <div className="relative z-10 flex w-full flex-col">
         {stats.map((stat, index) => (
           <div
@@ -114,12 +109,10 @@ export default function StatsSection() {
               "pointer-events-auto",
             )}
           >
-            {/* STATIC FULL WIDTH BORDER */}
             {index !== stats.length - 1 && (
               <div className="absolute bottom-0 left-0 right-0 h-px bg-black/10" />
             )}
 
-            {/* MOVING CONTENT */}
             <div
               className={cn(
                 "stat-inner",
@@ -134,10 +127,9 @@ export default function StatsSection() {
                 "md:flex-row",
                 "md:items-center",
                 "md:px-10",
-                "md:py-8",
+                "md:py-10",
               )}
             >
-              {/* NUMBER */}
               <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-10">
                 <h2
                   className={cn(
@@ -165,7 +157,6 @@ export default function StatsSection() {
                 </h2>
               </div>
 
-              {/* TEXT */}
               <div className="mt-4 w-full pl-2 md:mt-0 md:w-[90%] md:pl-1">
                 <p className="whitespace-pre-line text-3xl font-bold leading-[1.05] tracking-tight text-black/90 md:text-[5rem]">
                   {stat.text}

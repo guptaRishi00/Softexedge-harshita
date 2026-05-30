@@ -1,4 +1,3 @@
-// src/components/home/BlogSection.tsx
 "use client";
 
 import { motion, type Variants, AnimatePresence } from "framer-motion";
@@ -7,7 +6,6 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import DynamicButton from "../ui/DynamicButton";
 
-// Reduced to exactly two posts for the new layout
 const blogPosts = [
   {
     id: 1,
@@ -70,7 +68,7 @@ export default function BlogSection() {
   return (
     <section className="w-full bg-white py-20 text-black md:py-32">
       <div className="mx-auto w-full px-6 md:px-10">
-        {/* HEADER */}
+        {/* HEADER (KEPT EXACTLY AS IT WAS) */}
         <div className="mb-12 flex flex-col items-start justify-between gap-8 md:mb-20 md:flex-row md:items-end">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -105,7 +103,7 @@ export default function BlogSection() {
           />
         </div>
 
-        {/* 2-COLUMN GRID */}
+        {/* 2-COLUMN GRID WITH REDESIGNED CARDS */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
@@ -120,55 +118,45 @@ export default function BlogSection() {
               className="group flex cursor-pointer flex-col"
             >
               {/* IMAGE CONTAINER */}
-              <div className="relative mb-6 w-full overflow-hidden rounded-[20px] aspect-[4/3] lg:aspect-[16/10] bg-zinc-200 border border-black/5">
-                {/* Floating Tag */}
-
-                {/* Subtle Hover overlay */}
-                <div className="absolute inset-0 z-10 bg-black/0 transition-colors duration-500 group-hover:bg-black/5" />
-
+              <div className="relative mb-8 w-full overflow-hidden rounded-[1.5rem] aspect-[4/3] lg:aspect-[16/10] bg-zinc-100">
+                {/* Image */}
                 <Image
                   src={post.image}
                   alt={post.title}
                   fill
                   className="object-cover transition-transform duration-700 ease-[0.16,1,0.3,1] group-hover:scale-105"
                 />
+
+                {/* Subtle dark gradient overlay to make the tag pop */}
+                <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               </div>
 
               {/* CARD CONTENT */}
-              <div className="flex flex-col px-2">
+              <div className="flex flex-1 flex-col px-2">
                 {/* Meta details: Author & Read Time */}
-                <div className="mb-4 flex items-center gap-4 text-sm font-medium text-zinc-500">
-                  {/* Author */}
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-zinc-200 text-zinc-400">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        className="h-4 w-4"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <span>{post.author}</span>
-                  </div>
-
-                  {/* Bullet Separator */}
+                <div className="mb-5 flex items-center gap-3 text-sm font-semibold text-zinc-500 uppercase tracking-wider">
+                  <span className="text-zinc-900">{post.author}</span>
                   <div className="h-1 w-1 rounded-full bg-zinc-300" />
-
-                  {/* Read Time */}
-                  <div className="flex items-center gap-1.5">
-                    <span>{post.readTime} read</span>
-                  </div>
+                  <span>{post.readTime} read</span>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-2xl font-medium leading-[1.3] tracking-tight text-zinc-900 transition-all duration-300 lg:text-[1.75rem]">
+                <h3 className="mb-8 text-2xl font-bold leading-snug tracking-tight text-zinc-900 transition-colors duration-300 group-hover:text-[#2E5BFF] lg:text-[1.75rem]">
                   {post.title}
                 </h3>
+
+                {/* Footer Read Link */}
+                <div className="mt-auto flex items-center gap-3 border-t border-zinc-200 pt-5">
+                  <span className="text-sm font-bold uppercase tracking-widest text-zinc-900 transition-colors duration-300 group-hover:text-[#2E5BFF]">
+                    Read Article
+                  </span>
+
+                  {/* Sliding Arrow Icon */}
+                  <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-zinc-100 text-zinc-900 transition-colors duration-300 group-hover:bg-[#2E5BFF] group-hover:text-white">
+                    <ArrowRight className="absolute h-4 w-4 -translate-x-[150%] transition-transform duration-300 ease-[0.16,1,0.3,1] group-hover:translate-x-0" />
+                    <ArrowRight className="absolute h-4 w-4 transition-transform duration-300 ease-[0.16,1,0.3,1] group-hover:translate-x-[150%]" />
+                  </div>
+                </div>
               </div>
             </motion.article>
           ))}

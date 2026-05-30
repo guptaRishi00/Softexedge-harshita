@@ -2,15 +2,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useState, useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MdKeyboardArrowRight } from "react-icons/md";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 const services = [
   {
@@ -46,45 +42,18 @@ const services = [
 ];
 
 export default function ServiceSection() {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure portal only renders on the client side to avoid Next.js hydration errors
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { contextSafe } = useGSAP(
     () => {
-      // 1. HEADER PARALLAX
-      gsap.fromTo(
-        ".service-header",
-        { y: -40 },
-        {
-          y: 40,
-          ease: "none",
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          },
-        },
-      );
-
-      // 2. LIST PARALLAX
-      gsap.fromTo(
-        ".service-list",
-        { y: 60 },
-        {
-          y: -60,
-          ease: "none",
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          },
-        },
-      );
-
-      // 3. CUSTOM CURSOR TRACKING
+      // 1. CUSTOM CURSOR TRACKING
       const cursor = cursorRef.current;
       if (cursor) {
         gsap.set(cursor, { scale: 0, xPercent: -50, yPercent: -50 });
@@ -112,11 +81,10 @@ export default function ServiceSection() {
         };
       }
     },
-    { scope: containerRef },
+    { scope: containerRef, dependencies: [mounted] }, // Add mounted to dependencies so GSAP attaches after portal renders
   );
 
-  const handleMouseEnter = contextSafe((index: number) => {
-    setHoveredIndex(index);
+  const handleMouseEnter = contextSafe(() => {
     gsap.to(cursorRef.current, {
       scale: 1,
       duration: 0.4,
@@ -125,7 +93,6 @@ export default function ServiceSection() {
   });
 
   const handleMouseLeave = contextSafe(() => {
-    setHoveredIndex(null);
     gsap.to(cursorRef.current, {
       scale: 0,
       duration: 0.3,
@@ -141,7 +108,7 @@ export default function ServiceSection() {
     >
       <div className="w-full px-4 md:px-10">
         {/* HEADER SECTION */}
-        <div className="service-header mb-20 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-end">
+        <div className="mb-20 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-end">
           <h2 className="text-5xl font-bold tracking-tight text-white md:text-8xl">
             Our Services
           </h2>
@@ -152,23 +119,20 @@ export default function ServiceSection() {
         </div>
 
         {/* SERVICES LIST */}
-        <div className="service-list flex w-full flex-col">
+        <div className="group/list flex w-full flex-col">
           {services.map((service, index) => (
             <a
               key={index}
               href={service.href}
-              onMouseEnter={() => handleMouseEnter(index)}
+              onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              // Scaled down padding here
-              className="group relative flex w-full cursor-none items-center justify-between py-4 md:py-10"
+              className="group relative flex w-full cursor-none items-center justify-between py-6 md:py-12"
             >
               <div className="flex items-center">
                 {/* IMAGE REVEAL CONTAINER */}
                 <div
                   className={cn(
-                    // Scaled down base heights here
                     "relative h-[50px] shrink-0 overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
-                    // Scaled down hover widths and margins here
                     "w-0 group-hover:mr-4 group-hover:w-[80px] group-hover:opacity-100 md:group-hover:mr-8 md:group-hover:w-[150px]",
                   )}
                 >
@@ -182,11 +146,8 @@ export default function ServiceSection() {
                 {/* TITLE */}
                 <h3
                   className={cn(
-                    // Scaled down base sizes and clamp calculations here
                     "text-4xl font-bold leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-6xl md:text-[clamp(3rem,6vw,7rem)]",
-                    hoveredIndex !== null && hoveredIndex !== index
-                      ? "text-white/20"
-                      : "text-white",
+                    "text-white group-hover/list:text-white/20 group-hover:!text-white",
                   )}
                 >
                   {service.title}
@@ -198,9 +159,7 @@ export default function ServiceSection() {
                 <div
                   className={cn(
                     "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500",
-                    hoveredIndex === index
-                      ? "bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
-                      : "bg-white/10",
+                    "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
                   )}
                 />
               )}
@@ -209,19 +168,24 @@ export default function ServiceSection() {
         </div>
       </div>
 
-      {/* CUSTOM CURSOR FOLLOWER */}
-      <div
-        ref={cursorRef}
-        className={cn(
-          "pointer-events-none fixed left-0 top-0 z-9999 flex h-10 w-40 items-center justify-center rounded-lg bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-white",
-          "will-change-transform",
-        )}
-      >
-        <span className="mt-px ml-1 text-[0.65rem] font-bold uppercase tracking-[0.2em]">
-          View Services
-        </span>
-        <MdKeyboardArrowRight />
-      </div>
+      {/* CUSTOM CURSOR FOLLOWER - TELEPORTED TO DOCUMENT BODY */}
+      {mounted && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              ref={cursorRef}
+              className={cn(
+                "pointer-events-none fixed left-0 top-0 z-[9999] flex h-10 w-40 items-center justify-center rounded-lg bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white",
+                "will-change-transform",
+              )}
+            >
+              <span className="mt-px ml-1 text-[0.65rem] font-bold uppercase tracking-[0.2em]">
+                View Services
+              </span>
+              <MdKeyboardArrowRight />
+            </div>,
+            document.body,
+          )
+        : null}
     </section>
   );
 }

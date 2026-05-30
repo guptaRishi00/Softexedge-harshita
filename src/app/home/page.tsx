@@ -48,40 +48,65 @@ export default function HomePage() {
   const aboutInnerRef = useRef<HTMLDivElement>(null);
   const portfolioRef = useRef<HTMLDivElement>(null);
 
+  // === NEW REFS FOR SERVICE SECTION ANIMATION ===
+  const serviceContainerRef = useRef<HTMLDivElement>(null);
+  const serviceInnerRef = useRef<HTMLDivElement>(null);
+
   useGSAP(() => {
+    // 1. ABOUT SECTION ANIMATION
     if (
-      !aboutContainerRef.current ||
-      !aboutInnerRef.current ||
-      !portfolioRef.current
-    )
-      return;
-
-    // 1. PIN THE ABOUT SECTION
-    // Yeh About ko freeze rakhega jab tak Portfolio section pura upar na aa jaye
-    ScrollTrigger.create({
-      trigger: aboutContainerRef.current,
-      start: "top top",
-      endTrigger: portfolioRef.current,
-      end: "top top",
-      pin: true,
-      pinSpacing: false,
-    });
-
-    // 2. PARALLAX SCALE & FADE
-    // Depth create karne ke liye About thoda shrink aur fade hoga
-    gsap.to(aboutInnerRef.current, {
-      scale: 0.85,
-      opacity: 0,
-      y: 40,
-      ease: "none",
-      scrollTrigger: {
+      aboutContainerRef.current &&
+      aboutInnerRef.current &&
+      portfolioRef.current
+    ) {
+      ScrollTrigger.create({
         trigger: aboutContainerRef.current,
         start: "top top",
         endTrigger: portfolioRef.current,
         end: "top top",
-        scrub: true,
-      },
-    });
+        pin: true,
+        pinSpacing: false,
+      });
+
+      gsap.to(aboutInnerRef.current, {
+        scale: 0.85,
+        opacity: 0,
+        y: 40,
+        ease: "none",
+        scrollTrigger: {
+          trigger: aboutContainerRef.current,
+          start: "top top",
+          endTrigger: portfolioRef.current,
+          end: "top top",
+          scrub: true,
+        },
+      });
+    }
+
+    // 2. SERVICE SECTION SCALE UP & UN-ROTATE
+    if (serviceContainerRef.current && serviceInnerRef.current) {
+      gsap.fromTo(
+        serviceInnerRef.current,
+        {
+          scale: 0.65, // Starts small
+          rotation: 20, // Rotated 20 degrees
+          borderRadius: "40px", // Giving it rounded edges while it acts as a card
+          overflow: "hidden",
+        },
+        {
+          scale: 1, // Ends at full size
+          rotation: 0, // Ends completely straight
+          borderRadius: "0px",
+          ease: "none",
+          scrollTrigger: {
+            trigger: serviceContainerRef.current,
+            start: "top bottom", // Starts animating when it appears at the bottom of the screen
+            end: "top top", // Finishes animating when it hits the top of the screen
+            scrub: 1, // Smooth scrubbing
+          },
+        },
+      );
+    }
   });
 
   return (
@@ -117,8 +142,6 @@ export default function HomePage() {
         <div className="relative">
           {/* === ABOUT SECTION WRAPPER === */}
           <div ref={aboutContainerRef} className="relative z-0 bg-black">
-            {/* Yahan pb-[15vh] (aur md:pb-[25vh]) lagaya hai taaki fix space mil jaye */}
-            {/* Isse content bottom se touch nahi hoga aur Portfolio smoothly slide karega */}
             <div
               ref={aboutInnerRef}
               className="origin-top will-change-transform bg-white pb-[15vh] md:pb-[25vh] lg:pb-[30vh]"
@@ -128,7 +151,6 @@ export default function HomePage() {
           </div>
 
           {/* === PORTFOLIO SECTION === */}
-          {/* Z-10 se ye hamesha upar rahega aur upar ki taraf shadow fekega */}
           <div
             ref={portfolioRef}
             className="relative z-10 bg-[#0a0a0a] shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
@@ -139,9 +161,21 @@ export default function HomePage() {
           {/* === REMAINING SECTIONS === */}
           <div className="relative z-10 bg-white">
             <StatsSection />
-            <div className="">
-              <ServiceSection />
+
+            {/* === ANIMATED SERVICE SECTION WRAPPER === */}
+            {/* Added overflow-hidden to the container to prevent a horizontal scrollbar while the section is rotated */}
+            <div
+              ref={serviceContainerRef}
+              className="relative w-full bg-white overflow-hidden py-10"
+            >
+              <div
+                ref={serviceInnerRef}
+                className="w-full origin-center will-change-transform"
+              >
+                <ServiceSection />
+              </div>
             </div>
+
             <ExperimentalTestimonials />
             <ContactSection />
             <BlogSection />
