@@ -1,9 +1,17 @@
+// src/app/home/page.tsx
+"use client";
+
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   SiNextdotjs,
   SiReact,
   SiTailwindcss,
   SiTypescript,
 } from "react-icons/si";
+
 import AboutSection from "@/components/home/AboutSection";
 import Herosection from "@/components/home/Herosection";
 import PortfolioSection from "@/components/home/PortfolioSection";
@@ -15,6 +23,10 @@ import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials
 import BlogSection from "@/components/home/BlogSection";
 import ContactSection from "@/components/home/ContactSection";
 import ServiceSection from "@/components/home/ServiceSection";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function HomePage() {
   const techLogos = [
@@ -32,13 +44,54 @@ export default function HomePage() {
     },
   ];
 
+  const aboutContainerRef = useRef<HTMLDivElement>(null);
+  const aboutInnerRef = useRef<HTMLDivElement>(null);
+  const portfolioRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    if (
+      !aboutContainerRef.current ||
+      !aboutInnerRef.current ||
+      !portfolioRef.current
+    )
+      return;
+
+    // 1. PIN THE ABOUT SECTION
+    // Yeh About ko freeze rakhega jab tak Portfolio section pura upar na aa jaye
+    ScrollTrigger.create({
+      trigger: aboutContainerRef.current,
+      start: "top top",
+      endTrigger: portfolioRef.current,
+      end: "top top",
+      pin: true,
+      pinSpacing: false,
+    });
+
+    // 2. PARALLAX SCALE & FADE
+    // Depth create karne ke liye About thoda shrink aur fade hoga
+    gsap.to(aboutInnerRef.current, {
+      scale: 0.85,
+      opacity: 0,
+      y: 40,
+      ease: "none",
+      scrollTrigger: {
+        trigger: aboutContainerRef.current,
+        start: "top top",
+        endTrigger: portfolioRef.current,
+        end: "top top",
+        scrub: true,
+      },
+    });
+  });
+
   return (
     <SmoothScroll>
       <main className="w-full bg-white">
         <div className="px-3 pt-3">
           <Herosection />
         </div>
-        <section className="w-full flex items-center gap-8 overflow-hidden px-6 py-12 md:pt-20 bg-white">
+
+        <section className="flex w-full items-center gap-8 overflow-hidden bg-white px-6 py-12 md:pt-20">
           <div className="shrink-0">
             <p className="text-sm font-medium tracking-wide text-black/60">
               Trusted By
@@ -60,18 +113,42 @@ export default function HomePage() {
             />
           </div>
         </section>
-        <div className="">
-          <AboutSection />
-          <PortfolioSection />
-          <StatsSection />
-          <div className="">
-            <ServiceSection />
+
+        <div className="relative">
+          {/* === ABOUT SECTION WRAPPER === */}
+          <div ref={aboutContainerRef} className="relative z-0 bg-black">
+            {/* Yahan pb-[15vh] (aur md:pb-[25vh]) lagaya hai taaki fix space mil jaye */}
+            {/* Isse content bottom se touch nahi hoga aur Portfolio smoothly slide karega */}
+            <div
+              ref={aboutInnerRef}
+              className="origin-top will-change-transform bg-white pb-[15vh] md:pb-[25vh] lg:pb-[30vh]"
+            >
+              <AboutSection />
+            </div>
           </div>
-          <ExperimentalTestimonials />
-          <ContactSection />
-          <BlogSection />
+
+          {/* === PORTFOLIO SECTION === */}
+          {/* Z-10 se ye hamesha upar rahega aur upar ki taraf shadow fekega */}
+          <div
+            ref={portfolioRef}
+            className="relative z-10 bg-[#0a0a0a] shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
+          >
+            <PortfolioSection />
+          </div>
+
+          {/* === REMAINING SECTIONS === */}
+          <div className="relative z-10 bg-white">
+            <StatsSection />
+            <div className="">
+              <ServiceSection />
+            </div>
+            <ExperimentalTestimonials />
+            <ContactSection />
+            <BlogSection />
+          </div>
         </div>
-        <div className="p-3 w-full">
+
+        <div className="relative z-10 w-full p-3 bg-white">
           <Footer />
         </div>
       </main>
