@@ -96,15 +96,15 @@ const navItems: NavItem[] = [
   },
   {
     name: "About Us",
-    link: "#about",
+    link: "/about",
   },
   {
     name: "Case Studies",
-    link: "#portfolio",
+    link: "/portfolio",
   },
   {
     name: "Book Consultation",
-    link: "#contact",
+    link: "/contact",
   },
 ];
 

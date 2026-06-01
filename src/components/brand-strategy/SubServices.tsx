@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { MdArrowOutward } from "react-icons/md"; // Assuming you have react-icons installed
+import { MdArrowOutward } from "react-icons/md";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
@@ -46,14 +46,39 @@ const services = [
   },
 ];
 
+// Helper to determine the relative position of a card (-1 for left, 0 for center, 1 for right, etc.)
+const getRelativeOffset = (
+  index: number,
+  activeIndex: number,
+  total: number,
+) => {
+  let diff = index - activeIndex;
+  // Adjust for infinite wrapping
+  if (diff > Math.floor(total / 2)) diff -= total;
+  if (diff < -Math.floor(total / 2)) diff += total;
+  return diff;
+};
+
 export default function SubServices() {
-  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Auto-playing carousel logic
+  useEffect(() => {
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % services.length);
+    }, 4000); // Changes every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
 
   return (
-    <section className="relative bg-black px-6 py-24 text-white md:px-12 md:py-40 lg:px-20 font-sans">
+    <section className="relative overflow-hidden bg-black px-6 py-24 text-white md:px-12 md:py-40 lg:px-20 font-sans">
       <div className="mx-auto max-w-[1600px]">
         {/* Header Section */}
-        <div className="mb-20 flex flex-col items-start md:mb-32">
+        <div className="mb-16 flex flex-col items-center text-center md:mb-24">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -76,90 +101,89 @@ export default function SubServices() {
           </motion.h2>
         </div>
 
-        {/* Two-Column Interactive Layout */}
-        <div className="flex flex-col-reverse items-start gap-16 lg:flex-row lg:gap-24">
-          {/* LEFT COLUMN: Interactive Service List */}
-          <div className="flex w-full flex-col lg:w-1/2">
-            {services.map((service, index) => {
-              const isActive = activeIndex === index;
+        {/* Carousel Container */}
+        <div
+          className="relative flex h-[600px] w-full items-center justify-center md:h-[750px]"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {services.map((service, index) => {
+            const offset = getRelativeOffset(
+              index,
+              activeIndex,
+              services.length,
+            );
+            const isActive = offset === 0;
 
-              return (
+            return (
+              <motion.div
+                key={index}
+                animate={{
+                  // Position calculations based on relative offset
+                  x:
+                    offset === 0
+                      ? "0%"
+                      : offset === 1
+                        ? "95%"
+                        : offset === -1
+                          ? "-95%"
+                          : "0%",
+                  scale: offset === 0 ? 1 : 0.8,
+                  opacity: offset === 0 ? 1 : Math.abs(offset) === 2 ? 0 : 0.5,
+                  filter: offset === 0 ? "blur(0px)" : "blur(12px)",
+                  zIndex: offset === 0 ? 30 : 10,
+                }}
+                transition={{ duration: 0.8, ease: premiumEase }}
+                className={`absolute flex w-full max-w-[90%] flex-col gap-6 md:max-w-3xl lg:max-w-4xl lg:gap-10 ${
+                  isActive ? "cursor-default" : "pointer-events-none"
+                }`}
+              >
+                {/* Independent Image Block */}
+                <div className="relative w-full aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-[32px] bg-zinc-900 shadow-2xl">
+                  <img
+                    src={service.image}
+                    alt={service.title}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                  />
+                  <div className="absolute inset-0 shadow-[inset_0_0_40px_rgba(0,0,0,0.4)] pointer-events-none" />
+                </div>
+
+                {/* Independent Text Block (Fades out when inactive to reduce clutter) */}
                 <div
-                  key={index}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  className="group cursor-pointer border-b border-zinc-800 py-10 transition-colors duration-500 last:border-b-0 hover:border-zinc-500"
+                  className={`flex w-full flex-col items-start justify-between gap-6 transition-opacity duration-500 md:flex-row md:items-end px-2 ${
+                    isActive ? "opacity-100" : "opacity-0"
+                  }`}
                 >
-                  <Link
-                    href={service.link}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-baseline gap-6 md:gap-10">
-                      <h3
-                        className={`text-4xl font-medium tracking-tight transition-all duration-500 md:text-5xl lg:text-6xl ${
-                          isActive
-                            ? "text-white translate-x-2"
-                            : "text-zinc-500 group-hover:text-zinc-300"
-                        }`}
-                      >
+                  <div className="flex max-w-xl flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                      <h3 className="text-3xl font-medium tracking-tight text-white md:text-6xl">
                         {service.title}
                       </h3>
                     </div>
-
-                    {/* Animated Arrow */}
-                    <motion.div
-                      animate={{
-                        opacity: isActive ? 1 : 0,
-                        x: isActive ? 0 : -10,
-                        rotate: isActive ? 45 : 0,
-                      }}
-                      transition={{ duration: 0.4, ease: premiumEase }}
-                      className="hidden text-white md:block"
-                    >
-                      <MdArrowOutward size={40} />
-                    </motion.div>
-                  </Link>
+                    <p className="text-sm font-light leading-relaxed text-zinc-400 md:text-lg font-medium">
+                      {service.description}
+                    </p>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+              </motion.div>
+            );
+          })}
+        </div>
 
-          {/* RIGHT COLUMN: Sticky Viewport & Content */}
-          <div className="sticky top-10 flex w-full flex-col lg:top-32 lg:w-1/2">
-            {/* Image Window */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[24px] bg-zinc-900">
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={activeIndex}
-                  src={services[activeIndex].image}
-                  alt={services[activeIndex].title}
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.6, ease: premiumEase }}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              </AnimatePresence>
-
-              {/* Subtle inner shadow/gradient for depth */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-transparent pointer-events-none" />
-            </div>
-
-            {/* Dynamic Description & CTA */}
-            <div className="mt-8 flex flex-col items-start">
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={activeIndex}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.4, ease: premiumEase }}
-                  className="max-w-md text-lg font-light leading-relaxed text-zinc-400"
-                >
-                  {services[activeIndex].description}
-                </motion.p>
-              </AnimatePresence>
-            </div>
-          </div>
+        {/* Carousel Indicators */}
+        <div className="mt-8 flex items-center justify-center gap-3">
+          {services.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setActiveIndex(index)}
+              className={`h-1.5 rounded-full transition-all duration-500 ${
+                activeIndex === index
+                  ? "w-8 bg-white"
+                  : "w-2 bg-zinc-700 hover:bg-zinc-500"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
         </div>
       </div>
     </section>
