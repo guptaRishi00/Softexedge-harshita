@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "../page/Header";
 import PixelTrail from "../ui/PixelTrail";
+import SplashCursor from "../ui/SplashCursor";
 
 // All words below are exactly 5 letters long
 const ROTATING_WORDS = ["trust", "crave", "share", "adore", "value"];
@@ -22,13 +23,18 @@ export default function StrategyHeroSection() {
 
   return (
     <section className="relative flex h-screen w-full flex-col items-center overflow-hidden bg-white px-6 py-26 text-zinc-900">
-      <div className="absolute inset-0 z-0 opacity-40">
-        <PixelTrail
-          gridSize={50}
-          trailSize={0.12}
-          maxAge={300}
-          color="#2E5BFF"
-          className="w-full h-full"
+      <div className="absolute inset-0 z-0 opacity-100 overflow-hidden">
+        <SplashCursor
+          DENSITY_DISSIPATION={4.5}
+          VELOCITY_DISSIPATION={1}
+          PRESSURE={0.4}
+          CURL={0}
+          SPLAT_RADIUS={0.29}
+          SPLAT_FORCE={12500}
+          COLOR_UPDATE_SPEED={10}
+          SHADING
+          RAINBOW_MODE={false}
+          COLOR="#0061ff"
         />
       </div>
 

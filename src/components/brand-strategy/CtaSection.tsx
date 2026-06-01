@@ -10,7 +10,7 @@ const premiumEase = [0.22, 1, 0.36, 1] as const;
 
 export default function CtaSection() {
   return (
-    <section className="relative w-full ">
+    <section className="relative w-full bg-white">
       <div className="mx-auto max-w-[1600px]">
         {/* Main CTA Container */}
         <div className="relative flex min-h-[70vh] w-full flex-col justify-between overflow-hidden rounded-[40px] bg-zinc-950 border border-zinc-800/50">
