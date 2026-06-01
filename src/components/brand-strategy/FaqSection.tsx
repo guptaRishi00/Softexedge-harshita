@@ -42,27 +42,43 @@ export default function FaqSection() {
   };
 
   return (
-    <section className="relative bg-white py-24 md:py-20 px-6 md:px-12 lg:px-20 text-zinc-900 overflow-hidden">
-      <div className="max-w-375 mx-auto w-full flex flex-col lg:flex-row gap-16 lg:gap-24 items-start">
+    <section className="relative overflow-hidden bg-white px-6 py-24 text-zinc-900 md:px-12 md:py-20 lg:px-20">
+      {/* Hidden SVG to define the custom gradient for the icon */}
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <linearGradient
+            id="icon-gradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop stopColor="#2E5BFF" offset="0%" />
+            <stop stopColor="#149CCB" offset="100%" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div className="mx-auto flex w-full max-w-[1500px] flex-col items-start gap-16 lg:flex-row lg:gap-24">
         {/* LEFT COLUMN: Sticky Title */}
-        <div className="w-full lg:w-[30%] lg:sticky lg:top-5 flex flex-col items-start">
+        <div className="flex w-full flex-col items-start lg:sticky lg:top-5 lg:w-[30%]">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
           >
-            <p className="text-zinc-400 font-semibold tracking-[0.4em] uppercase mb-6 text-xs">
+            <p className="mb-6 text-xs font-semibold uppercase tracking-[0.4em] text-zinc-400">
               F A Q
             </p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-zinc-900 leading-[1.05]">
+            <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-zinc-900 md:text-6xl lg:text-7xl">
               FAQ
             </h2>
           </motion.div>
         </div>
 
         {/* RIGHT COLUMN: Interactive Accordion */}
-        <div className="w-full lg:w-[95%] flex flex-col gap-4">
+        <div className="flex w-full flex-col gap-4 lg:w-[95%]">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
 
@@ -77,23 +93,28 @@ export default function FaqSection() {
                   delay: index * 0.1,
                   ease: premiumEase,
                 }}
-                className="bg-zinc-100 rounded-[1rem] overflow-hidden"
+                className="overflow-hidden rounded-[1rem] bg-zinc-100"
               >
                 <button
                   onClick={() => toggleFaq(index)}
-                  className="w-full px-6 py-6 md:px-10 md:py-8 flex items-center justify-between gap-6 text-left group"
+                  className="group flex w-full items-center justify-between gap-6 px-6 py-6 text-left md:px-10 md:py-8"
                 >
-                  <h3 className="text-xl md:text-2xl font-semibold tracking-tight text-zinc-900">
+                  <h3 className="text-xl font-semibold tracking-tight text-zinc-900 md:text-2xl">
                     {faq.question}
                   </h3>
 
-                  {/* MdArrowOutward Icon */}
+                  {/* MdArrowOutward Icon with dynamic styling */}
                   <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.4, ease: premiumEase }}
-                    className="shrink-0 text-zinc-900 flex items-center justify-center"
+                    className={`flex shrink-0 items-center justify-center transition-colors duration-300 ${
+                      isOpen ? "" : "text-zinc-900"
+                    }`}
                   >
-                    <MdArrowOutward size={28} />
+                    <MdArrowOutward
+                      size={28}
+                      style={isOpen ? { fill: "url(#icon-gradient)" } : {}}
+                    />
                   </motion.div>
                 </button>
 
@@ -106,7 +127,7 @@ export default function FaqSection() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.5, ease: premiumEase }}
                     >
-                      <p className="text-zinc-600 font-medium text-base md:text-lg leading-relaxed px-6 pb-8 md:px-10 md:pb-10 pt-0 max-w-3xl">
+                      <p className="max-w-3xl px-6 pb-8 pt-0 text-base font-medium leading-relaxed text-zinc-600 md:px-10 md:pb-10 md:text-lg">
                         {faq.answer}
                       </p>
                     </motion.div>

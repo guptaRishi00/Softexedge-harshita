@@ -79,7 +79,7 @@ const processSteps = [
   },
 ];
 
-export default function ProcessSection() {
+export default function CapabilitiesSection() {
   return (
     <section className="relative bg-[#FAFAFA] py-24 md:py-32 px-6 md:px-12 lg:px-20 text-zinc-900">
       <div className="max-w-[1500px] mx-auto flex flex-col lg:flex-row gap-16 lg:gap-24 relative items-start">

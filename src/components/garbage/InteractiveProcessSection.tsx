@@ -44,7 +44,7 @@ const processSteps = [
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
-export default function ProcessBentoSection() {
+export default function InteractiveProcessSection() {
   return (
     <section className="relative overflow-hidden bg-[#FAFAF9] px-6 py-24 md:px-12 md:py-32">
       <div className="relative mx-auto max-w-7xl">

@@ -140,7 +140,7 @@ const ProjectCard = ({
   );
 };
 
-export default function ProcessSection() {
+export default function ProcessSectionNew() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   return (

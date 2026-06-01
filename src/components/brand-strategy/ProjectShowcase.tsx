@@ -11,7 +11,7 @@ const projects = [
     title: "Aura AI",
     description: "Next-gen artificial intelligence platform interface.",
     image:
-      "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1400&auto=format&fit=crop",
+      "https://plus.unsplash.com/premium_photo-1773861007414-869af2ea91b8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDEyOHxDRHd1d1hKQWJFd3x8ZW58MHx8fHx8",
     baseFlex: 1.4,
   },
   {
@@ -19,7 +19,7 @@ const projects = [
     title: "Nova Tech",
     description: "Fintech dashboard for modern banking solutions.",
     image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1400&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1775185172840-47fe371943e5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDEwMnxDRHd1d1hKQWJFd3x8ZW58MHx8fHx8",
     baseFlex: 1,
   },
   {
@@ -27,7 +27,7 @@ const projects = [
     title: "Lumina Vision",
     description: "Immersive VR/AR experience branding.",
     image:
-      "https://images.unsplash.com/photo-1617791160505-6f00504e3519?q=80&w=1400&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1775887065658-988ef1c262c6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDkyfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
     baseFlex: 2,
   },
   {
@@ -35,7 +35,7 @@ const projects = [
     title: "Apex Dynamics",
     description: "E-commerce platform for high-end sports gear.",
     image:
-      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1400&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1772528205616-e65dc0994c7b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDE3OHxDRHd1d1hKQWJFd3x8ZW58MHx8fHx8",
     baseFlex: 1.7,
   },
   {
@@ -43,24 +43,8 @@ const projects = [
     title: "Nexus Core",
     description: "Cybersecurity infrastructure data visualization.",
     image:
-      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1400&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1777646346045-df4bd1114148?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDYwfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
     baseFlex: 2,
-  },
-  {
-    id: 5,
-    title: "Vanguard",
-    description: "Web3 decentralized application architecture.",
-    image:
-      "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=1400&auto=format&fit=crop",
-    baseFlex: 1,
-  },
-  {
-    id: 6,
-    title: "Orbit Media",
-    description: "Global streaming service content delivery network.",
-    image:
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1400&auto=format&fit=crop",
-    baseFlex: 1.2,
   },
 ];
 
@@ -81,35 +65,35 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-black px-4 py-24 text-white md:px-8 md:py-32">
+    <section className="relative overflow-hidden bg-black px-6 py-32 text-white md:px-12 md:py-48 font-sans">
       {/* Noise Texture */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
         style={{
           backgroundImage:
             "url('https://grainy-gradients.vercel.app/noise.svg')",
         }}
       />
 
-      <div className="relative mx-auto flex max-w-[1600px] flex-col gap-14">
-        {/* Header */}
-        <div className="flex flex-col items-center text-center">
-          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.35em] text-zinc-600 md:text-sm">
+      <div className="relative mx-auto flex max-w-[1600px] flex-col gap-20 md:gap-24">
+        {/* Header - Left Aligned & Breathable */}
+        <div className="flex w-full max-w-4xl flex-col items-start text-left">
+          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.35em] text-zinc-500 md:text-sm">
             Selected Works
           </p>
 
-          <h2 className="text-5xl font-bold tracking-[-0.05em] md:text-7xl lg:text-[8rem] leading-[0.9]">
+          <h2 className="text-5xl font-bold tracking-tight text-white md:text-7xl lg:text-[7.5rem] leading-[0.9]">
             Our Projects
           </h2>
 
-          <p className="mt-6 max-w-2xl text-sm leading-relaxed text-zinc-500 md:text-base">
+          <p className="mt-8 max-w-xl text-base font-medium leading-relaxed text-zinc-400 md:text-lg">
             Crafted digital experiences blending cinematic interaction,
             editorial layouts, and immersive motion systems.
           </p>
         </div>
 
         {/* Bento Grid */}
-        <div className="flex h-auto w-full flex-col gap-3 md:h-[80vh] md:gap-4">
+        <div className="flex h-auto w-full flex-col gap-4 md:h-[80vh] md:gap-6">
           {/* ROW 1 */}
           <motion.div
             animate={{
@@ -119,7 +103,7 @@ export default function ProjectShowcase() {
               duration: 0.7,
               ease: premiumEase,
             }}
-            className="flex h-[320px] w-full flex-col gap-3 md:h-auto md:flex-row md:gap-4"
+            className="flex h-[320px] w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
           >
             {row1.map((project) => (
               <ProjectCard
@@ -140,7 +124,7 @@ export default function ProjectShowcase() {
               duration: 0.7,
               ease: premiumEase,
             }}
-            className="flex h-[420px] w-full flex-col gap-3 md:h-auto md:flex-row md:gap-4"
+            className="flex h-[420px] w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
           >
             {row2.map((project) => (
               <ProjectCard
@@ -181,14 +165,14 @@ function ProjectCard({
       onMouseLeave={() => setHoveredId(null)}
       animate={{
         flex: isHovered ? 4 : isAnyHovered ? 1.15 : project.baseFlex,
-        scale: isHovered ? 1.015 : 1,
+        scale: isHovered ? 1.01 : 1,
       }}
       transition={{
         duration: 0.7,
         ease: premiumEase,
       }}
-      // Reduced image border radius to 20px
-      className="group relative h-full min-h-[180px] w-full cursor-pointer overflow-hidden rounded-[20px]"
+      // Adjusted border radius to 20px per user request
+      className="group relative h-full min-h-[220px] w-full cursor-pointer overflow-hidden rounded-[20px]"
     >
       {/* Background Image */}
       <motion.img
@@ -196,11 +180,11 @@ function ProjectCard({
         alt={project.title}
         loading="lazy"
         animate={{
-          scale: isHovered ? 1.08 : 1.02,
+          scale: isHovered ? 1.06 : 1.02,
           filter:
             isAnyHovered && !isHovered
-              ? "brightness(0.35) grayscale(70%)"
-              : "brightness(0.8)",
+              ? "brightness(0.3) grayscale(80%)"
+              : "brightness(0.85)",
         }}
         transition={{
           duration: 0.8,
@@ -212,22 +196,22 @@ function ProjectCard({
       {/* Permanent Overlay */}
       <motion.div
         animate={{
-          opacity: isHovered ? 1 : 0.75,
+          opacity: isHovered ? 1 : 0.6,
         }}
         transition={{
           duration: 0.5,
         }}
-        className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"
+        className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent"
       />
 
       {/* Glass Reflection */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-40 transition-opacity duration-700 group-hover:opacity-70" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-30 transition-opacity duration-700 group-hover:opacity-60" />
 
-      {/* Border Glow */}
-      <div className="absolute inset-0 border border-white/10 rounded-[20px]" />
+      {/* Border Glow - Matched border radius to 20px */}
+      <div className="absolute inset-0 rounded-[20px] border border-white/10 transition-colors duration-500 group-hover:border-white/20" />
 
       {/* Content */}
-      <div className="absolute inset-0 z-20 flex flex-col justify-between p-6 md:p-8">
+      <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-10">
         {/* Idle Title */}
         <motion.div
           animate={{
@@ -240,11 +224,7 @@ function ProjectCard({
           className="flex items-start justify-between"
         >
           <div>
-            <p className="mb-2 text-xs uppercase tracking-[0.3em] text-zinc-400">
-              Project
-            </p>
-
-            <h3 className="text-xl font-semibold tracking-tight text-white md:text-2xl">
+            <h3 className="text-2xl font-medium tracking-tight text-white md:text-3xl">
               {project.title}
             </h3>
           </div>
@@ -272,15 +252,15 @@ function ProjectCard({
               }}
               className="max-w-md"
             >
-              <p className="mb-3 text-xs uppercase tracking-[0.3em] text-zinc-400">
-                Featured Project
+              <p className="mb-4 text-xs font-medium uppercase tracking-[0.3em] text-zinc-400">
+                Featured Case
               </p>
 
-              <h3 className="text-3xl font-bold tracking-tight text-white md:text-5xl">
+              <h3 className="text-4xl font-semibold tracking-tight text-white md:text-5xl lg:text-6xl">
                 {project.title}
               </h3>
 
-              <p className="mt-4 text-sm leading-relaxed text-zinc-300 md:text-base">
+              <p className="mt-5 text-sm font-light leading-relaxed text-zinc-300 md:text-base">
                 {project.description}
               </p>
 
@@ -296,7 +276,7 @@ function ProjectCard({
                   duration: 0.5,
                   ease: premiumEase,
                 }}
-                className="mt-6 h-[1px] bg-white/40"
+                className="mt-8 h-[1px] bg-white/40"
               />
             </motion.div>
           )}
