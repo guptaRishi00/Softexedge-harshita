@@ -1,45 +1,42 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { MdArrowOutward } from "react-icons/md";
-
-const premiumEase = [0.22, 1, 0.36, 1] as const;
+import { cn } from "@/lib/utils";
+import { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { MdKeyboardArrowRight } from "react-icons/md";
+import ConnectButton from "../shared/ConnectButton";
 
 const services = [
   {
-    number: "01",
     title: "Brand Strategy",
     description:
-      "Positioning, narrative, and foundational architecture for industry leaders and visionary startups.",
+      "Positioning, narrative, and foundational architecture for industry leaders.",
     link: "/brand-strategy",
     image:
       "https://images.unsplash.com/photo-1703720074944-b60b730c7289?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzJ8fEJyYW5kaW5nfGVufDB8fDB8fHww",
   },
   {
-    number: "02",
     title: "Digital Products",
     description:
-      "Immersive websites, web applications, and scalable platforms engineered for flawless performance.",
+      "Immersive websites, web applications, and scalable platforms.",
     link: "/services",
     image:
       "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NzF8fEJyYW5kaW5nfGVufDB8fDB8fHww",
   },
   {
-    number: "03",
     title: "UI/UX & Motion",
     description:
-      "Cinematic visual identities, motion graphics, and interface designs that captivate and convert.",
+      "Cinematic visual identities, motion graphics, and interface designs.",
     link: "/services",
     image:
       "https://images.unsplash.com/photo-1581287053822-fd7bf4f4bfec?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDJ8fHVpJTIwdXh8ZW58MHx8MHx8fDA%3D",
   },
   {
-    number: "04",
     title: "eCommerce",
     description:
-      "High-converting online storefronts optimized for modern consumer behaviors and rapid scale.",
+      "High-converting online storefronts optimized for modern consumers.",
     link: "/services",
     image:
       "https://images.unsplash.com/photo-1586880244406-556ebe35f282?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8RWNvbW1lcmNlfGVufDB8fDB8fHww",
@@ -47,91 +44,168 @@ const services = [
 ];
 
 export default function SubServices() {
+  const containerRef = useRef<HTMLElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const { contextSafe } = useGSAP(
+    () => {
+      const cursor = cursorRef.current;
+      if (cursor) {
+        gsap.set(cursor, { scale: 0, xPercent: -50, yPercent: -50 });
+
+        const xTo = gsap.quickTo(cursor, "x", {
+          duration: 0.15,
+          ease: "power3",
+          force3D: true,
+        });
+        const yTo = gsap.quickTo(cursor, "y", {
+          duration: 0.15,
+          ease: "power3",
+          force3D: true,
+        });
+
+        const moveCursor = (e: MouseEvent) => {
+          xTo(e.clientX);
+          yTo(e.clientY);
+        };
+
+        window.addEventListener("mousemove", moveCursor);
+
+        return () => {
+          window.removeEventListener("mousemove", moveCursor);
+        };
+      }
+    },
+    { scope: containerRef, dependencies: [mounted] },
+  );
+
+  const handleMouseEnter = contextSafe(() => {
+    gsap.to(cursorRef.current, {
+      scale: 1,
+      duration: 0.4,
+      ease: "back.out(1.5)",
+    });
+  });
+
+  const handleMouseLeave = contextSafe(() => {
+    gsap.to(cursorRef.current, {
+      scale: 0,
+      duration: 0.3,
+      ease: "power3.inOut",
+    });
+  });
+
   return (
-    <section className="relative bg-white px-6 py-24 text-zinc-900 md:px-12 md:py-20 lg:px-20 font-sans overflow-visible">
-      <div className="mx-auto max-w-[1700px]">
-        {/* Header Section */}
-        <div className="mb-20 flex flex-col items-center text-center md:mb-32">
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-6 text-xs font-semibold uppercase tracking-[0.4em] text-zinc-500"
-          >
-            Capabilities
-          </motion.p>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-5xl font-medium leading-[1.05] tracking-tight text-zinc-950 md:text-6xl lg:text-[5rem]"
-          >
+    <section
+      ref={containerRef}
+      onMouseLeave={handleMouseLeave}
+      className="relative w-full overflow-hidden bg-black py-16 text-white md:py-20 mt-10"
+    >
+      <div className="mx-auto w-full max-w-8xl px-6 md:px-10">
+        {/* HEADER SECTION */}
+        <div className="mb-12 flex w-full flex-col items-start gap-4 pb-6 md:mb-16 md:pb-8">
+          <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
             We engineer digital{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               advantage
             </span>
-          </motion.h2>
+          </h2>
         </div>
 
-        {/* Stacking Cards Stack Container */}
-        <div className="relative flex flex-col w-full space-y-16 md:space-y-24">
-          {services.map((service, index) => {
-            return (
-              <div
-                key={service.number}
-                className="sticky top-24 md:top-20 w-full pb-12"
-                style={{
-                  paddingTop: `${index * 12}px`,
-                }}
-              >
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.7, ease: premiumEase }}
-                  className="w-full bg-[#0d0d0d] border border-zinc-800/80 rounded-[32px] p-6 md:p-12 lg:p-16 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[550px] lg:h-[620px]"
-                >
-                  {/* LEFT COLUMN: Strategic Info Descriptions */}
-                  <div className="lg:col-span-5 flex flex-col justify-between h-full space-y-8 lg:space-y-0">
-                    <div className="space-y-6">
-                      <h3 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
-                        {service.title}
-                      </h3>
-
-                      <p className="text-zinc-400 text-base md:text-lg font-light leading-relaxed max-w-md">
-                        {service.description}
-                      </p>
-                    </div>
-
-                    <div className="pt-4">
-                      <Link
-                        href={service.link}
-                        className="inline-flex items-center gap-2 group text-sm font-semibold tracking-wider uppercase text-zinc-200 hover:text-white transition-colors"
-                      >
-                        Explore Expertise
-                        <span className="p-2 rounded-full bg-zinc-900 border border-zinc-800 group-hover:bg-zinc-800 transition-colors">
-                          <MdArrowOutward className="h-4 w-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
-                        </span>
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* RIGHT COLUMN: Cinematic Layout Previews */}
-                  <div className="lg:col-span-7 relative w-full h-64 sm:h-80 lg:h-full overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800/50">
+        {/* SERVICES LIST */}
+        <div className="group/list flex w-full flex-col">
+          {services.map((service, index) => (
+            <a
+              key={index}
+              href={service.link}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              className="group relative flex w-full cursor-none flex-col items-start justify-center py-6 md:flex-row md:items-center md:justify-between md:py-8"
+            >
+              <div className="flex w-full items-center justify-between md:w-auto md:justify-start">
+                <div className="flex items-center">
+                  {/* IMAGE REVEAL CONTAINER */}
+                  <div
+                    className={cn(
+                      "relative h-[40px] shrink-0 overflow-hidden rounded-xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[70px]",
+                      "w-0 group-hover:mr-4 group-hover:w-[60px] group-hover:opacity-100 md:group-hover:mr-6 md:group-hover:w-[110px]",
+                    )}
+                  >
                     <img
                       src={service.image}
                       alt={service.title}
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 ease-out hover:scale-105 select-none pointer-events-none"
+                      className="absolute inset-0 h-full w-full scale-110 object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                   </div>
-                </motion.div>
+
+                  {/* TITLE */}
+                  <h3
+                    className={cn(
+                      "text-3xl font-medium leading-none tracking-[-0.03em] transition-colors duration-500 sm:text-4xl md:text-[clamp(2rem,4vw,4.5rem)]",
+                      "text-white group-hover/list:text-white/20 group-hover:!text-white",
+                    )}
+                  >
+                    {service.title}
+                  </h3>
+                </div>
               </div>
-            );
-          })}
+
+              {/* DESCRIPTION */}
+              <p
+                className={cn(
+                  "mt-3 max-w-sm text-sm font-medium leading-relaxed transition-all duration-500 md:mt-0 md:text-right",
+                  "text-zinc-600 group-hover/list:text-zinc-800 group-hover:!text-zinc-300",
+                )}
+              >
+                {service.description}
+              </p>
+
+              {/* CUSTOM GRADIENT BORDER */}
+              <div
+                className={cn(
+                  "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500",
+                  index === services.length - 1
+                    ? "bg-transparent"
+                    : "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
+                  index === services.length - 1 &&
+                    "group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
+                )}
+              />
+            </a>
+          ))}
+        </div>
+
+        {/* CTA / CONNECT BUTTON SECTION */}
+        {/* CHANGED: justify-center for centering, mt-16 md:mt-24 for spacing */}
+        <div className="mt-16 flex w-full items-center justify-center md:mt-24">
+          {/* CHANGED: Added scaling classes to make it bigger uniformly */}
+          <ConnectButton className="scale-110 md:scale-125" />
         </div>
       </div>
+
+      {/* CUSTOM CURSOR FOLLOWER */}
+      {mounted && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              ref={cursorRef}
+              className={cn(
+                "pointer-events-none fixed left-0 top-0 z-[9999] flex h-8 w-28 items-center justify-center rounded-md bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white shadow-xl",
+                "will-change-transform",
+              )}
+            >
+              <span className="mt-px ml-1 text-[0.6rem] font-bold uppercase tracking-[0.2em]">
+                Explore
+              </span>
+              <MdKeyboardArrowRight className="h-4 w-4" />
+            </div>,
+            document.body,
+          )
+        : null}
     </section>
   );
 }

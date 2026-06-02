@@ -2,19 +2,24 @@
 
 import React, { useState, useEffect } from "react";
 import Header from "../page/Header";
-import PixelTrail from "../ui/PixelTrail";
-import SplashCursor from "../ui/SplashCursor";
+import ImageTrail from "../ui/ImageTrail";
+import AgencyStats from "./AgencyStats";
 
-// All words below are exactly 5 letters long
-const ROTATING_WORDS = ["trust", "crave", "share", "adore", "value"];
+const ROTATING_IMAGES = [
+  "https://images.unsplash.com/photo-1778648185777-a16f70110e29?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDR8Q0R3dXdYSkFiRXd8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1761998066466-86bd7a1c00ba?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDg1fENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
+  "https://images.unsplash.com/photo-1778452419724-1f605dc17c46?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDE5fENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
+  "https://images.unsplash.com/photo-1769921824660-648d69d2642a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDEzNnxDRHd1d1hKQWJFd3x8ZW58MHx8fHx8",
+  "https://images.unsplash.com/photo-1776602191233-154cbc983f0c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDcyfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
+];
 
 export default function StrategyHeroSection() {
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentWordIndex(
-        (prevIndex) => (prevIndex + 1) % ROTATING_WORDS.length,
+      setCurrentImageIndex(
+        (prevIndex) => (prevIndex + 1) % ROTATING_IMAGES.length,
       );
     }, 2500);
 
@@ -22,64 +27,65 @@ export default function StrategyHeroSection() {
   }, []);
 
   return (
-    <section className="relative flex h-screen w-full flex-col items-center overflow-hidden bg-white px-6 py-26 text-zinc-900">
-      <div className="absolute inset-0 z-0 opacity-100 overflow-hidden">
-        <SplashCursor
-          DENSITY_DISSIPATION={4.5}
-          VELOCITY_DISSIPATION={1}
-          PRESSURE={0.4}
-          CURL={0}
-          SPLAT_RADIUS={0.29}
-          SPLAT_FORCE={12500}
-          COLOR_UPDATE_SPEED={10}
-          SHADING
-          RAINBOW_MODE={false}
-          COLOR="#0061ff"
-        />
-      </div>
-
+    <section className="relative flex min-h-screen w-full flex-col items-center overflow-hidden bg-white px-6 pt-10 text-zinc-900">
       {/* Subtle Background Glow for Light Mode */}
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-60">
         <div className="h-[600px] w-[600px] rounded-full bg-zinc-100 blur-[120px]"></div>
       </div>
 
       {/* Header positioned at the top */}
-      <div className="absolute top-0 left-0 z-50 w-full">
+      <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
       {/* Main Content (Center Aligned) */}
-      <div className="relative z-10 mt-20 flex max-w-6xl flex-col items-center text-center md:mt-28">
+      <div className="relative z-10 mt-20 flex max-w-7xl flex-col items-center text-center md:mt-28">
         {/* Top Pill Badge */}
         <div className="mb-8 inline-flex items-center text-xs font-semibold uppercase tracking-widest text-zinc-600 backdrop-blur-md">
           How we do it
         </div>
 
-        {/* Headline */}
-        <h1 className="mb-6 text-6xl font-bold leading-[0.9em] tracking-tight text-black md:text-[120px]">
-          We build brands that <br className="hidden md:block" /> people{" "}
-          {/* Added 'text-left' here to align all cascading words uniformly */}
-          <span className="relative inline-grid grid-cols-1 grid-rows-1 text-left">
-            {ROTATING_WORDS.map((word, index) => (
-              <span
-                key={word}
-                className={`col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent transition-all duration-700 ease-in-out ${
-                  index === currentWordIndex
-                    ? "translate-y-0 opacity-100 blur-0"
-                    : "translate-y-4 opacity-0 blur-sm"
-                }`}
-              >
-                {word}
-              </span>
-            ))}
+        {/* Headline structured into 3 distinct lines */}
+        <h1 className="mb-6 text-4xl font-bold leading-[1.05em] tracking-tight text-black sm:text-5xl md:text-[85px] lg:text-[100px] xl:text-[110px]">
+          {/* LINE 1: We Build + Image Carousel + Brands */}
+          <span className="whitespace-nowrap inline-flex items-center justify-center gap-2 md:gap-4">
+            We Build
+            <span className="relative inline-block h-[0.76em] w-[1.5em] overflow-hidden rounded-2xl align-middle shadow-sm shrink-0">
+              {ROTATING_IMAGES.map((img, index) => (
+                <img
+                  key={img}
+                  src={img}
+                  alt="Brand visual"
+                  // CHANGED: altered translate-y classes to translate-x classes for left-to-right animation
+                  className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 mesh-smooth ease-in-out ${
+                    index === currentImageIndex
+                      ? "translate-x-0 opacity-100 blur-0"
+                      : "-translate-x-4 opacity-0 blur-sm"
+                  }`}
+                />
+              ))}
+            </span>
+            Brands
+          </span>
+          <br />
+          {/* LINE 2 */}
+          that People
+          <br />
+          {/* LINE 3 */}
+          <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+            Trust & Value
           </span>
         </h1>
 
-        <p className="mt-4 max-w-3xl text-lg leading-[1.2em] font-medium lg:mt-10 text-zinc-500 md:text-xl">
+        <p className="mt-4 max-w-3xl text-lg font-medium leading-[1.2em] text-zinc-500 md:text-xl lg:mt-10">
           A brand is more than just a logo and a color palette. It&apos;s the
           emotional connection you have with your audience. We help you define,
           design, and deliver that connection.
         </p>
+      </div>
+
+      <div className="w-full">
+        <AgencyStats />
       </div>
     </section>
   );

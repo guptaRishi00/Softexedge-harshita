@@ -146,7 +146,7 @@ export default function ServiceSection() {
                 {/* TITLE */}
                 <h3
                   className={cn(
-                    "text-4xl font-bold leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-6xl md:text-[clamp(3rem,6vw,7rem)]",
+                    "text-4xl font-medium leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-6xl md:text-[clamp(3rem,6vw,7rem)]",
                     "text-white group-hover/list:text-white/20 group-hover:!text-white",
                   )}
                 >

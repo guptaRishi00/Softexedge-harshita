@@ -20,7 +20,7 @@ const CustomLogo = ({ visible }: { visible?: boolean }) => (
   <Link href="/" className="flex items-center gap-2 group">
     <Image
       // Switch between logos based on scroll state
-      src={visible ? "/assets/logo.png" : "/assets/logoBlue.png"}
+      src={visible ? "/assets/logo.png" : "/assets/logo.png"}
       alt="Grovio Logo"
       width={85}
       height={30}
@@ -144,7 +144,7 @@ export default function Header() {
           <DynamicButton
             text="Get in Touch"
             href="/contact"
-            className="relative px-4 py-3 rounded-lg border border-gray-300 hover:border-transparent transition-colors"
+            className="relative px-4 py-3 rounded-lg border border-gray-300 hover:border-none transition-colors"
             showIcon={false}
           />
         </NavBody>

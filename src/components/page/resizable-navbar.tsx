@@ -20,7 +20,6 @@ interface NavbarProps {
 interface NavBodyProps {
   children: React.ReactNode;
   className?: string;
-  visible?: boolean;
 }
 
 export interface NavItem {
@@ -43,19 +42,16 @@ interface NavItemsProps {
   items: NavItem[];
   className?: string;
   onItemClick?: () => void;
-  visible?: boolean;
 }
 
 interface MobileNavProps {
   children: React.ReactNode;
   className?: string;
-  visible?: boolean;
 }
 
 interface MobileNavHeaderProps {
   children: React.ReactNode;
   className?: string;
-  visible?: boolean;
 }
 
 interface MobileNavMenuProps {
@@ -69,13 +65,10 @@ export const Navbar = ({ children, className }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
   const lastScroll = useRef(0);
-  const [visible, setVisible] = useState<boolean>(false);
   const [isHidden, setIsHidden] = useState<boolean>(false);
 
+  // Only tracking scroll to hide the navbar when scrolling down
   useMotionValueEvent(scrollY, "change", (latest: number) => {
-    const shouldBeVisible = latest > 80;
-    setVisible((prev) => (prev === shouldBeVisible ? prev : shouldBeVisible));
-
     if (latest > lastScroll.current && latest > 120) {
       setIsHidden(true);
     } else {
@@ -90,36 +83,27 @@ export const Navbar = ({ children, className }: NavbarProps) => {
       animate={{ y: isHidden ? -120 : 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
       className={cn(
-        "fixed inset-x-0 top-0 z-[100] flex justify-center", // Removed will-change-transform to fix blur bug
+        "fixed inset-x-0 top-0 z-[100] flex justify-center",
         className,
       )}
     >
-      {React.Children.map(children, (child) =>
-        React.isValidElement(child)
-          ? typeof child.type === "string"
-            ? child
-            : React.cloneElement(
-                child as React.ReactElement<{ visible?: boolean }>,
-                { visible },
-              )
-          : child,
-      )}
+      {children}
     </motion.div>
   );
 };
 
-export const NavBody = ({ children, className, visible }: NavBodyProps) => {
+export const NavBody = ({ children, className }: NavBodyProps) => {
   return (
     <motion.div
       initial={{
-        width: visible ? "90%" : "100%",
-        y: visible ? 16 : 0,
-        borderRadius: visible ? "12px" : "0px",
+        width: "90%",
+        y: 16,
+        borderRadius: "10px",
       }}
       animate={{
-        width: visible ? "70%" : "100%", // Using width instead of scale fixes Safari/Chrome backdrop-blur bugs
-        y: visible ? 16 : 0,
-        borderRadius: visible ? "10px" : "0px",
+        width: "95%",
+        y: 16,
+        borderRadius: "10px",
       }}
       transition={{
         type: "spring",
@@ -128,32 +112,16 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
       }}
       className={cn(
         `fixed left-1/2 top-0 z-50 hidden lg:flex -translate-x-1/2 items-center justify-between transition-colors duration-300`,
-        visible
-          ? `px-6 py-3 bg-black/60 backdrop-blur-2xl`
-          : `px-10 py-8 bg-transparent`,
+        `px-6 py-3 bg-black/60 backdrop-blur-2xl`,
         className,
       )}
     >
-      {React.Children.map(children, (child) =>
-        React.isValidElement(child)
-          ? typeof child.type === "string"
-            ? child
-            : React.cloneElement(
-                child as React.ReactElement<{ visible?: boolean }>,
-                { visible },
-              )
-          : child,
-      )}
+      {children}
     </motion.div>
   );
 };
 
-export const NavItems = ({
-  items,
-  className,
-  onItemClick,
-  visible,
-}: NavItemsProps) => {
+export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
   const [hovered, setHovered] = useState<number | null>(null);
 
   return (
@@ -184,7 +152,6 @@ export const NavItems = ({
           (item.dropdownItems && item.dropdownItems.length > 0);
 
         return (
-          // FIX 1: Removed 'relative' from here. Now the absolute dropdown centers to the Screen, not the Link!
           <div
             key={`link-container-${idx}`}
             onMouseEnter={() => setHovered(idx)}
@@ -194,12 +161,9 @@ export const NavItems = ({
               onClick={onItemClick}
               className={cn(
                 "relative px-4 py-2 transition-colors flex items-center gap-1 group",
-                // Update this line: Handle initial black text, scrolled white text, and hovered black text
                 hovered === idx
                   ? "text-black"
-                  : visible
-                    ? "text-white hover:text-gray-200"
-                    : "text-black hover:text-gray-800",
+                  : "text-white hover:text-gray-200",
               )}
               href={item.link}
             >
@@ -226,7 +190,6 @@ export const NavItems = ({
                   className={cn(
                     "relative z-20 transition-transform duration-200",
                     hovered === idx && "rotate-180",
-                    // No need to force text-black here as it inherits from the parent Link
                   )}
                 >
                   <path d="m6 9 6 6 6-6" />
@@ -276,17 +239,15 @@ export const NavItems = ({
                           )}
 
                           {/* Content Layer */}
-                          {/* Content Layer */}
                           <div className="relative z-10 flex h-full flex-col justify-between text-zinc-900 transition-colors duration-400 group-hover:text-white">
                             <div className="flex justify-between items-start w-full">
-                              {/* 1. UPDATED: Gradient Text on Hover */}
+                              {/* Gradient Text on Hover */}
                               <span className="text-xl lg:text-2xl font-bold tracking-tight max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1 bg-gradient-to-r from-zinc-900 to-zinc-900 group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
                                 {sub.name}
                               </span>
                             </div>
 
                             {/* Hover Arrow Indicator */}
-                            {/* 2. OPTIONAL: I also matched the arrow color to your gradient! */}
                             <div className="flex justify-start group-hover:text-[#149CCB] transition-colors duration-400">
                               <svg
                                 className="w-6 h-6 opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0"
@@ -369,25 +330,15 @@ export const NavItems = ({
   );
 };
 
-export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
+export const MobileNav = ({ children, className }: MobileNavProps) => {
   return (
     <div
       className={cn(
-        "relative z-50 mx-auto flex w-full flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden transition-all duration-300",
-        visible && "bg-white/90 backdrop-blur-md",
+        "relative z-50 mx-auto flex w-full flex-col items-center justify-between px-0 py-2 lg:hidden transition-all duration-300 bg-white/90 backdrop-blur-md",
         className,
       )}
     >
-      {React.Children.map(children, (child) =>
-        React.isValidElement(child)
-          ? typeof child.type === "string"
-            ? child
-            : React.cloneElement(
-                child as React.ReactElement<{ visible?: boolean }>,
-                { visible },
-              )
-          : child,
-      )}
+      {children}
     </div>
   );
 };
@@ -395,15 +346,11 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
 export const MobileNavHeader = ({
   children,
   className,
-  visible,
 }: MobileNavHeaderProps) => {
   return (
     <div
       className={cn(
-        "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4 transition-all duration-300",
-        visible
-          ? "bg-white/90 backdrop-blur-md border-b border-black/5 shadow-xl"
-          : "bg-transparent",
+        "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4 transition-all duration-300 bg-white/90 backdrop-blur-md border-b border-black/5 shadow-xl",
         className,
       )}
     >
@@ -443,26 +390,18 @@ export const MobileNavMenu = ({
 export const MobileNavToggle = ({
   isOpen,
   onClick,
-  visible,
 }: {
   isOpen: boolean;
   onClick: () => void;
-  visible?: boolean;
 }) => {
   return isOpen ? (
     <IconX
-      className={cn(
-        "cursor-pointer transition-colors",
-        visible ? "text-black" : "text-white",
-      )}
+      className={cn("cursor-pointer transition-colors text-black")}
       onClick={onClick}
     />
   ) : (
     <IconMenu2
-      className={cn(
-        "cursor-pointer transition-colors",
-        visible ? "text-black" : "text-white",
-      )}
+      className={cn("cursor-pointer transition-colors text-black")}
       onClick={onClick}
     />
   );

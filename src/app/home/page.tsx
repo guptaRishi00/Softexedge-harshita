@@ -140,7 +140,6 @@ export default function HomePage() {
         </section>
 
         <div className="relative">
-          {/* === ABOUT SECTION WRAPPER === */}
           <div ref={aboutContainerRef} className="relative z-0 bg-black">
             <div
               ref={aboutInnerRef}
@@ -150,7 +149,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* === PORTFOLIO SECTION === */}
           <div
             ref={portfolioRef}
             className="relative z-10 bg-[#0a0a0a] shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
@@ -158,12 +156,9 @@ export default function HomePage() {
             <PortfolioSection />
           </div>
 
-          {/* === REMAINING SECTIONS === */}
           <div className="relative z-10 bg-white">
             <StatsSection />
 
-            {/* === ANIMATED SERVICE SECTION WRAPPER === */}
-            {/* Added overflow-hidden to the container to prevent a horizontal scrollbar while the section is rotated */}
             <div
               ref={serviceContainerRef}
               className="relative w-full bg-white overflow-hidden py-10"

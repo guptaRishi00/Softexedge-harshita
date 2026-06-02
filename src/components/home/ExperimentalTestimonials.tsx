@@ -68,17 +68,17 @@ export default function ExperimentalTestimonials() {
         }
       `}</style>
 
-      <div className="mx-auto flex w-full max-w-360 flex-col gap-12 px-10 lg:flex-row lg:items-start lg:gap-20">
+      <div className="mx-auto flex w-full max-w-360 flex-col gap-12 px-10 lg:flex-row lg:items-start lg:gap-5">
         {/* LEFT COLUMN: Title and CTA */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, margin: "-50px" }}
-          className="flex w-full flex-col lg:sticky lg:top-32 lg:h-[600px] lg:w-2/5 lg:shrink-0"
+          className="flex w-full flex-col lg:sticky lg:top-30 lg:h-[600px] lg:w-2/5 lg:shrink-0"
         >
           <div>
-            <h2 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-[4rem] lg:leading-[1.1]">
+            <h2 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-[5rem] lg:leading-[1.0]">
               Voices of the <br />
               {/* Rotating Gradient Text */}
               <span className="inline-grid overflow-hidden py-1">

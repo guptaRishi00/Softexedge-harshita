@@ -65,7 +65,7 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-black px-6 py-32 text-white md:px-12 md:py-48 font-sans">
+    <section className="relative overflow-hidden bg-black px-6 py-32 text-white md:px-12 md:py-30 font-sans">
       {/* Noise Texture */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.04]"
@@ -78,12 +78,11 @@ export default function ProjectShowcase() {
       <div className="relative mx-auto flex max-w-[1600px] flex-col gap-20 md:gap-24">
         {/* Header - Left Aligned & Breathable */}
         <div className="flex w-full max-w-4xl flex-col items-start text-left">
-          <p className="mb-6 text-xs font-semibold uppercase tracking-[0.35em] text-zinc-500 md:text-sm">
-            Selected Works
-          </p>
-
-          <h2 className="text-5xl font-bold tracking-tight text-white md:text-7xl lg:text-[7.5rem] leading-[0.9]">
-            Our Projects
+          <h2 className="text-5xl font-bold tracking-tight text-white md:text-7xl lg:text-[5rem] leading-[0.9]">
+            Our{" "}
+            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
+              Projects
+            </span>
           </h2>
 
           <p className="mt-8 max-w-xl text-base font-medium leading-relaxed text-zinc-400 md:text-lg">

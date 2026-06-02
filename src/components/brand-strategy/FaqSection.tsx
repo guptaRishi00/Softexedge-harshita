@@ -61,18 +61,19 @@ export default function FaqSection() {
 
       <div className="mx-auto flex w-full max-w-[1500px] flex-col items-start gap-16 lg:flex-row lg:gap-24">
         {/* LEFT COLUMN: Sticky Title */}
-        <div className="flex w-full flex-col items-start lg:sticky lg:top-5 lg:w-[30%]">
+        <div className="flex w-full flex-col items-start lg:sticky lg:top-5 lg:w-[50%]">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
           >
-            <p className="mb-6 text-xs font-semibold uppercase tracking-[0.4em] text-zinc-400">
-              F A Q
-            </p>
-            <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-zinc-900 md:text-6xl lg:text-7xl">
-              FAQ
+            <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-zinc-900 md:text-6xl lg:text-[5rem]">
+              Let's{" "}
+              <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+                Clear
+              </span>{" "}
+              Things Up
             </h2>
           </motion.div>
         </div>

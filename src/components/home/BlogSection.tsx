@@ -3,7 +3,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
 import DynamicButton from "../ui/DynamicButton";
 
 const blogPosts = [
@@ -63,21 +62,21 @@ export default function BlogSection() {
 
   // Card list component to render identical tracks
   const CardTrack = () => (
-    <div className="flex shrink-0 gap-6 md:gap-10 lg:gap-16 pr-6 md:pr-10 lg:pr-16">
+    <div className="flex shrink-0 gap-4 md:gap-6 lg:gap-3">
       {blogPosts.map((post) => (
         <div
           key={post.id}
-          // Exactly 2 visible at a time on desktop using fallback width math
-          className="w-[75vw] sm:w-[50vw] md:w-[calc(50vw-20px)] lg:w-[calc(50vw-32px)] shrink-0"
+          // INCREASED WIDTHS slightly (+5vw across breakpoints)
+          className="w-[55vw] sm:w-[40vw] md:w-[30vw] lg:w-[25vw] shrink-0"
         >
           <article className="group flex h-full cursor-pointer flex-col">
-            {/* IMAGE CONTAINER */}
-            <div className="relative mb-8 w-full overflow-hidden rounded-[1.5rem] aspect-[4/3] lg:aspect-[16/10] bg-zinc-100">
+            {/* IMAGE CONTAINER - Kept aspect-square */}
+            <div className="relative mb-4 w-full overflow-hidden rounded-[1.25rem] aspect-square bg-zinc-100">
               <Image
                 src={post.image}
                 alt={post.title}
                 fill
-                sizes="(max-width: 768px) 75vw, 50vw"
+                sizes="(max-width: 768px) 55vw, 25vw"
                 className="object-cover transition-transform duration-700 ease-[0.16,1,0.3,1] group-hover:scale-105"
               />
               <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
@@ -85,30 +84,9 @@ export default function BlogSection() {
 
             {/* CARD CONTENT */}
             <div className="flex flex-1 flex-col px-2">
-              {/* Meta Details */}
-              <div className="mb-5 flex items-center gap-3 text-sm font-semibold text-zinc-500 uppercase tracking-wider">
-                <span className="text-zinc-900">{post.author}</span>
-                <div className="h-1 w-1 rounded-full bg-zinc-300" />
-                <span>{post.readTime} read</span>
-              </div>
-
-              {/* Title */}
-              <h3 className="mb-8 text-2xl font-bold leading-snug tracking-tight text-zinc-900 transition-colors duration-300 group-hover:text-[#2E5BFF] lg:text-[1.75rem]">
+              <h3 className="mb-4 text-lg font-bold leading-snug tracking-tight text-zinc-900 transition-colors duration-300 group-hover:text-[#2E5BFF] lg:text-xl">
                 {post.title}
               </h3>
-
-              {/* Footer Link */}
-              <div className="mt-auto flex items-center gap-3 border-t border-zinc-200 pt-5">
-                <span className="text-sm font-bold uppercase tracking-widest text-zinc-900 transition-colors duration-300 group-hover:text-[#2E5BFF]">
-                  Read Article
-                </span>
-
-                {/* Sliding Arrow Icon */}
-                <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-zinc-100 text-zinc-900 transition-colors duration-300 group-hover:bg-[#2E5BFF] group-hover:text-white">
-                  <ArrowRight className="absolute h-4 w-4 -translate-x-[150%] transition-transform duration-300 ease-[0.16,1,0.3,1] group-hover:translate-x-0" />
-                  <ArrowRight className="absolute h-4 w-4 transition-transform duration-300 ease-[0.16,1,0.3,1] group-hover:translate-x-[150%]" />
-                </div>
-              </div>
             </div>
           </article>
         </div>
@@ -118,7 +96,7 @@ export default function BlogSection() {
 
   return (
     <section className="w-full bg-white py-20 text-black md:py-32 overflow-hidden">
-      <div className="mx-auto w-full px-6 md:px-10 lg:px-16">
+      <div className="mx-auto w-full px-6 md:px-10 lg:px-10">
         {/* HEADER LAYER */}
         <div className="mb-12 flex flex-col items-start justify-between gap-8 md:mb-20 md:flex-row md:items-end">
           <motion.div
@@ -157,31 +135,23 @@ export default function BlogSection() {
           </div>
         </div>
 
-        {/* INFINITE EDGE MASK CONTAINER */}
-        <div
-          className="relative w-full overflow-hidden"
-          style={{
-            maskImage:
-              "linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)",
-          }}
-        >
+        {/* CONTAINER */}
+        <div className="relative w-full overflow-hidden">
           {/* Main animated element container holding two identical tracks */}
           <motion.div
-            className="flex w-max flex-nowrap"
+            className="flex w-max flex-nowrap gap-4 md:gap-6 lg:gap-3"
             animate={
               isPaused
                 ? "paused"
                 : {
-                    x: ["0%", "-50%"], // Always moves by exactly one full track width
+                    x: ["0%", "-50%"],
                   }
             }
             transition={{
               x: {
                 repeat: Infinity,
                 repeatType: "loop",
-                duration: 18, // Clean continuous movement speed
+                duration: 22,
                 ease: "linear",
               },
             }}
