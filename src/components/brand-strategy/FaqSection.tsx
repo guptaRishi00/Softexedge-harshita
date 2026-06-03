@@ -42,7 +42,7 @@ export default function FaqSection() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white px-6 md:px-6 md:pt-10">
+    <section className="relative overflow-hidden bg-white px-6 md:px-6 md:py-20">
       {/* Hidden SVG to define the custom gradient for the icon */}
       <svg width="0" height="0" className="absolute">
         <defs>

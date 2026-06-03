@@ -70,7 +70,7 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-black px-6 py-16 font-sans text-white md:px-8 md:py-24">
+    <section className="relative overflow-hidden bg-black px-6 font-sans text-white md:px-6 md:pb-40 pt-20">
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
       <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">
@@ -83,9 +83,10 @@ export default function ProjectShowcase() {
           </h2>
 
           {/* CHANGED: Removed the top margin (mt-8) since gap handles it now, added md:mb-2 to align with baseline, and md:text-right */}
-          <p className="max-w-md text-lg font-medium leading-[1.25em] text-zinc-400 md:mb-2 md:text-right md:text-lg">
+          <p className="max-w-xl text-xl font-medium leading-[1.25em] text-zinc-400 md:mb-2 md:text-left md:text-xl">
             Crafted digital experiences blending cinematic interaction,
-            editorial layouts, and immersive motion systems.
+            editorial layouts, and immersive motion systems. experiences
+            blending cinematic interaction
           </p>
         </div>
 

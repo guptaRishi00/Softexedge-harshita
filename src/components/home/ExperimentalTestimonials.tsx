@@ -53,7 +53,7 @@ export default function ExperimentalTestimonials() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-white text-zinc-900 md:pt-16">
+    <section className="relative overflow-hidden bg-white text-zinc-900 md:py-20">
       {/* CSS Keyframes for the continuous vertical marquee */}
       <style>{`
         @keyframes scroll-y {
@@ -145,7 +145,7 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text - Increased to text-xl (mobile) and text-2xl/3xl (desktop) */}
-                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-[1.2em] tracking-tight text-zinc-800 md:text-2xl lg:text-xl">
+                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-[1.3em] tracking-tight text-zinc-800 md:text-2xl lg:text-xl">
                   "{item.quote}"
                 </p>
 

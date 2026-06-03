@@ -26,15 +26,15 @@ export default function OurTechStack() {
   const [isPaused, setIsPaused] = useState(false);
 
   const LogoTrack = () => (
-    // Updated spacing: gap-3 handles internal spacing, pr-3 acts as the gap between tracks
     <div className="flex shrink-0 gap-3 pr-3">
       {techStack.map((tech) => (
         <div
           key={tech.id}
-          className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-[#040404] px-16 py-16 transition-colors "
+          // Removed flex-col to keep the horizontal <icon> <text> layout inside the square
+          className="flex shrink-0 items-center justify-center gap-4 rounded-xl border border-zinc-800 bg-[#171717] h-50 w-68 transition-colors"
         >
           <tech.icon
-            className="h-10 w-10"
+            className="h-12 w-12 shrink-0"
             style={{ stroke: "url(#icon-gradient)" }}
           />
           <span className="text-3xl font-bold tracking-tight text-white">
@@ -46,7 +46,7 @@ export default function OurTechStack() {
   );
 
   return (
-    <section className="relative w-full overflow-hidden bg-black py-16 text-white md:py-10">
+    <section className="relative w-full overflow-hidden bg-black py-16 text-white md:py-20">
       {/* Hidden SVG to define the gradient */}
       <svg width="0" height="0" className="absolute">
         <defs>
@@ -77,10 +77,10 @@ export default function OurTechStack() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="max-w-sm text-lg leading-[1.25em] text-zinc-400 md:mb-2 md:text-right"
+            className="max-w-xl text-xl leading-[1.25em] text-zinc-400 md:mb-2 md:text-left font-medium"
           >
             Powered by modern, reliable, and scalable technologies to bring your
-            vision to life.
+            vision to life. vision to life. vision to life.
           </motion.p>
         </div>
 

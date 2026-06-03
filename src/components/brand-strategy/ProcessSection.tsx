@@ -63,10 +63,11 @@ export default function ProcessSection() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             viewport={{ once: true }}
-            className="max-w-sm text-lg leading-[1.25em] text-zinc-400 md:mb-2 md:text-right"
+            className="max-w-xl text-xl leading-[1.25em] text-zinc-400 md:mb-2 md:text-left font-medium"
           >
             A streamlined approach to turning complex challenges into elegant
-            digital solutions, from initial concept to global scale.
+            digital solutions, from initial concept to global scale. from
+            initial concept to global scale.
           </motion.p>
         </div>
 

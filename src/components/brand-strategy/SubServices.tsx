@@ -1,21 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useRef, useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { MdKeyboardArrowRight } from "react-icons/md";
+import { useState } from "react";
 import ConnectButton from "../shared/ConnectButton";
-import ConnectButtonTwo from "../shared/ConnectButtonTwo";
 
-// Split the titles to allow the image to appear exactly between the words.
 const services = [
   {
     title1: "Brand",
     title2: "Strategy",
     description:
-      "Positioning, narrative, and foundational architecture for industry leaders.",
+      "We don't just design logos; we architect complete brand ecosystems. By diving deep into market research and consumer psychology, we craft compelling narratives, crystal-clear positioning, and robust foundational strategies that empower industry leaders to dominate their space and resonate profoundly with their target audience.",
     link: "/brand-strategy",
     image:
       "https://images.unsplash.com/photo-1703720074944-b60b730c7289?w=1200&auto=format&fit=crop&q=80",
@@ -24,7 +18,7 @@ const services = [
     title1: "Digital",
     title2: "Products",
     description:
-      "Immersive websites, web applications, and scalable platforms.",
+      "Our engineering and product teams collaborate to build immersive, high-performance digital experiences. From complex, enterprise-grade web applications to lightning-fast, scalable platforms, we leverage cutting-edge technologies to solve real business problems and deliver intuitive tools that users love.",
     link: "/services",
     image:
       "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=1200&auto=format&fit=crop&q=80",
@@ -33,7 +27,7 @@ const services = [
     title1: "UI/UX",
     title2: "& Motion",
     description:
-      "Cinematic visual identities, motion graphics, and interface designs.",
+      "We bring digital interfaces to life through cinematic visual identities and purposeful motion design. By obsessing over user journeys, micro-interactions, and accessibility, we create frictionless, visually stunning experiences that not only look spectacular but also guide users effortlessly.",
     link: "/services",
     image:
       "https://images.unsplash.com/photo-1581287053822-fd7bf4f4bfec?w=1200&auto=format&fit=crop&q=80",
@@ -42,7 +36,7 @@ const services = [
     title1: "E",
     title2: "Commerce",
     description:
-      "High-converting online storefronts optimized for modern consumers.",
+      "We engineer high-converting online storefronts tailored specifically for the modern digital consumer. By optimizing the entire purchasing funnel—from product discovery to seamless checkout flows—we build robust e-commerce solutions that maximize average order value, reduce cart abandonment, and drive sustainable growth.",
     link: "/services",
     image:
       "https://images.unsplash.com/photo-1586880244406-556ebe35f282?w=1200&auto=format&fit=crop&q=80",
@@ -50,169 +44,92 @@ const services = [
 ];
 
 export default function SubServices() {
-  const containerRef = useRef<HTMLElement>(null);
-  const cursorRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const { contextSafe } = useGSAP(
-    () => {
-      const cursor = cursorRef.current;
-      if (cursor) {
-        // Initialize cursor size to 0
-        gsap.set(cursor, { scale: 0, xPercent: -50, yPercent: -50 });
-
-        const xTo = gsap.quickTo(cursor, "x", {
-          duration: 0.15,
-          ease: "power3",
-          force3D: true,
-        });
-        const yTo = gsap.quickTo(cursor, "y", {
-          duration: 0.15,
-          ease: "power3",
-          force3D: true,
-        });
-
-        const moveCursor = (e: MouseEvent) => {
-          xTo(e.clientX);
-          yTo(e.clientY);
-        };
-
-        window.addEventListener("mousemove", moveCursor);
-
-        return () => {
-          window.removeEventListener("mousemove", moveCursor);
-        };
-      }
-    },
-    { scope: containerRef, dependencies: [mounted] },
-  );
-
-  // Added overwrite: "auto" to prevent animation timeline conflicts
-  const handleMouseEnter = contextSafe(() => {
-    gsap.to(cursorRef.current, {
-      scale: 1,
-      duration: 0.4,
-      ease: "back.out(1.5)",
-      overwrite: "auto",
-    });
-  });
-
-  const handleMouseLeave = contextSafe(() => {
-    gsap.to(cursorRef.current, {
-      scale: 0,
-      duration: 0.3,
-      ease: "power3.inOut",
-      overwrite: "auto",
-    });
-  });
-
-  // Failsafe: Hide the cursor immediately if the user starts scrolling to prevent it from leaking out of the section bounds.
-  useEffect(() => {
-    const handleScroll = () => {
-      if (cursorRef.current) {
-        gsap.to(cursorRef.current, {
-          scale: 0,
-          duration: 0.3,
-          ease: "power3.inOut",
-          overwrite: "auto",
-        });
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const [activeIndex, setActiveIndex] = useState(null);
+  const [activeImage, setActiveImage] = useState(0);
 
   return (
-    <section
-      ref={containerRef}
-      onMouseLeave={handleMouseLeave}
-      className="relative w-full overflow-hidden bg-black py-16 text-white md:py-20"
-    >
-      <div className="mx-auto w-full px-6 md:px-6">
+    <section className="relative w-full overflow-hidden bg-black py-16 text-white md:py-20 md:pt-30 lg:pb-30">
+      <div className="mx-auto w-full px-6 md:px-6 lg:px-6">
         {/* HEADER SECTION */}
-        {/* CHANGED: Switched to flex-col on mobile, flex-row on desktop with justify-between and items-end */}
-        <div className="mb-12 flex w-full flex-col items-start justify-between gap-6 pb-6 md:mb-24 md:flex-row md:items-end md:pb-0">
-          {/* CHANGED: Shortened title to 2 words */}
+        <div className="mb-16 flex w-full flex-col items-start justify-between gap-6 pb-6 md:mb-35 md:flex-row md:items-end md:pb-0">
           <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
             Our{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               Services
             </span>
           </h2>
-
-          {/* ADDED: Description paragraph aligned to the right on desktop */}
-          <p className="max-w-xl text-lg font-medium leading-[1.25em] text-zinc-400 md:mb-2 md:text-right">
+          <p className="max-w-xl text-xl font-medium leading-[1.25em] text-zinc-400 md:mb-2 md:text-left">
             Delivering scalable, high-performance solutions that elevate brands
             and drive revenue. Delivering scalable, high-performance solutions
             that elevate brands and drive revenue.
           </p>
         </div>
 
-        {/* SERVICES LIST */}
-        <div className="group/list flex w-full flex-col">
-          {services.map((service, index) => (
-            <a
-              key={index}
-              href={service.link}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              className="group relative flex w-full cursor-none flex-col items-start justify-center overflow-hidden rounded-sm px-4 py-8 md:flex-row md:items-center md:justify-between md:px-8 md:py-12"
-            >
-              {/* BACKGROUND IMAGE REVEAL */}
-              <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
+        {/* MAIN CONTENT LAYOUT */}
+        <div className="grid w-full grid-cols-1 items-stretch gap-12 md:grid-cols-2 md:gap-16 lg:gap-24">
+          {/* LEFT SIDE: IMAGE ONLY */}
+          <div className="order-2 flex h-full w-full min-h-[300px] flex-col md:order-1 md:min-h-[500px]">
+            <div className="relative h-full w-full flex-1 overflow-hidden rounded-xl bg-zinc-900">
+              {services.map((service, index) => (
                 <img
+                  key={`img-${index}`}
                   src={service.image}
                   alt={service.title1}
-                  className="h-full w-full scale-105 object-cover transition-transform duration-700 ease-out group-hover:scale-100"
-                />
-                {/* Dark overlay to ensure text stays readable */}
-                <div className="absolute inset-0 bg-black/60" />
-              </div>
-
-              <div className="relative z-10 flex w-full items-center justify-between md:w-auto md:justify-start">
-                {/* TITLE */}
-                <h3
                   className={cn(
-                    "flex items-center text-3xl font-medium leading-none tracking-[-0.03em] transition-colors duration-500 sm:text-4xl md:text-[clamp(2rem,4vw,4.5rem)]",
-                    "text-white group-hover/list:text-white/20 group-hover:!text-white",
+                    "absolute inset-0 h-full w-full object-cover transition-all duration-700 ease-in-out",
+                    activeImage === index
+                      ? "scale-100 opacity-100"
+                      : "scale-105 opacity-0 pointer-events-none",
                   )}
-                >
+                />
+              ))}
+              <div className="absolute inset-0 bg-black/20" />
+            </div>
+          </div>
+
+          {/* RIGHT SIDE: SERVICES LIST & DESCRIPTIONS */}
+          <div
+            // Removed fixed gaps so flex-1 handles the spacing perfectly
+            className="group/list order-1 flex h-full w-full flex-col md:order-2"
+            onMouseLeave={() => setActiveIndex(null)}
+          >
+            {services.map((service, index: any) => (
+              <a
+                key={`link-${index}`}
+                href={service.link}
+                onMouseEnter={() => {
+                  setActiveIndex(index);
+                  setActiveImage(index);
+                }}
+                // Added flex-1 to strictly divide equal height, and justify-center to vertically center everything in the box
+                className="group flex gap-2 flex-1 w-full flex-col items-start justify-center border-b border-white/10 py-6 transition-all duration-500 last:border-none hover:!opacity-100 group-hover/list:opacity-30 md:py-8 lg:py-10"
+              >
+                <h3 className="flex w-full items-center text-3xl font-medium tracking-tight text-white transition-transform duration-500 group-hover:translate-x-4 sm:text-4xl md:text-4xl lg:text-5xl">
                   <span>
                     {service.title1}
                     {service.title1 === "E" ? "-" : " "}
                     {service.title2}
                   </span>
                 </h3>
-              </div>
 
-              {/* DESCRIPTION */}
-              <p
-                className={cn(
-                  "relative z-10 mt-4 max-w-sm text-lg font-medium leading-relaxed transition-all duration-500 md:mt-0 md:text-right",
-                  "text-zinc-600 group-hover/list:text-zinc-800 group-hover:!text-zinc-200",
-                )}
-              >
-                {service.description}
-              </p>
-
-              {/* CUSTOM GRADIENT BORDER */}
-              <div
-                className={cn(
-                  "absolute bottom-0 left-0 z-20 h-[1px] w-full transition-all duration-500",
-                  index === services.length - 1
-                    ? "bg-transparent"
-                    : "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
-                  index === services.length - 1 &&
-                    "group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
-                )}
-              />
-            </a>
-          ))}
+                {/* Smooth Expanding Description */}
+                <div
+                  className={cn(
+                    "grid w-full transition-all duration-500 ease-in-out group-hover:translate-x-4",
+                    activeIndex === index
+                      ? "mt-4 grid-rows-[1fr] opacity-100 md:mt-6"
+                      : "mt-0 grid-rows-[0fr] opacity-0",
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    <p className="max-w-xl text-base font-medium leading-relaxed text-zinc-400 md:text-lg">
+                      {service.description}
+                    </p>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* CTA / CONNECT BUTTON SECTION */}
@@ -220,25 +137,6 @@ export default function SubServices() {
           <ConnectButton className="scale-110 md:scale-125" />
         </div>
       </div>
-
-      {/* CUSTOM CURSOR FOLLOWER */}
-      {mounted && typeof document !== "undefined"
-        ? createPortal(
-            <div
-              ref={cursorRef}
-              className={cn(
-                "pointer-events-none fixed left-0 top-0 z-[9999] flex h-8 w-28 items-center justify-center rounded-md bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white shadow-xl",
-                "will-change-transform",
-              )}
-            >
-              <span className="ml-1 mt-px text-[0.6rem] font-bold uppercase tracking-[0.2em]">
-                Explore
-              </span>
-              <MdKeyboardArrowRight className="h-4 w-4" />
-            </div>,
-            document.body,
-          )
-        : null}
     </section>
   );
 }
