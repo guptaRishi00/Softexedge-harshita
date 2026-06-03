@@ -145,7 +145,7 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text - Increased to text-xl (mobile) and text-2xl/3xl (desktop) */}
-                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-[1.2em] tracking-tight text-zinc-800 md:text-2xl lg:text-3xl">
+                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-[1.2em] tracking-tight text-zinc-800 md:text-2xl lg:text-xl">
                   "{item.quote}"
                 </p>
 
