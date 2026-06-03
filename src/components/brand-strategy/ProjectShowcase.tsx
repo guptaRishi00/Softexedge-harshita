@@ -70,12 +70,11 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-black px-6 py-32 font-sans text-white md:px-10 md:py-30">
+    <section className="relative overflow-hidden bg-black px-6 py-16 font-sans text-white md:px-8 md:py-24">
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
-      <div className="relative mx-auto flex max-w-[1600px] flex-col gap-20 md:gap-24">
-        {/* CHANGED: Switched to flex-col for mobile, flex-row for desktop, added justify-between and md:items-end */}
-        <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+      <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">
+        <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-end mb-34">
           <h2 className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[5rem]">
             Our{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
@@ -84,7 +83,7 @@ export default function ProjectShowcase() {
           </h2>
 
           {/* CHANGED: Removed the top margin (mt-8) since gap handles it now, added md:mb-2 to align with baseline, and md:text-right */}
-          <p className="max-w-md text-base font-medium leading-relaxed text-zinc-400 md:mb-2 md:text-right md:text-lg">
+          <p className="max-w-md text-lg font-medium leading-[1.25em] text-zinc-400 md:mb-2 md:text-right md:text-lg">
             Crafted digital experiences blending cinematic interaction,
             editorial layouts, and immersive motion systems.
           </p>

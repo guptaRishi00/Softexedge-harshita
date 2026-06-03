@@ -58,7 +58,7 @@ export default function AgencyStats() {
                 +
               </span>
             </h3>
-            <p className="text-lg font-medium leading-[1em] text-black mt-8">
+            <p className="text-lg font-medium leading-[1em] text-black mt-5">
               Digital products and projects <br /> successfully delivered
             </p>
           </div>
@@ -70,7 +70,7 @@ export default function AgencyStats() {
                 %
               </span>
             </h3>
-            <p className="text-lg font-medium leading-[1em] text-black mt-8">
+            <p className="text-lg font-medium leading-[1em] text-black mt-5">
               Client retention rate built <br /> on trust and results
             </p>
           </div>
@@ -82,7 +82,7 @@ export default function AgencyStats() {
                 +
               </span>
             </h3>
-            <p className="text-lg font-medium leading-[1em] text-black mt-8">
+            <p className="text-lg font-medium leading-[1em] text-black mt-5">
               Years of elite industry <br /> experience and consulting
             </p>
           </div>
@@ -94,7 +94,7 @@ export default function AgencyStats() {
                 +
               </span>
             </h3>
-            <p className="text-lg font-medium leading-[1em] text-black mt-8">
+            <p className="text-lg font-medium leading-[1em] text-black mt-5">
               In-house designers, creators, <br /> and engineers
             </p>
           </div>

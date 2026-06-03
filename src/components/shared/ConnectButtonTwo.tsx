@@ -8,7 +8,7 @@ export default function ConnectButtonTwo({ onClick, className = "" }: any) {
       onClick={onClick}
       className={`group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl bg-white pl-6 pr-2  transition-colors duration-300 hover:bg-black ${className}`}
     >
-      <span className="text-[17px] font-bold tracking-tight text-black transition-colors duration-300 group-hover:text-white">
+      <span className="text-[18px] font-bold tracking-tight text-black transition-colors duration-300 group-hover:text-white">
         Connect With Us
       </span>
 

@@ -14,7 +14,7 @@ const blogPosts = [
     readTime: "15 mins",
     tag: "Resources",
     image:
-      "https://plus.unsplash.com/premium_photo-1726739717949-6c5079fa9a08?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Z29vZ2xlJTIwYWl|ZW58MHx8MHx8fDA%3D",
+      "https://images.unsplash.com/photo-1780006015851-2d1b3bcadbfd?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDI1fHFQWXNEenZKT1ljfHxlbnwwfHx8fHw%3D",
   },
   {
     id: 2,
@@ -23,7 +23,8 @@ const blogPosts = [
     author: "Ray Saddiq",
     readTime: "8 mins",
     tag: "Company News",
-    image: "/assets/google.webp",
+    image:
+      "https://plus.unsplash.com/premium_photo-1776661561367-93c4100618d6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDIwM3xxUFlzRHp2Sk9ZY3x8ZW58MHx8fHx8",
   },
   {
     id: 3,
@@ -32,7 +33,8 @@ const blogPosts = [
     author: "Ray Saddiq",
     readTime: "8 mins",
     tag: "Company News",
-    image: "/assets/google.webp",
+    image:
+      "https://images.unsplash.com/photo-1773332611613-dbdc64f09807?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: 4,
@@ -67,11 +69,11 @@ export default function BlogSection() {
         <div
           key={post.id}
           // INCREASED WIDTHS slightly (+5vw across breakpoints)
-          className="w-[55vw] sm:w-[40vw] md:w-[30vw] lg:w-[25vw] shrink-0"
+          className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw]"
         >
           <article className="group flex h-full cursor-pointer flex-col">
             {/* IMAGE CONTAINER - Kept aspect-square */}
-            <div className="relative mb-4 w-full overflow-hidden rounded-[1.25rem] aspect-square bg-zinc-100">
+            <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-[1.25rem] bg-zinc-100">
               <Image
                 src={post.image}
                 alt={post.title}
@@ -84,7 +86,14 @@ export default function BlogSection() {
 
             {/* CARD CONTENT */}
             <div className="flex flex-1 flex-col px-2">
-              <h3 className="mb-4 text-lg font-medium leading-[1em] tracking-tight text-zinc-900 transition-colors duration-300 group-hover:text-[#2E5BFF] lg:text-xl">
+              {/* Moved Author and Read Time above the title */}
+              <div className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500">
+                <span className="text-zinc-800">{post.author}</span>
+                <span className="h-1 w-1 rounded-full bg-zinc-300" />
+                <span>{post.readTime}</span>
+              </div>
+
+              <h3 className="text-lg font-bold leading-[1.2em] tracking-tight text-zinc-900 transition-colors duration-300 group-hover:text-[#2E5BFF] lg:text-xl">
                 {post.title}
               </h3>
             </div>
@@ -95,16 +104,16 @@ export default function BlogSection() {
   );
 
   return (
-    <section className="w-full bg-white py-20 text-black md:py-32 overflow-hidden ">
+    <section className="w-full overflow-hidden bg-white text-black md:pt-16 ">
       <div className="mx-auto w-full ">
         {/* HEADER LAYER */}
-        <div className="mb-12 flex flex-col items-start justify-between gap-8 md:mb-20 md:flex-row md:items-end">
+        <div className="mb-12 flex w-full flex-col items-start justify-between gap-8 px-6 md:mb-20 md:flex-row md:items-end md:px-6">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             viewport={{ once: true, margin: "-50px" }}
-            className="flex flex-col items-start px-6 md:px-10 lg:px-8"
+            className="flex flex-col items-start"
           >
             <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
               Thoughts & {/* Rotating Gradient Text */}
@@ -116,7 +125,7 @@ export default function BlogSection() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -30, opacity: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="col-start-1 row-start-1 bg-gradient-to-r pl-3 leading-[1.3em] from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent pr-2"
+                    className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent"
                   >
                     {rotatingWords[index]}
                   </motion.span>
@@ -126,11 +135,11 @@ export default function BlogSection() {
           </motion.div>
 
           {/* Controls & CTA Container */}
-          <div className="flex w-full items-center justify-end md:w-auto px-6 md:px-10 lg:px-8">
+          <div className="flex w-full items-center justify-end md:w-auto">
             <DynamicButton
               href="/blog"
               text="Explore all articles"
-              className="border border-black/20 rounded-2xl py-5 text-sm"
+              className="rounded-2xl border border-black/20 py-5 text-sm"
             />
           </div>
         </div>

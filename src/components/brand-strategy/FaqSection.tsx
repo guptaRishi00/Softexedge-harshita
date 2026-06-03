@@ -42,7 +42,7 @@ export default function FaqSection() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white px-8 pt-24">
+    <section className="relative overflow-hidden bg-white px-6 md:px-6 md:pt-10">
       {/* Hidden SVG to define the custom gradient for the icon */}
       <svg width="0" height="0" className="absolute">
         <defs>
@@ -59,7 +59,7 @@ export default function FaqSection() {
         </defs>
       </svg>
 
-      <div className="mx-auto flex w-full max-w-[1480px] flex-col items-start gap-16 lg:flex-row lg:gap-24">
+      <div className="mx-auto flex w-full flex-col items-start gap-16 lg:flex-row lg:gap-24">
         {/* LEFT COLUMN: Sticky Title */}
         <div className="flex w-full flex-col items-start lg:sticky lg:top-5 lg:w-[40%]">
           <motion.div

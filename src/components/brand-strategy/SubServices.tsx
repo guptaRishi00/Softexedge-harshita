@@ -7,6 +7,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import ConnectButton from "../shared/ConnectButton";
+import ConnectButtonTwo from "../shared/ConnectButtonTwo";
 
 // Split the titles to allow the image to appear exactly between the words.
 const services = [
@@ -130,17 +131,26 @@ export default function SubServices() {
     <section
       ref={containerRef}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full overflow-hidden bg-black py-16 text-white md:py-24 mt-10"
+      className="relative w-full overflow-hidden bg-black py-16 text-white md:py-20"
     >
-      <div className="mx-auto w-full max-w-[1480px] px-6 md:px-6">
+      <div className="mx-auto w-full px-6 md:px-6">
         {/* HEADER SECTION */}
-        <div className="mb-12 flex w-full flex-col items-start gap-4 pb-6 md:mb-16 md:pb-8">
+        {/* CHANGED: Switched to flex-col on mobile, flex-row on desktop with justify-between and items-end */}
+        <div className="mb-12 flex w-full flex-col items-start justify-between gap-6 pb-6 md:mb-24 md:flex-row md:items-end md:pb-0">
+          {/* CHANGED: Shortened title to 2 words */}
           <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
-            We Engineer Digital{" "}
+            Our{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
-              Advantage
+              Services
             </span>
           </h2>
+
+          {/* ADDED: Description paragraph aligned to the right on desktop */}
+          <p className="max-w-xl text-lg font-medium leading-[1.25em] text-zinc-400 md:mb-2 md:text-right">
+            Delivering scalable, high-performance solutions that elevate brands
+            and drive revenue. Delivering scalable, high-performance solutions
+            that elevate brands and drive revenue.
+          </p>
         </div>
 
         {/* SERVICES LIST */}
@@ -151,10 +161,9 @@ export default function SubServices() {
               href={service.link}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              // CHANGED: Added slight padding internally (px-4 md:px-8) and rounded corners for a clean background card effect
               className="group relative flex w-full cursor-none flex-col items-start justify-center overflow-hidden rounded-sm px-4 py-8 md:flex-row md:items-center md:justify-between md:px-8 md:py-12"
             >
-              {/* CHANGED: BACKGROUND IMAGE REVEAL */}
+              {/* BACKGROUND IMAGE REVEAL */}
               <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
                 <img
                   src={service.image}
@@ -173,7 +182,6 @@ export default function SubServices() {
                     "text-white group-hover/list:text-white/20 group-hover:!text-white",
                   )}
                 >
-                  {/* Rejoined the text simply */}
                   <span>
                     {service.title1}
                     {service.title1 === "E" ? "-" : " "}
@@ -185,7 +193,7 @@ export default function SubServices() {
               {/* DESCRIPTION */}
               <p
                 className={cn(
-                  "relative z-10 mt-4 max-w-sm text-sm font-medium leading-relaxed transition-all duration-500 md:mt-0 md:text-right",
+                  "relative z-10 mt-4 max-w-sm text-lg font-medium leading-relaxed transition-all duration-500 md:mt-0 md:text-right",
                   "text-zinc-600 group-hover/list:text-zinc-800 group-hover:!text-zinc-200",
                 )}
               >
@@ -208,7 +216,7 @@ export default function SubServices() {
         </div>
 
         {/* CTA / CONNECT BUTTON SECTION */}
-        <div className="mt-16 flex w-full items-center justify-center md:mt-24 gap-20">
+        <div className="mt-16 flex w-full items-center justify-center gap-20 md:mt-24">
           <ConnectButton className="scale-110 md:scale-125" />
         </div>
       </div>
@@ -223,7 +231,7 @@ export default function SubServices() {
                 "will-change-transform",
               )}
             >
-              <span className="mt-px ml-1 text-[0.6rem] font-bold uppercase tracking-[0.2em]">
+              <span className="ml-1 mt-px text-[0.6rem] font-bold uppercase tracking-[0.2em]">
                 Explore
               </span>
               <MdKeyboardArrowRight className="h-4 w-4" />

@@ -37,7 +37,7 @@ export default function StrategyHeroSection() {
   }, []);
 
   return (
-    <section className="relative flex min-h-screen w-full flex-col items-center overflow-hidden bg-white px-6 pt-10 text-zinc-900">
+    <section className="relative flex min-h-screen w-full flex-col items-center overflow-hidden bg-white px-6 md:px-10 pt-10 text-zinc-900">
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-60">
         <div className="h-[600px] w-[600px] rounded-full bg-zinc-100 blur-[120px]"></div>
       </div>

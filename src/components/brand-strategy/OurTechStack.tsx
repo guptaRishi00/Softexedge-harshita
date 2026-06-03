@@ -26,14 +26,18 @@ export default function OurTechStack() {
   const [isPaused, setIsPaused] = useState(false);
 
   const LogoTrack = () => (
-    <div className="flex shrink-0 gap-8 pr-8 md:gap-2 md:pr-2">
+    // Updated spacing: gap-3 handles internal spacing, pr-3 acts as the gap between tracks
+    <div className="flex shrink-0 gap-3 pr-3">
       {techStack.map((tech) => (
         <div
           key={tech.id}
-          className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-16 py-16 transition-colors "
+          className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-[#040404] px-16 py-16 transition-colors "
         >
-          <tech.icon className="h-6 w-6 text-zinc-400" />
-          <span className="text-lg font-bold tracking-tight text-white">
+          <tech.icon
+            className="h-10 w-10"
+            style={{ stroke: "url(#icon-gradient)" }}
+          />
+          <span className="text-3xl font-bold tracking-tight text-white">
             {tech.name}
           </span>
         </div>
@@ -42,9 +46,19 @@ export default function OurTechStack() {
   );
 
   return (
-    <section className="w-full overflow-hidden bg-black py-20 text-white md:py-10">
-      <div className="mx-auto w-full ">
-        <div className="mb-16  max-w-[1480px] px-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+    <section className="relative w-full overflow-hidden bg-black py-16 text-white md:py-10">
+      {/* Hidden SVG to define the gradient */}
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop stopColor="#2E5BFF" offset="0%" />
+            <stop stopColor="#149CCB" offset="100%" />
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div className="mx-auto w-full">
+        <div className="mx-auto mb-20 flex flex-col items-start justify-between gap-6 px-6 md:flex-row md:items-end md:px-6">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -63,7 +77,7 @@ export default function OurTechStack() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="max-w-sm text-lg leading-relaxed text-zinc-400 md:mb-2 md:text-right"
+            className="max-w-sm text-lg leading-[1.25em] text-zinc-400 md:mb-2 md:text-right"
           >
             Powered by modern, reliable, and scalable technologies to bring your
             vision to life.
@@ -71,7 +85,7 @@ export default function OurTechStack() {
         </div>
 
         <div
-          className="relative w-full overflow-hidden rounded-3xl py-16 flex flex-col gap-6"
+          className="relative flex w-full flex-col gap-3 overflow-hidden rounded-3xl py-16"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >

@@ -39,24 +39,35 @@ const processSteps = [
 
 export default function ProcessSection() {
   return (
-    <section className="w-full bg-black py-16 md:py-24 font-sans">
-      <div className="mx-auto max-w-[1480px] px-6">
+    <section className="w-full bg-black py-16 font-sans md:py-24">
+      <div className="mx-auto w-full px-6 md:px-6">
         {/* Header Section */}
-        <div className="mb-12 flex items-center justify-between">
-          <div>
-            <motion.h2
-              initial={{ opacity: 0, y: -10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="mt-1 text-4xl font-extrabold tracking-tighter text-white md:text-[5rem]"
-            >
-              Our{" "}
-              <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
-                Process
-              </span>
-            </motion.h2>
-          </div>
+        {/* CHANGED: Switched to flex-col on mobile and flex-row on desktop with justify-between */}
+        <div className="mb-16 flex flex-col items-start justify-between gap-6 md:mb-35 md:flex-row md:items-end">
+          <motion.h2
+            initial={{ opacity: 0, y: -10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-4xl font-bold leading-none tracking-tighter text-white md:text-[5rem]"
+          >
+            Our{" "}
+            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
+              Process
+            </span>
+          </motion.h2>
+
+          {/* ADDED: Description paragraph aligned to the right on desktop */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            viewport={{ once: true }}
+            className="max-w-sm text-lg leading-[1.25em] text-zinc-400 md:mb-2 md:text-right"
+          >
+            A streamlined approach to turning complex challenges into elegant
+            digital solutions, from initial concept to global scale.
+          </motion.p>
         </div>
 
         {/* Process Grid */}

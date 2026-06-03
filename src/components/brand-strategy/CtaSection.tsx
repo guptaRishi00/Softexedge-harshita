@@ -32,8 +32,8 @@ export default function CtaSection() {
   };
 
   return (
-    <section className="relative w-full bg-white px-3 pb-0">
-      <div className="mx-auto max-w-[1600px]">
+    <section className="relative w-full bg-white px-0 md:px-0 md:pt-10">
+      <div className="mx-auto w-full">
         {/* Main CTA Container */}
         <div className="relative flex min-h-[60vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black">
           {/* Interactive Proximity Background Grid */}

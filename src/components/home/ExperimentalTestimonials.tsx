@@ -53,7 +53,7 @@ export default function ExperimentalTestimonials() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-white py-20 text-zinc-900 md:py-20">
+    <section className="relative overflow-hidden bg-white text-zinc-900 md:pt-16">
       {/* CSS Keyframes for the continuous vertical marquee */}
       <style>{`
         @keyframes scroll-y {
@@ -68,7 +68,7 @@ export default function ExperimentalTestimonials() {
         }
       `}</style>
 
-      <div className="mx-auto flex w-full max-w-[1480px]  flex-col gap-12 px-6 lg:flex-row lg:items-start lg:gap-5">
+      <div className="mx-auto flex w-full flex-col gap-12 px-6 md:px-6 lg:flex-row lg:items-start lg:gap-5">
         {/* LEFT COLUMN: Title and CTA */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
@@ -108,7 +108,7 @@ export default function ExperimentalTestimonials() {
                 href="#contact"
                 className="px-8 py-4 border border-zinc-200 hover:border-transparent"
               /> */}
-              <ConnectButtonTwo className="text-sm text-zinc-500 px-8 py-4 border border-zinc-200 hover:border-transparent" />
+              <ConnectButtonTwo className="" />
             </div>
           </div>
         </motion.div>
