@@ -50,7 +50,7 @@ export default function AgencyStats() {
       </h2> */}
 
       <div className="relative w-full py-10 text-center md:py-14">
-        <div className="flex w-full flex-col divide-y divide-gray-400 md:flex-row md:divide-x md:divide-y-0">
+        <div className="flex w-full flex-col divide-y divide-gray-300 md:flex-row md:divide-x md:divide-y-0">
           <div className="flex flex-1 flex-col items-center px-4 py-6 md:py-0">
             <h3 className="mb-3 text-5xl font-bold tracking-tight text-black md:text-[6.5rem]">
               <Counter value={250} />

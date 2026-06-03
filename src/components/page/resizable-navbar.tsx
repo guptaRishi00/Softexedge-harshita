@@ -20,6 +20,7 @@ interface NavbarProps {
 interface NavBodyProps {
   children: React.ReactNode;
   className?: string;
+  visible?: boolean;
 }
 
 export interface NavItem {
@@ -42,16 +43,19 @@ interface NavItemsProps {
   items: NavItem[];
   className?: string;
   onItemClick?: () => void;
+  visible?: boolean;
 }
 
 interface MobileNavProps {
   children: React.ReactNode;
   className?: string;
+  visible?: boolean;
 }
 
 interface MobileNavHeaderProps {
   children: React.ReactNode;
   className?: string;
+  visible?: boolean;
 }
 
 interface MobileNavMenuProps {
@@ -65,10 +69,13 @@ export const Navbar = ({ children, className }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
   const lastScroll = useRef(0);
+  const [visible, setVisible] = useState<boolean>(false);
   const [isHidden, setIsHidden] = useState<boolean>(false);
 
-  // Only tracking scroll to hide the navbar when scrolling down
   useMotionValueEvent(scrollY, "change", (latest: number) => {
+    const shouldBeVisible = latest > 80;
+    setVisible((prev) => (prev === shouldBeVisible ? prev : shouldBeVisible));
+
     if (latest > lastScroll.current && latest > 120) {
       setIsHidden(true);
     } else {
@@ -87,23 +94,32 @@ export const Navbar = ({ children, className }: NavbarProps) => {
         className,
       )}
     >
-      {children}
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? typeof child.type === "string"
+            ? child
+            : React.cloneElement(
+                child as React.ReactElement<{ visible?: boolean }>,
+                { visible },
+              )
+          : child,
+      )}
     </motion.div>
   );
 };
 
-export const NavBody = ({ children, className }: NavBodyProps) => {
+export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   return (
     <motion.div
       initial={{
-        width: "90%",
-        y: 16,
-        borderRadius: "10px",
+        width: visible ? "90%" : "100%",
+        y: visible ? 16 : 0,
+        borderRadius: visible ? "12px" : "0px",
       }}
       animate={{
-        width: "99%",
-        y: 16,
-        borderRadius: "10px",
+        width: visible ? "70%" : "100%",
+        y: visible ? 16 : 0,
+        borderRadius: visible ? "10px" : "0px",
       }}
       transition={{
         type: "spring",
@@ -112,25 +128,41 @@ export const NavBody = ({ children, className }: NavBodyProps) => {
       }}
       className={cn(
         `fixed left-1/2 top-0 z-50 hidden lg:flex -translate-x-1/2 items-center justify-between transition-colors duration-300`,
-        `px-5 py-2 bg-black/60 backdrop-blur-2xl`,
+        visible
+          ? `px-6 py-3 bg-black/60 backdrop-blur-2xl`
+          : `px-10 py-8 bg-transparent`,
         className,
       )}
     >
-      {children}
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? typeof child.type === "string"
+            ? child
+            : React.cloneElement(
+                child as React.ReactElement<{ visible?: boolean }>,
+                { visible },
+              )
+          : child,
+      )}
     </motion.div>
   );
 };
 
-export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
+export const NavItems = ({
+  items,
+  className,
+  onItemClick,
+  visible,
+}: NavItemsProps) => {
   const [hovered, setHovered] = useState<number | null>(null);
 
-  // Helper check to determine if the currently hovered item has a dropdown menu
-  const activeItemHasDropdown =
+  // CHANGED: Added a check to see if the currently hovered item actually has a dropdown
+  const hoveredItemHasDropdown =
     hovered !== null &&
-    ((items[hovered]?.subItems && items[hovered].subItems!.length > 0) ||
-      (items[hovered]?.sections && items[hovered].sections!.length > 0) ||
-      (items[hovered]?.dropdownItems &&
-        items[hovered].dropdownItems!.length > 0));
+    ((items[hovered].subItems && items[hovered].subItems.length > 0) ||
+      (items[hovered].sections && items[hovered].sections.length > 0) ||
+      (items[hovered].dropdownItems &&
+        items[hovered].dropdownItems.length > 0));
 
   return (
     <div
@@ -140,9 +172,10 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
         className,
       )}
     >
-      {/* CINEMATIC BACKDROP BLUR - Only dims the screen if the active hovered item has a dropdown */}
+      {/* CINEMATIC BACKDROP BLUR */}
       <AnimatePresence>
-        {activeItemHasDropdown && (
+        {/* CHANGED: Now only triggers if the hovered item has a dropdown */}
+        {hoveredItemHasDropdown && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -171,14 +204,16 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
                 "relative px-4 py-2 transition-colors flex items-center gap-1 group",
                 hovered === idx
                   ? "text-black"
-                  : "text-white hover:text-gray-200",
+                  : visible
+                    ? "text-white hover:text-zinc-300"
+                    : "text-black hover:text-zinc-600",
               )}
               href={item.link}
             >
               {hovered === idx && (
                 <motion.div
                   layoutId="hovered"
-                  className="absolute inset-0 h-full w-full rounded-lg bg-white"
+                  className="absolute inset-0 h-full w-full rounded-lg bg-white shadow-md"
                 />
               )}
 
@@ -197,7 +232,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
                   strokeLinejoin="round"
                   className={cn(
                     "relative z-20 transition-transform duration-200",
-                    hovered === idx && "rotate-180",
+                    hovered === idx && "rotate-180 text-black",
                   )}
                 >
                   <path d="m6 9 6 6 6-6" />
@@ -215,7 +250,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
                   className={cn(
                     "absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 z-[110]",
                     item.dropdownItems
-                      ? "w-[90vw] max-w-[1400px]"
+                      ? "w-[90vw] max-w-[1400px]" // Perfect Mega Menu Width
                       : item.sections
                         ? item.sections.length > 1
                           ? "w-[650px]"
@@ -233,17 +268,19 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
                           onClick={onItemClick}
                           className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-zinc-50 border border-black/5 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
                         >
+                          {/* Hover Image */}
                           {sub.image && (
                             <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
                               <img
                                 src={sub.image}
                                 alt={sub.name}
-                                className="h-full w-full object-cover scale-105 transition-transform duration-700 ease-out group-hover:scale-100"
+                                className="h-full w-full object-cover  scale-105 transition-transform duration-700 ease-out group-hover:scale-100"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/50" />
                             </div>
                           )}
 
+                          {/* Content Layer */}
                           <div className="relative z-10 flex h-full flex-col justify-between text-zinc-900 transition-colors duration-400 group-hover:text-white">
                             <div className="flex justify-between items-start w-full">
                               <span className="text-xl lg:text-2xl font-bold tracking-tight max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1 bg-gradient-to-r from-zinc-900 to-zinc-900 group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
@@ -251,6 +288,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
                               </span>
                             </div>
 
+                            {/* Hover Arrow Indicator */}
                             <div className="flex justify-start group-hover:text-[#149CCB] transition-colors duration-400">
                               <svg
                                 className="w-6 h-6 opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0"
@@ -333,15 +371,25 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
   );
 };
 
-export const MobileNav = ({ children, className }: MobileNavProps) => {
+export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
   return (
     <div
       className={cn(
-        "relative z-50 mx-auto flex w-full flex-col items-center justify-between px-0 py-2 lg:hidden transition-all duration-300 bg-white/90 backdrop-blur-md",
+        "relative z-50 mx-auto flex w-full flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden transition-all duration-300",
+        visible && "bg-white/90 backdrop-blur-md",
         className,
       )}
     >
-      {children}
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? typeof child.type === "string"
+            ? child
+            : React.cloneElement(
+                child as React.ReactElement<{ visible?: boolean }>,
+                { visible },
+              )
+          : child,
+      )}
     </div>
   );
 };
@@ -349,11 +397,15 @@ export const MobileNav = ({ children, className }: MobileNavProps) => {
 export const MobileNavHeader = ({
   children,
   className,
+  visible,
 }: MobileNavHeaderProps) => {
   return (
     <div
       className={cn(
-        "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4 transition-all duration-300 bg-white/90 backdrop-blur-md border-b border-black/5 shadow-xl",
+        "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4 transition-all duration-300",
+        visible
+          ? "bg-white/90 backdrop-blur-md border-b border-black/5 shadow-xl"
+          : "bg-transparent",
         className,
       )}
     >
@@ -393,18 +445,20 @@ export const MobileNavMenu = ({
 export const MobileNavToggle = ({
   isOpen,
   onClick,
+  visible,
 }: {
   isOpen: boolean;
   onClick: () => void;
+  visible?: boolean;
 }) => {
   return isOpen ? (
     <IconX
-      className={cn("cursor-pointer transition-colors text-black")}
+      className="cursor-pointer transition-colors text-black"
       onClick={onClick}
     />
   ) : (
     <IconMenu2
-      className={cn("cursor-pointer transition-colors text-black")}
+      className="cursor-pointer transition-colors text-black"
       onClick={onClick}
     />
   );

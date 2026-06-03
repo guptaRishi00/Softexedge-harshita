@@ -19,8 +19,7 @@ import DynamicButton from "../ui/DynamicButton";
 const CustomLogo = ({ visible }: { visible?: boolean }) => (
   <Link href="/" className="flex items-center gap-2 group">
     <Image
-      // Switch between logos based on scroll state
-      src={visible ? "/assets/logo.png" : "/assets/logo.png"}
+      src={visible ? "/assets/logo.png" : "/assets/logoBlue.png"}
       alt="Grovio Logo"
       width={85}
       height={30}

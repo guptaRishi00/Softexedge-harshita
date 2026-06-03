@@ -70,7 +70,7 @@ export default function FaqSection() {
           >
             <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-zinc-900 md:text-6xl lg:text-[5rem]">
               Let's{" "}
-              <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Clear
               </span>{" "}
               Things Up

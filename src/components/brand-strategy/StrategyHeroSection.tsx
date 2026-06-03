@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import Header from "../page/Header";
 import ImageTrail from "../ui/ImageTrail";
 import AgencyStats from "./AgencyStats";
@@ -15,42 +16,59 @@ const ROTATING_IMAGES = [
 
 export default function StrategyHeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
+    // CHANGED: Reduced delay from 1500ms to 600ms so it splits much sooner
+    const expandTimer = setTimeout(() => {
+      setIsExpanded(true);
+    }, 600);
+
     const interval = setInterval(() => {
       setCurrentImageIndex(
         (prevIndex) => (prevIndex + 1) % ROTATING_IMAGES.length,
       );
     }, 2500);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(expandTimer);
+      clearInterval(interval);
+    };
   }, []);
 
   return (
     <section className="relative flex min-h-screen w-full flex-col items-center overflow-hidden bg-white px-6 pt-10 text-zinc-900">
-      {/* Subtle Background Glow for Light Mode */}
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-60">
         <div className="h-[600px] w-[600px] rounded-full bg-zinc-100 blur-[120px]"></div>
       </div>
 
-      {/* Header positioned at the top */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
-      {/* Main Content (Center Aligned) */}
       <div className="relative z-10 mt-20 flex max-w-7xl flex-col items-center text-center md:mt-28">
-        {/* Top Pill Badge */}
-        <div className="mb-8 inline-flex items-center text-xs font-semibold uppercase tracking-widest bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+        <div className="mb-8 inline-flex items-center text-md font-semibold uppercase tracking-widest bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
           How we do it
         </div>
 
-        {/* Headline structured into 2 distinct lines (Size increased across breakpoints) */}
-        <h1 className="mb-6 text-5xl font-bold leading-[1.05em] tracking-tight text-black sm:text-6xl md:text-[95px] lg:text-[115px] xl:text-[130px]">
-          {/* LINE 1: We Build + Image Carousel + Brands */}
-          <span className="whitespace-nowrap inline-flex items-center justify-center gap-2 md:gap-4">
-            We Build
-            <span className="relative inline-block h-[0.76em] w-[1.5em] overflow-hidden rounded-2xl align-middle shadow-sm shrink-0">
+        <motion.h1
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          // CHANGED: Sped up the initial entry duration from 0.8 to 0.6
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-6 text-5xl font-bold leading-[1em] tracking-tight py-10 text-black sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[150px]"
+        >
+          <span className="whitespace-nowrap inline-flex items-center justify-center">
+            <span>We Build</span>
+
+            <span
+              // CHANGED: Reduced duration-[1200ms] to duration-[800ms] for a faster split
+              className={`relative inline-block h-[0.76em] overflow-hidden rounded-2xl align-middle shadow-sm shrink-0 transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                isExpanded
+                  ? "w-[1.5em] mx-3 opacity-100 md:mx-5"
+                  : "w-0 mx-1.5 opacity-0 md:mx-2.5"
+              }`}
+            >
               {ROTATING_IMAGES.map((img, index) => (
                 <img
                   key={img}
@@ -64,19 +82,13 @@ export default function StrategyHeroSection() {
                 />
               ))}
             </span>
-            Brands
+
+            <span>Brands</span>
           </span>
           <br />
           {/* LINE 2 */}
-          That People <span className="text-black">Trust & Value</span>
-        </h1>
-
-        {/* Description (Increased max-width to max-w-5xl and bumped text sizes) */}
-        <p className="mt-4 max-w-5xl text-xl font-medium leading-[1.3em] text-zinc-700 md:text-2xl lg:text-2xl lg:mt-14">
-          A brand is more than just a logo and a color palette. It&apos;s the
-          emotional connection you have with your audience. We help you define,
-          design, and deliver that connection.
-        </p>
+          That People Trust
+        </motion.h1>
       </div>
 
       <div className="w-full">

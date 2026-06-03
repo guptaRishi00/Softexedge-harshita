@@ -7,7 +7,6 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import ConnectButton from "../shared/ConnectButton";
-import ConnectButtonTwo from "../shared/ConnectButtonTwo";
 
 // Split the titles to allow the image to appear exactly between the words.
 const services = [
@@ -18,7 +17,7 @@ const services = [
       "Positioning, narrative, and foundational architecture for industry leaders.",
     link: "/brand-strategy",
     image:
-      "https://images.unsplash.com/photo-1703720074944-b60b730c7289?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzJ8fEJyYW5kaW5nfGVufDB8fDB8fHww",
+      "https://images.unsplash.com/photo-1703720074944-b60b730c7289?w=1200&auto=format&fit=crop&q=80",
   },
   {
     title1: "Digital",
@@ -27,7 +26,7 @@ const services = [
       "Immersive websites, web applications, and scalable platforms.",
     link: "/services",
     image:
-      "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NzF8fEJyYW5kaW5nfGVufDB8fDB8fHww",
+      "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=1200&auto=format&fit=crop&q=80",
   },
   {
     title1: "UI/UX",
@@ -36,7 +35,7 @@ const services = [
       "Cinematic visual identities, motion graphics, and interface designs.",
     link: "/services",
     image:
-      "https://images.unsplash.com/photo-1581287053822-fd7bf4f4bfec?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDJ8fHVpJTIwdXh8ZW58MHx8MHx8fDA%3D",
+      "https://images.unsplash.com/photo-1581287053822-fd7bf4f4bfec?w=1200&auto=format&fit=crop&q=80",
   },
   {
     title1: "E",
@@ -45,7 +44,7 @@ const services = [
       "High-converting online storefronts optimized for modern consumers.",
     link: "/services",
     image:
-      "https://images.unsplash.com/photo-1586880244406-556ebe35f282?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8RWNvbW1lcmNlfGVufDB8fDB8fHww",
+      "https://images.unsplash.com/photo-1586880244406-556ebe35f282?w=1200&auto=format&fit=crop&q=80",
   },
 ];
 
@@ -131,7 +130,7 @@ export default function SubServices() {
     <section
       ref={containerRef}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full overflow-hidden bg-black py-16 text-white md:py-20 mt-10"
+      className="relative w-full overflow-hidden bg-black py-16 text-white md:py-24 mt-10"
     >
       <div className="mx-auto w-full max-w-[1480px] px-6 md:px-6">
         {/* HEADER SECTION */}
@@ -152,42 +151,42 @@ export default function SubServices() {
               href={service.link}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              className="group relative flex w-full cursor-none flex-col items-start justify-center py-6 md:flex-row md:items-center md:justify-between md:py-8"
+              // CHANGED: Added slight padding internally (px-4 md:px-8) and rounded corners for a clean background card effect
+              className="group relative flex w-full cursor-none flex-col items-start justify-center overflow-hidden rounded-sm px-4 py-8 md:flex-row md:items-center md:justify-between md:px-8 md:py-12"
             >
-              <div className="flex w-full items-center justify-between md:w-auto md:justify-start">
-                {/* TITLE & EMBEDDED IMAGE REVEAL */}
+              {/* CHANGED: BACKGROUND IMAGE REVEAL */}
+              <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
+                <img
+                  src={service.image}
+                  alt={service.title1}
+                  className="h-full w-full scale-105 object-cover transition-transform duration-700 ease-out group-hover:scale-100"
+                />
+                {/* Dark overlay to ensure text stays readable */}
+                <div className="absolute inset-0 bg-black/60" />
+              </div>
+
+              <div className="relative z-10 flex w-full items-center justify-between md:w-auto md:justify-start">
+                {/* TITLE */}
                 <h3
                   className={cn(
                     "flex items-center text-3xl font-medium leading-none tracking-[-0.03em] transition-colors duration-500 sm:text-4xl md:text-[clamp(2rem,4vw,4.5rem)]",
                     "text-white group-hover/list:text-white/20 group-hover:!text-white",
                   )}
                 >
-                  <span>{service.title1}</span>
-
-                  {/* IMAGE REVEAL CONTAINER */}
-                  {/* CHANGED: Added `mx-2` and `md:mx-3` to give the words an initial gap even when width is 0 */}
-                  <div
-                    className={cn(
-                      "relative h-[35px] shrink-0 overflow-hidden rounded-xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[60px]",
-                      "w-0 mx-2 group-hover:mx-4 group-hover:w-[60px] group-hover:opacity-100 md:mx-3 md:group-hover:mx-6 md:group-hover:w-[110px]",
-                    )}
-                  >
-                    <img
-                      src={service.image}
-                      alt={service.title1 + " " + service.title2}
-                      className="absolute inset-0 h-full w-full scale-110 object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
-                    />
-                  </div>
-
-                  <span>{service.title2}</span>
+                  {/* Rejoined the text simply */}
+                  <span>
+                    {service.title1}
+                    {service.title1 === "E" ? "-" : " "}
+                    {service.title2}
+                  </span>
                 </h3>
               </div>
 
               {/* DESCRIPTION */}
               <p
                 className={cn(
-                  "mt-3 max-w-sm text-sm font-medium leading-relaxed transition-all duration-500 md:mt-0 md:text-right",
-                  "text-zinc-600 group-hover/list:text-zinc-800 group-hover:!text-zinc-300",
+                  "relative z-10 mt-4 max-w-sm text-sm font-medium leading-relaxed transition-all duration-500 md:mt-0 md:text-right",
+                  "text-zinc-600 group-hover/list:text-zinc-800 group-hover:!text-zinc-200",
                 )}
               >
                 {service.description}
@@ -196,7 +195,7 @@ export default function SubServices() {
               {/* CUSTOM GRADIENT BORDER */}
               <div
                 className={cn(
-                  "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500",
+                  "absolute bottom-0 left-0 z-20 h-[1px] w-full transition-all duration-500",
                   index === services.length - 1
                     ? "bg-transparent"
                     : "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
