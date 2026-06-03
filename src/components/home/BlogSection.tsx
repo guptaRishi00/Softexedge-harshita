@@ -84,7 +84,7 @@ export default function BlogSection() {
 
             {/* CARD CONTENT */}
             <div className="flex flex-1 flex-col px-2">
-              <h3 className="mb-4 text-lg font-bold leading-snug tracking-tight text-zinc-900 transition-colors duration-300 group-hover:text-[#2E5BFF] lg:text-xl">
+              <h3 className="mb-4 text-lg font-medium leading-[1em] tracking-tight text-zinc-900 transition-colors duration-300 group-hover:text-[#2E5BFF] lg:text-xl">
                 {post.title}
               </h3>
             </div>
@@ -95,8 +95,8 @@ export default function BlogSection() {
   );
 
   return (
-    <section className="w-full bg-white py-20 text-black md:py-32 overflow-hidden">
-      <div className="mx-auto w-full px-6 md:px-10 lg:px-10">
+    <section className="w-full bg-white py-20 text-black md:py-32 overflow-hidden ">
+      <div className="mx-auto w-full ">
         {/* HEADER LAYER */}
         <div className="mb-12 flex flex-col items-start justify-between gap-8 md:mb-20 md:flex-row md:items-end">
           <motion.div
@@ -104,7 +104,7 @@ export default function BlogSection() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             viewport={{ once: true, margin: "-50px" }}
-            className="flex flex-col items-start"
+            className="flex flex-col items-start px-6 md:px-10 lg:px-8"
           >
             <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
               Thoughts & {/* Rotating Gradient Text */}
@@ -126,7 +126,7 @@ export default function BlogSection() {
           </motion.div>
 
           {/* Controls & CTA Container */}
-          <div className="flex w-full items-center justify-end md:w-auto">
+          <div className="flex w-full items-center justify-end md:w-auto px-6 md:px-10 lg:px-8">
             <DynamicButton
               href="/blog"
               text="Explore all articles"

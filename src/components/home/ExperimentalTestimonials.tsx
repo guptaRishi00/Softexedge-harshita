@@ -4,33 +4,33 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import DynamicButton from "../ui/DynamicButton"; // Adjust this import path as needed
+import ConnectButtonTwo from "../shared/ConnectButtonTwo";
 
 const testimonials = [
   {
     quote:
-      "SoftEXedge gives you the tools and the trust to build things you didn't think were possible at scale.",
+      "SoftEXedge gives you the tools and the trust to build things you didn't think were possible at scale. Before partnering with them, our design system was disjointed and hard to maintain. They didn't just unify our components; they established a scalable.",
     name: "Alex Rivera",
     role: "Lead Product Designer",
     initials: "AR",
   },
   {
     quote:
-      "The level of technical excellence here is unmatched. Every day is an opportunity to learn something complex.",
+      "The level of technical excellence here is unmatched. Every day is an opportunity to learn something complex. We were struggling with massive latency spikes during peak traffic, and their engineering team came in and completely refactored our microservices. The sheer performance gains and robust infrastructure they delivered have given us total peace of mind.",
     name: "Sarah Chen",
     role: "Sr. Backend Engineer",
     initials: "SC",
   },
   {
     quote:
-      "They transformed a simple product into something people genuinely remember. The experience felt cinematic.",
+      "They transformed a simple product into something people genuinely remember. The experience felt cinematic. From the fluid micro-interactions to the flawless typographic hierarchy, every single detail was meticulously crafted. They fundamentally understand.",
     name: "Sophia Lin",
     role: "Creative Director",
     initials: "SL",
   },
   {
     quote:
-      "Rare combination of strong engineering and elite visual storytelling. The interface felt alive.",
-    name: "Daniel Reeves",
+      "A rare combination of strong engineering and elite visual storytelling. The interface truly felt alive. In the AI space, making complex data models accessible to everyday users is incredibly difficult. SoftEXedge managed to take our dense, highly technical.",
     role: "CEO · Aether AI",
     initials: "DR",
   },
@@ -68,7 +68,7 @@ export default function ExperimentalTestimonials() {
         }
       `}</style>
 
-      <div className="mx-auto flex w-full max-w-360 flex-col gap-12 px-10 lg:flex-row lg:items-start lg:gap-5">
+      <div className="mx-auto flex w-full max-w-[1480px]  flex-col gap-12 px-6 lg:flex-row lg:items-start lg:gap-5">
         {/* LEFT COLUMN: Title and CTA */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
@@ -103,11 +103,12 @@ export default function ExperimentalTestimonials() {
             </p>
 
             <div className="mt-10">
-              <DynamicButton
+              {/* <DynamicButton
                 text="Let's Connect"
                 href="#contact"
                 className="px-8 py-4 border border-zinc-200 hover:border-transparent"
-              />
+              /> */}
+              <ConnectButtonTwo className="text-sm text-zinc-500 px-8 py-4 border border-zinc-200 hover:border-transparent" />
             </div>
           </div>
         </motion.div>
@@ -144,7 +145,7 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text - Increased to text-xl (mobile) and text-2xl/3xl (desktop) */}
-                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-relaxed tracking-tight text-zinc-800 md:text-2xl lg:text-3xl">
+                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-[1.2em] tracking-tight text-zinc-800 md:text-2xl lg:text-3xl">
                   "{item.quote}"
                 </p>
 

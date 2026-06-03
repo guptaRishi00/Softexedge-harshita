@@ -12,7 +12,6 @@ import {
   Cpu,
 } from "lucide-react";
 
-// Placeholder tech stack data
 const techStack = [
   { id: 1, name: "React", icon: Code2 },
   { id: 2, name: "Next.js", icon: Globe },
@@ -26,16 +25,15 @@ const techStack = [
 export default function OurTechStack() {
   const [isPaused, setIsPaused] = useState(false);
 
-  // Reusable track to duplicate for the infinite loop
   const LogoTrack = () => (
-    <div className="flex shrink-0 gap-8 md:gap-2 pr-8 md:pr-2">
+    <div className="flex shrink-0 gap-8 pr-8 md:gap-2 md:pr-2">
       {techStack.map((tech) => (
         <div
           key={tech.id}
-          className="flex shrink-0 items-center justify-center gap-1 rounded-xl border border-zinc-300 bg-zinc-50 px-16 py-16 transition-colors hover:border-[#2E5BFF]/30 hover:bg-[#2E5BFF]/5"
+          className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-16 py-16 transition-colors "
         >
-          <tech.icon className="h-6 w-6 text-zinc-600" />
-          <span className="text-lg font-bold tracking-tight text-zinc-800">
+          <tech.icon className="h-6 w-6 text-zinc-400" />
+          <span className="text-lg font-bold tracking-tight text-white">
             {tech.name}
           </span>
         </div>
@@ -44,45 +42,39 @@ export default function OurTechStack() {
   );
 
   return (
-    <section className="w-full bg-white py-20 text-black md:py-32 overflow-hidden">
-      <div className="mx-auto w-full px-6 md:px-10 lg:px-16">
-        {/* HEADER */}
-        <div className="mb-16 flex flex-col items-start justify-start text-left">
+    <section className="w-full overflow-hidden bg-black py-20 text-white md:py-10">
+      <div className="mx-auto w-full ">
+        <div className="mb-16  max-w-[1480px] px-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             viewport={{ once: true }}
-            className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[5rem]"
+            className="text-4xl font-bold leading-none tracking-tight text-white md:text-5xl lg:text-[5rem]"
           >
             Our Tech{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               Stack
             </span>
           </motion.h2>
+
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="mt-6 max-w-xl text-lg text-zinc-500"
+            className="max-w-sm text-lg leading-relaxed text-zinc-400 md:mb-2 md:text-right"
           >
             Powered by modern, reliable, and scalable technologies to bring your
             vision to life.
           </motion.p>
         </div>
 
-        {/* CAROUSEL CONTAINER */}
         <div
-          className="relative w-full overflow-hidden rounded-3xl bg-white py-16 shadow-[0_0_40px_-15px_rgba(0,0,0,0.05)]"
-          style={{
-            maskImage:
-              "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)",
-          }}
+          className="relative w-full overflow-hidden rounded-3xl py-16 flex flex-col gap-6"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
-          {/* ANIMATED TRACK */}
           <motion.div
             className="flex w-max flex-nowrap"
             animate={
@@ -100,8 +92,28 @@ export default function OurTechStack() {
                 ease: "linear",
               },
             }}
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
+          >
+            <LogoTrack />
+            <LogoTrack />
+          </motion.div>
+
+          <motion.div
+            className="flex w-max flex-nowrap"
+            animate={
+              isPaused
+                ? "paused"
+                : {
+                    x: ["-50%", "0%"],
+                  }
+            }
+            transition={{
+              x: {
+                repeat: Infinity,
+                repeatType: "loop",
+                duration: 25,
+                ease: "linear",
+              },
+            }}
           >
             <LogoTrack />
             <LogoTrack />

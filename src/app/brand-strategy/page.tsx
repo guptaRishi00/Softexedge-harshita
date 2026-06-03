@@ -23,7 +23,7 @@ export default function BrandStrategyPage({}: Props) {
         <OurTechStack />
         <ProjectShowcase />
         <ExperimentalTestimonials />
-        <div className="p-3">
+        <div className="">
           <CtaSection />
         </div>
         <FaqSection />

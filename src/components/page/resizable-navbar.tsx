@@ -101,7 +101,7 @@ export const NavBody = ({ children, className }: NavBodyProps) => {
         borderRadius: "10px",
       }}
       animate={{
-        width: "95%",
+        width: "99%",
         y: 16,
         borderRadius: "10px",
       }}
@@ -112,7 +112,7 @@ export const NavBody = ({ children, className }: NavBodyProps) => {
       }}
       className={cn(
         `fixed left-1/2 top-0 z-50 hidden lg:flex -translate-x-1/2 items-center justify-between transition-colors duration-300`,
-        `px-6 py-3 bg-black/60 backdrop-blur-2xl`,
+        `px-5 py-2 bg-black/60 backdrop-blur-2xl`,
         className,
       )}
     >
@@ -124,6 +124,14 @@ export const NavBody = ({ children, className }: NavBodyProps) => {
 export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
   const [hovered, setHovered] = useState<number | null>(null);
 
+  // Helper check to determine if the currently hovered item has a dropdown menu
+  const activeItemHasDropdown =
+    hovered !== null &&
+    ((items[hovered]?.subItems && items[hovered].subItems!.length > 0) ||
+      (items[hovered]?.sections && items[hovered].sections!.length > 0) ||
+      (items[hovered]?.dropdownItems &&
+        items[hovered].dropdownItems!.length > 0));
+
   return (
     <div
       onMouseLeave={() => setHovered(null)}
@@ -132,9 +140,9 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
         className,
       )}
     >
-      {/* CINEMATIC BACKDROP BLUR - Dims the entire screen behind the mega menu */}
+      {/* CINEMATIC BACKDROP BLUR - Only dims the screen if the active hovered item has a dropdown */}
       <AnimatePresence>
-        {hovered !== null && (
+        {activeItemHasDropdown && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -207,7 +215,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
                   className={cn(
                     "absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 z-[110]",
                     item.dropdownItems
-                      ? "w-[90vw] max-w-[1400px]" // Perfect Mega Menu Width
+                      ? "w-[90vw] max-w-[1400px]"
                       : item.sections
                         ? item.sections.length > 1
                           ? "w-[650px]"
@@ -225,29 +233,24 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
                           onClick={onItemClick}
                           className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-zinc-50 border border-black/5 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
                         >
-                          {/* Hover Image */}
                           {sub.image && (
                             <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
                               <img
                                 src={sub.image}
                                 alt={sub.name}
-                                className="h-full w-full object-cover  scale-105 transition-transform duration-700 ease-out group-hover:scale-100"
+                                className="h-full w-full object-cover scale-105 transition-transform duration-700 ease-out group-hover:scale-100"
                               />
-                              {/* Dark gradient so white text pops on hover */}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/50" />
                             </div>
                           )}
 
-                          {/* Content Layer */}
                           <div className="relative z-10 flex h-full flex-col justify-between text-zinc-900 transition-colors duration-400 group-hover:text-white">
                             <div className="flex justify-between items-start w-full">
-                              {/* Gradient Text on Hover */}
                               <span className="text-xl lg:text-2xl font-bold tracking-tight max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1 bg-gradient-to-r from-zinc-900 to-zinc-900 group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
                                 {sub.name}
                               </span>
                             </div>
 
-                            {/* Hover Arrow Indicator */}
                             <div className="flex justify-start group-hover:text-[#149CCB] transition-colors duration-400">
                               <svg
                                 className="w-6 h-6 opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0"

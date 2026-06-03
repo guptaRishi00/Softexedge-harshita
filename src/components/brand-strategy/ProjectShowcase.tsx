@@ -3,7 +3,12 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const premiumEase = [0.22, 1, 0.36, 1] as const;
+const smoothSpring = {
+  type: "spring",
+  stiffness: 100,
+  damping: 24,
+  mass: 1,
+} as const;
 
 const projects = [
   {
@@ -65,44 +70,33 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-black px-6 py-32 text-white md:px-12 md:py-30 font-sans">
-      {/* Noise Texture */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage:
-            "url('https://grainy-gradients.vercel.app/noise.svg')",
-        }}
-      />
+    <section className="relative overflow-hidden bg-black px-6 py-32 font-sans text-white md:px-10 md:py-30">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
       <div className="relative mx-auto flex max-w-[1600px] flex-col gap-20 md:gap-24">
-        {/* Header - Left Aligned & Breathable */}
-        <div className="flex w-full max-w-4xl flex-col items-start text-left">
-          <h2 className="text-5xl font-bold tracking-tight text-white md:text-7xl lg:text-[5rem] leading-[0.9]">
+        {/* CHANGED: Switched to flex-col for mobile, flex-row for desktop, added justify-between and md:items-end */}
+        <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+          <h2 className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[5rem]">
             Our{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
               Projects
             </span>
           </h2>
 
-          <p className="mt-8 max-w-xl text-base font-medium leading-relaxed text-zinc-400 md:text-lg">
+          {/* CHANGED: Removed the top margin (mt-8) since gap handles it now, added md:mb-2 to align with baseline, and md:text-right */}
+          <p className="max-w-md text-base font-medium leading-relaxed text-zinc-400 md:mb-2 md:text-right md:text-lg">
             Crafted digital experiences blending cinematic interaction,
             editorial layouts, and immersive motion systems.
           </p>
         </div>
 
-        {/* Bento Grid */}
-        <div className="flex h-auto w-full flex-col gap-4 md:h-[80vh] md:gap-6">
-          {/* ROW 1 */}
+        <div className="flex h-auto w-full flex-col gap-4 md:h-[100vh] md:gap-6">
           <motion.div
             animate={{
               height: getRowHeight(true),
             }}
-            transition={{
-              duration: 0.7,
-              ease: premiumEase,
-            }}
-            className="flex h-[320px] w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
+            transition={smoothSpring}
+            className="flex h-[400px] w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
           >
             {row1.map((project) => (
               <ProjectCard
@@ -114,16 +108,12 @@ export default function ProjectShowcase() {
             ))}
           </motion.div>
 
-          {/* ROW 2 */}
           <motion.div
             animate={{
               height: getRowHeight(false),
             }}
-            transition={{
-              duration: 0.7,
-              ease: premiumEase,
-            }}
-            className="flex h-[420px] w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
+            transition={smoothSpring}
+            className="flex h-[500px] w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
           >
             {row2.map((project) => (
               <ProjectCard
@@ -166,14 +156,9 @@ function ProjectCard({
         flex: isHovered ? 4 : isAnyHovered ? 1.15 : project.baseFlex,
         scale: isHovered ? 1.01 : 1,
       }}
-      transition={{
-        duration: 0.7,
-        ease: premiumEase,
-      }}
-      // Adjusted border radius to 20px per user request
-      className="group relative h-full min-h-[220px] w-full cursor-pointer overflow-hidden rounded-[20px]"
+      transition={smoothSpring}
+      className="group relative h-full min-h-[300px] w-full cursor-pointer overflow-hidden rounded-[20px]"
     >
-      {/* Background Image */}
       <motion.img
         src={project.image}
         alt={project.title}
@@ -185,41 +170,29 @@ function ProjectCard({
               ? "brightness(0.3) grayscale(80%)"
               : "brightness(0.85)",
         }}
-        transition={{
-          duration: 0.8,
-          ease: premiumEase,
-        }}
+        transition={smoothSpring}
         className="absolute inset-0 h-full w-full object-cover"
       />
 
-      {/* Permanent Overlay */}
       <motion.div
         animate={{
           opacity: isHovered ? 1 : 0.6,
         }}
-        transition={{
-          duration: 0.5,
-        }}
+        transition={{ duration: 0.5 }}
         className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent"
       />
 
-      {/* Glass Reflection */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-30 transition-opacity duration-700 group-hover:opacity-60" />
 
-      {/* Border Glow - Matched border radius to 20px */}
       <div className="absolute inset-0 rounded-[20px] border border-white/10 transition-colors duration-500 group-hover:border-white/20" />
 
-      {/* Content */}
       <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-10">
-        {/* Idle Title */}
         <motion.div
           animate={{
             opacity: isHovered ? 0 : 1,
             y: isHovered ? -10 : 0,
           }}
-          transition={{
-            duration: 0.4,
-          }}
+          transition={smoothSpring}
           className="flex items-start justify-between"
         >
           <div>
@@ -229,7 +202,6 @@ function ProjectCard({
           </div>
         </motion.div>
 
-        {/* Hover Content */}
         <AnimatePresence>
           {isHovered && (
             <motion.div
@@ -246,8 +218,9 @@ function ProjectCard({
                 y: 15,
               }}
               transition={{
-                duration: 0.5,
-                ease: premiumEase,
+                type: "spring",
+                stiffness: 120,
+                damping: 20,
               }}
               className="max-w-md"
             >
@@ -273,7 +246,7 @@ function ProjectCard({
                 transition={{
                   delay: 0.15,
                   duration: 0.5,
-                  ease: premiumEase,
+                  ease: [0.22, 1, 0.36, 1],
                 }}
                 className="mt-8 h-[1px] bg-white/40"
               />

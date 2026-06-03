@@ -7,10 +7,13 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import ConnectButton from "../shared/ConnectButton";
+import ConnectButtonTwo from "../shared/ConnectButtonTwo";
 
+// Split the titles to allow the image to appear exactly between the words.
 const services = [
   {
-    title: "Brand Strategy",
+    title1: "Brand",
+    title2: "Strategy",
     description:
       "Positioning, narrative, and foundational architecture for industry leaders.",
     link: "/brand-strategy",
@@ -18,7 +21,8 @@ const services = [
       "https://images.unsplash.com/photo-1703720074944-b60b730c7289?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzJ8fEJyYW5kaW5nfGVufDB8fDB8fHww",
   },
   {
-    title: "Digital Products",
+    title1: "Digital",
+    title2: "Products",
     description:
       "Immersive websites, web applications, and scalable platforms.",
     link: "/services",
@@ -26,7 +30,8 @@ const services = [
       "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NzF8fEJyYW5kaW5nfGVufDB8fDB8fHww",
   },
   {
-    title: "UI/UX & Motion",
+    title1: "UI/UX",
+    title2: "& Motion",
     description:
       "Cinematic visual identities, motion graphics, and interface designs.",
     link: "/services",
@@ -34,7 +39,8 @@ const services = [
       "https://images.unsplash.com/photo-1581287053822-fd7bf4f4bfec?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDJ8fHVpJTIwdXh8ZW58MHx8MHx8fDA%3D",
   },
   {
-    title: "eCommerce",
+    title1: "E",
+    title2: "Commerce",
     description:
       "High-converting online storefronts optimized for modern consumers.",
     link: "/services",
@@ -56,6 +62,7 @@ export default function SubServices() {
     () => {
       const cursor = cursorRef.current;
       if (cursor) {
+        // Initialize cursor size to 0
         gsap.set(cursor, { scale: 0, xPercent: -50, yPercent: -50 });
 
         const xTo = gsap.quickTo(cursor, "x", {
@@ -84,11 +91,13 @@ export default function SubServices() {
     { scope: containerRef, dependencies: [mounted] },
   );
 
+  // Added overwrite: "auto" to prevent animation timeline conflicts
   const handleMouseEnter = contextSafe(() => {
     gsap.to(cursorRef.current, {
       scale: 1,
       duration: 0.4,
       ease: "back.out(1.5)",
+      overwrite: "auto",
     });
   });
 
@@ -97,8 +106,26 @@ export default function SubServices() {
       scale: 0,
       duration: 0.3,
       ease: "power3.inOut",
+      overwrite: "auto",
     });
   });
+
+  // Failsafe: Hide the cursor immediately if the user starts scrolling to prevent it from leaking out of the section bounds.
+  useEffect(() => {
+    const handleScroll = () => {
+      if (cursorRef.current) {
+        gsap.to(cursorRef.current, {
+          scale: 0,
+          duration: 0.3,
+          ease: "power3.inOut",
+          overwrite: "auto",
+        });
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <section
@@ -106,13 +133,13 @@ export default function SubServices() {
       onMouseLeave={handleMouseLeave}
       className="relative w-full overflow-hidden bg-black py-16 text-white md:py-20 mt-10"
     >
-      <div className="mx-auto w-full max-w-8xl px-6 md:px-10">
+      <div className="mx-auto w-full max-w-[1480px] px-6 md:px-6">
         {/* HEADER SECTION */}
         <div className="mb-12 flex w-full flex-col items-start gap-4 pb-6 md:mb-16 md:pb-8">
           <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
-            We engineer digital{" "}
+            We Engineer Digital{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
-              advantage
+              Advantage
             </span>
           </h2>
         </div>
@@ -128,31 +155,32 @@ export default function SubServices() {
               className="group relative flex w-full cursor-none flex-col items-start justify-center py-6 md:flex-row md:items-center md:justify-between md:py-8"
             >
               <div className="flex w-full items-center justify-between md:w-auto md:justify-start">
-                <div className="flex items-center">
+                {/* TITLE & EMBEDDED IMAGE REVEAL */}
+                <h3
+                  className={cn(
+                    "flex items-center text-3xl font-medium leading-none tracking-[-0.03em] transition-colors duration-500 sm:text-4xl md:text-[clamp(2rem,4vw,4.5rem)]",
+                    "text-white group-hover/list:text-white/20 group-hover:!text-white",
+                  )}
+                >
+                  <span>{service.title1}</span>
+
                   {/* IMAGE REVEAL CONTAINER */}
+                  {/* CHANGED: Added `mx-2` and `md:mx-3` to give the words an initial gap even when width is 0 */}
                   <div
                     className={cn(
-                      "relative h-[40px] shrink-0 overflow-hidden rounded-xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[70px]",
-                      "w-0 group-hover:mr-4 group-hover:w-[60px] group-hover:opacity-100 md:group-hover:mr-6 md:group-hover:w-[110px]",
+                      "relative h-[35px] shrink-0 overflow-hidden rounded-xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[60px]",
+                      "w-0 mx-2 group-hover:mx-4 group-hover:w-[60px] group-hover:opacity-100 md:mx-3 md:group-hover:mx-6 md:group-hover:w-[110px]",
                     )}
                   >
                     <img
                       src={service.image}
-                      alt={service.title}
+                      alt={service.title1 + " " + service.title2}
                       className="absolute inset-0 h-full w-full scale-110 object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
                     />
                   </div>
 
-                  {/* TITLE */}
-                  <h3
-                    className={cn(
-                      "text-3xl font-medium leading-none tracking-[-0.03em] transition-colors duration-500 sm:text-4xl md:text-[clamp(2rem,4vw,4.5rem)]",
-                      "text-white group-hover/list:text-white/20 group-hover:!text-white",
-                    )}
-                  >
-                    {service.title}
-                  </h3>
-                </div>
+                  <span>{service.title2}</span>
+                </h3>
               </div>
 
               {/* DESCRIPTION */}
@@ -181,9 +209,7 @@ export default function SubServices() {
         </div>
 
         {/* CTA / CONNECT BUTTON SECTION */}
-        {/* CHANGED: justify-center for centering, mt-16 md:mt-24 for spacing */}
-        <div className="mt-16 flex w-full items-center justify-center md:mt-24">
-          {/* CHANGED: Added scaling classes to make it bigger uniformly */}
+        <div className="mt-16 flex w-full items-center justify-center md:mt-24 gap-20">
           <ConnectButton className="scale-110 md:scale-125" />
         </div>
       </div>

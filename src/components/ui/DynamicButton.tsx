@@ -46,7 +46,7 @@ export default function DynamicButton({
       target={href ? target : undefined}
       onClick={onClick}
       className={cn(
-        "group relative flex w-fit cursor-pointer items-center gap-3 overflow-hidden rounded-xl bg-white px-6 py-4 text-sm font-medium text-black transition-all",
+        "group relative flex w-fit cursor-pointer hover:border-transparent items-center gap-3 overflow-hidden rounded-xl bg-white px-6 py-4 text-sm font-medium text-black transition-all",
         className,
       )}
     >
@@ -119,7 +119,7 @@ export default function DynamicButton({
           {/* Incoming Arrow */}
           <MdKeyboardArrowRight
             size={24}
-            className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0"
+            className="absolute left-0 top-0 h-full w-full translate-x-[-150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0"
           />
         </span>
       )}

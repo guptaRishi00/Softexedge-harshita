@@ -144,7 +144,7 @@ export default function Header() {
           <DynamicButton
             text="Get in Touch"
             href="/contact"
-            className="relative px-4 py-3 rounded-lg border border-gray-300 hover:border-none transition-colors"
+            className="relative px-4 py-3 rounded-lg border border-gray-300 hover:border-none"
             showIcon={false}
           />
         </NavBody>

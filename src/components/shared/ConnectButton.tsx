@@ -9,8 +9,8 @@ export default function ConnectButton({ onClick, className = "" }: any) {
       onClick={onClick}
       className={`group flex h-12 cursor-pointer w-fit items-center justify-between gap-4 rounded-lg bg-white pl-5 pr-1.5 shadow-lg transition-all duration-300 ${className}`}
     >
-      <span className="text-[15px] font-medium tracking-tight text-black">
-        Connect with us
+      <span className="text-[15px] font-bold tracking-tight text-black">
+        Connect With Us
       </span>
 
       <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-black text-white transition-transform duration-300 ease-out group-hover:scale-90">

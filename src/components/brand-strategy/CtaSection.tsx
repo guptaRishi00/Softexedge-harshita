@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { MdArrowOutward } from "react-icons/md";
+import ConnectButtonThree from "../shared/ConnectButtonThree";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
@@ -31,10 +32,10 @@ export default function CtaSection() {
   };
 
   return (
-    <section className="relative w-full bg-white px-6 pb-0">
+    <section className="relative w-full bg-white px-3 pb-0">
       <div className="mx-auto max-w-[1600px]">
         {/* Main CTA Container */}
-        <div className="relative flex min-h-[60vh] w-full flex-col justify-between overflow-hidden rounded-[40px] border border-zinc-800/50 bg-black">
+        <div className="relative flex min-h-[60vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black">
           {/* Interactive Proximity Background Grid */}
           <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
             <div
@@ -116,18 +117,7 @@ export default function CtaSection() {
               transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
               className="pointer-events-auto"
             >
-              <button
-                className={`group flex h-14 md:h-16 cursor-pointer w-fit items-center justify-between gap-5 md:gap-6 rounded-[0.85rem] bg-white pl-6 md:pl-8 pr-2 shadow-lg transition-all duration-300`}
-              >
-                <span className="text-base md:text-lg font-semibold tracking-tight text-black">
-                  Connect with us
-                </span>
-
-                <div className="relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center overflow-hidden rounded-[0.65rem] bg-black text-white transition-transform duration-300 ease-out group-hover:scale-95">
-                  <MdArrowOutward className="absolute h-5 w-5 md:h-6 md:w-6 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
-                  <MdArrowOutward className="absolute h-5 w-5 md:h-6 md:w-6 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0" />
-                </div>
-              </button>
+              <ConnectButtonThree />
             </motion.div>
 
             {/* Meta Information (Location, Email, etc.) */}

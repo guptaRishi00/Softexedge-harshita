@@ -41,12 +41,12 @@ export default function StrategyHeroSection() {
       {/* Main Content (Center Aligned) */}
       <div className="relative z-10 mt-20 flex max-w-7xl flex-col items-center text-center md:mt-28">
         {/* Top Pill Badge */}
-        <div className="mb-8 inline-flex items-center text-xs font-semibold uppercase tracking-widest text-zinc-600 backdrop-blur-md">
+        <div className="mb-8 inline-flex items-center text-xs font-semibold uppercase tracking-widest bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
           How we do it
         </div>
 
-        {/* Headline structured into 3 distinct lines */}
-        <h1 className="mb-6 text-4xl font-bold leading-[1.05em] tracking-tight text-black sm:text-5xl md:text-[85px] lg:text-[100px] xl:text-[110px]">
+        {/* Headline structured into 2 distinct lines (Size increased across breakpoints) */}
+        <h1 className="mb-6 text-5xl font-bold leading-[1.05em] tracking-tight text-black sm:text-6xl md:text-[95px] lg:text-[115px] xl:text-[130px]">
           {/* LINE 1: We Build + Image Carousel + Brands */}
           <span className="whitespace-nowrap inline-flex items-center justify-center gap-2 md:gap-4">
             We Build
@@ -56,7 +56,6 @@ export default function StrategyHeroSection() {
                   key={img}
                   src={img}
                   alt="Brand visual"
-                  // CHANGED: altered translate-y classes to translate-x classes for left-to-right animation
                   className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 mesh-smooth ease-in-out ${
                     index === currentImageIndex
                       ? "translate-x-0 opacity-100 blur-0"
@@ -69,15 +68,11 @@ export default function StrategyHeroSection() {
           </span>
           <br />
           {/* LINE 2 */}
-          that People
-          <br />
-          {/* LINE 3 */}
-          <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
-            Trust & Value
-          </span>
+          That People <span className="text-black">Trust & Value</span>
         </h1>
 
-        <p className="mt-4 max-w-3xl text-lg font-medium leading-[1.2em] text-zinc-500 md:text-xl lg:mt-10">
+        {/* Description (Increased max-width to max-w-5xl and bumped text sizes) */}
+        <p className="mt-4 max-w-5xl text-xl font-medium leading-[1.3em] text-zinc-700 md:text-2xl lg:text-2xl lg:mt-14">
           A brand is more than just a logo and a color palette. It&apos;s the
           emotional connection you have with your audience. We help you define,
           design, and deliver that connection.
