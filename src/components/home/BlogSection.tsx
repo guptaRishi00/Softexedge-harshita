@@ -104,7 +104,7 @@ export default function BlogSection() {
   );
 
   return (
-    <section className="w-full overflow-hidden bg-white text-black md:pt-16 ">
+    <section className="w-full overflow-hidden bg-white text-black md:pt-16 pb-30">
       <div className="mx-auto w-full ">
         {/* HEADER LAYER */}
         <div className="mb-12 flex w-full flex-col items-start justify-between gap-8 px-6 md:mb-20 md:flex-row md:items-end md:px-6">
