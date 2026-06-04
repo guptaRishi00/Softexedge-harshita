@@ -33,16 +33,15 @@ const processSteps = [
     description:
       "Rigorous testing followed by global CDN deployment for maximum speed.",
     image:
-      "https://images.unsplash.com/photo-1776602191233-154cbc983f0c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDcyfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
+      "https://images.unsplash.com/photo-1773332611514-238856b76198?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwcm9maWxlLXBhZ2V8OXx8fGVufDB8fHx8fA%3D%3D",
   },
 ];
 
 export default function ProcessSection() {
   return (
-    <section className="w-full bg-black py-16 font-sans md:py-24">
+    <section className="w-full bg-black font-sans md:pb-35">
       <div className="mx-auto w-full px-6 md:px-6">
         {/* Header Section */}
-        {/* CHANGED: Switched to flex-col on mobile and flex-row on desktop with justify-between */}
         <div className="mb-16 flex flex-col items-start justify-between gap-6 md:mb-35 md:flex-row md:items-end">
           <motion.h2
             initial={{ opacity: 0, y: -10 }}
@@ -57,13 +56,12 @@ export default function ProcessSection() {
             </span>
           </motion.h2>
 
-          {/* ADDED: Description paragraph aligned to the right on desktop */}
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             viewport={{ once: true }}
-            className="max-w-xl text-xl leading-[1.25em] text-zinc-400 md:mb-2 md:text-left font-medium"
+            className="max-w-xl text-xl font-medium leading-[1.25em] text-zinc-400 md:mb-2 md:text-left"
           >
             A streamlined approach to turning complex challenges into elegant
             digital solutions, from initial concept to global scale. from
@@ -107,6 +105,9 @@ export default function ProcessSection() {
             </motion.div>
           ))}
         </div>
+
+        {/* NON-EDGE-TO-EDGE BOTTOM BORDER */}
+        <div className="mt-16 w-full border-b border-white/10 md:mt-35" />
       </div>
     </section>
   );

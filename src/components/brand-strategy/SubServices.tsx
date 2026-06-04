@@ -44,11 +44,11 @@ const services = [
 ];
 
 export default function SubServices() {
-  const [activeIndex, setActiveIndex] = useState(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [activeImage, setActiveImage] = useState(0);
 
   return (
-    <section className="relative w-full overflow-hidden bg-black py-16 text-white md:py-20 md:pt-30 lg:pb-30">
+    <section className="relative w-full overflow-hidden bg-black py-16 text-white md:py-20 md:pt-30 lg:pb-35">
       <div className="mx-auto w-full px-6 md:px-6 lg:px-6">
         {/* HEADER SECTION */}
         <div className="mb-16 flex w-full flex-col items-start justify-between gap-6 pb-6 md:mb-35 md:flex-row md:items-end md:pb-0">
@@ -67,8 +67,9 @@ export default function SubServices() {
 
         {/* MAIN CONTENT LAYOUT */}
         <div className="grid w-full grid-cols-1 items-stretch gap-12 md:grid-cols-2 md:gap-16 lg:gap-24">
-          {/* LEFT SIDE: IMAGE ONLY */}
+          {/* LEFT SIDE: IMAGE & DESCRIPTION */}
           <div className="order-2 flex h-full w-full min-h-[300px] flex-col md:order-1 md:min-h-[500px]">
+            {/* Image Container */}
             <div className="relative h-full w-full flex-1 overflow-hidden rounded-xl bg-zinc-900">
               {services.map((service, index) => (
                 <img
@@ -85,11 +86,17 @@ export default function SubServices() {
               ))}
               <div className="absolute inset-0 bg-black/20" />
             </div>
+
+            {/* Description Container */}
+            <div className="mt-6 min-h-[120px] md:mt-8">
+              <p className="text-base font-medium leading-relaxed text-zinc-400 md:text-lg">
+                {services[activeImage]?.description}
+              </p>
+            </div>
           </div>
 
-          {/* RIGHT SIDE: SERVICES LIST & DESCRIPTIONS */}
+          {/* RIGHT SIDE: SERVICES LIST */}
           <div
-            // Removed fixed gaps so flex-1 handles the spacing perfectly
             className="group/list order-1 flex h-full w-full flex-col md:order-2"
             onMouseLeave={() => setActiveIndex(null)}
           >
@@ -101,32 +108,15 @@ export default function SubServices() {
                   setActiveIndex(index);
                   setActiveImage(index);
                 }}
-                // Added flex-1 to strictly divide equal height, and justify-center to vertically center everything in the box
-                className="group flex gap-2 flex-1 w-full flex-col items-start justify-center border-b border-white/10 py-6 transition-all duration-500 last:border-none hover:!opacity-100 group-hover/list:opacity-30 md:py-8 lg:py-10"
+                className="group flex flex-1 w-full flex-col items-start justify-center gap-2 border-b border-white/30 py-6 transition-all duration-500 last:border-none hover:opacity-100! group-hover/list:opacity-30 md:py-8 lg:py-10"
               >
-                <h3 className="flex w-full items-center text-3xl font-medium tracking-tight text-white transition-transform duration-500 group-hover:translate-x-4 sm:text-4xl md:text-4xl lg:text-5xl">
+                <h3 className="flex w-full items-center text-3xl font-medium tracking-tight text-white sm:text-4xl md:text-4xl lg:text-5xl">
                   <span>
                     {service.title1}
                     {service.title1 === "E" ? "-" : " "}
                     {service.title2}
                   </span>
                 </h3>
-
-                {/* Smooth Expanding Description */}
-                <div
-                  className={cn(
-                    "grid w-full transition-all duration-500 ease-in-out group-hover:translate-x-4",
-                    activeIndex === index
-                      ? "mt-4 grid-rows-[1fr] opacity-100 md:mt-6"
-                      : "mt-0 grid-rows-[0fr] opacity-0",
-                  )}
-                >
-                  <div className="overflow-hidden">
-                    <p className="max-w-xl text-base font-medium leading-relaxed text-zinc-400 md:text-lg">
-                      {service.description}
-                    </p>
-                  </div>
-                </div>
               </a>
             ))}
           </div>
@@ -136,6 +126,9 @@ export default function SubServices() {
         <div className="mt-16 flex w-full items-center justify-center gap-20 md:mt-24">
           <ConnectButton className="scale-110 md:scale-125" />
         </div>
+
+        {/* NON-EDGE-TO-EDGE BOTTOM BORDER */}
+        <div className="mt-16 w-full border-b border-white/10 md:mt-35" />
       </div>
     </section>
   );

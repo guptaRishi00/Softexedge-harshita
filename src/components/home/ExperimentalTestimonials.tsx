@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import DynamicButton from "../ui/DynamicButton"; // Adjust this import path as needed
 import ConnectButtonTwo from "../shared/ConnectButtonTwo";
+import { MdArrowOutward } from "react-icons/md";
 
 const testimonials = [
   {
@@ -99,16 +100,25 @@ export default function ExperimentalTestimonials() {
 
             <p className="mt-6 max-w-md text-lg leading-relaxed text-zinc-600">
               Don't just take our word for it. Hear from the visionaries
-              building our future every day.
+              building our future every day. Don't just take our word for it.
+              Hear from the visionaries building our future every day.
             </p>
 
-            <div className="mt-10">
-              {/* <DynamicButton
-                text="Let's Connect"
-                href="#contact"
-                className="px-8 py-4 border border-zinc-200 hover:border-transparent"
-              /> */}
-              <ConnectButtonTwo className="" />
+            <div className="mt-10 flex items-start">
+              {/* BUTTON ANIMATION UPDATED HERE */}
+              <button className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl bg-white pl-0 pr-2 transition-all duration-300 hover:bg-black hover:pl-6 hover:pr-4">
+                <span className="text-[18px] font-bold tracking-tight text-black transition-colors duration-300 group-hover:text-white">
+                  Connect With Us
+                </span>
+
+                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white transition-transform duration-300 ease-out group-hover:scale-90">
+                  <div className="absolute inset-0 bg-linear-to-r from-[#2E5BFF] to-[#149CCB] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                  <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+
+                  <MdArrowOutward className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0" />
+                </div>
+              </button>
             </div>
           </div>
         </motion.div>
@@ -124,10 +134,9 @@ export default function ExperimentalTestimonials() {
             {duplicatedTestimonials.map((item, index) => (
               <div
                 key={index}
-                /* INCREASED HEIGHT: min-h-[350px] for mobile, min-h-[420px] for desktop */
-                className="group relative flex w-full min-h-[350px] md:min-h-[420px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-zinc-50/50 backdrop-blur-md p-8 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:shadow-zinc-200/50 md:p-10"
+                className="group relative flex w-[80%] mx-auto min-h-[350px] md:min-h-[420px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-zinc-50/50 backdrop-blur-md p-8 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:shadow-zinc-200/50 md:p-10"
               >
-                {/* Outlined Quote Icon (Top Right) - Increased size to 48x48 */}
+                {/* Outlined Quote Icon (Top Right) */}
                 <div className="absolute right-8 top-8 text-zinc-200 transition-colors group-hover:text-zinc-300">
                   <svg
                     width="48"
@@ -144,23 +153,23 @@ export default function ExperimentalTestimonials() {
                   </svg>
                 </div>
 
-                {/* Quote Text - Increased to text-xl (mobile) and text-2xl/3xl (desktop) */}
+                {/* Quote Text */}
                 <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-[1.3em] tracking-tight text-zinc-800 md:text-2xl lg:text-xl">
                   "{item.quote}"
                 </p>
 
                 {/* Bottom Profile */}
                 <div className="mt-10 flex items-center gap-4">
-                  {/* Avatar Placeholder - Increased to h-12 w-12 */}
+                  {/* Avatar Placeholder */}
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-100 border border-zinc-200 text-sm font-bold text-zinc-600">
                     {item.initials}
                   </div>
                   <div>
-                    {/* Name - Increased to text-base */}
+                    {/* Name */}
                     <h4 className="text-base font-bold text-zinc-900">
                       {item.name}
                     </h4>
-                    {/* Role - Increased to text-xs */}
+                    {/* Role */}
                     <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-700">
                       {item.role}
                     </p>

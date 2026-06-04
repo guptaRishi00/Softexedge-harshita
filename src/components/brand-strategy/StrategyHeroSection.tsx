@@ -77,7 +77,7 @@ export default function StrategyHeroSection() {
           initial="hidden"
           animate="visible"
           onAnimationComplete={() => setIsExpanded(true)} // Split triggers only AFTER words finish
-          className="mb-6 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[140px]"
+          className="mb-6 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
         >
           {/* Line 1 */}
           <span className="flex items-center justify-center whitespace-nowrap">

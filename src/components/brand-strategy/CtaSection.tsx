@@ -1,11 +1,21 @@
+// src/components/home/CtaSection.tsx
 "use client";
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { MdArrowOutward } from "react-icons/md";
 import ConnectButtonThree from "../shared/ConnectButtonThree";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
+
+// Helper array for the realistic avatars
+const avatars = [
+  "https://i.pravatar.cc/150?img=11", // Adjust numbers for different faces
+  "https://i.pravatar.cc/150?img=12",
+  "https://i.pravatar.cc/150?img=5",
+  "https://i.pravatar.cc/150?img=43",
+  "https://i.pravatar.cc/150?img=14",
+  "https://i.pravatar.cc/150?img=49",
+];
 
 export default function CtaSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -39,7 +49,6 @@ export default function CtaSection() {
           {/* Interactive Proximity Background Grid */}
           <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
             <div
-              // CHANGED: Slightly increased the gap from gap-2 to gap-3 to balance the larger squares, but you can change it back if you prefer tighter spacing.
               className="grid w-[120%] -ml-[5%] gap-3"
               style={{
                 gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
@@ -82,7 +91,7 @@ export default function CtaSection() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000_100%)] opacity-60" />
           </div>
 
-          {/* Top Content: Massive Typography */}
+          {/* Top Content: Massive Typography & Social Proof */}
           <div className="pointer-events-none relative z-10 p-8 pt-16 md:p-16 lg:p-24">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -90,21 +99,60 @@ export default function CtaSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: premiumEase }}
             >
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-2 w-2 items-center justify-center rounded-full bg-[#2E5BFF]">
-                  <div className="absolute h-4 w-4 animate-ping rounded-full bg-[#149CCB]/40" />
-                </div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400 md:text-sm">
-                  Available for new projects
-                </p>
-              </div>
-
-              <h2 className="text-5xl font-bold leading-[0.95] tracking-tight text-white md:text-7xl lg:text-[5rem]">
+              {/* Main Heading */}
+              <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl lg:text-[5rem]">
                 Let's build something <br className="hidden md:block" />
                 <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-4 text-transparent">
                   extraordinary.
                 </span>
               </h2>
+
+              {/* Subtext describing the offer/value */}
+              <p className="mt-6 max-w-2xl text-lg leading-relaxed text-zinc-400 md:text-xl">
+                Join the waitlist and be the first one to experience
+                photorealism at scale. Get additional 50% discount on the first
+                100 people.
+              </p>
+
+              {/* Avatar Stack and Ratings Area */}
+              <div className="mt-10 flex flex-col gap-3">
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* Overlapping Avatars */}
+                  <div className="flex -space-x-3">
+                    {avatars.map((src, i) => (
+                      <div
+                        key={i}
+                        className="relative h-14 w-14 overflow-hidden rounded-[16px] border-[2px] border-black bg-zinc-800 shadow-sm"
+                      >
+                        <img
+                          src={src}
+                          alt={`Creator ${i + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 5-Star Rating */}
+                  <div className="flex items-center gap-1 text-[#FFC107]">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg
+                        key={star}
+                        className="h-6 w-6 fill-current"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Trust Text */}
+                <p className="mt-1 text-base font-medium text-zinc-400">
+                  Trusted by 27,000+ creators
+                </p>
+              </div>
             </motion.div>
           </div>
 
@@ -143,7 +191,7 @@ export default function CtaSection() {
                 <span className="text-xs uppercase tracking-wider text-zinc-600">
                   Local Time
                 </span>
-                <span className="text-white">Assam, 6:55 PM</span>
+                <span className="text-white">Assam, 7:26 PM</span>
               </div>
             </motion.div>
           </div>

@@ -1,8 +1,8 @@
+// src/components/home/FaqSection.tsx
 "use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MdArrowOutward } from "react-icons/md";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
@@ -43,15 +43,20 @@ export default function FaqSection() {
 
   return (
     <section className="relative overflow-hidden bg-white px-6 md:px-6 md:py-20">
-      {/* Hidden SVG to define the custom gradient for the icon */}
-      <svg width="0" height="0" className="absolute">
+      {/* 
+        Hidden SVG to define the custom gradient. 
+        ADDED: gradientUnits="userSpaceOnUse" and x1/y1 coordinates to fix the 
+        invisible horizontal line bug.
+      */}
+      <svg width="0" height="0" className="absolute pointer-events-none">
         <defs>
           <linearGradient
             id="icon-gradient"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
+            x1="0"
+            y1="0"
+            x2="24"
+            y2="24"
+            gradientUnits="userSpaceOnUse"
           >
             <stop stopColor="#2E5BFF" offset="0%" />
             <stop stopColor="#149CCB" offset="100%" />
@@ -104,7 +109,7 @@ export default function FaqSection() {
                     {faq.question}
                   </h3>
 
-                  {/* MdArrowOutward Icon with dynamic styling */}
+                  {/* Animated Plus/Minus Icon */}
                   <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.4, ease: premiumEase }}
@@ -112,10 +117,31 @@ export default function FaqSection() {
                       isOpen ? "" : "text-zinc-900"
                     }`}
                   >
-                    <MdArrowOutward
-                      size={28}
-                      style={isOpen ? { fill: "url(#icon-gradient)" } : {}}
-                    />
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={isOpen ? "url(#icon-gradient)" : "currentColor"}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      {/* Horizontal line (always visible, becomes the minus) */}
+                      <path d="M5 12h14" />
+
+                      {/* Vertical line (fades & scales down to form a minus) */}
+                      <motion.path
+                        d="M12 5v14"
+                        initial={false}
+                        animate={{
+                          scaleY: isOpen ? 0 : 1,
+                          opacity: isOpen ? 0 : 1,
+                        }}
+                        transition={{ duration: 0.4, ease: premiumEase }}
+                        style={{ originY: "50%" }}
+                      />
+                    </svg>
                   </motion.div>
                 </button>
 

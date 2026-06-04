@@ -70,7 +70,7 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-black px-6 font-sans text-white md:px-6 md:pb-40 pt-20">
+    <section className="relative overflow-hidden bg-black px-6 font-sans text-white md:px-6 md:pb-40 pt-35">
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
       <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">
@@ -235,21 +235,6 @@ function ProjectCard({
               <p className="mt-5 text-sm font-light leading-relaxed text-zinc-300 md:text-base">
                 {project.description}
               </p>
-
-              <motion.div
-                initial={{
-                  width: 0,
-                }}
-                animate={{
-                  width: "80px",
-                }}
-                transition={{
-                  delay: 0.15,
-                  duration: 0.5,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="mt-8 h-[1px] bg-white/40"
-              />
             </motion.div>
           )}
         </AnimatePresence>

@@ -64,7 +64,7 @@ export default function BlogSection() {
 
   // Card list component to render identical tracks
   const CardTrack = () => (
-    <div className="flex shrink-0 gap-4 md:gap-6 lg:gap-3">
+    <div className="flex shrink-0 gap-4 md:gap-8 lg:gap-5">
       {blogPosts.map((post) => (
         <div
           key={post.id}
