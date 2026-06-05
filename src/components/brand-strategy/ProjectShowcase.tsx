@@ -70,11 +70,11 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-black px-6 font-sans text-white md:px-6 md:pb-40 pt-35">
+    <section className="relative overflow-hidden bg-black px-6 pt-35 font-sans text-white md:px-6 md:pb-40">
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
       <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">
-        <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-end mb-34">
+        <div className="mb-34 flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-start">
           <h2 className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[5rem]">
             Our{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
@@ -82,11 +82,10 @@ export default function ProjectShowcase() {
             </span>
           </h2>
 
-          {/* CHANGED: Removed the top margin (mt-8) since gap handles it now, added md:mb-2 to align with baseline, and md:text-right */}
-          <p className="max-w-xl text-xl font-medium leading-[1.25em] text-zinc-400 md:mb-2 md:text-left md:text-xl">
-            Crafted digital experiences blending cinematic interaction,
-            editorial layouts, and immersive motion systems. experiences
-            blending cinematic interaction
+          <p className="max-w-2xl text-left text-2xl font-light leading-[1.25em] text-white md:mb-2">
+            Delivering scalable, high-performance solutions that elevate brands
+            and drive revenue. Delivering scalable, high-performance solutions
+            that elevate brands and drive revenue.
           </p>
         </div>
 
@@ -184,7 +183,35 @@ function ProjectCard({
 
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-30 transition-opacity duration-700 group-hover:opacity-60" />
 
-      <div className="absolute inset-0 rounded-[20px] border border-white/10 transition-colors duration-500 group-hover:border-white/20" />
+      {/* Default Border (Fades out when hovered) */}
+      <div className="pointer-events-none absolute inset-0 z-10 rounded-[20px] border border-white/10 transition-opacity duration-500 group-hover:opacity-0" />
+
+      {/* TRAVELING LINE BORDER CONTAINER */}
+      <div
+        className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[20px] p-[1.5px] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{
+          WebkitMask:
+            "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+          WebkitMaskComposite: "xor",
+          maskComposite: "exclude",
+        }}
+      >
+        {/* GPU-Accelerated Spinning Gradient Element */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{
+            repeat: Infinity,
+            duration: 2.5, // Tweak this for speed
+            ease: "linear",
+          }}
+          className="absolute left-[-50%] top-[-50%] h-[200%] w-[200%]"
+          style={{
+            background:
+              "conic-gradient(transparent, transparent 85%, #2E5BFF 95%, #149CCB 100%)",
+            willChange: "transform", // Forces the browser to hardware accelerate
+          }}
+        />
+      </div>
 
       <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-10">
         <motion.div

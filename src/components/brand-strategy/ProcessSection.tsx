@@ -42,7 +42,7 @@ export default function ProcessSection() {
     <section className="w-full bg-black font-sans md:pb-35">
       <div className="mx-auto w-full px-6 md:px-6">
         {/* Header Section */}
-        <div className="mb-16 flex flex-col items-start justify-between gap-6 md:mb-35 md:flex-row md:items-end">
+        <div className="mb-16 flex flex-col items-start justify-between gap-6 md:mb-35 md:flex-row md:items-start">
           <motion.h2
             initial={{ opacity: 0, y: -10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -51,7 +51,7 @@ export default function ProcessSection() {
             className="text-4xl font-bold leading-none tracking-tighter text-white md:text-[5rem]"
           >
             Our{" "}
-            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
+            <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
               Process
             </span>
           </motion.h2>
@@ -61,7 +61,7 @@ export default function ProcessSection() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             viewport={{ once: true }}
-            className="max-w-xl text-xl font-medium leading-[1.25em] text-zinc-400 md:mb-2 md:text-left"
+            className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:mb-2 md:text-left"
           >
             A streamlined approach to turning complex challenges into elegant
             digital solutions, from initial concept to global scale. from

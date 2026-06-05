@@ -17,16 +17,16 @@ export default function OurTechStack() {
   const [isPaused, setIsPaused] = useState(false);
 
   const LogoTrack = () => (
-    <div className="flex shrink-0 gap-3 pr-3">
+    <div className="flex shrink-0 gap-5 pr-5">
       {techStack.map((tech) => (
         <div
           key={tech.id}
-          className="flex h-50 w-68 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-[#171717] transition-colors"
+          className="flex h-50 w-68 shrink-0 items-center justify-center rounded-4xl border border-zinc-800 bg-[#100f0f] transition-colors"
         >
           <img
             src={tech.image}
             alt={`${tech.name} logo`}
-            className="h-10 w-auto object-contain"
+            className="h-12 w-auto object-contain"
           />
         </div>
       ))}
@@ -38,7 +38,7 @@ export default function OurTechStack() {
     <section className="relative w-full overflow-hidden bg-black text-white">
       {/* Added pb-16 md:pb-24 here to keep your original spacing above the border */}
       <div className="mx-auto w-full md:pb-25">
-        <div className="mx-auto mb-20 flex flex-col items-start justify-between gap-6 px-6 md:flex-row md:items-end md:px-6">
+        <div className="mx-auto mb-20 flex flex-col items-start justify-between gap-6 px-6 md:flex-row md:items-start md:px-6">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -47,7 +47,7 @@ export default function OurTechStack() {
             className="text-4xl font-bold leading-none tracking-tight text-white md:text-5xl lg:text-[5rem]"
           >
             Our Tech{" "}
-            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               Stack
             </span>
           </motion.h2>
@@ -57,7 +57,7 @@ export default function OurTechStack() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="max-w-xl text-xl font-medium leading-[1.25em] text-zinc-400 md:mb-2 md:text-left"
+            className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:mb-2 md:text-left"
           >
             Powered by modern, reliable, and scalable technologies to bring your
             vision to life.
@@ -65,7 +65,7 @@ export default function OurTechStack() {
         </div>
 
         <div
-          className="relative flex w-full flex-col gap-3 overflow-hidden rounded-3xl py-16"
+          className="relative flex w-full flex-col gap-5 overflow-hidden rounded-3xl py-16"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >

@@ -16,7 +16,7 @@ type Props = {};
 export default function BrandStrategyPage({}: Props) {
   return (
     <div>
-      <div className="overflow-hidden w-full">
+      <div className="overflow-x-clip w-full">
         <StrategyHeroSection />
         <SubServices />
         <ProcessSection />

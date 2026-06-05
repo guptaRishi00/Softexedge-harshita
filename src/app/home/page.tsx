@@ -95,14 +95,14 @@ export default function HomePage() {
         },
         {
           scale: 1, // Ends at full size
-          rotation: 0, // Ends completely straight
+          rotation: 0,
           borderRadius: "0px",
           ease: "none",
           scrollTrigger: {
             trigger: serviceContainerRef.current,
-            start: "top bottom", // Starts animating when it appears at the bottom of the screen
-            end: "top top", // Finishes animating when it hits the top of the screen
-            scrub: 1, // Smooth scrubbing
+            start: "top bottom",
+            end: "top top",
+            scrub: 1,
           },
         },
       );

@@ -2,14 +2,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import ConnectButtonThree from "../shared/ConnectButtonThree";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
 // Helper array for the realistic avatars
 const avatars = [
-  "https://i.pravatar.cc/150?img=11", // Adjust numbers for different faces
+  "https://i.pravatar.cc/150?img=11",
   "https://i.pravatar.cc/150?img=12",
   "https://i.pravatar.cc/150?img=5",
   "https://i.pravatar.cc/150?img=43",
@@ -20,7 +20,10 @@ const avatars = [
 export default function CtaSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  // CHANGED: Reduced total items and columns to make each square significantly bigger
+  // Set up motion values to track the mouse position for the spotlight
+  const mouseX = useMotionValue(-1000); // Start far off-screen
+  const mouseY = useMotionValue(-1000);
+
   const totalItems = 80;
   const columns = 10;
 
@@ -41,13 +44,31 @@ export default function CtaSection() {
     return Math.max(0, 1 - distance / 1.79);
   };
 
+  // Update motion values as the mouse moves over the section
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { left, top } = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - left);
+    mouseY.set(e.clientY - top);
+  };
+
   return (
     <section className="relative w-full bg-white px-0 md:px-0 md:pt-0">
       <div className="mx-auto w-full">
-        {/* Main CTA Container */}
-        <div className="relative flex min-h-[60vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black">
+        {/* Main CTA Container - Reduced height to 45vh */}
+        <div
+          className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setHoveredIndex(null)}
+        >
           {/* Interactive Proximity Background Grid */}
-          <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
+          <motion.div
+            className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden transition-opacity duration-500"
+            style={{
+              // This mask cuts a hole to reveal the pattern where the mouse is
+              WebkitMaskImage: useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
+              maskImage: useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
+            }}
+          >
             <div
               className="grid w-[120%] -ml-[5%] gap-3"
               style={{
@@ -63,7 +84,6 @@ export default function CtaSection() {
                   <div
                     key={index}
                     onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
                     className="relative aspect-square w-full overflow-hidden rounded-2xl p-[2px] transition-all duration-300 ease-out"
                     style={{
                       backgroundColor:
@@ -86,13 +106,23 @@ export default function CtaSection() {
               })}
             </div>
 
-            {/* Overlays to ensure text remains highly readable over the active grid */}
+            {/* General Overlays to ensure pattern blends nicely */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black/80" />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000_100%)] opacity-60" />
+            <div className="pointer-events-none absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_center,transparent_0%,#000_100%)]" />
+          </motion.div>
+
+          {/* TEXT BLOCK-OUT LAYERS (Z-5) */}
+          {/* These permanent black gradients sit ABOVE the spotlight grid but BELOW the text, ensuring the spotlight never reveals the grid behind typography. */}
+          <div className="pointer-events-none absolute inset-0 z-[5]">
+            {/* Top-Left Fade for Heading */}
+            <div className="absolute inset-y-0 left-0 w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent" />
+            {/* Bottom Fade for Footer/CTA Elements */}
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black via-black/95 to-transparent" />
           </div>
 
           {/* Top Content: Massive Typography & Social Proof */}
-          <div className="pointer-events-none relative z-10 p-8 pt-16 md:p-16 lg:p-24">
+          {/* Reduced padding (p-8 md:p-12) to match shorter section */}
+          <div className="pointer-events-none relative z-10 p-8 pt-12 md:p-12 lg:p-16 lg:pb-0">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -115,14 +145,14 @@ export default function CtaSection() {
               </p>
 
               {/* Avatar Stack and Ratings Area */}
-              <div className="mt-10 flex flex-col gap-3">
+              <div className="mt-10 flex w-fit pointer-events-auto flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-4">
                   {/* Overlapping Avatars */}
                   <div className="flex -space-x-3">
                     {avatars.map((src, i) => (
                       <div
                         key={i}
-                        className="relative h-14 w-14 overflow-hidden rounded-[16px] border-[2px] border-black bg-zinc-800 shadow-sm"
+                        className="relative h-14 w-14 cursor-pointer overflow-hidden rounded-[16px] border-[2px] border-black bg-zinc-800 shadow-sm transition-transform hover:z-20 hover:scale-110"
                       >
                         <img
                           src={src}
@@ -157,7 +187,8 @@ export default function CtaSection() {
           </div>
 
           {/* Bottom Content: Actions & Meta Info */}
-          <div className="pointer-events-none relative z-10 flex flex-col items-start justify-between gap-10 p-8 md:flex-row md:items-end md:p-16 lg:p-24">
+          {/* Reduced padding (p-8 md:p-12) to match shorter section */}
+          <div className="pointer-events-none relative z-10 flex flex-col items-start justify-between gap-10 p-8 md:flex-row md:items-end md:p-12 lg:p-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -189,9 +220,9 @@ export default function CtaSection() {
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-xs uppercase tracking-wider text-zinc-600">
-                  Local Time
+                  Give us a call
                 </span>
-                <span className="text-white">Assam, 7:26 PM</span>
+                <span className="text-white">+1 (555) 123-4567</span>
               </div>
             </motion.div>
           </div>

@@ -54,7 +54,7 @@ export default function ExperimentalTestimonials() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-white text-zinc-900 md:py-20">
+    <section className="relative overflow-hidden bg-white py-12 text-zinc-900 md:py-20">
       {/* CSS Keyframes for the continuous vertical marquee */}
       <style>{`
         @keyframes scroll-y {
@@ -62,21 +62,21 @@ export default function ExperimentalTestimonials() {
           100% { transform: translateY(-50%); }
         }
         .animate-scroll-y {
-          animation: scroll-y 40s linear infinite; /* Slightly slowed down to account for taller cards */
+          animation: scroll-y 40s linear infinite;
         }
         .animate-scroll-y:hover {
           animation-play-state: paused;
         }
       `}</style>
 
-      <div className="mx-auto flex w-full flex-col gap-12 px-6 md:px-6 lg:flex-row lg:items-start lg:gap-5">
+      <div className="mx-auto flex w-full flex-col gap-12 px-6 lg:flex-row lg:items-start lg:gap-5">
         {/* LEFT COLUMN: Title and CTA */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, margin: "-50px" }}
-          className="flex w-full flex-col lg:sticky lg:top-30 lg:h-[600px] lg:w-2/5 lg:shrink-0"
+          className="flex w-full shrink-0 flex-col lg:sticky lg:top-30 lg:h-[600px] lg:w-2/5"
         >
           <div>
             <h2 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-[5rem] lg:leading-[1.0]">
@@ -90,7 +90,7 @@ export default function ExperimentalTestimonials() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -30, opacity: 0 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="col-start-1 row-start-1 bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-transparent bg-clip-text"
+                    className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
                   >
                     {rotatingWords[index]}
                   </motion.span>
@@ -106,17 +106,36 @@ export default function ExperimentalTestimonials() {
 
             <div className="mt-10 flex items-start">
               {/* BUTTON ANIMATION UPDATED HERE */}
-              <button className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl bg-white pl-0 pr-2 transition-all duration-300 hover:bg-black hover:pl-6 hover:pr-4">
-                <span className="text-[18px] font-bold tracking-tight text-black transition-colors duration-300 group-hover:text-white">
+              <button className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-4">
+                <span className="text-[18px] font-bold tracking-tight text-black transition-colors duration-300">
                   Connect With Us
                 </span>
 
                 <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white transition-transform duration-300 ease-out group-hover:scale-90">
-                  <div className="absolute inset-0 bg-linear-to-r from-[#2E5BFF] to-[#149CCB] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  {/* SVG Defs for the icon gradient */}
+                  <svg width="0" height="0" className="absolute">
+                    <defs>
+                      <linearGradient
+                        id="icon-grad"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop stopColor="#2E5BFF" offset="0%" />
+                        <stop stopColor="#149CCB" offset="100%" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
 
+                  {/* Outgoing icon (stays white) */}
                   <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
 
-                  <MdArrowOutward className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0" />
+                  {/* Incoming icon (gets the gradient) */}
+                  <MdArrowOutward
+                    className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    style={{ fill: "url(#icon-grad)" }}
+                  />
                 </div>
               </button>
             </div>
@@ -124,20 +143,20 @@ export default function ExperimentalTestimonials() {
         </motion.div>
 
         {/* RIGHT COLUMN: Vertical Marquee */}
-        <div className="relative w-full lg:w-3/5 h-[600px] md:h-[750px] overflow-hidden">
+        <div className="relative h-[600px] w-full overflow-hidden md:h-[750px] lg:w-3/5">
           {/* Fade Masks for seamless vertical scrolling illusion */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-32 bg-gradient-to-b from-white to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-32 bg-gradient-to-t from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-white to-transparent" />
 
           {/* Scrolling Container */}
-          <div className="animate-scroll-y flex flex-col gap-6 pt-4 pb-6 px-1">
+          <div className="animate-scroll-y flex flex-col gap-6 pb-6 pt-4">
             {duplicatedTestimonials.map((item, index) => (
               <div
                 key={index}
-                className="group relative flex w-[80%] mx-auto min-h-[350px] md:min-h-[420px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-zinc-50/50 backdrop-blur-md p-8 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:shadow-zinc-200/50 md:p-10"
+                className="group relative ml-auto flex min-h-[350px] w-[80%] shrink-0 flex-col justify-between rounded-3xl border border-white/5 bg-[#100F0F] p-8 shadow-sm transition-all hover:border-white/20 hover:bg-[#161515] hover:shadow-xl md:min-h-[420px] md:p-10"
               >
                 {/* Outlined Quote Icon (Top Right) */}
-                <div className="absolute right-8 top-8 text-zinc-200 transition-colors group-hover:text-zinc-300">
+                <div className="absolute right-8 top-8 text-white/5 transition-colors group-hover:text-white/10">
                   <svg
                     width="48"
                     height="48"
@@ -154,23 +173,23 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text */}
-                <p className="relative z-10 mt-6 max-w-[90%] text-xl font-medium leading-[1.3em] tracking-tight text-zinc-800 md:text-2xl lg:text-xl">
+                <p className="relative z-10 mt-10 max-w-[100%] text-xl font-medium leading-[1.5em] tracking-tight text-white md:text-2xl lg:text-xl">
                   "{item.quote}"
                 </p>
 
                 {/* Bottom Profile */}
                 <div className="mt-10 flex items-center gap-4">
                   {/* Avatar Placeholder */}
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-100 border border-zinc-200 text-sm font-bold text-zinc-600">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-bold text-zinc-300">
                     {item.initials}
                   </div>
                   <div>
                     {/* Name */}
-                    <h4 className="text-base font-bold text-zinc-900">
+                    <h4 className="text-base font-bold text-white">
                       {item.name}
                     </h4>
                     {/* Role */}
-                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-700">
+                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-400">
                       {item.role}
                     </p>
                   </div>
