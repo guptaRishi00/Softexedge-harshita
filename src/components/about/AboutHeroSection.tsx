@@ -1,144 +1,160 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 import Header from "../page/Header";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
-function RotatingWord({
-  words,
-  activeIndex,
-}: {
-  words: string[];
-  activeIndex: number;
-}) {
-  const index = activeIndex % words.length;
-  // Calculate longest word to keep container width completely fixed
-  const longestWord = words.reduce((a, b) => (a.length > b.length ? a : b));
+function AvatarGroup() {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const avatars = [
+    {
+      name: "Sarah Chen",
+      url: "https://images.unsplash.com/photo-1780387477222-730504564368?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDJ8dG93SlpGc2twR2d8fGVufDB8fHx8fA%3D%3D",
+    },
+    {
+      name: "Marcus Doe",
+      url: "https://plus.unsplash.com/premium_photo-1773833961204-e6534b9913e3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDE3fHRvd0paRnNrcEdnfHxlbnwwfHx8fHw%3D",
+    },
+    {
+      name: "Elena Rostova",
+      url: "https://images.unsplash.com/photo-1779399147786-316f949446bb?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDE5fHRvd0paRnNrcEdnfHxlbnwwfHx8fHw%3D",
+    },
+    {
+      name: "James Wilson",
+      url: "https://plus.unsplash.com/premium_photo-1688572454849-4348982edf7d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDI2fHRvd0paRnNrcEdnfHxlbnwwfHx8fHw%3D",
+    },
+  ];
 
   return (
-    // 1. Outer wrapper keeps default overflow. This ensures it shares the EXACT
-    // same typographic baseline as the text around it.
-    <span className="relative inline-block">
-      {/* 2. Invisible spacer dictates the exact width, height, and natural baseline */}
-      <span className="invisible pointer-events-none whitespace-nowrap">
-        {longestWord}
-      </span>
+    <div
+      className="flex py-2"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {avatars.map((avatar, index) => (
+        <motion.div
+          key={index}
+          // Drive the animation using state for the group, and whileHover for the individual avatar
+          initial="initial"
+          animate={isHovered ? "groupHover" : "initial"}
+          whileHover="hover"
+          variants={{
+            initial: {
+              scale: 1,
+              zIndex: 0,
+              marginLeft: index === 0 ? 0 : -14, // Stacked tight (like -space-x-3.5)
+            },
+            groupHover: {
+              scale: 1,
+              zIndex: 10,
+              marginLeft: index === 0 ? 0 : 6, // Expanded out (like space-x-1.5)
+            },
+            hover: {
+              scale: 1.15,
+              zIndex: 50,
+              marginLeft: index === 0 ? 0 : 6, // Keep expanded spacing when hovering one
+            },
+          }}
+          transition={{ duration: 0.5, ease: premiumEase }}
+          className="relative flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#75ddff] p-[2px] shadow-sm transition-shadow hover:shadow-md"
+        >
+          <img
+            className="h-full w-full rounded-full object-cover"
+            src={avatar.url}
+            alt={`Team member ${avatar.name}`}
+          />
 
-      {/* 3. Absolute mask container traps the animating words without affecting the baseline */}
-      <span className="absolute inset-0 overflow-hidden">
-        <AnimatePresence>
-          <motion.span
-            key={index}
-            initial={{ y: "100%" }}
-            animate={{ y: "0%" }}
-            exit={{ y: "-100%" }}
-            transition={{ duration: 0.5, ease: premiumEase }}
-            className="absolute left-0 top-0 w-full h-full whitespace-nowrap bg-gradient-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] bg-clip-text text-transparent"
+          {/* Animated Tooltip */}
+          <motion.div
+            variants={{
+              initial: { opacity: 0, y: 5, scale: 0.8, pointerEvents: "none" },
+              groupHover: {
+                opacity: 0,
+                y: 5,
+                scale: 0.8,
+                pointerEvents: "none",
+              }, // Keep hidden unless directly hovering
+              hover: { opacity: 1, y: 0, scale: 1, pointerEvents: "auto" },
+            }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 px-2.5 py-1 text-[10px] font-medium tracking-wide text-white shadow-xl"
           >
-            {words[index]}
-          </motion.span>
-        </AnimatePresence>
-      </span>
-    </span>
+            {avatar.name}
+            {/* Tooltip Triangle Pointer */}
+            <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-zinc-900" />
+          </motion.div>
+        </motion.div>
+      ))}
+    </div>
   );
 }
 
 export default function AboutHeroSection() {
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => prev + 1);
-    }, 2500);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <>
-      {/* Global Header */}
+    <main className="flex min-h-screen w-full flex-col bg-white font-sans text-black">
       <Header />
 
-      {/* Hero Section */}
-      <section className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-white py-24 font-sans text-black">
-        <div className="pointer-events-none absolute inset-0 z-0 hidden md:block">
-          {/* Top Right */}
-          <motion.img
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=600&auto=format&fit=crop"
-            alt="Team collaborating"
-            className="absolute right-0 top-0 h-48 w-72 object-cover lg:h-64 lg:w-96"
-          />
+      <section className="flex w-full flex-1 flex-col items-center justify-center py-12 lg:py-10 mt-40">
+        <div className="w-full px-6 lg:px-12">
+          <div className="mb-12 flex w-full flex-col justify-between gap-10 md:flex-row md:items-start lg:mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: premiumEase }}
+              className="flex flex-col md:w-3/5 lg:w-1/2"
+            >
+              <p className="mb-6 text-xs font-bold uppercase tracking-widest text-gray-800">
+                ABOUT US
+              </p>
+              <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-black md:text-5xl lg:text-[4rem]">
+                Journey towards
+                <br />
+                digital excellence
+              </h1>
+            </motion.div>
 
-          {/* Middle Left */}
-          <motion.img
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?q=80&w=600&auto=format&fit=crop"
-            alt="Casual office discussion"
-            className="absolute left-0 top-[25%] -translate-y-10 h-64 w-40 object-cover lg:h-50 lg:w-48"
-          />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
+              className="flex flex-col gap-4 md:w-2/5 lg:w-[35%]"
+            >
+              <AvatarGroup />
+              <p className="text-base text-black font-medium leading-[1.3em] lg:text-lg">
+                Softexedge is a premier digital marketing agency committed to
+                driving growth, innovation, and impactful brand strategies —
+                trusted for measurable results and creative excellence.
+              </p>
+            </motion.div>
+          </div>
 
-          {/* Middle Right */}
-          <motion.img
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            src="https://plus.unsplash.com/premium_photo-1668383209648-029c09c32811?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8Q293b3JraW5nJTIwc3BhY2V8ZW58MHx8MHx8fDA%3D"
-            alt="Coworking space"
-            className="absolute right-0 top-[45%] h-56 w-48 object-cover lg:h-72 lg:w-64"
-          />
-
-          {/* Bottom Left */}
-          <motion.img
-            initial={{ opacity: 0, y: 20 }}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=600&auto=format&fit=crop"
-            alt="Presentation"
-            className="absolute bottom-0 -translate-x-30 left-0 h-56 w-72 object-cover lg:h-72 lg:w-96"
-          />
-
-          {/* Bottom Center (Collage/Polaroids) */}
-          <motion.img
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            src="https://images.unsplash.com/photo-1601362840469-51e4d8d58785?q=80&w=800&auto=format&fit=crop"
-            alt="Team polaroids"
-            className="absolute bottom-0 left-1/2 h-40 w-64 translate-y-20 -translate-x-1/2 object-cover lg:h-56 lg:w-80"
-          />
-        </div>
-
-        {/* CENTER TEXT CONTENT */}
-        <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-6 text-center">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-8 block text-lg font-medium text-gray-800 md:text-xl"
+            transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
+            className="grid h-[400px] w-full grid-cols-1 gap-4 md:h-[500px] md:grid-cols-12 lg:h-[600px] lg:gap-6"
           >
-            About Us
-          </motion.span>
+            <div className="relative col-span-1 h-full w-full overflow-hidden rounded-[2rem] md:col-span-4 lg:col-span-4">
+              <img
+                src="/assets/microsoft-copilot-pqMPnPo4_ZA-unsplash.jpg"
+                alt="Creative marketing workspace"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+              />
+            </div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="inline-block text-4xl font-medium leading-[1.05] tracking-tight text-black md:text-6xl lg:text-[4rem]"
-          >
-            We're a team of thinkers, makers, movers, shakers, and{" "}
-            <RotatingWord
-              words={["artists", "crafter", "builder", "shapers"]}
-              activeIndex={activeIndex}
-            />
-          </motion.h1>
+            <div className="relative col-span-1 h-full w-full overflow-hidden rounded-[2rem] md:col-span-8 lg:col-span-8">
+              <img
+                src="/assets/alex-kotliarskyi-QBpZGqEMsKg-unsplash.jpg"
+                alt="Team analyzing digital marketing data"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+              />
+            </div>
+          </motion.div>
         </div>
       </section>
-    </>
+    </main>
   );
 }

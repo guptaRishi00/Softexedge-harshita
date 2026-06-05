@@ -63,6 +63,7 @@ export default function AboutPage({}: Props) {
           />
         </div>
       </section>
+
       <ExperimentalTestimonials />
       <div className="p-3">
         <CtaSection />

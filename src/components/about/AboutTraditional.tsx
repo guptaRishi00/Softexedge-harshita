@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { motion, useInView, animate } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 // --- Sub-component: Animated Counter ---
 function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
@@ -13,22 +14,31 @@ function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
 
     const controls = animate(0, value, {
       duration: 2,
-      ease: "easeOut",
+      ease: [0.16, 1, 0.3, 1], // Premium easing
       onUpdate: (latest) => {
         if (ref.current) {
-          ref.current.textContent = Math.floor(latest).toString() + suffix;
+          // Only update the number part
+          ref.current.textContent = Math.floor(latest).toString();
         }
       },
     });
 
     return () => controls.stop();
-  }, [value, isInView, suffix]);
+  }, [value, isInView]);
 
-  return <span ref={ref}>0{suffix}</span>;
+  return (
+    <span className="inline-flex items-center">
+      <span ref={ref}>0</span>
+      {suffix && (
+        <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent pr-1">
+          {suffix}
+        </span>
+      )}
+    </span>
+  );
 }
 
-// --- Main Component ---
-export default function AboutTraditional() {
+export default function AboutCinematic() {
   const stats = [
     { value: 10, suffix: "+", label: "Years Experience" },
     { value: 250, suffix: "+", label: "Projects Completed" },
@@ -36,98 +46,112 @@ export default function AboutTraditional() {
     { value: 40, suffix: "+", label: "Team Members" },
   ];
 
-  // Additional premium photos to ensure a beautiful, rich carousel track loop
-  const carouselImages = [
-    "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1531538606174-0f90ff5dce83?q=80&w=1200&auto=format&fit=crop",
+  const premiumImages = [
+    "https://images.unsplash.com/photo-1513682121497-80211f36a7d3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cGVvcGxlfGVufDB8fDB8fHww",
+    "https://plus.unsplash.com/premium_photo-1683120751955-3d7c14887ac8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mzd8fG9mZmljZXxlbnwwfHwwfHx8MA%3D%3D",
+    "https://plus.unsplash.com/premium_photo-1683121489634-5d3f7892a6fe?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTN8fG9mZmljZXxlbnwwfHwwfHx8MA%3D%3D",
     "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?q=80&w=1200&auto=format&fit=crop",
   ];
 
-  // Duplicate the array to create a perfect, seamless loop animation
-  const duplicatedImages = [...carouselImages, ...carouselImages];
+  // Duplicate the array to create a perfect, seamless horizontal loop
+  const duplicatedImages = [...premiumImages, ...premiumImages];
 
   return (
-    <section className="w-full bg-white py-20 md:py-32 font-sans overflow-hidden">
-      <div className="max-w-8xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-        {/* --- LEFT SIDE: All Unified Information --- */}
-        <div className="lg:col-span-7 flex flex-col space-y-12">
-          {/* Who We Are Block */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="flex flex-col items-start"
-          >
-            <span className="text-sm font-bold uppercase tracking-widest text-blue-600 mb-3">
+    <section className="relative w-full bg-black py-32 md:py-48 font-sans overflow-hidden text-white">
+      {/* Background Noise for texture */}
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay pointer-events-none" />
+
+      <div className="mx-auto flex flex-col items-center">
+        {/* --- PART 1: Massive Centered Typography --- */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col items-center text-center max-w-5xl z-10 px-6 md:px-12"
+        >
+          <div className="mb-8 inline-flex items-center justify-center rounded-full ">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
               Who We Are
             </span>
-            <h2 className="text-3xl md:text-4xl lg:text-7xl font-bold text-black leading-[1em] mb-4">
-              A collective of digital innovators.
-            </h2>
-            <p className="text-base md:text-lg text-gray-600 leading-relaxed">
-              Founded on the belief that technology and creativity should
-              seamlessly intersect, our agency brings together industry-leading
-              strategists, designers, and engineers. We operate globally,
-              partnering with visionary businesses to transform their digital
-              presence.
-            </p>
-          </motion.div>
+          </div>
 
-          {/* What We Do Block */}
+          <h2 className="text-5xl md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter leading-[0.9em] mb-8">
+            A collective of <br className="hidden md:block" />
+            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              digital innovators.
+            </span>
+          </h2>
 
-          {/* Integrated Impact Metrics / Stats Grid */}
+          <p className="text-lg md:text-2xl text-zinc-400 leading-[1.2em] max-w-3xl font-regular">
+            Founded on the belief that technology and creativity should
+            seamlessly intersect. We operate globally, partnering with visionary
+            businesses to transform their digital presence.
+          </p>
+        </motion.div>
+
+        {/* --- PART 2: Full-Bleed Horizontal Image Carousel --- */}
+        <div className="relative w-full mt-24 md:mt-32 overflow-hidden flex items-center">
+          {/* Subtle fade on edges so images don't clip harshly */}
+          <div className="absolute inset-y-0 left-0 w-[10vw] bg-linear-to-r from-black to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-[10vw] bg-linear-to-l from-black to-transparent z-10 pointer-events-none" />
+
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            className="grid grid-cols-2 gap-6 pt-8 border-t border-gray-100"
-          >
-            {stats.map((stat, index) => (
-              <div key={index} className="flex flex-col items-start">
-                <h4 className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">
-                  <Counter value={stat.value} suffix={stat.suffix} />
-                </h4>
-                <p className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-
-        {/* --- RIGHT SIDE: Vertical Image Carousel --- */}
-        <div className="lg:col-span-5 relative h-[500px] md:h-[650px] w-full overflow-hidden rounded-2xl bg-white">
-          {/* Subtle overlay shading for premium depth layout */}
-          <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
-
-          {/* Smooth Continuous Infinite Loop Moving Upwards */}
-          <motion.div
-            animate={{ y: [0, "-50%"] }}
+            animate={{ x: ["0%", "-50%"] }}
             transition={{
-              duration: 22,
+              duration: 30, // Adjust speed here (higher is slower)
               ease: "linear",
               repeat: Infinity,
             }}
-            className="flex flex-col gap-4 p-4"
+            className="flex w-max gap-4 md:gap-8 px-4"
           >
             {duplicatedImages.map((src, index) => (
               <div
                 key={index}
-                className="relative h-[260px] md:h-[300px] w-full shrink-0 rounded-xl overflow-hidden "
+                className="relative h-[300px] w-[280px] md:h-[500px] md:w-[450px] shrink-0 rounded-[2rem] overflow-hidden group"
               >
+                <div className="absolute inset-0 bg-black/20 z-10 mix-blend-overlay group-hover:bg-transparent transition-colors duration-500" />
                 <img
                   src={src}
-                  alt={`Carousel snapshot ${index + 1}`}
-                  className="w-full h-full object-cover select-none pointer-events-none"
+                  alt={`Agency showcase ${index + 1}`}
+                  className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
                 />
               </div>
             ))}
           </motion.div>
         </div>
+
+        {/* --- PART 3: Full-width Stats Strip --- */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full mt-24 md:mt-32 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 py-16 relative px-6 md:px-12"
+        >
+          {stats.map((stat, index) => (
+            <div
+              key={index}
+              className={cn(
+                "flex flex-col items-center text-center",
+                // Desktop: Adds consistent vertical dividers (including between 250 & 98)
+                index !== 0 &&
+                  "md:border-l md:border-t-0 border-white/10 md:pt-0",
+
+                (index === 1 || index === 3) && "border-l border-white/10",
+                // Mobile: Adds horizontal divider between the top row (10, 250) and bottom row (98, 40)
+                (index === 2 || index === 3) && "border-t border-white/10 pt-8",
+              )}
+            >
+              <h4 className="text-5xl md:text-6xl lg:text-8xl font-bold text-white mb-5 tracking-tighter">
+                <Counter value={stat.value} suffix={stat.suffix} />
+              </h4>
+              <p className="text-xs md:text-sm font-bold text-zinc-500 uppercase tracking-[0.2em]">
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
