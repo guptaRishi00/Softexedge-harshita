@@ -14,6 +14,8 @@ const services = [
     link: "/brand-strategy",
     color: "bg-[#100F0F]",
     tags: ["Market Research", "Positioning", "Visual Identity", "Messaging"],
+    image:
+      "https://images.unsplash.com/photo-1645658043538-fc2bb1702cfe?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGJyYW5kJTIwc3RyYXRlZ3l8ZW58MHx8MHx8fDA%3D",
   },
   {
     title1: "Digital",
@@ -23,6 +25,8 @@ const services = [
     link: "/services",
     color: "bg-[#100F0F]",
     tags: ["Web Apps", "SaaS Platforms", "Architecture", "API Integration"],
+    image:
+      "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGJyYW5kJTIwc3RyYXRlZ3l8ZW58MHx8MHx8fDA%3D",
   },
   {
     title1: "UI/UX",
@@ -32,6 +36,8 @@ const services = [
     link: "/services",
     color: "bg-[#100F0F]",
     tags: ["User Research", "Wireframing", "Prototyping", "Interaction Design"],
+    image:
+      "https://images.unsplash.com/photo-1587440871875-191322ee64b0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8VUklMkZVWHxlbnwwfHwwfHx8MA%3D%3D",
   },
   {
     title1: "E",
@@ -41,6 +47,8 @@ const services = [
     link: "/services",
     color: "bg-[#100F0F]",
     tags: ["Shopify Plus", "Custom Storefronts", "CRO", "Payment Gateways"],
+    image:
+      "https://plus.unsplash.com/premium_photo-1683746792239-6ce8cdd3ac78?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGUlMjBjb21tZXJjZXxlbnwwfHwwfHx8MA%3D%3D",
   },
 ];
 
@@ -83,12 +91,10 @@ export default function SubServices() {
           ))}
 
           {/* MAGIC TRICK: The Runway */}
-          {/* This gives the user space to scroll so the final card stays stuck on screen for a moment. As the user scrolls down this empty space, the black CTA section smoothly slides UP over the stuck cards, hiding the exit mechanics perfectly. */}
           <div className="pointer-events-none h-[100vh] w-full" />
         </div>
 
         {/* CTA / NEXT SECTION */}
-        {/* This must have a higher z-index and solid background to act as the "curtain" sliding over the stack */}
         <div className="relative z-50 flex min-h-[70vh] w-full flex-col items-center justify-center gap-16 bg-black px-6 shadow-lg:px-12">
           <ConnectButton className="scale-110 md:scale-125" />
           <div className="mt-16 w-full border-b border-white/10" />
@@ -108,6 +114,7 @@ function Card({
   tags,
   link,
   color,
+  image,
   progress,
   range,
 }: any) {
@@ -127,11 +134,10 @@ function Card({
     >
       <motion.div
         style={{ opacity }}
-        // The cards sit perfectly flush in the document flow, no margins/gaps
-        className={`relative flex min-h-[50vh] w-full origin-top flex-col justify-center gap-8 border-t border-white/10 ${color} px-6 pb-24 pt-12 md:flex-row md:items-start md:justify-between md:gap-16 lg:px-12`}
+        className={`relative grid min-h-[50vh] w-full origin-top grid-cols-1 gap-12 border-t border-white/10 ${color} px-6 pb-24 pt-12 md:grid-cols-2 md:gap-16 lg:px-12`}
       >
-        {/* Title */}
-        <div className="w-full md:w-1/2">
+        {/* LEFT COLUMN: Title, Description & Tags */}
+        <div className="flex w-full flex-col gap-8 pr-4">
           <a href={link} className="group inline-block">
             <h3 className="text-5xl font-medium tracking-tight text-white transition-colors group-hover:text-zinc-400 md:text-6xl lg:text-7xl">
               {title1}
@@ -139,25 +145,20 @@ function Card({
               {title2}
             </h3>
           </a>
-        </div>
 
-        {/* Description & Tags */}
-        <div className="flex w-full flex-col gap-8 md:w-1/2">
-          <p className="max-w-3xl text-lg font-light leading-[1.3em] text-white md:text-xl lg:text-2xl">
+          <p className="max-w-xl text-lg font-light leading-[1.4em] text-zinc-300 md:text-xl">
             {description}
           </p>
 
           {/* Tags Container */}
           {tags && tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 pt-2">
               {tags.map((tag: string, index: number) => (
                 <div
                   key={index}
-                  // The wrapper uses p-[1px] to create the border size, and applies the requested gradient.
                   className="rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] p-[1px]"
                 >
                   <span
-                    // The inner span dynamically grabs the specific card's background color so it visually blends into the card
                     className={`block rounded-full ${color} px-4 py-1.5 text-sm font-medium tracking-wide text-zinc-300 transition-all hover:brightness-125`}
                   >
                     {tag}
@@ -165,6 +166,18 @@ function Card({
                 </div>
               ))}
             </div>
+          )}
+        </div>
+
+        {/* RIGHT COLUMN: Image Container */}
+        {/* Set to a fixed height: 350px on mobile, 450px on medium screens and up */}
+        <div className="relative w-full h-[350px] md:h-[450px] overflow-hidden rounded-2xl bg-zinc-900/50">
+          {image && (
+            <img
+              src={image}
+              alt={`${title1} ${title2}`}
+              className="h-full w-full object-cover opacity-80 transition-transform duration-500 hover:scale-105 hover:opacity-100"
+            />
           )}
         </div>
       </motion.div>

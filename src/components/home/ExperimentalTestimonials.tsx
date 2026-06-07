@@ -145,8 +145,8 @@ export default function ExperimentalTestimonials() {
         {/* RIGHT COLUMN: Vertical Marquee */}
         <div className="relative h-[600px] w-full overflow-hidden md:h-[750px] lg:w-3/5">
           {/* Fade Masks for seamless vertical scrolling illusion */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-white to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-white to-transparent" />
+          {/* <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-white to-transparent" /> */}
 
           {/* Scrolling Container */}
           <div className="animate-scroll-y flex flex-col gap-6 pb-6 pt-4">

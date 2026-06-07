@@ -19,10 +19,7 @@ export default function ContactSection() {
   }, []);
 
   return (
-    <section
-      id="contact"
-      className="relative w-full bg-black py-20 md:py-32 mb-30"
-    >
+    <section id="contact" className="relative w-full bg-black py-20 md:py-32">
       <div className="absolute inset-0 z-0">
         <Grainient
           color1="#000000"

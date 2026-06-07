@@ -92,10 +92,6 @@ export default function AboutCinematic() {
 
         {/* --- PART 2: Full-Bleed Horizontal Image Carousel --- */}
         <div className="relative w-full mt-24 md:mt-32 overflow-hidden flex items-center">
-          {/* Subtle fade on edges so images don't clip harshly */}
-          <div className="absolute inset-y-0 left-0 w-[10vw] bg-linear-to-r from-black to-transparent z-10 pointer-events-none" />
-          <div className="absolute inset-y-0 right-0 w-[10vw] bg-linear-to-l from-black to-transparent z-10 pointer-events-none" />
-
           <motion.div
             animate={{ x: ["0%", "-50%"] }}
             transition={{
