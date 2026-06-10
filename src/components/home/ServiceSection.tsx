@@ -112,7 +112,7 @@ export default function ServiceSection() {
           <h2 className="text-5xl font-bold tracking-tight text-white md:text-8xl">
             Our Services
           </h2>
-          <p className="max-w-md text-sm font-medium leading-relaxed text-white/60 md:text-lg">
+          <p className="max-w-xl text-sm font-medium leading-relaxed text-white/60 md:text-lg">
             We merge strategic thinking with bold creative execution to deliver
             scalable digital experiences that elevate your brand.
           </p>

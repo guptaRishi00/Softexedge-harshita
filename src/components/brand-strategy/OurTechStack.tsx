@@ -1,7 +1,7 @@
+// src/components/home/OurTechStack.tsx
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
 
 // Update these paths to match the exact filenames in your public/assets folder
 const techStack = [
@@ -14,19 +14,17 @@ const techStack = [
 ];
 
 export default function OurTechStack() {
-  const [isPaused, setIsPaused] = useState(false);
-
   const LogoTrack = () => (
     <div className="flex shrink-0 gap-5 pr-5">
       {techStack.map((tech) => (
         <div
           key={tech.id}
-          className="flex h-50 w-68 shrink-0 items-center justify-center rounded-4xl border border-zinc-800 bg-[#100f0f] transition-colors"
+          className="flex h-36 w-52 shrink-0 items-center justify-center rounded-3xl border border-zinc-800 bg-[#100f0f] transition-colors hover:border-zinc-700"
         >
           <img
             src={tech.image}
             alt={`${tech.name} logo`}
-            className="h-12 w-auto object-contain"
+            className="h-7 w-auto object-contain"
           />
         </div>
       ))}
@@ -34,9 +32,7 @@ export default function OurTechStack() {
   );
 
   return (
-    // Removed md:pb-24 from the section so the border sits at the true bottom
     <section className="relative w-full overflow-hidden bg-black text-white">
-      {/* Added pb-16 md:pb-24 here to keep your original spacing above the border */}
       <div className="mx-auto w-full md:pb-25">
         <div className="mx-auto mb-20 flex flex-col items-start justify-between gap-6 px-6 md:flex-row md:items-start md:px-6">
           <motion.h2
@@ -64,58 +60,48 @@ export default function OurTechStack() {
           </motion.p>
         </div>
 
-        <div
-          className="relative flex w-full flex-col gap-5 overflow-hidden rounded-3xl py-16"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
+        <div className="relative flex w-full flex-col gap-5 overflow-hidden rounded-3xl py-16">
           <motion.div
             className="flex w-max flex-nowrap"
-            animate={
-              isPaused
-                ? "paused"
-                : {
-                    x: ["0%", "-50%"],
-                  }
-            }
+            animate={{ x: ["0%", "-50%"] }}
             transition={{
               x: {
                 repeat: Infinity,
                 repeatType: "loop",
-                duration: 25,
+                // Doubled duration to 50s because we doubled the track length
+                duration: 50,
                 ease: "linear",
               },
             }}
           >
+            {/* 4 tracks ensure it fills ultrawide monitors before looping */}
+            <LogoTrack />
+            <LogoTrack />
             <LogoTrack />
             <LogoTrack />
           </motion.div>
 
           <motion.div
             className="flex w-max flex-nowrap"
-            animate={
-              isPaused
-                ? "paused"
-                : {
-                    x: ["-50%", "0%"],
-                  }
-            }
+            animate={{ x: ["-50%", "0%"] }}
             transition={{
               x: {
                 repeat: Infinity,
                 repeatType: "loop",
-                duration: 25,
+                duration: 50,
                 ease: "linear",
               },
             }}
           >
+            <LogoTrack />
+            <LogoTrack />
             <LogoTrack />
             <LogoTrack />
           </motion.div>
         </div>
       </div>
 
-      {/* Bottom Border (Not edge-to-edge) */}
+      {/* Bottom Border */}
       <div className="mx-auto w-full px-6 md:px-6">
         <div className="w-full border-b border-white/10" />
       </div>

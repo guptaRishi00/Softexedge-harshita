@@ -17,7 +17,7 @@ const testimonials = [
   },
   {
     quote:
-      "The level of technical excellence here is unmatched. Every day is an opportunity to learn something complex. We were struggling with massive latency spikes during peak traffic, and their engineering team came in and completely refactored our microservices. The sheer performance gains and robust infrastructure they delivered have given us total peace of mind.",
+      "The level of technical excellence here is unmatched. Every day is an opportunity to learn something complex. We were struggling with massive latency spikes during peak traffic, and their engineering team came in and completely refactored our microservices.",
     name: "Sarah Chen",
     role: "Sr. Backend Engineer",
     initials: "SC",
@@ -32,6 +32,7 @@ const testimonials = [
   {
     quote:
       "A rare combination of strong engineering and elite visual storytelling. The interface truly felt alive. In the AI space, making complex data models accessible to everyday users is incredibly difficult. SoftEXedge managed to take our dense, highly technical.",
+    name: "David Ross",
     role: "CEO · Aether AI",
     initials: "DR",
   },
@@ -54,32 +55,32 @@ export default function ExperimentalTestimonials() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-white py-12 text-zinc-900 md:py-20">
-      {/* CSS Keyframes for the continuous vertical marquee */}
+    <section className="relative overflow-hidden bg-white py-12 text-zinc-900 md:py-0">
+      {/* CSS Keyframes for the continuous horizontal marquee */}
       <style>{`
-        @keyframes scroll-y {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-50%); }
+        @keyframes scroll-x {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
         }
-        .animate-scroll-y {
-          animation: scroll-y 40s linear infinite;
+        .animate-scroll-x {
+          animation: scroll-x 40s linear infinite;
         }
-        .animate-scroll-y:hover {
+        .animate-scroll-x:hover {
           animation-play-state: paused;
         }
       `}</style>
 
       <div className="mx-auto flex w-full flex-col gap-12 px-6 lg:flex-row lg:items-start lg:gap-5">
-        {/* LEFT COLUMN: Title and CTA */}
+        {/* LEFT COLUMN: Title and CTA (Scaled Down) */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, margin: "-50px" }}
-          className="flex w-full shrink-0 flex-col lg:sticky lg:top-30 lg:h-[600px] lg:w-2/5"
+          className="flex w-full shrink-0 flex-col lg:sticky lg:top-30 lg:h-[450px] lg:w-1/3"
         >
           <div>
-            <h2 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-[5rem] lg:leading-[1.0]">
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl lg:leading-[1.1]">
               Voices of the <br />
               {/* Rotating Gradient Text */}
               <span className="inline-grid overflow-hidden py-1">
@@ -98,21 +99,20 @@ export default function ExperimentalTestimonials() {
               </span>
             </h2>
 
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-zinc-600">
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-zinc-600">
               Don't just take our word for it. Hear from the visionaries
               building our future every day. Don't just take our word for it.
               Hear from the visionaries building our future every day.
             </p>
 
-            <div className="mt-10 flex items-start">
-              {/* BUTTON ANIMATION UPDATED HERE */}
-              <button className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-4">
-                <span className="text-[18px] font-bold tracking-tight text-black transition-colors duration-300">
+            <div className="mt-8 flex items-start">
+              <button className="group flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-transparent bg-white pl-0 pr-2 transition-all duration-300 hover:border-black hover:pl-5 hover:pr-3">
+                <span className="text-base font-bold tracking-tight text-black transition-colors duration-300">
                   Connect With Us
                 </span>
 
-                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white transition-transform duration-300 ease-out group-hover:scale-90">
-                  {/* SVG Defs for the icon gradient */}
+                {/* Removed group-hover:scale-90 to stop the shrinking effect */}
+                <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
                   <svg width="0" height="0" className="absolute">
                     <defs>
                       <linearGradient
@@ -128,12 +128,9 @@ export default function ExperimentalTestimonials() {
                     </defs>
                   </svg>
 
-                  {/* Outgoing icon (stays white) */}
-                  <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
-
-                  {/* Incoming icon (gets the gradient) */}
+                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
                   <MdArrowOutward
-                    className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
                     style={{ fill: "url(#icon-grad)" }}
                   />
                 </div>
@@ -142,24 +139,20 @@ export default function ExperimentalTestimonials() {
           </div>
         </motion.div>
 
-        {/* RIGHT COLUMN: Vertical Marquee */}
-        <div className="relative h-[600px] w-full overflow-hidden md:h-[750px] lg:w-3/5">
-          {/* Fade Masks for seamless vertical scrolling illusion */}
-          {/* <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-white to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-12 bg-gradient-to-t from-white to-transparent" /> */}
-
+        {/* RIGHT COLUMN: Horizontal Marquee */}
+        <div className="relative flex h-[400px] w-full items-center overflow-hidden md:h-[500px] lg:w-[67%]">
           {/* Scrolling Container */}
-          <div className="animate-scroll-y flex flex-col gap-6 pb-6 pt-4">
+          <div className="animate-scroll-x flex w-max flex-row gap-6 px-4 py-6">
             {duplicatedTestimonials.map((item, index) => (
               <div
                 key={index}
-                className="group relative ml-auto flex min-h-[350px] w-[80%] shrink-0 flex-col justify-between rounded-3xl border border-white/5 bg-[#100F0F] p-8 shadow-sm transition-all hover:border-white/20 hover:bg-[#161515] hover:shadow-xl md:min-h-[420px] md:p-10"
+                className="group relative flex min-h-[320px] w-[320px] shrink-0 flex-col justify-between rounded-3xl border border-white/5 bg-[#100F0F] p-6 shadow-sm transition-all hover:border-white/20 hover:bg-[#161515] hover:shadow-xl md:min-h-[380px] md:w-[380px] md:p-8"
               >
                 {/* Outlined Quote Icon (Top Right) */}
-                <div className="absolute right-8 top-8 text-white/5 transition-colors group-hover:text-white/10">
+                <div className="absolute right-6 top-6 text-white/5 transition-colors group-hover:text-white/10 md:right-8 md:top-8">
                   <svg
-                    width="48"
-                    height="48"
+                    width="40"
+                    height="40"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -173,14 +166,14 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text */}
-                <p className="relative z-10 mt-10 max-w-[100%] text-xl font-medium leading-[1.5em] tracking-tight text-white md:text-2xl lg:text-xl">
+                <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.5em] tracking-tight text-white md:mt-8 md:text-xl lg:text-lg">
                   "{item.quote}"
                 </p>
 
                 {/* Bottom Profile */}
-                <div className="mt-10 flex items-center gap-4">
+                <div className="mt-6 flex items-center gap-4 md:mt-8">
                   {/* Avatar Placeholder */}
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-bold text-zinc-300">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-bold text-zinc-300 md:h-12 md:w-12">
                     {item.initials}
                   </div>
                   <div>
@@ -189,7 +182,7 @@ export default function ExperimentalTestimonials() {
                       {item.name}
                     </h4>
                     {/* Role */}
-                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-400">
+                    <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-zinc-400">
                       {item.role}
                     </p>
                   </div>

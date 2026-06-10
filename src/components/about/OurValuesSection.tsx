@@ -87,11 +87,11 @@ export default function OurValuesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: premiumEase }}
-          className="text-4xl md:text-5xl lg:text-[4.5rem] font-bold leading-tight tracking-tight text-white max-w-4xl"
+          className="text-4xl md:text-5xl lg:text-[6.5rem] font-bold leading-[0.9em] tracking-tighter text-white max-w-6xl"
         >
-          3 Core Values Driving <br />
-          <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
-            Our Digital Excellence
+          3 Core values driving <br />
+          <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+            our digital excellence
           </span>
         </motion.h2>
 
