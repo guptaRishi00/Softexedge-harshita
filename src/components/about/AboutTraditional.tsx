@@ -83,7 +83,7 @@ export default function AboutCinematic() {
             </span>
           </h2>
 
-          <p className="text-lg md:text-2xl text-zinc-400 leading-[1.2em] max-w-3xl font-regular">
+          <p className="text-lg md:text-lg text-zinc-400 leading-[1em] max-w-xl font-regular">
             Founded on the belief that technology and creativity should
             seamlessly intersect. We operate globally, partnering with visionary
             businesses to transform their digital presence.
@@ -118,36 +118,6 @@ export default function AboutCinematic() {
         </div>
 
         {/* --- PART 3: Full-width Stats Strip --- */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full mt-24 md:mt-32 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 py-16 relative px-6 md:px-12"
-        >
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className={cn(
-                "flex flex-col items-center text-center",
-                // Desktop: Adds consistent vertical dividers (including between 250 & 98)
-                index !== 0 &&
-                  "md:border-l md:border-t-0 border-white/10 md:pt-0",
-
-                (index === 1 || index === 3) && "border-l border-white/10",
-                // Mobile: Adds horizontal divider between the top row (10, 250) and bottom row (98, 40)
-                (index === 2 || index === 3) && "border-t border-white/10 pt-8",
-              )}
-            >
-              <h4 className="text-5xl md:text-6xl lg:text-8xl font-bold text-white mb-5 tracking-tighter">
-                <Counter value={stat.value} suffix={stat.suffix} />
-              </h4>
-              <p className="text-xs md:text-sm font-bold text-zinc-500 uppercase tracking-[0.2em]">
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </motion.div>
       </div>
     </section>
   );

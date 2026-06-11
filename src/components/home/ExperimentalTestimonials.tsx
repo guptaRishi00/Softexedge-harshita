@@ -70,26 +70,26 @@ export default function ExperimentalTestimonials() {
         }
       `}</style>
 
-      <div className="mx-auto flex w-full flex-col gap-12 px-6 lg:flex-row lg:items-start lg:gap-5">
+      <div className="mx-auto flex w-full flex-col gap-8 px-6 lg:flex-row lg:items-center lg:gap-4">
         {/* LEFT COLUMN: Title and CTA (Scaled Down) */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           viewport={{ once: true, margin: "-50px" }}
-          className="flex w-full shrink-0 flex-col lg:sticky lg:top-30 lg:h-[450px] lg:w-1/3"
+          className="flex w-full shrink-0 flex-col lg:sticky lg:top-30 lg:w-1/3"
         >
           <div>
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl lg:leading-[1.1]">
+            <h2 className="text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl lg:leading-[1.1]">
               Voices of the <br />
               {/* Rotating Gradient Text */}
-              <span className="inline-grid overflow-hidden py-1">
+              <span className="inline-grid overflow-hidden py-2">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={index}
-                    initial={{ y: 30, opacity: 0 }}
+                    initial={{ y: 40, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -30, opacity: 0 }}
+                    exit={{ y: -40, opacity: 0 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
                     className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
                   >
@@ -140,19 +140,19 @@ export default function ExperimentalTestimonials() {
         </motion.div>
 
         {/* RIGHT COLUMN: Horizontal Marquee */}
-        <div className="relative flex h-[400px] w-full items-center overflow-hidden md:h-[500px] lg:w-[67%]">
+        <div className="relative flex h-[460px] w-full items-center overflow-hidden md:h-[600px] lg:w-[67%]">
           {/* Scrolling Container */}
-          <div className="animate-scroll-x flex w-max flex-row gap-6 px-4 py-6">
+          <div className="animate-scroll-x flex w-max flex-row gap-4 px-4 py-6">
             {duplicatedTestimonials.map((item, index) => (
               <div
                 key={index}
-                className="group relative flex min-h-[320px] w-[320px] shrink-0 flex-col justify-between rounded-3xl border border-white/5 bg-[#100F0F] p-6 shadow-sm transition-all hover:border-white/20 hover:bg-[#161515] hover:shadow-xl md:min-h-[380px] md:w-[380px] md:p-8"
+                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-white/5 bg-[#100F0F] p-8 shadow-sm transition-all hover:border-white/20 hover:bg-[#161515] hover:shadow-xl md:min-h-[440px] md:w-[440px] md:p-10"
               >
                 {/* Outlined Quote Icon (Top Right) */}
                 <div className="absolute right-6 top-6 text-white/5 transition-colors group-hover:text-white/10 md:right-8 md:top-8">
                   <svg
-                    width="40"
-                    height="40"
+                    width="48"
+                    height="48"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -166,23 +166,23 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text */}
-                <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.5em] tracking-tight text-white md:mt-8 md:text-xl lg:text-lg">
+                <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.6em] tracking-tight text-white md:mt-8 md:text-xl lg:text-xl">
                   "{item.quote}"
                 </p>
 
                 {/* Bottom Profile */}
-                <div className="mt-6 flex items-center gap-4 md:mt-8">
+                <div className="mt-8 flex items-center gap-4 md:mt-10">
                   {/* Avatar Placeholder */}
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-bold text-zinc-300 md:h-12 md:w-12">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-bold text-zinc-300 md:h-14 md:w-14 md:text-base">
                     {item.initials}
                   </div>
                   <div>
                     {/* Name */}
-                    <h4 className="text-base font-bold text-white">
+                    <h4 className="text-lg font-bold text-white">
                       {item.name}
                     </h4>
                     {/* Role */}
-                    <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-zinc-400">
+                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-400 md:text-sm">
                       {item.role}
                     </p>
                   </div>

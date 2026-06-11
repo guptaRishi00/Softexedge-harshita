@@ -14,11 +14,8 @@ const valuesData = [
     title: "Relentless Innovation",
     subtitle: "Pushing digital boundaries",
     tag: "Focus",
-    points: [
-      "Forward-thinking brand strategies",
-      "Bleeding-edge technology adoption",
-      "Continuous digital evolution",
-    ],
+    description:
+      "We constantly push the boundaries of what is digitally possible by adopting bleeding-edge technologies and crafting forward-thinking brand strategies. Our commitment to continuous digital evolution ensures your business always remains steps ahead of the competition.",
   },
   {
     id: "v2",
@@ -27,11 +24,8 @@ const valuesData = [
     title: "Uncompromising Quality",
     subtitle: "Obsessive attention to detail",
     tag: "Standard",
-    points: [
-      "Pixel-perfect UI/UX design",
-      "Robust, scalable engineering",
-      "Rigorous performance testing",
-    ],
+    description:
+      "Our obsessive attention to detail drives us to deliver pixel-perfect UI/UX design alongside robust, scalable engineering. Every project is subjected to rigorous performance testing to guarantee a flawless, high-performing user experience from day one.",
   },
   {
     id: "v3",
@@ -40,11 +34,8 @@ const valuesData = [
     title: "Strategic Partnership",
     subtitle: "Your success is our success",
     tag: "Commitment",
-    points: [
-      "Transparent, open communication",
-      "Aligned business objectives",
-      "Long-term growth support",
-    ],
+    description:
+      "We operate as an extension of your team, championing transparent and open communication. By deeply aligning our strategies with your core business objectives, we provide the dedicated, long-term support necessary to fuel your sustainable growth.",
   },
 ];
 
@@ -90,7 +81,7 @@ export default function OurValuesSection() {
           className="text-4xl md:text-5xl lg:text-[6.5rem] font-bold leading-[0.9em] tracking-tighter text-white max-w-6xl"
         >
           3 Core values driving <br />
-          <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
             our digital excellence
           </span>
         </motion.h2>
@@ -125,10 +116,8 @@ export default function OurValuesSection() {
                 variants={cardVariants}
                 className="group relative flex h-full min-h-[460px] flex-col overflow-hidden rounded-[24px] border border-white/10 bg-zinc-950/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:border-white/20 hover:bg-zinc-900/90 lg:min-h-[480px] lg:p-10"
               >
-                {/* Large Background Number for depth */}
-
                 {/* Subtle hover glow effect in the corner */}
-                <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-gradient-to-br from-[#2E5BFF]/20 to-[#149CCB]/20 blur-3xl transition-all duration-700 group-hover:scale-150 group-hover:opacity-80 opacity-40 z-0" />
+                <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-linear-to-br from-[#2E5BFF]/20 to-[#149CCB]/20 blur-3xl transition-all duration-700 group-hover:scale-150 group-hover:opacity-80 opacity-40 z-0" />
 
                 <div className="relative z-10 flex flex-col h-full">
                   {/* Top content group */}
@@ -137,7 +126,7 @@ export default function OurValuesSection() {
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-white shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:bg-white/10">
                         <Icon className="h-6 w-6" strokeWidth={1.5} />
                       </div>
-                      <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-300 backdrop-blur-md">
+                      <span className="inline-flex rounded-xl border border-white/10 bg-white/5 px-4 py-3.5 text-[11px] font-bold uppercase tracking-widest text-zinc-300 backdrop-blur-md">
                         {value.tag}
                       </span>
                     </div>
@@ -145,31 +134,16 @@ export default function OurValuesSection() {
                     <h3 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
                       {value.title}
                     </h3>
-                    <p className="mt-3 text-sm font-medium leading-relaxed text-zinc-400 md:text-base">
+                    <p className="mt-3 text-sm font-medium leading-relaxed text-white/50 md:text-base">
                       {value.subtitle}
                     </p>
                   </div>
 
-                  {/* Bottom content group (Upgraded List) */}
+                  {/* Bottom content group (Detailed Description) */}
                   <div className="mt-auto pt-8">
-                    <ul className="flex flex-col gap-3">
-                      {value.points.map((point, i) => (
-                        <li
-                          key={i}
-                          className="group/item flex items-center gap-4 rounded-xl border border-white/5 bg-white/[0.02] p-3.5 transition-all duration-300 hover:bg-white/[0.06] hover:border-white/10 hover:translate-x-1"
-                        >
-                          {/* Custom Gradient Dash/Bullet */}
-                          <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] opacity-50 blur-[4px] transition-opacity duration-300 group-hover/item:opacity-100" />
-                            <div className="relative h-2 w-2 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]" />
-                          </div>
-
-                          <span className="text-sm font-medium leading-relaxed text-zinc-300 md:text-sm transition-colors duration-300 group-hover/item:text-white">
-                            {point}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                    <p className="text-sm font-medium leading-relaxed text-zinc-300 md:text-base transition-colors duration-300 group-hover:text-zinc-200">
+                      {value.description}
+                    </p>
                   </div>
                 </div>
               </motion.div>
