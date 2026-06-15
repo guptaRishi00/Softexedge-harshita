@@ -10,28 +10,28 @@ import { MdArrowOutward } from "react-icons/md";
 const testimonials = [
   {
     quote:
-      "SoftEXedge gives you the tools and the trust to build things you didn't think were possible at scale. Before partnering with them, our design system was disjointed and hard to maintain. They didn't just unify our components; they established a scalable.",
+      "SoftEXedge gives you the tools and the trust to build things you didn't think were possible at scale. Before partnering with them, our design system",
     name: "Alex Rivera",
     role: "Lead Product Designer",
     initials: "AR",
   },
   {
     quote:
-      "The level of technical excellence here is unmatched. Every day is an opportunity to learn something complex. We were struggling with massive latency spikes during peak traffic, and their engineering team came in and completely refactored our microservices.",
+      "The level of technical excellence here is unmatched. Every day is an opportunity to learn something complex. We were struggling ",
     name: "Sarah Chen",
     role: "Sr. Backend Engineer",
     initials: "SC",
   },
   {
     quote:
-      "They transformed a simple product into something people genuinely remember. The experience felt cinematic. From the fluid micro-interactions to the flawless typographic hierarchy, every single detail was meticulously crafted. They fundamentally understand.",
+      "They transformed a simple product into something people genuinely remember. The experience felt cinematic. From the fluid micro.",
     name: "Sophia Lin",
     role: "Creative Director",
     initials: "SL",
   },
   {
     quote:
-      "A rare combination of strong engineering and elite visual storytelling. The interface truly felt alive. In the AI space, making complex data models accessible to everyday users is incredibly difficult. SoftEXedge managed to take our dense, highly technical.",
+      "A rare combination of strong engineering and elite visual storytelling. The interface truly felt alive. In the AI space, making ",
     name: "David Ross",
     role: "CEO · Aether AI",
     initials: "DR",
@@ -80,18 +80,18 @@ export default function ExperimentalTestimonials() {
           className="flex w-full shrink-0 flex-col lg:sticky lg:top-30 lg:w-1/3"
         >
           <div>
-            <h2 className="text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl lg:leading-[1.1]">
+            <h2 className="text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl lg:leading-[0.9em]">
               Voices of the <br />
               {/* Rotating Gradient Text */}
               <span className="inline-grid overflow-hidden py-2">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={index}
-                    initial={{ y: 40, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -40, opacity: 0 }}
+                    initial={{ x: 40, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -40, opacity: 0 }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
+                    className="col-start-1 row-start-1 whitespace-nowrap bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
                   >
                     {rotatingWords[index]}
                   </motion.span>
@@ -99,7 +99,7 @@ export default function ExperimentalTestimonials() {
               </span>
             </h2>
 
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-zinc-600">
+            <p className="mt-5 max-w-sm text-md leading-[1.2em] text-zinc-600">
               Don't just take our word for it. Hear from the visionaries
               building our future every day. Don't just take our word for it.
               Hear from the visionaries building our future every day.
@@ -140,16 +140,16 @@ export default function ExperimentalTestimonials() {
         </motion.div>
 
         {/* RIGHT COLUMN: Horizontal Marquee */}
-        <div className="relative flex h-[460px] w-full items-center overflow-hidden md:h-[600px] lg:w-[67%]">
+        <div className="relative -mr-6 flex h-[460px] w-full items-center overflow-hidden md:h-[600px] lg:flex-1">
           {/* Scrolling Container */}
           <div className="animate-scroll-x flex w-max flex-row gap-4 px-4 py-6">
             {duplicatedTestimonials.map((item, index) => (
               <div
                 key={index}
-                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-white/5 bg-[#100F0F] p-8 shadow-sm transition-all hover:border-white/20 hover:bg-[#161515] hover:shadow-xl md:min-h-[440px] md:w-[440px] md:p-10"
+                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-black/5 bg-[#f4f4f5] p-8 shadow-sm transition-all hover:border-black/10 hover:bg-[#ececee] hover:shadow-xl md:min-h-[440px] md:w-[440px] md:p-10"
               >
                 {/* Outlined Quote Icon (Top Right) */}
-                <div className="absolute right-6 top-6 text-white/5 transition-colors group-hover:text-white/10 md:right-8 md:top-8">
+                <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
                   <svg
                     width="48"
                     height="48"
@@ -166,23 +166,23 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text */}
-                <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.6em] tracking-tight text-white md:mt-8 md:text-xl lg:text-xl">
+                <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.6em] tracking-tight text-zinc-900 md:mt-8 md:text-xl lg:text-xl">
                   "{item.quote}"
                 </p>
 
                 {/* Bottom Profile */}
                 <div className="mt-8 flex items-center gap-4 md:mt-10">
                   {/* Avatar Placeholder */}
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-bold text-zinc-300 md:h-14 md:w-14 md:text-base">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-black/10 bg-black/5 text-sm font-bold text-zinc-700 md:h-14 md:w-14 md:text-base">
                     {item.initials}
                   </div>
                   <div>
                     {/* Name */}
-                    <h4 className="text-lg font-bold text-white">
+                    <h4 className="text-lg font-bold text-zinc-900">
                       {item.name}
                     </h4>
                     {/* Role */}
-                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-400 md:text-sm">
+                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-500 md:text-sm">
                       {item.role}
                     </p>
                   </div>

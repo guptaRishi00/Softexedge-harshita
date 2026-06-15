@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import ConnectButton from "../shared/ConnectButton";
 import { ReactLenis } from "lenis/react";
 
@@ -12,7 +12,7 @@ const services = [
     description:
       "We don't just design logos; we architect complete brand ecosystems. By diving deep into market research and consumer psychology, we craft compelling narratives, crystal-clear positioning, and robust foundational strategies.",
     link: "/brand-strategy",
-    color: "bg-[#100F0F]",
+    color: "bg-black",
     tags: ["Market Research", "Positioning", "Visual Identity", "Messaging"],
     image:
       "https://images.unsplash.com/photo-1645658043538-fc2bb1702cfe?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGJyYW5kJTIwc3RyYXRlZ3l8ZW58MHx8MHx8fDA%3D",
@@ -23,7 +23,7 @@ const services = [
     description:
       "Our engineering and product teams collaborate to build immersive, high-performance digital experiences. From complex, enterprise-grade web applications to lightning-fast, scalable platforms.",
     link: "/services",
-    color: "bg-[#100F0F]",
+    color: "bg-black",
     tags: ["Web Apps", "SaaS Platforms", "Architecture", "API Integration"],
     image:
       "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGJyYW5kJTIwc3RyYXRlZ3l8ZW58MHx8MHx8fDA%3D",
@@ -34,7 +34,7 @@ const services = [
     description:
       "We bring digital interfaces to life through cinematic visual identities and purposeful motion design. By obsessing over user journeys, micro-interactions, and accessibility, we create frictionless experiences.",
     link: "/services",
-    color: "bg-[#100F0F]",
+    color: "bg-black",
     tags: ["User Research", "Wireframing", "Prototyping", "Interaction Design"],
     image:
       "https://images.unsplash.com/photo-1587440871875-191322ee64b0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8VUklMkZVWHxlbnwwfHwwfHx8MA%3D%3D",
@@ -45,7 +45,7 @@ const services = [
     description:
       "We engineer high-converting online storefronts tailored specifically for the modern digital consumer. By optimizing the entire purchasing funnel, we build robust e-commerce solutions.",
     link: "/services",
-    color: "bg-[#100F0F]",
+    color: "bg-black",
     tags: ["Shopify Plus", "Custom Storefronts", "CRO", "Payment Gateways"],
     image:
       "https://plus.unsplash.com/premium_photo-1683746792239-6ce8cdd3ac78?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGUlMjBjb21tZXJjZXxlbnwwfHwwfHx8MA%3D%3D",
@@ -53,24 +53,24 @@ const services = [
 ];
 
 export default function SubServices() {
-  const container = useRef(null);
-
-  const { scrollYProgress } = useScroll({
-    target: container,
-    offset: ["start start", "end end"],
-  });
+  const [hovered, setHovered] = useState<number | null>(null);
 
   return (
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
         {/* HEADER SECTION */}
-        <div className="mx-auto flex w-full flex-col items-start justify-between gap-6 px-6 py-20 md:flex-row md:items-start lg:px-12">
-          <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
-            Our{" "}
-            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
-              Services
+        <div className="mx-auto flex w-full flex-col items-start justify-between gap-6 px-6 py-20 md:flex-row md:items-end lg:px-12">
+          <div className="flex flex-col gap-5">
+            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+              What We Offer
             </span>
-          </h2>
+            <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
+              Our{" "}
+              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+                Services
+              </span>
+            </h2>
+          </div>
           <p className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:text-left">
             Delivering scalable, high-performance solutions that elevate brands
             and drive revenue.
@@ -78,15 +78,14 @@ export default function SubServices() {
         </div>
 
         {/* STACKING CARDS WRAPPER */}
-        <div ref={container} className="relative w-full">
+        <div className="relative w-full">
           {services.map((service, i) => (
             <Card
               key={i}
               i={i}
-              totalCards={services.length}
               {...service}
-              progress={scrollYProgress}
-              range={[i * 0.25, 1]}
+              hovered={hovered}
+              setHovered={setHovered}
             />
           ))}
 
@@ -107,7 +106,6 @@ export default function SubServices() {
 // --- ISOLATED CARD COMPONENT ---
 function Card({
   i,
-  totalCards,
   title1,
   title2,
   description,
@@ -115,26 +113,30 @@ function Card({
   link,
   color,
   image,
-  progress,
-  range,
+  hovered,
+  setHovered,
 }: any) {
-  // If it is the last card in the array, it NEVER fades out.
-  const isLastCard = i === totalCards - 1;
-  const targetOpacity = isLastCard ? 1 : 0.4;
-
-  const opacity = useTransform(progress, range, [1, targetOpacity]);
+  // Initially every card is normal; hovering one dims the others.
+  const isDimmed = hovered !== null && hovered !== i;
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: hover only toggles a decorative dim; the inner <a> provides the accessible/keyboard affordance
     <div
       className="sticky w-full"
       style={{
         // Pins the card exactly spaced by 130px to leave the previous titles showing
         top: `calc(5vh + ${i * 130}px)`,
+        // Later cards stack on top; fixed desktop height keeps earlier cards from poking through
+        zIndex: i,
       }}
+      onMouseEnter={() => setHovered(i)}
+      onMouseLeave={() => setHovered(null)}
     >
       <motion.div
-        style={{ opacity }}
-        className={`relative grid min-h-[50vh] w-full origin-top grid-cols-1 gap-12 border-t border-white/10 ${color} px-6 pb-24 pt-12 md:grid-cols-2 md:gap-16 lg:px-12`}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: isDimmed ? 0.25 : 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className={`relative grid min-h-[50vh] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-6 pb-24 pt-12 md:h-[600px] md:min-h-0 md:grid-cols-2 md:gap-16 lg:px-12`}
       >
         {/* LEFT COLUMN: Title, Description & Tags */}
         <div className="flex w-full flex-col gap-8 pr-4">
@@ -154,16 +156,12 @@ function Card({
           {tags && tags.length > 0 && (
             <div className="flex flex-wrap items-center gap-3 pt-2">
               {tags.map((tag: string, index: number) => (
-                <div
+                <span
                   key={index}
-                  className="rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] p-[1px]"
+                  className="rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm font-medium tracking-wide text-zinc-300 transition-colors hover:bg-white/10"
                 >
-                  <span
-                    className={`block rounded-full ${color} px-4 py-1.5 text-sm font-medium tracking-wide text-zinc-300 transition-all hover:brightness-125`}
-                  >
-                    {tag}
-                  </span>
-                </div>
+                  {tag}
+                </span>
               ))}
             </div>
           )}
@@ -176,7 +174,7 @@ function Card({
             <img
               src={image}
               alt={`${title1} ${title2}`}
-              className="h-full w-full object-cover opacity-80 transition-transform duration-500 hover:scale-105 hover:opacity-100"
+              className="h-full w-full object-cover opacity-80 transition-transform duration-500 hover:opacity-100"
             />
           )}
         </div>

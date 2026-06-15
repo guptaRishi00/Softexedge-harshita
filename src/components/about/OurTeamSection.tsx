@@ -81,7 +81,6 @@ export default function OurTeamSection() {
           plugins={[autoScroll.current]}
           className="w-full"
         >
-          {/* Header */}
           <div className="mb-12 flex flex-col items-start justify-between gap-6 md:mb-20 md:flex-row md:items-end lg:px-8">
             <div>
               <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-zinc-500">
@@ -102,17 +101,19 @@ export default function OurTeamSection() {
             </div>
           </div>
 
-          {/* Carousel */}
-          <CarouselContent className="-ml-4 md:-ml-6">
+          <CarouselContent className="-ml-2">
             {[...teamMembers, ...teamMembers].map((member, index) => (
               <CarouselItem
                 key={`${member.id}-${index}`}
-                className="pl-4 basis-[85%] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                className="pl-2 basis-[85%] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
               >
                 <div className="group relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] bg-zinc-100 border border-zinc-200/60 shadow-xs transition-all duration-500 hover:shadow-xl hover:shadow-zinc-200/40">
-                  {/* Top Content */}
-                  <div className="absolute top-0 inset-x-0 z-10 p-6 md:p-8 flex flex-col gap-1">
-                    <h3 className="text-xl font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-[#2E5BFF] md:text-2xl">
+                  <div className="absolute inset-x-0 bottom-0 z-0 h-40 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
+
+                  <div className="absolute inset-0 z-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
+
+                  <div className="absolute bottom-0 inset-x-0 z-10 p-6 md:p-8 flex flex-col gap-1 bg-black/50 backdrop-blur-sm translate-y-4 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 group-hover:opacity-100">
+                    <h3 className="text-xl font-bold tracking-tight text-white transition-colors duration-300 md:text-2xl">
                       {member.name}
                     </h3>
 
@@ -121,16 +122,11 @@ export default function OurTeamSection() {
                     </p>
                   </div>
 
-                  {/* Overlays */}
-                  <div className="absolute inset-x-0 top-0 z-0 h-32 bg-gradient-to-b from-black/80 via-black/30 to-transparent transition-opacity duration-500 group-hover:from-black/90" />
-
-                  <div className="absolute inset-0 z-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
-
                   <img
                     src={member.image}
                     alt={member.name}
                     loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] "
                   />
                 </div>
               </CarouselItem>

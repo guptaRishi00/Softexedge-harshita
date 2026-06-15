@@ -99,7 +99,7 @@ export default function AboutCinematic() {
               ease: "linear",
               repeat: Infinity,
             }}
-            className="flex w-max gap-4 md:gap-8 px-4"
+            className="flex w-max gap-4 md:gap-2 px-4"
           >
             {duplicatedImages.map((src, index) => (
               <div

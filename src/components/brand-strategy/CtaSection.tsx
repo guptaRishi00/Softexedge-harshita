@@ -65,8 +65,8 @@ export default function CtaSection() {
             className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden transition-opacity duration-500"
             style={{
               // This mask cuts a hole to reveal the pattern where the mouse is
-              WebkitMaskImage: useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
-              maskImage: useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
+              WebkitMaskImage: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
+              maskImage: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
             }}
           >
             <div
@@ -107,8 +107,8 @@ export default function CtaSection() {
             </div>
 
             {/* General Overlays to ensure pattern blends nicely */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black/80" />
-            <div className="pointer-events-none absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_center,transparent_0%,#000_100%)]" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-black/5 to-black/30" />
+            <div className="pointer-events-none absolute inset-0 opacity-25 bg-[radial-gradient(circle_at_center,transparent_0%,#000_100%)]" />
           </motion.div>
 
           {/* TEXT BLOCK-OUT LAYERS (Z-5) */}
