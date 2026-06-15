@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
 import ConnectButton from "../shared/ConnectButton";
 import { ReactLenis } from "lenis/react";
 
@@ -53,8 +51,6 @@ const services = [
 ];
 
 export default function SubServices() {
-  const [hovered, setHovered] = useState<number | null>(null);
-
   return (
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
@@ -80,13 +76,7 @@ export default function SubServices() {
         {/* STACKING CARDS WRAPPER */}
         <div className="relative w-full">
           {services.map((service, i) => (
-            <Card
-              key={i}
-              i={i}
-              {...service}
-              hovered={hovered}
-              setHovered={setHovered}
-            />
+            <Card key={i} i={i} {...service} />
           ))}
 
           {/* MAGIC TRICK: The Runway */}
@@ -113,14 +103,8 @@ function Card({
   link,
   color,
   image,
-  hovered,
-  setHovered,
 }: any) {
-  // Initially every card is normal; hovering one dims the others.
-  const isDimmed = hovered !== null && hovered !== i;
-
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: hover only toggles a decorative dim; the inner <a> provides the accessible/keyboard affordance
     <div
       className="sticky w-full"
       style={{
@@ -129,13 +113,8 @@ function Card({
         // Later cards stack on top; fixed desktop height keeps earlier cards from poking through
         zIndex: i,
       }}
-      onMouseEnter={() => setHovered(i)}
-      onMouseLeave={() => setHovered(null)}
     >
-      <motion.div
-        initial={{ opacity: 1 }}
-        animate={{ opacity: isDimmed ? 0.25 : 1 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+      <div
         className={`relative grid min-h-[50vh] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-6 pb-24 pt-12 md:h-[600px] md:min-h-0 md:grid-cols-2 md:gap-16 lg:px-12`}
       >
         {/* LEFT COLUMN: Title, Description & Tags */}
@@ -178,7 +157,7 @@ function Card({
             />
           )}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

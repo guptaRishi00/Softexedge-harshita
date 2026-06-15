@@ -35,18 +35,23 @@ export default function OurTechStack() {
     <section className="relative w-full overflow-hidden bg-black text-white">
       <div className="mx-auto w-full md:pb-25">
         <div className="mx-auto mb-20 flex flex-col items-start justify-between gap-6 px-6 md:flex-row md:items-start md:px-6">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            viewport={{ once: true }}
-            className="text-4xl font-bold leading-none tracking-tight text-white md:text-5xl lg:text-[5rem]"
-          >
-            Our Tech{" "}
-            <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
-              Stack
+          <div className="flex flex-col gap-5">
+            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+              Our Toolkit
             </span>
-          </motion.h2>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true }}
+              className="text-4xl font-bold leading-none tracking-tight text-white md:text-5xl lg:text-[5rem]"
+            >
+              Our Tech{" "}
+              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+                Stack
+              </span>
+            </motion.h2>
+          </div>
 
           <motion.p
             initial={{ opacity: 0 }}

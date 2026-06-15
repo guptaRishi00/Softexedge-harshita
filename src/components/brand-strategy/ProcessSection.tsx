@@ -43,18 +43,23 @@ export default function ProcessSection() {
       <div className="mx-auto w-full px-6 md:px-6">
         {/* Header Section */}
         <div className="mb-16 flex flex-col items-start justify-between gap-6 md:mb-35 md:flex-row md:items-start">
-          <motion.h2
-            initial={{ opacity: 0, y: -10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="text-4xl font-bold leading-none tracking-tighter text-white md:text-[5rem]"
-          >
-            Our{" "}
-            <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
-              Process
+          <div className="flex flex-col gap-5">
+            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+              How We Work
             </span>
-          </motion.h2>
+            <motion.h2
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="text-4xl font-bold leading-none tracking-tighter text-white md:text-[5rem]"
+            >
+              Our{" "}
+              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
+                Process
+              </span>
+            </motion.h2>
+          </div>
 
           <motion.p
             initial={{ opacity: 0 }}

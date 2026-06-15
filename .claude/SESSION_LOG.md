@@ -97,3 +97,24 @@
 - Verified: `npx tsc --noEmit` clean; biome on the file shows only the 4
   pre-existing findings (noExplicitAny, noImgElement, 2× array-index key),
   unchanged from before — no new issues introduced.
+
+## 2026-06-15 — SubServices: drop hover-dim, cards always full opacity
+- Per follow-up, removed the hover-driven opacity entirely (it read as buggy on
+  the black-on-black stack). Cards are now always opacity 100.
+- Removed `hovered` useState + props, `isDimmed`, the wrapper's
+  onMouseEnter/Leave + its biome-ignore, and the framer-motion usage
+  (`motion.div` → plain `div`, dropped the `framer-motion` and `useState`
+  imports). Stacking (sticky + zIndex + uniform desktop height) and all styling
+  unchanged.
+- Verified: `npx tsc --noEmit` clean; biome shows only the 4 pre-existing
+  findings — the prior `noStaticElementInteractions` (and its suppression) are gone.
+
+## 2026-06-15 — Eyebrow tags on Process / Tech Stack / Projects
+- Replicated the SubServices eyebrow tag (wrap title in `flex flex-col gap-5`
+  with a plain `span` `text-xs uppercase tracking-[0.25em] text-white/60`) in
+  three brand-strategy sections:
+  - `ProcessSection.tsx` → "How We Work" above "Our Process"
+  - `OurTechStack.tsx` → "Our Toolkit" above "Our Tech Stack"
+  - `ProjectShowcase.tsx` → "Selected Work" above "Our Projects"
+- Verified: `npx tsc --noEmit` clean; biome shows only pre-existing findings
+  (img elements, array-index keys) — the added div+span introduce none.
