@@ -57,7 +57,7 @@ export default function AboutCinematic() {
   const duplicatedImages = [...premiumImages, ...premiumImages];
 
   return (
-    <section className="relative w-full bg-black py-32 md:py-48 font-sans overflow-hidden text-white">
+    <section className="relative w-full bg-black py-12 md:py-20 font-sans overflow-hidden text-white">
       {/* Background Noise for texture */}
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay pointer-events-none" />
 
@@ -83,10 +83,11 @@ export default function AboutCinematic() {
             </span>
           </h2>
 
-          <p className="text-lg md:text-lg text-zinc-400 leading-[1em] max-w-xl font-regular">
+          <p className="max-w-3xl text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
             Founded on the belief that technology and creativity should
             seamlessly intersect. We operate globally, partnering with visionary
-            businesses to transform their digital presence.
+            businesses to transform their digital presence. Founded on the
+            belief that technology and.
           </p>
         </motion.div>
 

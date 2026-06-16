@@ -64,7 +64,7 @@ export default function BlogSection() {
 
   // Card list component to render identical tracks
   const CardTrack = () => (
-    <div className="flex shrink-0 gap-4 md:gap-8 lg:gap-5">
+    <div className="flex shrink-0 gap-4 md:gap-3">
       {blogPosts.map((post) => (
         <div
           key={post.id}
@@ -148,7 +148,7 @@ export default function BlogSection() {
         <div className="relative w-full overflow-hidden">
           {/* Main animated element container holding two identical tracks */}
           <motion.div
-            className="flex w-max flex-nowrap gap-4 md:gap-6 lg:gap-3"
+            className="flex w-max flex-nowrap gap-4 md:gap-3"
             animate={
               isPaused
                 ? "paused"

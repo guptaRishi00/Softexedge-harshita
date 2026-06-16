@@ -59,8 +59,8 @@ export default function ExperimentalTestimonials() {
       {/* CSS Keyframes for the continuous horizontal marquee */}
       <style>{`
         @keyframes scroll-x {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
         }
         .animate-scroll-x {
           animation: scroll-x 40s linear infinite;
@@ -142,11 +142,11 @@ export default function ExperimentalTestimonials() {
         {/* RIGHT COLUMN: Horizontal Marquee */}
         <div className="relative -mr-6 flex h-[460px] w-full items-center overflow-hidden md:h-[600px] lg:flex-1">
           {/* Scrolling Container */}
-          <div className="animate-scroll-x flex w-max flex-row gap-4 px-4 py-6">
+          <div className="animate-scroll-x flex w-max flex-row gap-4 px-4 py-6 md:gap-3">
             {duplicatedTestimonials.map((item, index) => (
               <div
                 key={index}
-                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-black/5 bg-[#f4f4f5] p-8 shadow-sm transition-all hover:border-black/10 hover:bg-[#ececee] hover:shadow-xl md:min-h-[440px] md:w-[440px] md:p-10"
+                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-black/5 bg-[#edeef2] p-8 shadow-sm transition-all hover:border-black/10 hover:bg-[#e4e6ec] hover:shadow-xl md:min-h-[440px] md:w-[440px] md:p-10"
               >
                 {/* Outlined Quote Icon (Top Right) */}
                 <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
@@ -166,7 +166,7 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text */}
-                <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.6em] tracking-tight text-zinc-900 md:mt-8 md:text-xl lg:text-xl">
+                <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.2em] tracking-tight text-zinc-900 md:mt-8 md:text-xl lg:text-xl">
                   "{item.quote}"
                 </p>
 

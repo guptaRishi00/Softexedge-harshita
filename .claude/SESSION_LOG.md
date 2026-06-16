@@ -118,3 +118,169 @@
   - `ProjectShowcase.tsx` → "Selected Work" above "Our Projects"
 - Verified: `npx tsc --noEmit` clean; biome shows only pre-existing findings
   (img elements, array-index keys) — the added div+span introduce none.
+
+## 2026-06-16 — AboutHeroSection carousel images: landscape + wider gap
+- `about/AboutHeroSection.tsx` (`EdgeToEdgeCarousel`): images were portrait
+  (`w-[78px] h-[100px]`, `md:w-[108px] md:h-[140px]`). Widened to landscape
+  rectangles (~3:2, heights kept): `w-[150px]` / `md:w-[210px]`. Increased the
+  inter-image gap `mr-3 md:mr-1` → `mr-4 md:mr-3`. Marquee loop (`x: 0→-50%` over
+  duplicated set) unaffected — spacing is per-item and consistent.
+- Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-16 — AboutHeroSection carousel: slower, smoother
+- `about/AboutHeroSection.tsx` (`EdgeToEdgeCarousel`): slowed the marquee
+  `duration: 40` → `65`. Kept `ease: "linear"` (correct for an infinite loop —
+  easing would pulse speed at the 0→-50% boundary). Slower constant speed reads
+  as smoother/calmer.
+- Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-16 — AboutHero: word-by-word headline, then split
+- `about/AboutHeroSection.tsx`: both headlines previously animated as whole
+  lines. Split each into words (`LINE_ONE`, `LINE_TWO`) rendered as staggered
+  `motion.span`s (`WORD_STAGGER = 0.18`, blur+y reveal), so words appear one by
+  one across both lines (line 2 continues line 1's index). Pushed `SPLIT_DELAY`
+  1.4 → 1.7 so the carousel split opens only after the last word (~1.52s) lands.
+  Gradient kept per-word on line 2 (`digital`, `excellence.`).
+- Verified: `npx tsc --noEmit` clean; biome shows only pre-existing findings
+  (word spans use `key={word}`, no new issues).
+
+## 2026-06-16 — About page: uniform section spacing
+- Goal: equal y-axis gap between every section on `/about`. Sections render
+  flush, so gap = pb(prev)+pt(next); equalised by giving every section the same
+  top+bottom padding token: `py-16 md:py-24`.
+- About-only sections edited directly (safe — about-only):
+  - `AboutTraditional` `py-32 md:py-48` → `py-16 md:py-24`
+  - `OurValuesSection` header `pt-24` → `pt-16 md:pt-24`; cards `pb-32` → `pb-16 md:pb-24`
+  - `OurTeamSection` `py-20 md:pt-32` → `py-16 md:py-24`
+  - `AboutHeroSection` stats `py-16` → `py-16 md:py-24` (matches hero→next gap)
+- Shared sections (Testimonials, CtaSection, FaqSection, BlogSection — used on
+  other pages, must not edit internals) get the same padding FORCED from the
+  about page via a child-override wrapper: `[&>section]:py-16 md:[&>section]:py-24`
+  (descendant selector outspecifies the section's own `py-*`). Keeps /home,
+  /brand-strategy, /contact unaffected.
+- Page wrappers normalised: Trusted By `py-12 md:pt-0` → `py-16 md:py-24`;
+  CTA/Footer `p-3` → `px-3` (frame) + consistent vertical (`[&>section]` / `pt`).
+- Verified: `npx tsc --noEmit` clean; biome only pre-existing findings. NOTE:
+  not visually verified — the `[&>section]` override is page-scoped Tailwind v4.
+
+## 2026-06-16 — About page: reduce uniform gap
+- Per follow-up, reduced the spacing token `py-16 md:py-24` → `py-12 md:py-20`
+  (48px/80px) across all the same spots (about-only sections, Trusted By,
+  shared-section `[&>section]` overrides, footer wrapper). Still uniform.
+- Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-16 — AboutHero line two: single continuous gradient
+- Mapping line two per-word gave each word its own gradient (discontinuous).
+  Reverted line two to one `motion.h1` with a single gradient span across
+  "digital excellence." (whole-line reveal, delayed after line one's words).
+  Removed the now-unused `LINE_TWO` const. Line one stays word-by-word.
+- Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-16 — About page: tighten lower-cluster gaps
+- Testimonials + Trusted By/LogoCarousel were already reduced to `md:py-10` (by
+  user). Brought CtaSection and FaqSection wrappers down to match:
+  `md:[&>section]:py-20` → `md:[&>section]:py-10`. Now Testimonials → LogoCarousel
+  → CTA → FAQ all use `py-12 md:py-10`, so the gaps between them are small/even.
+  (Blog/Footer still `md:py-20`/`md:pt-20`.)
+- Verified: `npx tsc --noEmit` clean.
+- Follow-up: reduced those four further `py-12 md:py-10` → `py-8 md:py-6`.
+- Follow-up: increased only the LogoCarousel→CTA gap by raising the Trusted By
+  section's bottom padding `py-8 md:py-6` → `pt-8 pb-16 md:pt-6 md:pb-16` (top
+  kept, so Testimonials→LogoCarousel and CTA→FAQ gaps unchanged).
+
+## 2026-06-16 — ExperimentalTestimonials card bg more distinct
+- Card bg `bg-[#f4f4f5]` was nearly identical to the white section bg. Bumped to
+  a softer off-white `bg-[#edeef2]` (hover `#ececee`→`#e4e6ec`) so cards
+  differentiate from the white background while staying light/whitish. Shared
+  component → applies on all pages that use it.
+- Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-16 — About page: card gaps match hero image gap
+- Hero image gap (reference) = `mr-4 md:mr-3` (16/12px) → target `gap-4 md:gap-3`.
+- Normalised about-only card grids to match:
+  - `OurValuesSection` value cards: `gap-6 lg:gap-8` → `gap-4 md:gap-3`
+  - `OurTeamSection` Embla carousel: `-ml-2`/`pl-2` (8px) → `-ml-4 md:-ml-3` /
+    `pl-4 md:pl-3` (16/12px)
+- Left shared card components (ExperimentalTestimonials, BlogSection) unchanged —
+  their card gaps live inside components used on other pages; flagged for the user.
+- Verified: `npx tsc --noEmit` clean.
+- Follow-up (user approved): aligned the shared card gaps too (GLOBAL — affects
+  /home, /brand-strategy, /contact as well):
+  - `ExperimentalTestimonials` marquee `gap-4` → `gap-4 md:gap-3`
+  - `BlogSection` card track `gap-4 md:gap-8 lg:gap-5` → `gap-4 md:gap-3` AND the
+    track-to-track marquee gap `gap-4 md:gap-6 lg:gap-3` → `gap-4 md:gap-3` (kept
+    equal so the infinite scroll stays seamless).
+- Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-16 — OurValuesSection: new icons
+- Swapped the three value-card icons (lucide-react, no new dep): `Zap`→`Rocket`
+  (Relentless Innovation), `Shield`→`Gem` (Uncompromising Quality),
+  `Handshake`→`HeartHandshake` (Strategic Partnership). Updated import + the
+  `valuesData` icon refs.
+- Verified: `npx tsc --noEmit` clean; no stray old icon refs.
+
+## 2026-06-17 — Reverse marquee/carousel direction (left→right)
+- `ExperimentalTestimonials`: reversed the `scroll-x` keyframe from
+  `translateX(0)→-50%` to `translateX(-50%)→0` so cards move left→right
+  (still seamless via the duplicated set; hover-pause unaffected). Shared
+  component → applies on all pages using it.
+- `OurTeamSection`: added `direction: "backward"` to the embla
+  `AutoScroll({...})` plugin (option confirmed in v8.6.0 types) so the team
+  carousel scrolls left→right.
+- Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — About page: consistent section-description style
+- Unified the two about-only section descriptions (both on black bg) to one
+  style: `max-w-2xl text-lg font-light leading-[1.4em] text-white/70 md:text-xl`.
+  - `AboutTraditional`: was `text-lg md:text-lg text-zinc-400 leading-[1.2em]
+    max-w-4xl font-regular` (note `font-regular` is a no-op in Tailwind).
+  - `OurValuesSection`: only `font-regular` → `font-light` (rest already matched).
+- Left shared-component descriptions (ExperimentalTestimonials left column,
+  CTA subtext) alone — different bg/narrow-column layout + used on other pages.
+- Verified: `npx tsc --noEmit` clean.
+- Follow-up: reduced description leading `leading-[1.4em]` → `leading-[1.2em]`
+  on both (AboutTraditional, OurValuesSection).
+
+## 2026-06-17 — Redesigned ContactHeroSection (/build)
+- Rewrote `src/components/contact/ContactHeroSection.tsx` — new, more premium
+  hero, design language pulled from across the project:
+  - Brand gradient `#2E5BFF→#149CCB`, `premiumEase [0.16,1,0.3,1]`, eyebrow badge,
+    framer-motion staggered entrance, dark card over light `#FAFAFA`, shared `Header`.
+  - Split layout: LEFT = pulsing "Available for new projects" badge, big gradient
+    headline ("Let's build what's next."), subline, dual CTAs (Start a project /
+    Book a call), and an "Under 2 hours" response-time trust signal. RIGHT =
+    interactive dark "Reach us directly" card with a **mouse-follow brand
+    spotlight** (callback to CtaSection's `useMotionTemplate` technique), animated
+    contact-channel rows (email/call/visit) with hover arrows, and social pills.
+  - Background = CSS faint grid (radial-masked) + two soft brand-glow blobs — no
+    reliance on the missing `/noise.png`; inline decorative SVG icons (aria-hidden).
+  - No new deps. One scoped biome-ignore for the decorative onMouseMove card.
+- Built inline (no subagents — single-component design, context already in hand).
+- Verified: `npx tsc --noEmit` clean; `biome check` clean on the file;
+  `next build` ✓ — /contact prerendered static, no errors.
+
+## 2026-06-17 — ContactHeroSection: strip bg + gradient effects
+- Per follow-up, removed from ContactHeroSection:
+  - the boxy CSS grid background + the two brand-glow blur blobs (whole bg div);
+  - the card's mouse-follow gradient spotlight (and its `useMotionValue` /
+    `useMotionTemplate` / `handleMove` logic + now-unused imports + biome-ignore);
+  - the card's static corner glow.
+  - Kept the headline's brand text gradient (not a bg/hover effect).
+- Card is now a flat dark panel on plain `#FAFAFA`; layout/content unchanged.
+- Verified: `npx tsc --noEmit` clean; `biome check` clean; no leftover
+  spotlight/glow/grid refs.
+
+## 2026-06-17 — ContactHeroSection rebuilt in StrategyHeroSection mold
+- Rewrote ContactHeroSection to mirror `brand-strategy/StrategyHeroSection`:
+  centered full-screen white hero, `zinc-100` glow blob, absolute `Header`,
+  gradient-text eyebrow ("Say hello"), giant word-staggered headline with the
+  rotating image that "splits" open between words after the stagger completes
+  (`onAnimationComplete` → `isExpanded`), and a bottom strip.
+  - Headline: "Get In [img] Touch" / "Let's Work Together" (contact copy, short
+    words to fit the 135px type, same 2+img+1 / 3-word structure as the ref).
+  - Bottom strip = contact-info row (Email / Phone / Studio) instead of the
+    ref's `AgencyStats` (contact-appropriate), same placement.
+- Same conventions as the ref: framer stagger variants, `ease [0.16,1,0.3,1]`,
+  `bg-linear-to-r` gradient, raw `<img>` rotator (matches StrategyHero/AboutHero).
+- Verified: `npx tsc --noEmit` clean; `biome` only the project-wide
+  `noImgElement` (same as the reference hero); `next build` ✓ /contact static.

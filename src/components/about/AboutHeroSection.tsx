@@ -26,7 +26,10 @@ const stats = [
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
 const APPEAR_DELAY = 0.1;
-const SPLIT_DELAY = 1.4;
+const WORD_STAGGER = 0.18;
+const LINE_ONE = ["The", "minds", "behind"];
+// Split opens only after every word has appeared one by one
+const SPLIT_DELAY = 1.7;
 
 function Counter({ value, suffix }: { value: number; suffix: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -76,14 +79,14 @@ function EdgeToEdgeCarousel({ images }: { images: string[] }) {
           repeat: Infinity,
           repeatType: "loop",
           ease: "linear",
-          duration: 40,
+          duration: 65,
         }}
       >
         {[...set, ...set].map((src, idx) => (
           <div
             key={idx}
             aria-hidden={idx >= set.length}
-            className="relative h-[100px] w-[78px] shrink-0 overflow-hidden rounded-lg mr-3 md:mr-1 md:h-[140px] md:w-[108px] shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+            className="relative h-[100px] w-[150px] shrink-0 overflow-hidden rounded-lg mr-4 md:mr-3 md:h-[140px] md:w-[210px] shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
           >
             <img
               src={src}
@@ -108,14 +111,23 @@ export default function AboutHeroSection() {
 
       {/* Changed py-32 to pt-48 pb-32 md:pt-56 to add extra space between the header and the content */}
       <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 pt-48 pb-32 md:pt-50 text-center md:px-10">
-        <motion.h1
-          initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.9, delay: APPEAR_DELAY, ease: premiumEase }}
-          className="text-[3rem] font-bold leading-[1.05] tracking-tight text-zinc-900 sm:text-6xl md:text-7xl lg:text-[6rem]"
-        >
-          The minds behind
-        </motion.h1>
+        <h1 className="text-[3rem] font-bold leading-[1.05] tracking-tight text-zinc-900 sm:text-6xl md:text-7xl lg:text-[6rem]">
+          {LINE_ONE.map((word, i) => (
+            <motion.span
+              key={word}
+              initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{
+                duration: 0.7,
+                delay: APPEAR_DELAY + i * WORD_STAGGER,
+                ease: premiumEase,
+              }}
+              className="mr-[0.25em] inline-block"
+            >
+              {word}
+            </motion.span>
+          ))}
+        </h1>
 
         <motion.div
           initial={{ height: 0, opacity: 0 }}
@@ -149,18 +161,18 @@ export default function AboutHeroSection() {
             initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{
-              duration: 0.9,
-              delay: APPEAR_DELAY + 0.12,
+              duration: 0.7,
+              delay: APPEAR_DELAY + LINE_ONE.length * WORD_STAGGER,
               ease: premiumEase,
             }}
             className="text-[3rem] font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-[6rem]"
           >
-            <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pb-5 text-transparent">
               digital excellence.
             </span>
           </motion.h1>
 
-          <motion.p
+          {/* <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -172,7 +184,7 @@ export default function AboutHeroSection() {
           >
             Softexedge is a premier digital marketing agency driving growth,
             innovation, and impactful brand strategies.
-          </motion.p>
+          </motion.p> */}
         </div>
       </div>
 
@@ -181,7 +193,7 @@ export default function AboutHeroSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-        className="relative z-10 grid w-full grid-cols-2 gap-8 px-6 py-16 md:grid-cols-4 md:gap-4 md:px-12"
+        className="relative z-10 grid w-full grid-cols-2 gap-8 px-6 py-12 md:grid-cols-4 md:gap-4 md:px-12 md:py-20"
       >
         {stats.map((stat, index) => (
           <div

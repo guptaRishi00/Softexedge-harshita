@@ -1,14 +1,14 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import { Zap, Shield, Handshake } from "lucide-react";
+import { Rocket, Gem, HeartHandshake } from "lucide-react";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
 const valuesData = [
   {
     id: "v1",
-    icon: Zap,
+    icon: Rocket,
     title: "Relentless Innovation",
     subtitle: "Pushing digital boundaries",
     tag: "Focus",
@@ -17,7 +17,7 @@ const valuesData = [
   },
   {
     id: "v2",
-    icon: Shield,
+    icon: Gem,
     title: "Uncompromising Quality",
     subtitle: "Obsessive attention to detail",
     tag: "Standard",
@@ -26,7 +26,7 @@ const valuesData = [
   },
   {
     id: "v3",
-    icon: Handshake,
+    icon: HeartHandshake,
     title: "Strategic Partnership",
     subtitle: "Your success is our success",
     tag: "Commitment",
@@ -69,7 +69,7 @@ export default function OurValuesSection() {
       </div>
 
       {/* Top Header Section */}
-      <div className="relative z-10 flex flex-col items-center px-6 pt-24 text-center">
+      <div className="relative z-10 flex flex-col items-center px-6 pt-12 text-center md:pt-20">
         <motion.span
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -98,7 +98,7 @@ export default function OurValuesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-          className="mt-6 max-w-2xl text-lg font-regular leading-[1.4em] text-white/70 md:text-xl"
+          className="mt-6 max-w-2xl text-lg font-light leading-[1.2em] text-white/70 md:text-xl"
         >
           Guiding our decisions, shaping our products, and fueling your success
           across every project we undertake.
@@ -106,13 +106,13 @@ export default function OurValuesSection() {
       </div>
 
       {/* Cards Section */}
-      <div className="relative z-20 mx-auto mt-16 w-full max-w-[1400px] px-6 pb-32 md:mt-20 lg:mt-24">
+      <div className="relative z-20 mx-auto mt-16 w-full max-w-[1400px] px-6 pb-12 md:mt-20 md:pb-20 lg:mt-24">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-3 lg:gap-8"
+          className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3 md:gap-3"
         >
           {valuesData.map((value) => {
             const Icon = value.icon;

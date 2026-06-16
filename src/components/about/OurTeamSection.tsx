@@ -60,6 +60,7 @@ export default function OurTeamSection() {
   const autoScroll = useRef(
     AutoScroll({
       speed: 1.2,
+      direction: "backward",
       playOnInit: true,
       stopOnInteraction: false,
       stopOnMouseEnter: true,
@@ -69,7 +70,7 @@ export default function OurTeamSection() {
   return (
     <section
       id="team"
-      className="w-full bg-white py-20 text-zinc-900 md:pt-32 overflow-hidden"
+      className="w-full bg-white py-12 text-zinc-900 md:py-20 overflow-hidden"
     >
       <div className="mx-auto w-full px-6 md:px-10 lg:px-3">
         <Carousel
@@ -101,11 +102,11 @@ export default function OurTeamSection() {
             </div>
           </div>
 
-          <CarouselContent className="-ml-2">
+          <CarouselContent className="-ml-4 md:-ml-3">
             {[...teamMembers, ...teamMembers].map((member, index) => (
               <CarouselItem
                 key={`${member.id}-${index}`}
-                className="pl-2 basis-[85%] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                className="pl-4 md:pl-3 basis-[85%] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
               >
                 <div className="group relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] bg-zinc-100 border border-zinc-200/60 shadow-xs transition-all duration-500 hover:shadow-xl hover:shadow-zinc-200/40">
                   <div className="absolute inset-x-0 bottom-0 z-0 h-40 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />

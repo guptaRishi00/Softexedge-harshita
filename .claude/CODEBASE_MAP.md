@@ -55,7 +55,7 @@ All routes are public (static marketing pages, no auth anywhere).
 |---|---|---|---|---|
 | Home (redirect) | Route | `src/app/page.tsx:3` | public | Redirects `/` → `/home` |
 | HomePage | Route | `src/app/home/page.tsx:31` | public | Main landing: hero, logos, about, portfolio, stats, services, testimonials, contact, blog |
-| AboutPage | Route | `src/app/about/page.tsx:20` | public | About: hero, traditional, values, team, testimonials, FAQ, CTA |
+| AboutPage | Route | `src/app/about/page.tsx:28` | public | About: hero, traditional, values, team, testimonials (+LogoCarousel), FAQ, CTA |
 | BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:16` | public | Service page: hero, sub-services, process, tech stack, showcase, FAQ, blog |
 | ContactPage | Route | `src/app/contact/page.tsx:11` | public | Contact: hero, contact, testimonials, FAQ, CTA |
 

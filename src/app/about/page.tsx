@@ -48,13 +48,15 @@ export default function AboutPage({}: Props) {
     { node: <SiVercel />, title: "Vercel", href: "https://vercel.com" },
   ];
   return (
-    <div>
+    <div className="bg-white">
       <AboutHeroSection />
       <AboutTraditional />
       <OurValuesSection />
       <OurTeamSection />
-      <ExperimentalTestimonials />
-      <section className="flex w-full flex-col items-center gap-6 overflow-hidden bg-white py-12 md:pt-0">
+      <div className="[&>section]:py-8 md:[&>section]:py-6">
+        <ExperimentalTestimonials />
+      </div>
+      <section className="flex w-full flex-col items-center gap-6 overflow-hidden bg-white pt-8 pb-16 md:pt-6 md:pb-16">
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-black/40">
           Trusted By
         </p>
@@ -64,12 +66,16 @@ export default function AboutPage({}: Props) {
           ariaLabel="Technology partners"
         />
       </section>
-      <div className="p-3">
+      <div className="px-3 [&>section]:py-8 md:[&>section]:py-6">
         <CtaSection />
       </div>
-      <FaqSection />
-      <BlogSection />
-      <div className="p-3">
+      <div className="[&>section]:py-8 md:[&>section]:py-6">
+        <FaqSection />
+      </div>
+      <div className="[&>section]:py-12 md:[&>section]:py-20">
+        <BlogSection />
+      </div>
+      <div className="px-3 pt-12 pb-3 md:pt-20">
         <Footer />
       </div>
     </div>
