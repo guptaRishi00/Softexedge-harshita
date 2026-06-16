@@ -1,61 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { motion, useInView, animate } from "framer-motion";
-import { cn } from "@/lib/utils";
-
-// --- Sub-component: Animated Counter ---
-function Counter({ value, suffix = "" }: { value: number; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
-
-  useEffect(() => {
-    if (!isInView) return;
-
-    const controls = animate(0, value, {
-      duration: 2,
-      ease: [0.16, 1, 0.3, 1], // Premium easing
-      onUpdate: (latest) => {
-        if (ref.current) {
-          // Only update the number part
-          ref.current.textContent = Math.floor(latest).toString();
-        }
-      },
-    });
-
-    return () => controls.stop();
-  }, [value, isInView]);
-
-  return (
-    <span className="inline-flex items-center">
-      <span ref={ref}>0</span>
-      {suffix && (
-        <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent pr-1">
-          {suffix}
-        </span>
-      )}
-    </span>
-  );
-}
+import { motion } from "framer-motion";
 
 export default function AboutCinematic() {
-  const stats = [
-    { value: 10, suffix: "+", label: "Years Experience" },
-    { value: 250, suffix: "+", label: "Projects Completed" },
-    { value: 98, suffix: "%", label: "Client Satisfaction" },
-    { value: 40, suffix: "+", label: "Team Members" },
-  ];
-
-  const premiumImages = [
-    "https://images.unsplash.com/photo-1513682121497-80211f36a7d3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cGVvcGxlfGVufDB8fDB8fHww",
-    "https://plus.unsplash.com/premium_photo-1683120751955-3d7c14887ac8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mzd8fG9mZmljZXxlbnwwfHwwfHx8MA%3D%3D",
-    "https://plus.unsplash.com/premium_photo-1683121489634-5d3f7892a6fe?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTN8fG9mZmljZXxlbnwwfHwwfHx8MA%3D%3D",
-    "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?q=80&w=1200&auto=format&fit=crop",
-  ];
-
-  // Duplicate the array to create a perfect, seamless horizontal loop
-  const duplicatedImages = [...premiumImages, ...premiumImages];
-
   return (
     <section className="relative w-full bg-black py-12 md:py-20 font-sans overflow-hidden text-white">
       {/* Background Noise for texture */}
@@ -91,34 +38,45 @@ export default function AboutCinematic() {
           </p>
         </motion.div>
 
-        {/* --- PART 2: Full-Bleed Horizontal Image Carousel --- */}
-        <div className="relative w-full mt-24 md:mt-32 overflow-hidden flex items-center">
-          <motion.div
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{
-              duration: 30, // Adjust speed here (higher is slower)
-              ease: "linear",
-              repeat: Infinity,
+        {/* --- PART 2: Cinematic Video, clip-path framed --- */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 mt-20 w-full max-w-7xl px-6 md:mt-28 md:px-12"
+        >
+          <div
+            className="group relative aspect-video w-full overflow-hidden bg-zinc-900"
+            style={{
+              // Chamfered top-left & bottom-right corners (bottom-left kept sharp for the caption)
+              clipPath:
+                "polygon(7% 0, 100% 0, 100% 86%, 93% 100%, 0 100%, 0 14%)",
             }}
-            className="flex w-max gap-4 md:gap-2 px-4"
           >
-            {duplicatedImages.map((src, index) => (
-              <div
-                key={index}
-                className="relative h-[300px] w-[280px] md:h-[500px] md:w-[450px] shrink-0 rounded-[2rem] overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-black/20 z-10 mix-blend-overlay group-hover:bg-transparent transition-colors duration-500" />
-                <img
-                  src={src}
-                  alt={`Agency showcase ${index + 1}`}
-                  className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
-                />
-              </div>
-            ))}
-          </motion.div>
-        </div>
+            <video
+              src="/assets/video1.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+            />
 
-        {/* --- PART 3: Full-width Stats Strip --- */}
+            {/* Gradient veil for depth + caption legibility */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+
+            {/* Caption (bottom-left — the sharp corner) */}
+            <div className="absolute bottom-0 left-0 p-6 md:p-10">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">
+                Our studio in motion
+              </span>
+              <p className="mt-1 text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                Crafting digital experiences
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

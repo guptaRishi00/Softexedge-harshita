@@ -60,11 +60,7 @@ export default function AboutPage({}: Props) {
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-black/40">
           Trusted By
         </p>
-        <LogoCarousel
-          logos={techLogos}
-          className="w-full justify-between px-4 sm:px-8"
-          ariaLabel="Technology partners"
-        />
+        <LogoCarousel logos={techLogos} ariaLabel="Technology partners" />
       </section>
       <div className="px-3 [&>section]:py-8 md:[&>section]:py-6">
         <CtaSection />

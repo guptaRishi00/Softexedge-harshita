@@ -284,3 +284,35 @@
   `bg-linear-to-r` gradient, raw `<img>` rotator (matches StrategyHero/AboutHero).
 - Verified: `npx tsc --noEmit` clean; `biome` only the project-wide
   `noImgElement` (same as the reference hero); `next build` ✓ /contact static.
+
+## 2026-06-17 — LogoCarousel: boxed logos, infinite marquee
+- Replaced the "spotlight" LogoCarousel (auto-advancing highlight) with an
+  infinite marquee matching the project convention (OurTechStack): each logo in
+  its own rounded white card (`border-zinc-200/80`, shadow, hover lift; icon +
+  optional title), in a duplicated track that framer-animates `x: 0 → -50%`
+  (`ease linear`, seamless loop), with left/right white edge fades.
+- API: kept `logos`/`className`/`ariaLabel`; replaced `interval` (ms, stepwise)
+  with `speed` (seconds per loop, default 28). Only consumer is about/page.tsx,
+  which didn't use `interval` — updated its usage to drop the now-irrelevant
+  `justify-between px-4 sm:px-8` so the marquee runs full-bleed.
+- Verified: `npx tsc --noEmit` clean; `biome check` clean on LogoCarousel
+  (about/page.tsx shows only its 2 pre-existing findings); `next build` ✓ /about static.
+- Follow-up: made the logo black — icon `text-zinc-400`→`text-zinc-900`, name
+  `text-zinc-500`→`text-zinc-900` (dropped the now-redundant `group`/group-hover
+  shifts); container border made defined `border-zinc-200/80`→`border-zinc-300`
+  (hover `zinc-300`→`zinc-400`).
+- Verified: `npx tsc --noEmit` clean; `biome check` clean.
+- Follow-up: reversed marquee direction to left→right (`x: ["0%","-50%"]` →
+  `["-50%","0%"]`). Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — AboutTraditional: carousel → clip-path video
+- Removed the full-bleed image carousel (and its `premiumImages`/`duplicatedImages`).
+- Added a cinematic `<video src="/assets/video2.mp4">` (autoplay/loop/muted/
+  playsInline, object-cover, hover zoom) in a container shaped with `clipPath:
+  polygon(7% 0,100% 0,100% 86%,93% 100%,0 100%,0 14%)` — chamfered top-left &
+  bottom-right corners; bottom-left kept sharp for a caption overlay + gradient veil.
+  Used video2 (video4 is already the OurValuesSection bg).
+- Cleaned out the file's pre-existing dead code while here (unused `Counter`,
+  `stats`, `cn`/`React`/hook imports) — net lint improvement (3 errors/5 warnings
+  → 0). PART 1 typography unchanged.
+- Verified: `npx tsc --noEmit` clean; `biome check` clean; `next build` ✓ /about static.
