@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import React, { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
 
 const projects = [
   {

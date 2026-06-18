@@ -1,7 +1,7 @@
 "use client";
 
+import { animate, motion, useInView } from "framer-motion";
 import React, { useEffect, useRef } from "react";
-import { motion, useInView, animate } from "framer-motion";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 

@@ -1,7 +1,7 @@
 "use client";
 
+import { animate, useInView } from "framer-motion";
 import React, { useEffect, useRef } from "react";
-import { useInView, animate } from "framer-motion";
 
 // High-performance counter component that animates when scrolled into view
 function Counter({ value }: any) {

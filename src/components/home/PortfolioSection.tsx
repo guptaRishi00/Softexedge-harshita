@@ -4,8 +4,8 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useRef, useState } from "react";
 import Link from "next/link";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 if (typeof window !== "undefined") {

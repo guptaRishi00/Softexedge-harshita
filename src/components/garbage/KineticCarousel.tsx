@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
+import React, { useState } from "react";
 
 // Mock data: Replace with your actual clients, logos, and case study images
 const clientsData = [

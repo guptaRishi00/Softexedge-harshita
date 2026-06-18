@@ -1,11 +1,11 @@
 "use client";
 
+import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaFacebookF } from "react-icons/fa";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { RiInstagramLine } from "react-icons/ri";
-import { motion, Variants } from "framer-motion";
 import Particles from "@/components/ui/Particles";
 
 const footerLinksCol1 = [
@@ -20,7 +20,7 @@ const footerLinksCol2 = [
   { name: "Testimonials", href: "#" },
   { name: "Blog & Resources", href: "#" },
   { name: "Webinars", href: "#" },
-  { name: "Careers", href: "#" },
+  { name: "Careers", href: "/career" },
 ];
 
 const socialLinks = [

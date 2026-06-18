@@ -1,8 +1,14 @@
 "use client";
 
 import { shaderMaterial, useTrailTexture } from "@react-three/drei";
-import { Canvas, CanvasProps, ThreeEvent, useThree } from "@react-three/fiber";
-import React, { useEffect, useMemo } from "react";
+import {
+  Canvas,
+  type CanvasProps,
+  type ThreeEvent,
+  useThree,
+} from "@react-three/fiber";
+import type React from "react";
+import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 
 interface GooeyFilterProps {

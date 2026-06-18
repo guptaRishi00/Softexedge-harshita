@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import Autoplay from "embla-carousel-autoplay";
 import { Play } from "lucide-react";
+import Image from "next/image";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Carousel,
-  CarouselApi,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
 import { cn } from "@/lib/utils";
 
 const slides = [

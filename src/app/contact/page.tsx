@@ -1,10 +1,10 @@
+import React from "react";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import ContactFaqSection from "@/components/contact/ContactFaqSection";
 import ContactHeroSection from "@/components/contact/ContactHeroSection";
 import ContactSection from "@/components/home/ContactSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
-import React from "react";
 
 type Props = {};
 

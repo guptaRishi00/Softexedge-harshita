@@ -1,8 +1,8 @@
 "use client";
 
-import DynamicButton from "../ui/DynamicButton";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import DynamicButton from "../ui/DynamicButton";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 const exitEase = [0.32, 0, 0.67, 0] as const;

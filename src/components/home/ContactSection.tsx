@@ -45,7 +45,7 @@ export default function ContactSection() {
 
   return (
     <section id="contact" className="relative w-full bg-white py-20 md:py-32">
-      <div className="mx-auto max-w-[90rem] px-6 md:px-10">
+      <div className="mx-auto w-full px-6 md:px-10">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
           {/* LEFT: messaging + contact channels */}
           <motion.div

@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 
 const projects = [
   {

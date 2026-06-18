@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { useMotionValueEvent, useScroll } from "framer-motion";
-import ConnectButton from "../shared/ConnectButton";
 import { ReactLenis } from "lenis/react";
+import { useRef, useState } from "react";
+import ConnectButton from "../shared/ConnectButton";
 
 const services = [
   {

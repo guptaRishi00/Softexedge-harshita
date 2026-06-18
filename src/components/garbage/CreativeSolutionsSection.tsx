@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles, PenTool } from "lucide-react";
+import { ArrowRight, PenTool, Sparkles } from "lucide-react";
 
 export default function CreativeSolutionsSection() {
   const services = [

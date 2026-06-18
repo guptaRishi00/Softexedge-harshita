@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { useState } from "react";
 import DynamicButton from "../ui/DynamicButton";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
 import Header from "../page/Header";
 
 const cn = (...classes: (string | boolean | undefined | null)[]) => {
@@ -46,7 +46,7 @@ function Counter({ value, suffix }: { value: number; suffix: string }) {
     const tick = (now: number) => {
       if (!startTime) startTime = now;
       const progress = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
+      const eased = 1 - (1 - progress) ** 3;
       setCount(Math.round(value * eased));
       if (progress < 1) frame = requestAnimationFrame(tick);
     };

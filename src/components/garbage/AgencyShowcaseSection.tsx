@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { ArrowRight, BriefcaseBusiness } from "lucide-react";
+import Image from "next/image";
 
 export default function AgencyShowcaseSection() {
   return (

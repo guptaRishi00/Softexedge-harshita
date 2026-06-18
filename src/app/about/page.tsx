@@ -1,14 +1,3 @@
-import AboutHeroSection from "@/components/about/AboutHeroSection";
-import AboutTraditional from "@/components/about/AboutTraditional";
-import OurTeamSection from "@/components/about/OurTeamSection";
-import OurValuesSection from "@/components/about/OurValuesSection";
-import CtaSection from "@/components/brand-strategy/CtaSection";
-import FaqSection from "@/components/brand-strategy/FaqSection";
-import BlogSection from "@/components/home/BlogSection";
-import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
-import Footer from "@/components/layout/Footer";
-import LogoCarousel from "@/components/ui/LogoCarousel";
-
 import {
   SiFigma,
   SiFramer,
@@ -22,6 +11,16 @@ import {
   SiTypescript,
   SiVercel,
 } from "react-icons/si";
+import AboutHeroSection from "@/components/about/AboutHeroSection";
+import AboutTraditional from "@/components/about/AboutTraditional";
+import OurTeamSection from "@/components/about/OurTeamSection";
+import OurValuesSection from "@/components/about/OurValuesSection";
+import CtaSection from "@/components/brand-strategy/CtaSection";
+import FaqSection from "@/components/brand-strategy/FaqSection";
+import BlogSection from "@/components/home/BlogSection";
+import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
+import Footer from "@/components/layout/Footer";
+import LogoCarousel from "@/components/ui/LogoCarousel";
 
 type Props = {};
 

@@ -1,7 +1,7 @@
 // app/components/NewsGridSection.tsx
 
-import Image from "next/image";
 import { Clock3 } from "lucide-react";
+import Image from "next/image";
 
 const articles = [
   {

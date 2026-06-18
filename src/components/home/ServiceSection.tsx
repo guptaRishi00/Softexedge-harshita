@@ -1,12 +1,12 @@
 // src/components/home/ServiceSection.tsx
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useRef, useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MdKeyboardArrowRight } from "react-icons/md";
+import { cn } from "@/lib/utils";
 
 const services = [
   {

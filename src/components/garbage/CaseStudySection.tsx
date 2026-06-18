@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Image from "next/image";
+import { useEffect, useRef } from "react";
 import DynamicButton from "../ui/DynamicButton";
 
 // Register GSAP plugins outside the component to prevent re-registration

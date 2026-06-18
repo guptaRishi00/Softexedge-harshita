@@ -1,8 +1,8 @@
 // src/components/home/FaqSection.tsx
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 

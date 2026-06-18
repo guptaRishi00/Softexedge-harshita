@@ -1,8 +1,9 @@
 // src/components/home/CtaSection.tsx
 "use client";
 
-import React, { useState } from "react";
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
+import type React from "react";
+import { useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
@@ -36,9 +37,7 @@ export default function CtaSection() {
     const hoverRow = Math.floor(hoveredIndex / columns);
     const hoverCol = hoveredIndex % columns;
 
-    const distance = Math.sqrt(
-      Math.pow(row - hoverRow, 2) + Math.pow(col - hoverCol, 2),
-    );
+    const distance = Math.sqrt((row - hoverRow) ** 2 + (col - hoverCol) ** 2);
 
     if (distance > 3.5) return 0;
     return Math.max(0, 1 - distance / 1.79);

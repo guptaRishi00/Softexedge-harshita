@@ -1,9 +1,9 @@
 "use client";
 
-import Lenis from "lenis";
-import { type ReactNode, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+import { type ReactNode, useEffect } from "react";
 
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   useEffect(() => {

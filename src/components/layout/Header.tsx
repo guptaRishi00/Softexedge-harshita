@@ -98,8 +98,8 @@ const navItems: NavItem[] = [
     link: "/about",
   },
   {
-    name: "Case Studies",
-    link: "#portfolio",
+    name: "Careers",
+    link: "/career",
   },
   {
     name: "Book Consultation",

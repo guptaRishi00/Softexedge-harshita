@@ -1,10 +1,10 @@
 // src/app/home/page.tsx
 "use client";
 
-import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useRef } from "react";
 import {
   SiNextdotjs,
   SiReact,
@@ -13,16 +13,16 @@ import {
 } from "react-icons/si";
 
 import AboutSection from "@/components/home/AboutSection";
+import BlogSection from "@/components/home/BlogSection";
+import ContactSection from "@/components/home/ContactSection";
+import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Herosection from "@/components/home/Herosection";
 import PortfolioSection from "@/components/home/PortfolioSection";
+import ServiceSection from "@/components/home/ServiceSection";
 import StatsSection from "@/components/home/StatsSection";
 import Footer from "@/components/layout/Footer";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import LogoLoop from "@/components/ui/LogoLoop";
-import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
-import BlogSection from "@/components/home/BlogSection";
-import ContactSection from "@/components/home/ContactSection";
-import ServiceSection from "@/components/home/ServiceSection";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);

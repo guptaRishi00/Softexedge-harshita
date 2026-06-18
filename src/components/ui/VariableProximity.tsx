@@ -1,15 +1,15 @@
 "use client";
 
+import { motion } from "framer-motion";
 import {
+  type CSSProperties,
   forwardRef,
+  type HTMLAttributes,
+  type MutableRefObject,
+  useEffect,
   useMemo,
   useRef,
-  useEffect,
-  MutableRefObject,
-  CSSProperties,
-  HTMLAttributes,
 } from "react";
-import { motion } from "framer-motion";
 
 function useAnimationFrame(callback: () => void) {
   useEffect(() => {

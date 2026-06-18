@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import type React from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 interface GridDistortionProps {
@@ -224,8 +225,7 @@ const GridDistortion: React.FC<GridDistortionProps> = ({
 
       for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
-          const distSq =
-            Math.pow(gridMouseX - i, 2) + Math.pow(gridMouseY - j, 2);
+          const distSq = (gridMouseX - i) ** 2 + (gridMouseY - j) ** 2;
           if (distSq < maxDist * maxDist) {
             const index = 4 * (i + size * j);
             const power = Math.min(maxDist / Math.sqrt(distSq), 10);

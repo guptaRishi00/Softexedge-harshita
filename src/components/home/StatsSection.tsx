@@ -1,11 +1,11 @@
 // src/components/home/StatsSection.tsx
 "use client";
 
-import { cn } from "@/lib/utils";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef } from "react";
+import { cn } from "@/lib/utils";
 import DotGrid from "../ui/DotGrid";
 
 if (typeof window !== "undefined") {
