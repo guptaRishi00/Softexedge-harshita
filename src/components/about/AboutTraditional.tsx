@@ -18,7 +18,7 @@ export default function AboutCinematic() {
           className="flex flex-col items-center text-center max-w-5xl z-10 px-6 md:px-12"
         >
           <div className="mb-8 inline-flex items-center justify-center rounded-full ">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">
               Who We Are
             </span>
           </div>
@@ -38,21 +38,23 @@ export default function AboutCinematic() {
           </p>
         </motion.div>
 
-        {/* --- PART 2: Cinematic Video, clip-path framed --- */}
+        {/* --- PART 2: Cinematic Video — opens like an eye on scroll --- */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 mt-20 w-full max-w-7xl px-6 md:mt-28 md:px-12"
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 mt-20 w-full max-w-[96rem] px-6 md:mt-28 md:px-12"
         >
-          <div
-            className="group relative aspect-video w-full overflow-hidden bg-zinc-900"
-            style={{
-              // Chamfered top-left & bottom-right corners (bottom-left kept sharp for the caption)
-              clipPath:
-                "polygon(7% 0, 100% 0, 100% 86%, 93% 100%, 0 100%, 0 14%)",
-            }}
+          <motion.div
+            // Eye-open reveal: scales open vertically from the centre. Uses a
+            // transform (reliably animated by framer) instead of clipPath so the
+            // container always ends fully visible.
+            initial={{ scaleY: 0 }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+            className="group relative aspect-video w-full origin-center overflow-hidden rounded-2xl bg-zinc-900"
           >
             <video
               src="/assets/video1.mp4"
@@ -60,13 +62,13 @@ export default function AboutCinematic() {
               loop
               muted
               playsInline
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
             />
 
             {/* Gradient veil for depth + caption legibility */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
-            {/* Caption (bottom-left — the sharp corner) */}
+            {/* Caption */}
             <div className="absolute bottom-0 left-0 p-6 md:p-10">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">
                 Our studio in motion
@@ -75,7 +77,7 @@ export default function AboutCinematic() {
                 Crafting digital experiences
               </p>
             </div>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>

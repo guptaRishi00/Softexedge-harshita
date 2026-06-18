@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef, useState } from "react";
+import { useMotionValueEvent, useScroll } from "framer-motion";
 import ConnectButton from "../shared/ConnectButton";
 import { ReactLenis } from "lenis/react";
 
@@ -51,13 +53,35 @@ const services = [
 ];
 
 export default function SubServices() {
+  const container = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const { scrollYProgress } = useScroll({
+    target: container,
+    offset: ["start start", "end end"],
+  });
+
+  // Track the top-most card that has actually pinned (reached its sticky line).
+  // A card's image hides once the NEXT card has pinned over it (activeIndex > i).
+  useMotionValueEvent(scrollYProgress, "change", () => {
+    let active = 0;
+    for (let j = 0; j < services.length; j++) {
+      const el = cardRefs.current[j];
+      if (!el) continue;
+      const pinTop = window.innerHeight * 0.05 + j * 155;
+      if (el.getBoundingClientRect().top <= pinTop + 2) active = j;
+    }
+    setActiveIndex((cur) => (cur === active ? cur : active));
+  });
+
   return (
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
         {/* HEADER SECTION */}
         <div className="mx-auto flex w-full flex-col items-start justify-between gap-6 px-6 py-20 md:flex-row md:items-end lg:px-12">
           <div className="flex flex-col gap-5">
-            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+            <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               What We Offer
             </span>
             <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
@@ -74,9 +98,17 @@ export default function SubServices() {
         </div>
 
         {/* STACKING CARDS WRAPPER */}
-        <div className="relative w-full">
+        <div ref={container} className="relative w-full">
           {services.map((service, i) => (
-            <Card key={i} i={i} {...service} />
+            <Card
+              key={i}
+              i={i}
+              imageHidden={activeIndex > i}
+              registerRef={(el: HTMLDivElement | null) => {
+                cardRefs.current[i] = el;
+              }}
+              {...service}
+            />
           ))}
 
           {/* MAGIC TRICK: The Runway */}
@@ -96,6 +128,8 @@ export default function SubServices() {
 // --- ISOLATED CARD COMPONENT ---
 function Card({
   i,
+  imageHidden,
+  registerRef,
   title1,
   title2,
   description,
@@ -106,10 +140,11 @@ function Card({
 }: any) {
   return (
     <div
+      ref={registerRef}
       className="sticky w-full"
       style={{
-        // Pins the card exactly spaced by 130px to leave the previous titles showing
-        top: `calc(5vh + ${i * 130}px)`,
+        // Pins the card exactly spaced by 155px to leave the previous titles showing
+        top: `calc(5vh + ${i * 155}px)`,
         // Later cards stack on top; fixed desktop height keeps earlier cards from poking through
         zIndex: i,
       }}
@@ -148,12 +183,14 @@ function Card({
 
         {/* RIGHT COLUMN: Image Container */}
         {/* Set to a fixed height: 350px on mobile, 450px on medium screens and up */}
-        <div className="relative w-full h-[350px] md:h-[450px] overflow-hidden rounded-2xl bg-zinc-900/50">
+        <div className="relative w-full h-[350px] md:h-[450px] overflow-hidden rounded-2xl">
           {image && (
             <img
               src={image}
               alt={`${title1} ${title2}`}
-              className="h-full w-full object-cover opacity-80 transition-transform duration-500 hover:opacity-100"
+              className={`h-full w-full object-cover transition-opacity duration-500 ${
+                imageHidden ? "opacity-0" : "opacity-100"
+              }`}
             />
           )}
         </div>

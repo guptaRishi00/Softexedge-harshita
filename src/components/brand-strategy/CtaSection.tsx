@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
-import ConnectButtonThree from "../shared/ConnectButtonThree";
+import { MdArrowOutward } from "react-icons/md";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
@@ -196,7 +196,38 @@ export default function CtaSection() {
               transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
               className="pointer-events-auto"
             >
-              <ConnectButtonThree />
+              <button
+                type="button"
+                className="group flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-transparent pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-5 hover:pr-3"
+              >
+                <span className="text-base font-bold tracking-tight text-white transition-colors duration-300">
+                  Connect With Us
+                </span>
+
+                <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black">
+                  <svg width="0" height="0" className="absolute">
+                    <title>Connect arrow gradient</title>
+                    <defs>
+                      <linearGradient
+                        id="cta-icon-grad"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop stopColor="#2E5BFF" offset="0%" />
+                        <stop stopColor="#149CCB" offset="100%" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+
+                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                  <MdArrowOutward
+                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    style={{ fill: "url(#cta-icon-grad)" }}
+                  />
+                </div>
+              </button>
             </motion.div>
 
             {/* Meta Information (Location, Email, etc.) */}

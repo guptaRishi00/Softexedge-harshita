@@ -44,7 +44,7 @@ export default function ProcessSection() {
         {/* Header Section */}
         <div className="mb-16 flex flex-col items-start justify-between gap-6 md:mb-35 md:flex-row md:items-start">
           <div className="flex flex-col gap-5">
-            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+            <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               How We Work
             </span>
             <motion.h2

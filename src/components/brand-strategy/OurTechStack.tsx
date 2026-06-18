@@ -19,12 +19,12 @@ export default function OurTechStack() {
       {techStack.map((tech) => (
         <div
           key={tech.id}
-          className="flex h-36 w-52 shrink-0 items-center justify-center rounded-3xl border border-zinc-800 bg-[#100f0f] transition-colors hover:border-zinc-700"
+          className="flex h-36 w-52 shrink-0 items-center justify-center rounded-3xl border border-zinc-800 bg-[#100f0f] transition-colors"
         >
           <img
             src={tech.image}
             alt={`${tech.name} logo`}
-            className="h-7 w-auto object-contain"
+            className="h-9 w-auto object-contain"
           />
         </div>
       ))}
@@ -36,7 +36,7 @@ export default function OurTechStack() {
       <div className="mx-auto w-full md:pb-25">
         <div className="mx-auto mb-20 flex flex-col items-start justify-between gap-6 px-6 md:flex-row md:items-start md:px-6">
           <div className="flex flex-col gap-5">
-            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+            <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               Our Toolkit
             </span>
             <motion.h2

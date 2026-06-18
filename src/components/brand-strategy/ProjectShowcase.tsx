@@ -76,7 +76,7 @@ export default function ProjectShowcase() {
       <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">
         <div className="mb-34 flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-start">
           <div className="flex flex-col gap-5">
-            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+            <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               Selected Work
             </span>
             <h2 className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[5rem]">
@@ -191,9 +191,11 @@ function ProjectCard({
       {/* Default Border (Fades out when hovered) */}
       <div className="pointer-events-none absolute inset-0 z-10 rounded-[20px] border border-white/10 transition-opacity duration-500 group-hover:opacity-0" />
 
-      {/* TRAVELING LINE BORDER CONTAINER */}
+      {/* ANIMATED GRADIENT BORDER — dual-comet ring that spins ONLY on hover.
+          Pure CSS transform (GPU), so idle cards do zero work (was a framer
+          infinite rotate running on every card at once → laggy). */}
       <div
-        className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[20px] p-[1.5px] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[20px] p-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         style={{
           WebkitMask:
             "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
@@ -201,19 +203,12 @@ function ProjectCard({
           maskComposite: "exclude",
         }}
       >
-        {/* GPU-Accelerated Spinning Gradient Element */}
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{
-            repeat: Infinity,
-            duration: 2.5, // Tweak this for speed
-            ease: "linear",
-          }}
-          className="absolute left-[-50%] top-[-50%] h-[200%] w-[200%]"
+        <div
+          className="absolute left-[-50%] top-[-50%] h-[200%] w-[200%] group-hover:[animation:spin_2.2s_linear_infinite]"
           style={{
             background:
-              "conic-gradient(transparent, transparent 85%, #2E5BFF 95%, #149CCB 100%)",
-            willChange: "transform", // Forces the browser to hardware accelerate
+              "conic-gradient(from 0deg, transparent 0deg, #2E5BFF 30deg, #149CCB 65deg, transparent 100deg, transparent 260deg, #149CCB 295deg, #2E5BFF 330deg, transparent 360deg)",
+            willChange: "transform",
           }}
         />
       </div>

@@ -1,4 +1,3 @@
-import AgencyStats from "@/components/brand-strategy/AgencyStats";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import FaqSection from "@/components/brand-strategy/FaqSection";
 import OurTechStack from "@/components/brand-strategy/OurTechStack";

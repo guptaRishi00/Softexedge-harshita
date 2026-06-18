@@ -316,3 +316,282 @@
   `stats`, `cn`/`React`/hook imports) — net lint improvement (3 errors/5 warnings
   → 0). PART 1 typography unchanged.
 - Verified: `npx tsc --noEmit` clean; `biome check` clean; `next build` ✓ /about static.
+
+## 2026-06-17 — CtaSection: use ExperimentalTestimonials' Connect button
+- Replaced `<ConnectButtonThree />` in CtaSection with the inline "Connect With
+  Us" button copied from ExperimentalTestimonials (white pill, animated
+  MdArrowOutward with gradient-fill arrow). Imported `MdArrowOutward`, removed the
+  `ConnectButtonThree` import.
+- Renamed the gradient `id` `icon-grad` → `cta-icon-grad` (both components render
+  on the same pages — avoids a duplicate-id clash). Added `type="button"` and a
+  `<title>` on the gradient-def svg so the copied markup is lint-clean.
+- Verified: `npx tsc --noEmit` clean; biome on the file shows only its
+  pre-existing findings (button added none); no `ConnectButtonThree` refs remain.
+- Follow-up: restyled that button for the black CTA bg — removed `bg-white`
+  (transparent), text `text-black`→`text-white`, arrow box `bg-black text-white`
+  →`bg-white text-black` (black arrow on white box), hover border
+  `hover:border-black`→`hover:border-white`. Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — SubServices: fade card image as next card overlaps
+- Brand-strategy stacking cards: as the next sticky card slides up to cover the
+  current one, the covered card's image now dims. Restored a container
+  `useScroll({offset:["start start","end end"]})`; each Card maps that progress
+  to its image opacity via `useTransform`, fading `0.8 → 0.2` over
+  `[(i+1)/total - 0.15, (i+1)/total]` (the window where the next card covers it).
+  Last card never fades (no next card). `<img>` → `motion.img` w/ `style.opacity`.
+- Verified: `npx tsc --noEmit` clean; biome only pre-existing findings
+  (`any`, `noImgElement` on the motion.img, 2× array-index key); `next build` ✓
+  /brand-strategy static.
+- Follow-up: fade image fully to 0 (was 0.2) once the next card closes over it —
+  `useTransform` output `[0.8, 0.2]` → `[0.8, 0]`. Verified: `npx tsc --noEmit` clean.
+- Follow-up: moved the opacity from `motion.img` to the image CONTAINER
+  (`motion.div`) so at opacity 0 the whole box (incl. its `bg-zinc-900/50`
+  placeholder) is invisible — previously the gray container box still showed.
+  Verified: `npx tsc --noEmit` clean.
+- Follow-up: reverted the above — opacity back on `motion.img`, container back to
+  plain `<div>` (the `[0.8, 0]` fade target is kept). Verified: `npx tsc --noEmit` clean.
+- Follow-up: removed the scroll-driven image opacity entirely (image no longer
+  changes opacity) — dropped container `useScroll`, per-card `useTransform`/
+  `progress`/`total`, `motion.img`→`<img>`, and the `motion`/`useScroll`/
+  `useTransform`/`useRef` imports. Image is now static `object-cover`.
+  Verified: `npx tsc --noEmit` clean; no leftover scroll-opacity refs.
+
+## 2026-06-17 — SubServices: trigger-based image hide (not scrub)
+- Re-added "hide previous card's image when the next covers it", but as a TRIGGER
+  (boolean toggle + CSS fade) instead of a continuous opacity scrub (which the
+  user disliked). Container `useScroll`; each Card watches progress via
+  `useMotionValueEvent` and sets `imageHidden = progress >= (i+1)/total`; image
+  uses `transition-opacity duration-500` + `opacity-0/100`. Last card never hides.
+  Reverses on scroll-up. Typed the event value `: number` (progress prop is `any`).
+- Verified: `npx tsc --noEmit` clean; biome only pre-existing findings; `next build`
+  ✓ /brand-strategy static.
+- Follow-up: image was hiding too late (around a later card) because the
+  `(i+1)/total` progress fraction doesn't match where cards actually pin
+  (viewport-dependent). Made it self-calibrating: on scroll, measure each card's
+  real `getBoundingClientRect().top` vs its sticky pin line
+  (`innerHeight*0.05 + i*130`) to find the top-most pinned card (`activeIndex`);
+  a card's image hides exactly when the NEXT card has pinned (`activeIndex > i`).
+  Card now takes `imageHidden` + `registerRef` (callback ref); dropped per-card
+  `useMotionValueEvent`/`progress`/`total`. CSS `transition-opacity duration-500`.
+- Verified: `npx tsc --noEmit` clean; biome only pre-existing; `next build` ✓
+  /brand-strategy static.
+- Follow-up: removed the image container's `bg-zinc-900/50` placeholder so no grey
+  box shows when the image fades to opacity-0 (image covers it at rest anyway).
+  Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — SubServices: balance the title gap in the reveal sliver
+- Analysis: gap above title (card border→title) was `pt-12`=48px; the next card's
+  border is exactly the 130px stack-offset below, so the gap below the title
+  (title→next border) was only ~10px (lg) — asymmetric.
+- Fix: removed the grid's `pt-12` and put the title in an `h-[130px] flex items-center`
+  band starting at the card border. 130px = the stack offset, so the band bottom
+  lands exactly on the next card's border; centering the title makes the
+  above/below gaps equal at every breakpoint. Description/tags moved into a
+  sub-`div` (gap-8) below the band. (Image now flush-top, but it's hidden in the
+  covered state, so only the active card shows it.)
+- Verified: `npx tsc --noEmit` clean; biome only pre-existing; `next build` ✓
+  /brand-strategy static.
+
+## 2026-06-17 — SubServices: more gap between title and next card
+- (Note: the title-band from the prior entry had been reverted to `pt-12` + plain
+  title before this task.) Raised the stack offset `130` → `170` in both the card
+  `top: calc(5vh + i*170px)` and the matching `activeIndex` pinTop
+  (`innerHeight*0.05 + j*170`). Next card now stops 170px below the card border
+  (was 130), opening ~40px more space below the title.
+- Verified: `npx tsc --noEmit` clean; no stray `130` left.
+- Follow-up: reduced the offset a little `170` → `155` (both card `top` and
+  `pinTop`). Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — Brand-strategy: nudge title eyebrow tags 1px right
+- Added `ml-px` (1px left margin) to the eyebrow tag above the title in all 5
+  brand-strategy components that have one: SubServices, ProcessSection,
+  OurTechStack, ProjectShowcase (the `text-white/60` eyebrows) + StrategyHeroSection
+  (the gradient "How we do it" eyebrow). Skipped ProjectShowcase's "Featured Case"
+  label (it's inside a project card, not a title eyebrow).
+- Verified: `npx tsc --noEmit` clean; `ml-px` present on all 5.
+- Follow-up: bumped the nudge from 1px → 3px (`ml-px` → `ml-[3px]`) on all 5.
+  Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — OurTechStack: slightly larger logos
+- Logo `<img>` `h-7` → `h-9` (28px → 36px); still fits the `h-36` cards.
+  Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — ProjectShowcase: fix laggy hover border + redesign
+- Root cause of lag: the traveling-border `motion.div` had `repeat: Infinity`
+  but wasn't hover-gated (only the container opacity was) — so all 5 cards ran a
+  framer JS rotation + mask compositing continuously.
+- Fix: dropped the framer rotation; the conic-gradient ring now spins via CSS
+  `group-hover:[animation:spin_2.2s_linear_infinite]` (GPU transform). Idle cards
+  do zero animation; only the hovered card composites.
+- Redesign (more amusing): brighter **dual-comet** conic gradient (two light arcs
+  chasing the border) + a soft brand glow that fades in on hover
+  (`group-hover:shadow-[0_0_45px_-8px_rgba(46,91,255,0.5)]`).
+- Verified: `npx tsc --noEmit` clean; biome only pre-existing; `next build` ✓;
+  confirmed in built CSS the spin runs only under `.group:hover` (`@keyframes spin`
+  present), so idle cards are static.
+- Follow-up: removed the hover glow shadow from the card (kept the dual-comet
+  spinning border). Verified: `npx tsc --noEmit` clean; no hover shadow refs left.
+
+## 2026-06-17 — AboutHero: tighten gap between text and carousel
+- Reduced the carousel wrapper padding `py-6 md:py-10` → `py-4 md:py-7`
+  (24/40px → 16/28px), shrinking the gap between the headline lines and the
+  split image carousel a little. Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — AboutHero: even stats spacing
+- Stats are `grid-cols-2 md:grid-cols-4` (already equal columns). Removed the
+  bottom-row `pt-8` (and redundant `md:pt-0`) that added extra space beyond the
+  `gap-8` row gap on the mobile/tablet 2×2 layout — so spacing between stats is
+  now uniform (the grid gap alone). Desktop unchanged (already equal columns).
+  Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — AboutTraditional video: rectangle, 9xl, rounded, eye-open
+- Removed the chamfered `clip-path: polygon(...)` → clean rectangle (kept
+  `aspect-video`). Widened `max-w-7xl` → `max-w-[96rem]` (≈9xl; Tailwind has no
+  default 9xl). Added `rounded-2xl`.
+- Added an "open like an eye" entry animation: inner container is now a
+  `motion.div` animating `clipPath` `inset(50% 0 50% 0 round 16px)` →
+  `inset(0 0 0 0 round 16px)` on scroll-in (whileInView, once) — unfolds
+  vertically from a centre slit, corners staying rounded. Outer wrapper is a
+  simple fade.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /about static.
+- Fix (video vanished): the eye-open `clipPath` was stuck at its collapsed initial
+  (`inset(50% 0 50% 0)` = zero-height slit). Cause: the `round 16px` keyword in
+  `inset()` isn't reliably interpolated by framer, so it never animated open.
+  Dropped `round 16px` → plain `inset(50% 0 50% 0)` → `inset(0 0 0 0)`; corners
+  still rounded via `rounded-2xl` + `overflow-hidden`. Verified: `npx tsc --noEmit` clean.
+- Fix #2 (still not visible): clipPath animation wasn't running here at all
+  (whileInView works in this file — PART 1 uses it — so the failure was specific
+  to framer animating clipPath). Switched the eye-open to a transform `scaleY`
+  `0 → 1` with `origin-center` (whileInView) — reliably animated, ends fully
+  visible; opens vertically from the centre like an eye. Verified: `npx tsc
+  --noEmit` clean; `next build` ✓ /about static.
+
+## 2026-06-17 — About page: unify title eyebrow color to white/60
+- Set the eyebrow tag above the title to `text-white/60` in the dark-bg sections:
+  AboutTraditional ("Who We Are", was `text-zinc-300`) and OurValuesSection
+  ("What We Stand For", was `text-white/80`). Left OurTeamSection's eyebrow
+  (`text-zinc-500`) alone — it's on a white bg, so `text-white/60` would be
+  invisible. Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — OurValuesSection → "Our Culture" redesign (same component name)
+- Kept the export/component name `OurValuesSection` and the dark grayscale-video
+  backdrop. Rewrote content from 3 "core values" to 4 culture pillars (Bias for
+  action, Craft you can feel, Radical ownership, Curiosity always). Header now
+  eyebrow "How We Work" + "Built on a culture of curiosity & craft".
+- Redesigned the cards: centered-icon tiles → numbered editorial 2×2 grid
+  (big gradient `01–04` index, left-aligned title + copy, a gradient accent bar
+  that grows on hover). Dropped the lucide icons + unused `React` import.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /about static.
+- Follow-up: removed the index numbers (`01–04` + `no` field) and the grayscale
+  background `<video>`. Replaced the video with ambient brand-glow blobs; cards now
+  lead with a gradient "dash" marker (grows on hover) + a soft corner glow on hover
+  and slightly more lift; glass bg `bg-white/[0.03]`. Verified: `npx tsc --noEmit`
+  clean; biome clean; `next build` ✓ /about static.
+- Follow-up: added the interactive `DotGrid` (ui/DotGrid, canvas) as the section
+  background (replacing the ambient glow blobs) — `dotSize 3 / gap 28 /
+  baseColor #27272a / activeColor #2E5BFF / proximity 130 / !p-0`, in an
+  `absolute inset-0 z-0` layer (its canvas is pointer-events-none, so card hover
+  still works). Removed the hover gradients: deleted the corner-glow div and the
+  marker's `group-hover:w-16` (marker is now a static gradient dash). DotGrid uses
+  gsap InertiaPlugin — present (already used by StatsSection). Verified:
+  `npx tsc --noEmit` clean; biome clean; `next build` ✓ /about static.
+
+## 2026-06-17 — ExperimentalTestimonials cards: white + gray border + hover gradient
+- Card `bg-[#edeef2]` → `bg-white`; border `border-black/5` → `border-zinc-200`
+  (gray). Hover: replaced `hover:bg-[#e4e6ec]` with a white→gray gradient
+  (`hover:bg-gradient-to-br hover:from-white hover:to-zinc-200`), border
+  `hover:border-zinc-300`, kept `hover:shadow-xl`. Shared component → applies on
+  all pages using it. Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — ExperimentalTestimonials → manual arrow carousel
+- Reworked from auto-scroll marquee into a manual single-card carousel. Removed:
+  the `<style>` marquee keyframes + `animate-scroll-x`, the duplicated array, and
+  the card `hover:shadow-xl`. Dropped unused imports (DynamicButton, ConnectButtonTwo).
+- Right column shows one featured testimonial; slides via AnimatePresence
+  (`custom={dir}` variants). Prev/next round arrow buttons (`MdArrowBack`/
+  `MdArrowForward`) + an `NN / NN` counter sit at the extreme bottom of the left
+  column (flex `justify-between`, parent `lg:items-stretch`); title + description +
+  Connect button on top. Rebalanced: left `lg:w-1/3`, right `lg:flex-1` featured
+  card `h-[440px] md:h-[480px]`, quote `md:text-2xl`. Headline word-rotation kept.
+  Gradient id `icon-grad`→`testimonial-icon-grad`; added `type="button"` + svg titles.
+- Shared component → applies on home/about/brand-strategy/contact.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ all routes static.
+- Follow-up: restored the RIGHT column to the original multi-card row (per user —
+  only the left div was meant to change). Kept the left div (arrows/title/desc/CTA)
+  as-is. Right column is the original card row (white/gray border/hover gradient,
+  no hover shadow), now arrow-driven instead of auto-scroll: framer
+  `animate={{ x: -active * step }}` where `step` = card+gap per breakpoint
+  (376 mobile / 452 desktop, via a resize effect). Dropped the single-card
+  `slideVariants`/`dir`. Verified: `npx tsc --noEmit` clean; biome clean;
+  `next build` ✓ all routes static.
+- Follow-up: left column was stretching to the right COLUMN height (600) not the
+  card height. Shrank the right column `h-[460px] md:h-[600px]` → `h-[360px]
+  md:h-[440px]` (= card min-h) and removed the track's `py-6` (would overflow);
+  with `lg:items-stretch` the left column now matches the card height.
+  Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — LogoCarousel: remove hover effect + edge blur
+- `ui/LogoCarousel` (about page "Trusted By"): removed the two edge-fade gradient
+  divs (`from-white to-transparent`) and stripped the card hover effect
+  (`transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-400
+  hover:shadow-md`). Cards are now static (kept resting `shadow-sm`); marquee
+  unchanged. Verified: `npx tsc --noEmit` clean; no hover/fade refs left.
+
+## 2026-06-17 — ExperimentalTestimonials: increase vertical margin
+- Section's own padding `py-12 md:py-0` → `py-16 md:py-20` (md:py-0 gave zero
+  desktop y-margin). Note: the about page wraps this component with
+  `[&>section]:py-8 md:[&>section]:py-6` which overrides the section py there, so
+  about-page spacing (recently tuned) is unchanged; this adds margin on
+  home/brand-strategy/contact. Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — ExperimentalTestimonials: bigger Connect button
+- Scaled up the "Connect With Us" button: `h-14`→`h-16`, `gap-4`→`gap-5`,
+  `pr-2`→`pr-2.5` (hover `pl-5/pr-3`→`pl-6/pr-3.5`), label `text-base`→`text-lg`,
+  arrow box `h-9 w-9`→`h-11 w-11`, arrow icons `h-4 w-4`→`h-5 w-5`.
+  Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-17 — ContactHeroSection redesign (white, gradient-free)
+- Replaced the split-image headline hero with a clean centered hero. No gradients
+  anywhere (per request): removed the bg glow blob, the gradient eyebrow text, and
+  all hover gradients. Now: white bg, a live-dot "Available for new projects"
+  badge, a bold two-line word-stagger headline ("Let's work" black / "together."
+  solid `#2E5BFF`), a subline, two solid CTAs (Start a project / Book a call,
+  solid-color hovers), and the bottom Email/Phone/Studio contact strip
+  (hover:bg-zinc-50, group-hover:text-[#2E5BFF] — solid). Dropped the rotating
+  `<img>` set + its state/effect (also clears noImgElement).
+- Verified: `npx tsc --noEmit` clean; biome clean; grep confirms no gradients;
+  `next build` ✓ /contact static.
+
+## 2026-06-17 — ContactHeroSection: aligned to project hero design language
+- Reworked to match the project's inner-page hero pattern (StrategyHeroSection/
+  AboutHeroSection): centered white hero, Header at top, a brand gradient-text
+  eyebrow ("Say hello", uppercase tracking-[0.3em]), a giant word-stagger headline
+  ("Let's build" black / "together." brand gradient text, sizes up to
+  lg:text-[118px] xl:text-[135px]), a subline, and the bottom Email/Phone/Studio
+  strip. Brand gradient is on TEXT only (bg-clip-text) — no bg-fill gradient, no
+  hover gradient, no glow (constraint kept). White bg.
+- Verified: `npx tsc --noEmit` clean; biome clean; gradient audit shows only
+  `bg-clip-text` text gradients; `next build` ✓ /contact static.
+
+## 2026-06-17 — ContactSection redesign (/build, light + clean)
+- Rewrote `home/ContactSection` (used on home + contact). Was dark (Grainient
+  WebGL bg + bg image + gradient-hover submit). Now a clean LIGHT two-column
+  section to flow with the white contact hero: left = gradient-text eyebrow +
+  rotating-word headline ("Let's build [rotating gradient word]") + description +
+  3 contact channels (Email/Call/Visit, lucide icons, solid hover); right = a
+  light form card (border-zinc-200, zinc-50 inputs, focus ring) with a solid
+  black submit (double-chevron anim, `hover:bg-zinc-800` — no gradient).
+- Brand gradient on TEXT only (`bg-clip-text`); no bg gradient, no hover gradient.
+  Dropped the `Grainient` import + the bg `<img>` (Grainient now unused anywhere).
+- Built inline (single component). Verified: `npx tsc --noEmit` clean; biome clean
+  (formatted/imports sorted); `next build` ✓ /home + /contact static.
+
+## 2026-06-17 — Contact page: match about page's section spacing
+- Restructured `app/contact/page.tsx` to use the about page's `[&>section]:py-…`
+  override-wrapper pattern so inter-section gaps match: ContactSection +
+  ExperimentalTestimonials → `[&>section]:py-8 md:[&>section]:py-20`;
+  ContactFaqSection → `[&>section]:py-8 md:[&>section]:py-6 mt-14`; CtaSection →
+  `px-3 [&>section]:py-8 md:[&>section]:py-6`; Footer → `px-3 pt-12 pb-3 md:pt-20`
+  (replacing the old grouped `p-3 space-y-16` CTA+Footer). Root `<div>` → `bg-white`.
+  Hero left bare (like about hero). All targeted sections render a `<section>` root.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /contact static.

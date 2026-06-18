@@ -1,37 +1,34 @@
 "use client";
-import React from "react";
+
 import { motion } from "framer-motion";
-import { Rocket, Gem, HeartHandshake } from "lucide-react";
+import DotGrid from "../ui/DotGrid";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
-const valuesData = [
+const culturePillars = [
   {
-    id: "v1",
-    icon: Rocket,
-    title: "Relentless Innovation",
-    subtitle: "Pushing digital boundaries",
-    tag: "Focus",
+    id: "c1",
+    title: "Bias for action",
     description:
-      "We constantly push the boundaries of what is digitally possible by adopting bleeding-edge technologies and crafting forward-thinking brand strategies. Our commitment to continuous digital evolution ensures your business always remains steps ahead of the competition.",
+      "We ship, learn, and refine. Momentum compounds — so we move while others are still deliberating, and let the work do the talking.",
   },
   {
-    id: "v2",
-    icon: Gem,
-    title: "Uncompromising Quality",
-    subtitle: "Obsessive attention to detail",
-    tag: "Standard",
+    id: "c2",
+    title: "Craft you can feel",
     description:
-      "Our obsessive attention to detail drives us to deliver pixel-perfect UI/UX design alongside robust, scalable engineering. Every project is subjected to rigorous performance testing to guarantee a flawless, high-performing user experience from day one.",
+      "The details are the work. We sweat the pixel, the millisecond, and the edge case until the whole thing feels effortless.",
   },
   {
-    id: "v3",
-    icon: HeartHandshake,
-    title: "Strategic Partnership",
-    subtitle: "Your success is our success",
-    tag: "Commitment",
+    id: "c3",
+    title: "Radical ownership",
     description:
-      "We operate as an extension of your team, championing transparent and open communication. By deeply aligning our strategies with your core business objectives, we provide the dedicated, long-term support necessary to fuel your sustainable growth.",
+      "No silos, no hand-offs to nowhere. Everyone owns the outcome end to end — and earns the trust that comes with it.",
+  },
+  {
+    id: "c4",
+    title: "Curiosity, always",
+    description:
+      "We stay students of the craft, hold our opinions loosely, and treat every project as a chance to get a little sharper.",
   },
 ];
 
@@ -39,7 +36,7 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+    transition: { staggerChildren: 0.12, delayChildren: 0.2 },
   },
 };
 
@@ -55,17 +52,16 @@ const cardVariants = {
 export default function OurValuesSection() {
   return (
     <section className="relative flex min-h-[900px] w-full flex-col overflow-hidden bg-black font-sans">
-      {/* Background Video Container with Black Overlay */}
-      <div className="absolute left-0 top-0 h-full w-full">
-        <video
-          src="/assets/video4.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="h-full w-full object-cover grayscale"
+      {/* Interactive dot-grid background */}
+      <div aria-hidden="true" className="absolute inset-0 z-0">
+        <DotGrid
+          dotSize={3}
+          gap={28}
+          baseColor="#27272a"
+          activeColor="#2E5BFF"
+          proximity={130}
+          className="!p-0"
         />
-        <div className="absolute inset-0 bg-black/60 pointer-events-none" />
       </div>
 
       {/* Top Header Section */}
@@ -75,9 +71,9 @@ export default function OurValuesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: premiumEase }}
-          className="mb-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/80"
+          className="mb-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/60"
         >
-          What We Stand For
+          How We Work
         </motion.span>
 
         <motion.h2
@@ -87,9 +83,9 @@ export default function OurValuesSection() {
           transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
           className="max-w-6xl text-4xl font-bold leading-[0.9em] tracking-tighter text-white md:text-5xl lg:text-[6.5rem]"
         >
-          3 Core values driving <br />
+          Built on a culture of <br />
           <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent pr-1">
-            our digital excellence
+            curiosity & craft
           </span>
         </motion.h2>
 
@@ -100,65 +96,39 @@ export default function OurValuesSection() {
           transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
           className="mt-6 max-w-2xl text-lg font-light leading-[1.2em] text-white/70 md:text-xl"
         >
-          Guiding our decisions, shaping our products, and fueling your success
-          across every project we undertake.
+          It's not just what we build — it's how. A handful of principles shape
+          every decision, every detail, and how we show up for each other.
         </motion.p>
       </div>
 
-      {/* Cards Section */}
+      {/* Culture Pillars — editorial grid */}
       <div className="relative z-20 mx-auto mt-16 w-full max-w-[1400px] px-6 pb-12 md:mt-20 md:pb-20 lg:mt-24">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3 md:gap-3"
+          className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5"
         >
-          {valuesData.map((value) => {
-            const Icon = value.icon;
+          {culturePillars.map((pillar) => (
+            <motion.div
+              key={pillar.id}
+              variants={cardVariants}
+              className="group relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03] p-8 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-white/25 hover:bg-white/[0.06] lg:p-10"
+            >
+              <div className="relative z-10">
+                {/* Static gradient marker (replaces the index number) */}
+                <span className="block h-1 w-10 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]" />
 
-            return (
-              <motion.div
-                key={value.id}
-                variants={cardVariants}
-                className="group relative flex h-full min-h-[480px] flex-col overflow-hidden rounded-[24px] border border-white/10 bg-zinc-950/80 p-8 shadow-2xl backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-white/20 hover:bg-zinc-900/90 lg:p-10"
-              >
-                <div className="relative z-10 flex h-full flex-col justify-between items-center text-center gap-8">
-                  {/* Top: Minimal Tag */}
-                  <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest text-zinc-500">
-                    <span className="h-1 w-1 rounded-full bg-[#2E5BFF]" />
-                    {value.tag}
-                  </div>
-
-                  {/* Middle: Big Centered Icon with Ambient Backlight */}
-                  <div className="relative flex items-center justify-center my-4">
-                    <div className="absolute h-24 w-24 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-110 blur-xl transition-all duration-500" />
-                    <div className="text-zinc-500 transition-all duration-500 group-hover:text-white group-hover:scale-110">
-                      <Icon
-                        className="h-16 w-16 md:h-20 md:w-20"
-                        strokeWidth={1}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Bottom: Clear Editorial Copy */}
-                  <div className="space-y-4 w-full">
-                    <div>
-                      <h3 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
-                        {value.title}
-                      </h3>
-                      <p className="mt-1 text-xs font-medium text-zinc-500 tracking-wide uppercase">
-                        {value.subtitle}
-                      </p>
-                    </div>
-                    <p className="text-sm font-normal leading-[1.3em] text-zinc-400 transition-colors duration-300 group-hover:text-zinc-300 md:text-base">
-                      {value.description}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+                <h3 className="mt-6 text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                  {pillar.title}
+                </h3>
+                <p className="mt-3 text-sm font-light leading-[1.5em] text-zinc-400 transition-colors duration-300 group-hover:text-zinc-300 md:text-base">
+                  {pillar.description}
+                </p>
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
       </div>
     </section>

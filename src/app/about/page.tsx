@@ -53,11 +53,11 @@ export default function AboutPage({}: Props) {
       <AboutTraditional />
       <OurValuesSection />
       <OurTeamSection />
-      <div className="[&>section]:py-8 md:[&>section]:py-6">
+      <div className="[&>section]:py-8 md:[&>section]:py-20">
         <ExperimentalTestimonials />
       </div>
       <section className="flex w-full flex-col items-center gap-6 overflow-hidden bg-white pt-8 pb-16 md:pt-6 md:pb-16">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-black/40">
+        <p className="text-lg mb-10 font-medium uppercase tracking-[0.2em] text-[#7D7D86]">
           Trusted By
         </p>
         <LogoCarousel logos={techLogos} ariaLabel="Technology partners" />
@@ -65,7 +65,7 @@ export default function AboutPage({}: Props) {
       <div className="px-3 [&>section]:py-8 md:[&>section]:py-6">
         <CtaSection />
       </div>
-      <div className="[&>section]:py-8 md:[&>section]:py-6">
+      <div className="[&>section]:py-8 md:[&>section]:py-6 mt-14">
         <FaqSection />
       </div>
       <div className="[&>section]:py-12 md:[&>section]:py-20">

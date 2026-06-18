@@ -86,7 +86,7 @@ function EdgeToEdgeCarousel({ images }: { images: string[] }) {
           <div
             key={idx}
             aria-hidden={idx >= set.length}
-            className="relative h-[100px] w-[150px] shrink-0 overflow-hidden rounded-lg mr-4 md:mr-3 md:h-[140px] md:w-[210px] shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+            className="relative h-[100px] w-[150px] shrink-0 overflow-hidden rounded-lg mr-4 md:mr-3 md:h-[140px] md:w-[210px]"
           >
             <img
               src={src}
@@ -150,7 +150,7 @@ export default function AboutHeroSection() {
               delay: SPLIT_DELAY + 0.2,
               ease: premiumEase,
             }}
-            className="py-6 md:py-10"
+            className="py-4 md:py-7"
           >
             <EdgeToEdgeCarousel images={WORK_IMAGES} />
           </motion.div>
@@ -200,10 +200,9 @@ export default function AboutHeroSection() {
             key={index}
             className={cn(
               "flex flex-col items-center text-center",
-              index !== 0 &&
-                "border-zinc-200 md:border-l md:border-t-0 md:pt-0",
+              index !== 0 && "border-zinc-200 md:border-l md:border-t-0",
               (index === 1 || index === 3) && "border-l border-zinc-200",
-              (index === 2 || index === 3) && "border-t border-zinc-200 pt-8",
+              (index === 2 || index === 3) && "border-t border-zinc-200",
             )}
           >
             <h4 className="mb-5 text-6xl font-bold tracking-tighter text-zinc-900 md:text-7xl lg:text-9xl">

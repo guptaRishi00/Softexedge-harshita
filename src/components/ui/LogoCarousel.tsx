@@ -37,10 +37,6 @@ export default function LogoCarousel({
       aria-label={ariaLabel}
       className={cn("relative w-full overflow-hidden", className)}
     >
-      {/* Edge fades */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent sm:w-28" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white to-transparent sm:w-28" />
-
       <motion.div
         className="flex w-max items-center gap-4 py-2 md:gap-5"
         animate={{ x: ["-50%", "0%"] }}
@@ -66,7 +62,7 @@ export default function LogoCarousel({
           );
 
           const boxClass =
-            "flex h-20 shrink-0 items-center justify-center gap-3 rounded-2xl border border-zinc-300 bg-white px-7 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-zinc-400 hover:shadow-md md:h-24 md:px-9";
+            "flex h-20 shrink-0 items-center justify-center gap-3 rounded-2xl border border-zinc-300 bg-white px-7 shadow-sm md:h-24 md:px-9";
 
           return logo.href ? (
             <a
