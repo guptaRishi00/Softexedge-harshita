@@ -1,6 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import Image from "next/image";
+import { useRef } from "react";
 import Header from "../page/Header";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -23,50 +25,185 @@ const wordVariants = {
   },
 } as const;
 
-const contactItems = [
+const images = [
   {
-    label: "Email",
-    value: "hello@softexedge.com",
-    href: "mailto:hello@softexedge.com",
+    src: "/assets/alex-kotliarskyi-QBpZGqEMsKg-unsplash.jpg",
+    alt: "Office setup",
   },
   {
-    label: "Phone",
-    value: "+1 (800) 123-4567",
-    href: "tel:+18001234567",
+    src: "/assets/milad-fakurian-2gzQL38nWAM-unsplash.jpg",
+    alt: "Abstract design",
   },
   {
-    label: "Studio",
-    value: "New York, NY",
-    href: "#location",
+    src: "/assets/egor-litvinov-X1Txy1GTT5A-unsplash.jpg",
+    alt: "Creative work",
   },
+  {
+    src: "/assets/xiang-chi-WwCKehYfMCA-unsplash.jpg",
+    alt: "Design architecture",
+  },
+  {
+    src: "/assets/laptop-screen-with-minimalist-ecommerce-dashboard.jpg",
+    alt: "Dashboard interface",
+  },
+  { src: "/assets/web.jpg", alt: "Web development" },
 ];
 
 export default function ContactHeroSection() {
+  const containerRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"],
+  });
+
+  // Spring-smoothed parallax so the scroll motion is buttery (not jumpy)
+  const springConfig = { stiffness: 80, damping: 30, mass: 0.4 } as const;
+  const y1 = useSpring(
+    useTransform(scrollYProgress, [0, 1], [0, -400]),
+    springConfig,
+  );
+  const y2 = useSpring(
+    useTransform(scrollYProgress, [0, 1], [0, 400]),
+    springConfig,
+  );
+
+  // Fade out text when scrolling down
+  const opacityText = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const scaleText = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
+
   return (
-    <section className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden bg-white px-6 pb-12 pt-24 text-zinc-900 md:px-10">
+    <section
+      ref={containerRef}
+      className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-white px-6 text-zinc-900 md:px-10"
+    >
       {/* Header */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
+      {/* Animated Background Images - Rotated Grid */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center opacity-100 pointer-events-none">
+        <div className="grid h-[150vh] w-[150vw] -rotate-12 grid-cols-3 gap-4 md:gap-8 lg:w-[120vw]">
+          {/* Column 1 - Slides up */}
+          <motion.div
+            style={{ y: y1 }}
+            className="flex flex-col gap-4 md:gap-8 pt-[10vh]"
+          >
+            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
+              <Image
+                src={images[0].src}
+                alt={images[0].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
+              <Image
+                src={images[1].src}
+                alt={images[1].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
+              <Image
+                src={images[4].src}
+                alt={images[4].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+          </motion.div>
+
+          {/* Column 2 - Slides down */}
+          <motion.div
+            style={{ y: y2 }}
+            className="flex flex-col gap-4 md:gap-8 pt-[20vh]"
+          >
+            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
+              <Image
+                src={images[2].src}
+                alt={images[2].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
+              <Image
+                src={images[3].src}
+                alt={images[3].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
+              <Image
+                src={images[5].src}
+                alt={images[5].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+          </motion.div>
+
+          {/* Column 3 - Slides up */}
+          <motion.div
+            style={{ y: y1 }}
+            className="flex flex-col gap-4 md:gap-8"
+          >
+            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
+              <Image
+                src={images[4].src}
+                alt={images[4].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
+              <Image
+                src={images[0].src}
+                alt={images[0].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
+              <Image
+                src={images[1].src}
+                alt={images[1].alt}
+                fill
+                className="object-cover"
+              />
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* White veil to ensure text readability */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-white/25 via-white/50 to-white pointer-events-none" />
+      <div className="absolute inset-0 z-0 bg-white/40 backdrop-blur-[2px] pointer-events-none" />
+
       {/* Center content */}
-      <div className="relative z-10 flex w-full max-w-7xl flex-1 flex-col items-center justify-center text-center lg:mt-20">
-        {/* Gradient eyebrow (brand-signature text gradient) */}
+      <motion.div
+        style={{ opacity: opacityText, scale: scaleText }}
+        className="relative z-10 flex w-full max-w-7xl flex-1 flex-col items-center justify-center text-center pt-24"
+      >
+        {/* Eyebrow badge */}
         <motion.span
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease: premiumEase }}
-          className="mb-8 inline-flex items-center bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-sm font-semibold uppercase tracking-[0.3em] text-transparent"
+          className="mb-8 inline-flex items-center rounded-full border border-zinc-200 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-700 backdrop-blur-md"
         >
-          Say hello
+          Start a Project
         </motion.span>
 
-        {/* Giant word-stagger headline with a brand-gradient accent word */}
+        {/* Giant word-stagger headline */}
         <motion.h1
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="flex flex-col items-center text-5xl font-bold leading-[0.95em] tracking-tight text-black sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
+          className="flex flex-col items-center text-5xl font-bold leading-[0.95em] tracking-tight text-zinc-900 sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
         >
           <span className="flex gap-3 md:gap-6">
             <motion.span variants={wordVariants}>Let's</motion.span>
@@ -92,31 +229,6 @@ export default function ContactHeroSection() {
           Have a project in mind, or just want to say hi? Tell us what you're
           building — we usually reply within a couple of hours.
         </motion.p>
-      </div>
-
-      {/* Bottom: contact channels strip */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.9, ease: premiumEase }}
-        className="relative z-20 w-full max-w-4xl lg:py-6"
-      >
-        <div className="flex flex-col divide-y divide-zinc-200 border-t border-zinc-200 sm:flex-row sm:divide-x sm:divide-y-0">
-          {contactItems.map((c) => (
-            <a
-              key={c.label}
-              href={c.href}
-              className="group flex flex-1 flex-col items-center gap-1 px-6 py-5 text-center transition-colors hover:bg-zinc-50"
-            >
-              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
-                {c.label}
-              </span>
-              <span className="text-base font-semibold text-zinc-900 transition-colors group-hover:text-[#2E5BFF] md:text-lg">
-                {c.value}
-              </span>
-            </a>
-          ))}
-        </div>
       </motion.div>
     </section>
   );

@@ -606,3 +606,19 @@
   id is a stable key, avoids noArrayIndexKey).
 - Verified: `npx tsc --noEmit` clean; biome shows only the pre-existing carousel
   `noImgElement` (no new findings); `next build` ✓ /about static.
+
+## 2026-06-18 — ContactHeroSection: smooth parallax + white theme
+- (User had reworked it into a dark parallax-image-grid hero.) Smoothed the scroll
+  parallax: wrapped the `y1/y2` `useTransform`s in `useSpring`
+  ({stiffness 80, damping 30, mass 0.4}) so the motion is buttery, not jumpy.
+- Flipped dark → white theme: section `bg-zinc-950 text-white` → `bg-white
+  text-zinc-900`; image-grid opacity `30/40` → `60`; overlays dark→white veil
+  (`from-white/40 via-white/60 to-white` + `bg-white/55 backdrop-blur-[2px]`);
+  eyebrow badge → light (`border-zinc-200 bg-white/70 text-zinc-700`); headline
+  `text-white`→`text-zinc-900` (gradient "together." kept); subline
+  `text-zinc-300`→`text-zinc-500`.
+- Verified: `npx tsc --noEmit` clean; biome clean (formatted); no dark-theme refs
+  left; `next build` ✓ /contact static.
+- Follow-up: made bg images more visible — grid `opacity-60` → `opacity-90`;
+  veils eased (`from-white/40 via-white/60` → `from-white/25 via-white/50`;
+  frost `bg-white/55` → `bg-white/40`). Verified: `npx tsc --noEmit` clean.
