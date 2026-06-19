@@ -1,5 +1,5 @@
 # softexedge-may-2026 — Codebase Map
-_Last updated: 2026-06-15_
+_Last updated: 2026-06-18_
 
 ## Identity
 Marketing/agency website for **SoftexEdge**. Frontend-only, animation-heavy
@@ -39,7 +39,7 @@ behind `typeof window !== "undefined"` guards.
 
 ## Directory layout
 - `src/app/` — App Router routes (`page.tsx` per route), `layout.tsx`, `globals.css`
-- `src/components/home|about|brand-strategy|contact/` — page-specific section components
+- `src/components/home|about|brand-strategy|contact|career/` — page-specific section components
 - `src/components/ui/` — reusable visual/WebGL effects + base UI (button, carousel, navbar)
 - `src/components/layout/` — Header, Footer, SmoothScroll (Lenis wrapper)
 - `src/components/page/` — **second** Header + resizable-navbar (used by inner pages)
@@ -55,9 +55,10 @@ All routes are public (static marketing pages, no auth anywhere).
 |---|---|---|---|---|
 | Home (redirect) | Route | `src/app/page.tsx:3` | public | Redirects `/` → `/home` |
 | HomePage | Route | `src/app/home/page.tsx:31` | public | Main landing: hero, logos, about, portfolio, stats, services, testimonials, contact, blog |
-| AboutPage | Route | `src/app/about/page.tsx:28` | public | About: hero, traditional, values, team, testimonials (+LogoCarousel), FAQ, CTA |
-| BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:16` | public | Service page: hero, sub-services, process, tech stack, showcase, FAQ, blog |
-| ContactPage | Route | `src/app/contact/page.tsx:11` | public | Contact: hero, contact, testimonials, FAQ, CTA |
+| AboutPage | Route | `src/app/about/page.tsx:27` | public | About: hero, traditional, culture (OurValuesSection), team, testimonials (+LogoCarousel), FAQ, CTA |
+| BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:15` | public | Service page: hero, sub-services, process, tech stack, showcase, FAQ, blog |
+| ContactPage | Route | `src/app/contact/page.tsx:11` | public | Contact: hero, contact form, testimonials, FAQ, CTA |
+| CareerPage | Route | `src/app/career/page.tsx:5` | public | Careers: `CareerHeroSection` + `WhyJoinUs` (components in `src/components/career/`) |
 
 ## Data
 None. No storage, schema, API calls, or env vars consumed by app code.

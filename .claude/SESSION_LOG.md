@@ -595,3 +595,14 @@
   (replacing the old grouped `p-3 space-y-16` CTA+Footer). Root `<div>` → `bg-white`.
   Hero left bare (like about hero). All targeted sections render a `<section>` root.
 - Verified: `npx tsc --noEmit` clean; `next build` ✓ /contact static.
+
+## 2026-06-18 — OurValuesSection: fix laggy proximity-grid hover
+- The bg proximity-glow grid (250 cells, each with `onMouseEnter`→setState) was
+  re-rendering ALL 250 cells on every pointer move → very laggy. Extracted each
+  cell into a memoised `Cell` component + a stable `useCallback` `onEnter`, so
+  only cells whose `intensity` actually changes re-render. Behavior unchanged:
+  cells near the title still glow initially (`initialLitIndices`) and follow the
+  cursor on hover. Lifted the key into a `cellIds` array (static grid → positional
+  id is a stable key, avoids noArrayIndexKey).
+- Verified: `npx tsc --noEmit` clean; biome shows only the pre-existing carousel
+  `noImgElement` (no new findings); `next build` ✓ /about static.

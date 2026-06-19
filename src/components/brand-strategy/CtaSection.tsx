@@ -187,13 +187,13 @@ export default function CtaSection() {
 
           {/* Bottom Content: Actions & Meta Info */}
           {/* Reduced padding (p-8 md:p-12) to match shorter section */}
-          <div className="pointer-events-none relative z-10 flex flex-col items-start justify-between gap-10 p-8 md:flex-row md:items-end md:p-12 lg:p-16">
+          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 p-8 md:flex-row md:items-center md:justify-between md:w-[70%] md:p-12 lg:p-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-              className="pointer-events-auto"
+              className="pointer-events-auto shrink-0"
             >
               <button
                 type="button"
@@ -229,31 +229,37 @@ export default function CtaSection() {
               </button>
             </motion.div>
 
-            {/* Meta Information (Location, Email, etc.) */}
+            {/* Drop us a line */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.15, ease: premiumEase }}
+              className="pointer-events-auto flex flex-col gap-1 text-left"
+            >
+              <span className="text-xs uppercase tracking-wider text-zinc-500">
+                Drop us a line
+              </span>
+              <a
+                href="mailto:hello@youragency.com"
+                className="text-lg font-bold text-white transition-colors hover:text-[#149CCB] md:text-2xl"
+              >
+                hello@youragency.com
+              </a>
+            </motion.div>
+
+            {/* Give us a call */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-              className="pointer-events-auto flex flex-col gap-6 text-sm font-medium text-zinc-400 md:flex-row md:gap-12 md:text-base lg:text-right"
+              className="pointer-events-auto flex flex-col gap-1 text-left"
             >
-              <div className="flex flex-col gap-1">
-                <span className="text-xs uppercase tracking-wider text-zinc-600">
-                  Drop us a line
-                </span>
-                <a
-                  href="mailto:hello@youragency.com"
-                  className="text-white transition-colors hover:text-[#149CCB]"
-                >
-                  hello@youragency.com
-                </a>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs uppercase tracking-wider text-zinc-600">
-                  Give us a call
-                </span>
-                <span className="text-white">+1 (555) 123-4567</span>
-              </div>
+              <span className="text-xs uppercase tracking-wider text-zinc-500">
+                Give us a call
+              </span>
+              <span className="text-lg font-bold text-white md:text-2xl">+1 (555) 123-4567</span>
             </motion.div>
           </div>
         </div>

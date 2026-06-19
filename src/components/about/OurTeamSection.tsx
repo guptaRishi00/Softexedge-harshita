@@ -1,7 +1,7 @@
 "use client";
 
 import AutoScroll from "embla-carousel-auto-scroll";
-import React, { useRef } from "react";
+import React, { useRef, useState, useCallback } from "react";
 
 import {
   Carousel,
@@ -9,6 +9,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 
 interface TeamMember {
@@ -57,6 +58,8 @@ const teamMembers: TeamMember[] = [
 ];
 
 export default function OurTeamSection() {
+  const [api, setApi] = useState<CarouselApi>();
+
   const autoScroll = useRef(
     AutoScroll({
       speed: 1.2,
@@ -67,13 +70,28 @@ export default function OurTeamSection() {
     }),
   );
 
+  const handlePrev = useCallback(() => {
+    if (!api) return;
+    const autoScrollPlugin = api.plugins().autoScroll;
+    if (autoScrollPlugin) autoScrollPlugin.stop();
+    api.scrollPrev();
+  }, [api]);
+
+  const handleNext = useCallback(() => {
+    if (!api) return;
+    const autoScrollPlugin = api.plugins().autoScroll;
+    if (autoScrollPlugin) autoScrollPlugin.stop();
+    api.scrollNext();
+  }, [api]);
+
   return (
     <section
       id="team"
       className="w-full bg-white py-12 text-zinc-900 md:py-20 overflow-hidden"
     >
-      <div className="mx-auto w-full px-6 md:px-10 lg:px-3">
+      <div className="mx-auto w-full px-6">
         <Carousel
+          setApi={setApi}
           opts={{
             align: "start",
             loop: true,
@@ -82,7 +100,7 @@ export default function OurTeamSection() {
           plugins={[autoScroll.current]}
           className="w-full"
         >
-          <div className="mb-12 flex flex-col items-start justify-between gap-6 md:mb-20 md:flex-row md:items-end lg:px-8">
+          <div className="mb-12 flex flex-col items-start justify-between gap-6 md:mb-20 md:flex-row md:items-end">
             <div>
               <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-zinc-500">
                 The Minds Behind the Craft
@@ -97,8 +115,8 @@ export default function OurTeamSection() {
             </div>
 
             <div className="relative hidden gap-3 md:flex items-center min-w-24 min-h-12">
-              <CarouselPrevious className="static translate-y-0" />
-              <CarouselNext className="static translate-y-0" />
+              <CarouselPrevious className="static translate-y-0 hover:bg-black hover:text-white hover:border-black transition-colors duration-300" onClick={handlePrev} />
+              <CarouselNext className="static translate-y-0 hover:bg-black hover:text-white hover:border-black transition-colors duration-300" onClick={handleNext} />
             </div>
           </div>
 

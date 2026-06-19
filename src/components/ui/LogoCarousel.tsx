@@ -38,7 +38,7 @@ export default function LogoCarousel({
       className={cn("relative w-full overflow-hidden", className)}
     >
       <motion.div
-        className="flex w-max items-center gap-4 py-2 md:gap-5"
+        className="flex w-max items-center gap-3 py-2"
         animate={{ x: ["-50%", "0%"] }}
         transition={{
           repeat: Number.POSITIVE_INFINITY,

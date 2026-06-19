@@ -69,7 +69,7 @@ export default function SubServices() {
     for (let j = 0; j < services.length; j++) {
       const el = cardRefs.current[j];
       if (!el) continue;
-      const pinTop = window.innerHeight * 0.05 + j * 155;
+      const pinTop = window.innerHeight * 0.05 + j * 190;
       if (el.getBoundingClientRect().top <= pinTop + 2) active = j;
     }
     setActiveIndex((cur) => (cur === active ? cur : active));
@@ -79,7 +79,7 @@ export default function SubServices() {
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
         {/* HEADER SECTION */}
-        <div className="mx-auto flex w-full flex-col items-start justify-between gap-6 px-6 py-20 md:flex-row md:items-end lg:px-12">
+        <div className="mx-auto flex w-full flex-col items-start justify-between gap-6 px-6 py-20 md:flex-row md:items-end">
           <div className="flex flex-col gap-5">
             <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               What We Offer
@@ -116,7 +116,7 @@ export default function SubServices() {
         </div>
 
         {/* CTA / NEXT SECTION */}
-        <div className="relative z-50 flex min-h-[70vh] w-full flex-col items-center justify-center gap-16 bg-black px-6 shadow-lg:px-12">
+        <div className="relative z-50 flex min-h-[70vh] w-full flex-col items-center justify-center gap-16 bg-black px-6">
           <ConnectButton className="scale-110 md:scale-125" />
           <div className="mt-16 w-full border-b border-white/10" />
         </div>
@@ -143,17 +143,17 @@ function Card({
       ref={registerRef}
       className="sticky w-full"
       style={{
-        // Pins the card exactly spaced by 155px to leave the previous titles showing
-        top: `calc(5vh + ${i * 155}px)`,
+        // Pins the card exactly spaced by 190px to leave the previous titles showing
+        top: `calc(5vh + ${i * 190}px)`,
         // Later cards stack on top; fixed desktop height keeps earlier cards from poking through
         zIndex: i,
       }}
     >
       <div
-        className={`relative grid min-h-[50vh] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-6 pb-24 pt-12 md:h-[600px] md:min-h-0 md:grid-cols-2 md:gap-16 lg:px-12`}
+        className={`relative grid min-h-[50vh] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-6 pb-24 pt-12 md:h-[600px] md:min-h-0 md:grid-cols-2 md:gap-16`}
       >
         {/* LEFT COLUMN: Title, Description & Tags */}
-        <div className="flex w-full flex-col gap-8 pr-4">
+        <div className="flex w-full flex-col gap-12 md:gap-16 pr-4">
           <a href={link} className="group inline-block">
             <h3 className="text-5xl font-medium tracking-tight text-white transition-colors group-hover:text-zinc-400 md:text-6xl lg:text-7xl">
               {title1}
@@ -163,12 +163,12 @@ function Card({
           </a>
 
           <p className="max-w-xl text-lg font-light leading-[1.4em] text-zinc-300 md:text-xl">
-            {description}
+             {description}
           </p>
 
           {/* Tags Container */}
           {tags && tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-3 pt-4">
               {tags.map((tag: string, index: number) => (
                 <span
                   key={index}

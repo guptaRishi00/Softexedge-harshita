@@ -172,7 +172,7 @@ export default function ExperimentalTestimonials() {
             {duplicatedTestimonials.map((item, i) => (
               <div
                 key={`${item.name}-${i}`}
-                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-white p-8 transition-colors hover:border-zinc-300 hover:bg-gradient-to-br hover:from-white hover:to-zinc-200 md:min-h-[440px] md:w-[440px] md:p-10"
+                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors hover:border-zinc-300 hover:bg-linear-to-br hover:from-white hover:to-zinc-200 md:min-h-[440px] md:w-[440px] md:py-10"
               >
                 {/* Outlined Quote Icon (Top Right) */}
                 <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
@@ -193,13 +193,13 @@ export default function ExperimentalTestimonials() {
                 </div>
 
                 {/* Quote Text */}
-                <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.5em] tracking-tight text-zinc-900 md:mt-14 md:text-xl lg:text-xl">
+                <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.5em] tracking-tight text-zinc-900 md:mt-14 md:text-xl lg:text-2xl">
                   "{item.quote}"
                 </p>
 
                 {/* Bottom Profile */}
                 <div className="mt-8 flex items-center gap-4 md:mt-10">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-black/10 bg-black/5 text-sm font-bold text-zinc-700 md:h-14 md:w-14 md:text-base">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-black/10 bg-black text-sm font-bold text-white md:h-14 md:w-14 md:text-base">
                     {item.initials}
                   </div>
                   <div>

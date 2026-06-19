@@ -38,23 +38,14 @@ export default function AboutCinematic() {
           </p>
         </motion.div>
 
-        {/* --- PART 2: Cinematic Video — opens like an eye on scroll --- */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 mt-20 w-full max-w-[96rem] px-6 md:mt-28 md:px-12"
-        >
+        {/* --- PART 2: Cinematic Video --- */}
+        <div className="relative z-10 mt-20 w-full max-w-[96rem] px-6 md:mt-28 md:px-12">
           <motion.div
-            // Eye-open reveal: scales open vertically from the centre. Uses a
-            // transform (reliably animated by framer) instead of clipPath so the
-            // container always ends fully visible.
-            initial={{ scaleY: 0 }}
-            whileInView={{ scaleY: 1 }}
+            initial={{ opacity: 0, y: 90, scale: 0.93 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-            className="group relative aspect-video w-full origin-center overflow-hidden rounded-2xl bg-zinc-900"
+            className="group relative aspect-video w-full overflow-hidden rounded-2xl bg-zinc-900"
           >
             <video
               src="/assets/video1.mp4"
@@ -78,7 +69,7 @@ export default function AboutCinematic() {
               </p>
             </div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

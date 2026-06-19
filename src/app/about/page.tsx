@@ -49,28 +49,31 @@ export default function AboutPage({}: Props) {
   return (
     <div className="bg-white">
       <AboutHeroSection />
-      <AboutTraditional />
-      <OurValuesSection />
-      <OurTeamSection />
-      <div className="[&>section]:py-8 md:[&>section]:py-20">
+      <div className="[&>section]:py-16 md:[&>section]:py-24">
+        <AboutTraditional />
+      </div>
+      <div className="[&>section]:py-16 md:[&>section]:py-24">
+        <OurValuesSection />
+      </div>
+      <div className="[&>section]:py-16 md:[&>section]:py-24">
+        <OurTeamSection />
+      </div>
+      <div className="[&>section]:pt-16 [&>section]:pb-6 md:[&>section]:pt-24 md:[&>section]:pb-10">
         <ExperimentalTestimonials />
       </div>
-      <section className="flex w-full flex-col items-center gap-6 overflow-hidden bg-white pt-8 pb-16 md:pt-6 md:pb-16">
-        <p className="text-lg mb-10 font-medium uppercase tracking-[0.2em] text-[#7D7D86]">
-          Trusted By
-        </p>
+      <section className="w-full overflow-hidden bg-white pt-6 pb-16 md:pt-6 md:pb-24">
         <LogoCarousel logos={techLogos} ariaLabel="Technology partners" />
       </section>
-      <div className="px-3 [&>section]:py-8 md:[&>section]:py-6">
+      <div className="px-3 [&>section]:py-16 md:[&>section]:py-24">
         <CtaSection />
       </div>
-      <div className="[&>section]:py-8 md:[&>section]:py-6 mt-14">
+      <div className="[&>section]:py-16 md:[&>section]:py-24">
         <FaqSection />
       </div>
-      <div className="[&>section]:py-12 md:[&>section]:py-20">
+      <div className="[&>section]:py-16 md:[&>section]:py-24">
         <BlogSection />
       </div>
-      <div className="px-3 pt-12 pb-3 md:pt-20">
+      <div className="px-3 pt-16 pb-3 md:pt-24">
         <Footer />
       </div>
     </div>
