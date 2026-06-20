@@ -89,7 +89,7 @@ export default function OurTeamSection() {
       id="team"
       className="w-full bg-white py-12 text-zinc-900 md:py-20 overflow-hidden"
     >
-      <div className="mx-auto w-full px-6">
+      <div className="mx-auto w-full">
         <Carousel
           setApi={setApi}
           opts={{
@@ -100,7 +100,7 @@ export default function OurTeamSection() {
           plugins={[autoScroll.current]}
           className="w-full"
         >
-          <div className="mb-12 flex flex-col items-start justify-between gap-6 md:mb-20 md:flex-row md:items-end">
+          <div className="mb-12 flex flex-col items-start justify-between gap-6 px-6 md:mb-20 md:flex-row md:items-end">
             <div>
               <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-zinc-500">
                 The Minds Behind the Craft

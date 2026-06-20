@@ -18,7 +18,13 @@ function GridBackgroundCard({
   description,
   minHeightClass,
 }: GridCardProps) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  // The card already shows the proximity glow by default (around DEFAULT_INDEX);
+  // once the user moves the mouse it follows the cursor like a normal hover.
+  const DEFAULT_INDEX = 16;
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(
+    DEFAULT_INDEX,
+  );
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   // Set up motion values to track the mouse position for the spotlight mask
   const mouseX = useMotionValue(-1000);
@@ -27,6 +33,12 @@ function GridBackgroundCard({
   const columns = 6;
   const rows = 5;
   const totalItems = columns * rows;
+
+  // Cursor-following spotlight once interacted; a default revealed region before.
+  const cursorMask = useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`;
+  const idleMask =
+    "radial-gradient(400px circle at 75% 45%, black 0%, transparent 100%)";
+  const maskImage = hasInteracted ? cursorMask : idleMask;
 
   const getIntensity = (index: number) => {
     if (hoveredIndex === null) return 0;
@@ -44,6 +56,7 @@ function GridBackgroundCard({
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!hasInteracted) setHasInteracted(true);
     const { left, top } = e.currentTarget.getBoundingClientRect();
     mouseX.set(e.clientX - left);
     mouseY.set(e.clientY - top);
@@ -53,15 +66,18 @@ function GridBackgroundCard({
     // biome-ignore lint/a11y/noStaticElementInteractions: local mouse proximity tracking
     <div
       onMouseMove={handleMouseMove}
-      onMouseLeave={() => setHoveredIndex(null)}
+      onMouseLeave={() => {
+        setHasInteracted(false);
+        setHoveredIndex(DEFAULT_INDEX);
+      }}
       className={`relative flex ${minHeightClass} w-full flex-col justify-between overflow-hidden rounded-[24px] border border-zinc-800/50 bg-black p-8 md:p-10`}
     >
       {/* Interactive Proximity Background Grid */}
       <motion.div
         className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden transition-opacity duration-500"
         style={{
-          WebkitMaskImage: useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
-          maskImage: useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
+          WebkitMaskImage: maskImage,
+          maskImage: maskImage,
         }}
       >
         <div
@@ -126,7 +142,7 @@ function GridBackgroundCard({
 
 export default function WhyJoinUs() {
   return (
-    <section className="relative w-full bg-white px-6 py-20 md:px-12 md:py-28 text-zinc-900 border-t border-zinc-100">
+    <section className="relative w-full bg-white px-6 py-20 md:py-28 text-zinc-900 border-t border-zinc-100">
       <div className="w-full mx-auto">
         {/* Title */}
         <motion.h2
@@ -140,9 +156,9 @@ export default function WhyJoinUs() {
         </motion.h2>
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
           {/* Column 1 (Left) */}
-          <div className="flex flex-col gap-6 w-full">
+          <div className="flex flex-col gap-3 w-full">
             {/* Card 1: Flexible Work Culture (Taller) */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -175,7 +191,7 @@ export default function WhyJoinUs() {
           </div>
 
           {/* Column 2 (Right) */}
-          <div className="flex flex-col gap-6 w-full">
+          <div className="flex flex-col gap-3 w-full">
             {/* Card 3: Competitive Compensation (Shorter) */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}

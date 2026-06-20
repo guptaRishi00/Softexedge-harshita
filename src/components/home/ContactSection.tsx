@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { MdKeyboardArrowRight } from "react-icons/md";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -33,6 +33,41 @@ const channels = [
 const inputClass =
   "w-full rounded-2xl border border-white/10 bg-zinc-950/50 px-5 py-4 text-base text-white transition-all placeholder:text-zinc-500 hover:bg-zinc-950/80 focus:border-zinc-500 focus:bg-zinc-900 focus:outline-none focus:ring-4 focus:ring-zinc-500/20";
 
+// One proximity-grid cell, memoised so only cells whose intensity actually
+// changes re-render (same bg pattern as OurValuesSection).
+const Cell = memo(function Cell({
+  index,
+  intensity,
+  onEnter,
+}: {
+  index: number;
+  intensity: number;
+  onEnter: (i: number) => void;
+}) {
+  const colorVal = Math.round(7 * (1 - intensity));
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: decorative proximity-glow cell
+    <div
+      onMouseEnter={() => onEnter(index)}
+      className="relative aspect-square w-full overflow-hidden rounded-2xl p-[2px] transition-all duration-300 ease-out"
+      style={{ backgroundColor: intensity > 0 ? "transparent" : "#080808" }}
+    >
+      {/* Colored proximity glow */}
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-[#2E5BFF] via-[#149CCB] to-[#2E5BFF]"
+        style={{ opacity: intensity * 0.8 }}
+      />
+      {/* Inner cell */}
+      <div
+        className="relative z-10 h-full w-full rounded-2xl transition-colors duration-300"
+        style={{
+          backgroundColor: `rgb(${colorVal}, ${colorVal}, ${colorVal})`,
+        }}
+      />
+    </div>
+  );
+});
+
 export default function ContactSection() {
   const [index, setIndex] = useState(0);
 
@@ -43,14 +78,71 @@ export default function ContactSection() {
     return () => clearInterval(interval);
   }, []);
 
+  // Background proximity-glow grid (same pattern as OurValuesSection)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const totalItems = 250;
+  const columns = 10;
+  // Cells near the top lit by default to hint interactivity.
+  const initialLitIndices = [13, 27, 32, 48, 54];
+
+  const getIntensity = (gridIndex: number) => {
+    const row = Math.floor(gridIndex / columns);
+    const col = gridIndex % columns;
+
+    if (hoveredIndex !== null) {
+      const hoverRow = Math.floor(hoveredIndex / columns);
+      const hoverCol = hoveredIndex % columns;
+      const distance = Math.sqrt((row - hoverRow) ** 2 + (col - hoverCol) ** 2);
+      return distance > 3.5 ? 0 : 1 - distance / 1.79;
+    }
+
+    let maxIntensity = 0;
+    for (const litIndex of initialLitIndices) {
+      const litRow = Math.floor(litIndex / columns);
+      const litCol = litIndex % columns;
+      const distance = Math.sqrt((row - litRow) ** 2 + (col - litCol) ** 2);
+      if (distance <= 3.5) {
+        maxIntensity = Math.max(maxIntensity, 1 - distance / 1.79);
+      }
+    }
+    return maxIntensity;
+  };
+
+  const handleCellEnter = useCallback((i: number) => setHoveredIndex(i), []);
+
+  // Fixed-size, never-reordered grid → a positional id is a stable key.
+  const cellIds = Array.from({ length: totalItems }, (_, i) => `cell-${i}`);
+  const bgCells = cellIds.map((id, gridIndex) => (
+    <Cell
+      key={id}
+      index={gridIndex}
+      intensity={getIntensity(gridIndex)}
+      onEnter={handleCellEnter}
+    />
+  ));
+
   return (
-    <section id="contact" className="relative w-full overflow-hidden bg-black py-20 md:py-32">
-      {/* Decorative subtle background elements */}
-      <div className="pointer-events-none absolute left-0 top-0 hidden h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-[#2E5BFF]/10 to-transparent opacity-40 blur-[100px] lg:block" />
-      
-      <div className="mx-auto w-full max-w-[90rem] px-6 md:px-10">
+    // biome-ignore lint/a11y/noStaticElementInteractions: section-wide grid mouse-leave reset
+    <section
+      id="contact"
+      onMouseLeave={() => setHoveredIndex(null)}
+      className="relative w-full overflow-hidden bg-black py-20 md:py-32"
+    >
+      {/* Background Proximity Grid Pattern (same as OurValuesSection) */}
+      <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
+        <div
+          className="grid w-[110%] -ml-[5%] gap-3 pointer-events-auto"
+          style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+        >
+          {bgCells}
+        </div>
+      </div>
+
+      {/* Slight black overlay to dim the grid background */}
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-black/45" />
+
+      <div className="relative z-10 mx-auto w-full max-w-[90rem] px-6 md:px-10">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-8">
-          
           {/* LEFT: messaging + contact channels */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -160,7 +252,11 @@ export default function ContactSection() {
                 What can we help you with?
               </label>
               <div className="relative">
-                <select id="service" defaultValue="" className={`${inputClass} appearance-none pr-12 [&>option]:bg-zinc-900 [&>option]:text-white`}>
+                <select
+                  id="service"
+                  defaultValue=""
+                  className={`${inputClass} appearance-none pr-12 [&>option]:bg-zinc-900 [&>option]:text-white`}
+                >
                   <option value="" disabled className="text-zinc-500">
                     Select a service
                   </option>
@@ -170,7 +266,20 @@ export default function ContactSection() {
                   <option value="other">Other Inquiry</option>
                 </select>
                 <div className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <title>Select dropdown chevron</title>
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
                 </div>
               </div>
             </div>

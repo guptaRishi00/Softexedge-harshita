@@ -1,6 +1,12 @@
 "use client";
 
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import {
+  type MotionValue,
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import Image from "next/image";
 import { useRef } from "react";
 import Header from "../page/Header";
@@ -49,6 +55,60 @@ const images = [
   { src: "/assets/web.jpg", alt: "Web development" },
 ];
 
+// A single grid column: it drifts vertically on its own (infinite, seamless via
+// two stacked sets looping at -50%) and is offset by scroll via the `scrollY`
+// parallax value applied to the outer wrapper.
+function MarqueeColumn({
+  imgs,
+  scrollY,
+  direction,
+  duration,
+  className = "",
+}: {
+  imgs: { src: string; alt: string }[];
+  scrollY: MotionValue<number>;
+  direction: "up" | "down";
+  duration: number;
+  className?: string;
+}) {
+  const yKeyframes = direction === "up" ? ["0%", "-50%"] : ["-50%", "0%"];
+
+  return (
+    <motion.div style={{ y: scrollY }} className={className}>
+      <motion.div
+        className="flex flex-col"
+        animate={{ y: yKeyframes }}
+        transition={{
+          duration,
+          ease: "linear",
+          repeat: Number.POSITIVE_INFINITY,
+        }}
+      >
+        {["a", "b"].map((setId) => (
+          <div
+            key={`set-${setId}`}
+            className="flex flex-col gap-4 pb-4 md:gap-8 md:pb-8"
+          >
+            {imgs.map((img) => (
+              <div
+                key={`${img.src}-${setId}`}
+                className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]"
+              >
+                <Image
+                  src={img.src}
+                  alt={img.alt}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        ))}
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function ContactHeroSection() {
   const containerRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -84,98 +144,31 @@ export default function ContactHeroSection() {
       {/* Animated Background Images - Rotated Grid */}
       <div className="absolute inset-0 z-0 flex items-center justify-center opacity-100 pointer-events-none">
         <div className="grid h-[150vh] w-[150vw] -rotate-12 grid-cols-3 gap-4 md:gap-8 lg:w-[120vw]">
-          {/* Column 1 - Slides up */}
-          <motion.div
-            style={{ y: y1 }}
-            className="flex flex-col gap-4 md:gap-8 pt-[10vh]"
-          >
-            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
-              <Image
-                src={images[0].src}
-                alt={images[0].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
-              <Image
-                src={images[1].src}
-                alt={images[1].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
-              <Image
-                src={images[4].src}
-                alt={images[4].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-          </motion.div>
+          {/* Column 1 - drifts up + scroll parallax */}
+          <MarqueeColumn
+            imgs={[images[0], images[1], images[4]]}
+            scrollY={y1}
+            direction="up"
+            duration={34}
+            className="pt-[10vh]"
+          />
 
-          {/* Column 2 - Slides down */}
-          <motion.div
-            style={{ y: y2 }}
-            className="flex flex-col gap-4 md:gap-8 pt-[20vh]"
-          >
-            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
-              <Image
-                src={images[2].src}
-                alt={images[2].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
-              <Image
-                src={images[3].src}
-                alt={images[3].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
-              <Image
-                src={images[5].src}
-                alt={images[5].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-          </motion.div>
+          {/* Column 2 - drifts down + scroll parallax */}
+          <MarqueeColumn
+            imgs={[images[2], images[3], images[5]]}
+            scrollY={y2}
+            direction="down"
+            duration={28}
+            className="pt-[20vh]"
+          />
 
-          {/* Column 3 - Slides up */}
-          <motion.div
-            style={{ y: y1 }}
-            className="flex flex-col gap-4 md:gap-8"
-          >
-            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
-              <Image
-                src={images[4].src}
-                alt={images[4].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
-              <Image
-                src={images[0].src}
-                alt={images[0].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="relative h-[30vh] w-full overflow-hidden rounded-2xl md:h-[50vh]">
-              <Image
-                src={images[1].src}
-                alt={images[1].alt}
-                fill
-                className="object-cover"
-              />
-            </div>
-          </motion.div>
+          {/* Column 3 - drifts up + scroll parallax */}
+          <MarqueeColumn
+            imgs={[images[4], images[0], images[1]]}
+            scrollY={y1}
+            direction="up"
+            duration={40}
+          />
         </div>
       </div>
 

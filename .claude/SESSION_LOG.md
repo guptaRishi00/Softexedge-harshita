@@ -1,5 +1,118 @@
 # Session Log
 
+## 2026-06-18 — New "Find Your Career" section (career page)
+- Added `src/components/career/OpenPositions.tsx` — an accordion job board
+  matching the supplied mockup: a "Find Your Career" title, a search/category/
+  filters control bar, and expandable job rows (divider-separated). Each row
+  shows title + blurb + meta (`Full-time · Remote`) and a dark "Read More" pill;
+  expanding reveals About the Role, a two-column layout (Key Responsibilities +
+  Why Work With Us | Requirements + Good to Have), and a blue "Apply Job" button.
+- Accordion: one row open at a time; first row open by default (as in the image).
+  Search filters by title/blurb; category select filters by `job.category`;
+  Filters badge shows the result count. lucide icons (Search, ChevronDown,
+  SlidersHorizontal, ArrowUpRight); framer height-auto expand.
+- Section uses `px-6 py-20 md:py-28` to match WhyJoinUs; internal grid gaps are a
+  uniform `gap-10` (x = y) per the "consistent x/y gap" ask.
+- Wired into `src/app/career/page.tsx` below `<WhyJoinUs />`.
+- Verified: `npx tsc --noEmit` clean; biome clean (formatted); `next build` ✓
+  /career static.
+
+## 2026-06-18 — ContactSection (home): adopt OurValuesSection bg pattern
+- Replaced the decorative blur-blob bg in `home/ContactSection.tsx` with the same
+  proximity-glow grid used in OurValuesSection: ported the memoised `Cell`, the
+  250-cell / 10-col grid, `getIntensity` (cursor-follow + `initialLitIndices`
+  [13,27,32,48,54] default glow), `handleCellEnter` (useCallback), stable
+  `cellIds` keys, the `bg-black/45` dimming overlay, and section `onMouseLeave`
+  reset. Content container lifted to `relative z-10`.
+- Avoided shadowing the existing rotating-word `index` state by naming the grid
+  loop var `gridIndex`.
+- Incidental: added a `<title>` to the pre-existing select-chevron `<svg>` (it was
+  triggering a `noSvgWithoutTitle` error) so the touched file is lint-clean —
+  matches the project's titled-svg convention (CtaSection).
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /home static.
+
+## 2026-06-18 — ContactHeroSection: infinite-drift bg cards + scroll motion
+- The rotated bg image grid only moved on scroll (`y1`/`y2` parallax). Added a
+  continuous vertical auto-drift per column on top of the existing scroll parallax.
+- Refactored the 3 inline columns into a `MarqueeColumn` helper: outer `motion.div`
+  carries the scroll `y` (parallax), inner `motion.div` runs an infinite linear
+  `animate={{ y: [...] }}` loop. Seamlessness via two identical stacked sets each
+  `gap + pb` (so each set is self-contained) looping at `-50%`. Cols 1 & 3 drift
+  up, col 2 drifts down; durations 34/28/40s for an organic feel.
+- Kept scroll parallax (y1/y2) + text fade/scale untouched, so both motions compose.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /contact static.
+
+## 2026-06-18 — CareerValues: fix disappearing images + re-add scroll anim
+- Root cause of vanishing images: the bg `<img>`/veil used **negative** z-index
+  (`-z-20`/`-z-10`). With the card as a `motion.div`, its `opacity` formed a
+  stacking context that contained them; after the prior task made it a plain `div`
+  (no stacking context), the negative-z children escaped to the root and painted
+  **behind the section's `bg-white`** → invisible. (Unsplash URLs verified 200 —
+  not a broken-image issue.)
+- Fix: removed negative z-index; img + veil now paint in natural DOM order
+  (absolute, first), and the icon/text are lifted with `relative z-10` — the
+  standard pattern used elsewhere (OurTeamSection). Robust regardless of motion.
+- Re-added a simple scroll animation: container `staggerChildren` + per-card
+  fade/slide-up (`opacity 0→1`, `y 24→0`) on `whileInView` (once).
+- Verified: `npx tsc --noEmit` clean; no negative z-index remains; biome clean
+  (only tolerated `noImgElement`); `next build` ✓ /career static.
+
+## 2026-06-18 — CareerValues: remove animation
+- Stripped all motion from CareerValues: dropped the framer-motion import, the
+  `containerVariants`/`cardVariants` + `premiumEase`, converted both `motion.div`s
+  to plain `div`s (removed `whileInView`/stagger entrance), and removed the bg
+  image hover-zoom (`group` + `transition-transform group-hover:scale-105`). Cards
+  are now fully static. Verified: `npx tsc --noEmit` clean; no residual motion refs;
+  biome clean (only the tolerated `noImgElement` warning).
+
+## 2026-06-18 — New "Career Values" image-card grid (career page)
+- Added `src/components/career/CareerValues.tsx` — a 2×2 grid of photo cards
+  (Integrity / Innovation / Collaboration / Results-Driven) matching the mockup.
+  Each card: full-bleed background `<img>` (Unsplash, per SubServices convention)
+  with a bottom-left dark veil (`bg-gradient-to-tr from-black/90 …`), a white
+  rounded icon box (lucide Layers/Lightbulb/Network/BarChart3 stroked with the
+  brand gradient via shared `values-icon-grad` def), and white title + description.
+- Gradient = DynamicButton gradient `#2E5BFF → #149CCB`.
+- Animation: staggered fade/slide-up entrance (`whileInView`, variants) + bg image
+  zoom on hover (`group-hover:scale-105`).
+- x-padding matches WhyJoinUs: `px-6 py-20 md:py-28`, inner `mx-auto w-full`.
+- Wired into `src/app/career/page.tsx` below `<ApplicationJourney />` (now last).
+- Note: `noImgElement` biome warning is pre-existing project debt — every other
+  component uses `<img>` with no ignore comment, so left consistent.
+- Verified: `npx tsc --noEmit` clean; biome (only the tolerated img warning);
+  `next build` ✓ /career static.
+
+## 2026-06-18 — New "Your Application Journey" timeline (career page)
+- Added `src/components/career/ApplicationJourney.tsx` — a zigzag vertical
+  timeline (4 steps: Apply / Interview / Assignment / Offer) matching the mockup.
+  Each step: big number, title, description, and a rounded icon box. Step 01 is a
+  gradient-filled box (white icon); steps 02–04 are zinc-100 boxes whose lucide
+  icons are stroked with the brand gradient via a shared `journey-icon-grad` def.
+- Gradient is the DynamicButton gradient `#2E5BFF → #149CCB`.
+- Scroll animation: a center line (md+) whose gradient fill grows with scroll
+  (`useScroll` + `useSpring` driving `scaleY`, origin-top); each step fades/slides
+  in on view. Line hidden on mobile (steps stack icon+text); reveals still run.
+- x-padding matches WhyJoinUs: `px-6 py-20 md:py-28`, inner `mx-auto w-full`
+  (full-width, no max-w). lucide icons: BadgeCheck, MessageCircleQuestion,
+  ClipboardCheck, Mail.
+- Wired into `src/app/career/page.tsx` between `<WhyJoinUs />` and `<OpenPositions />`.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /career static.
+
+## 2026-06-18 — OpenPositions: boxes, default-closed, hero-style Apply
+- x-padding: dropped `max-w-7xl` from the inner container (`mx-auto w-full`) so it
+  matches WhyJoinUs (full-width, `px-6`).
+- Job rows → individual **boxes**: each role is now a `rounded-2xl border` card
+  (stacked `flex-col gap-4`) instead of divider-separated rows. Closed state shows
+  title + blurb + meta + "Read More" CTA; clicking expands the details inside.
+- State: `openId` (single, first-open) → `openIds: string[]` with a `toggle()` —
+  every box starts closed and each opens/closes independently.
+- Apply button restyled to match the hero "Search Open Jobs" CTA (white pill,
+  black arrow box, dual `MdArrowOutward` w/ gradient on the second, hover border +
+  padding shift); now a `mailto:` link per role. Added one shared `apply-icon-grad`
+  <svg> def at the section root to avoid duplicate-id clashes.
+- Verified: `npx tsc --noEmit` clean; biome clean (formatted); `next build` ✓
+  /career static.
+
 ## 2026-06-15 — New logo carousel on About page
 - Replaced `LogoLoop` marquee on `/about` with a new **spotlight carousel**.
 - Added `src/components/ui/LogoCarousel.tsx` (framer-motion, already a dep): a
@@ -622,3 +735,24 @@
 - Follow-up: made bg images more visible — grid `opacity-60` → `opacity-90`;
   veils eased (`from-white/40 via-white/60` → `from-white/25 via-white/50`;
   frost `bg-white/55` → `bg-white/40`). Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-18 — OurTeamSection: edge-to-edge carousel
+- The carousel wrapper had `px-6`, insetting the cards from the viewport edges.
+  Moved the `px-6` off the wrapper (`mx-auto w-full px-6` → `mx-auto w-full`) and
+  onto the header row only (title + arrows stay padded), so the carousel cards now
+  run edge-to-edge. Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-18 — WhyJoinUs (career): match OurTeamSection x-padding
+- OurTeamSection content uses `px-6` (no responsive override). WhyJoinUs section
+  was `px-6 md:px-12`; dropped `md:px-12` so its x-axis padding matches (`px-6`).
+  Verified: `npx tsc --noEmit` clean.
+
+## 2026-06-18 — WhyJoinUs cards: show the hover effect by default
+- The `GridBackgroundCard` proximity-glow + spotlight-mask only showed on hover
+  (mouseX/Y at -1000, hoveredIndex null). Now it shows by default and hover takes
+  over: seeded `hoveredIndex = DEFAULT_INDEX (16)`; added `hasInteracted` state;
+  mask is a fixed `idleMask` ("...at 75% 45%...") until the first mouse move, then
+  the cursor-following `cursorMask`. `onMouseLeave` resets to the default
+  (idle mask + DEFAULT_INDEX) so the effect persists when not hovering.
+- Verified: `npx tsc --noEmit` clean; biome clean (formatted); `next build` ✓
+  /career static.

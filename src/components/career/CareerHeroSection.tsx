@@ -24,7 +24,7 @@ export default function CareerHeroSection() {
           transition={{ duration: 0.8, ease: premiumEase }}
           className="text-center"
         >
-          <h1 className="text-[2.75rem] font-bold leading-[1.1] tracking-tight text-[#0A093D] sm:text-6xl md:text-7xl lg:text-[5.5rem] mb-2">
+          <h1 className="text-[2.75rem] font-bold leading-[1.1] tracking-tight text-black sm:text-6xl md:text-7xl lg:text-[5.5rem] mb-2">
             Think. Create. Do.
           </h1>
           <h2 className="text-[2.75rem] font-bold leading-[1.1] tracking-tight bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent sm:text-6xl md:text-7xl lg:text-[5.5rem] mb-6">
