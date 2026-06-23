@@ -1,9 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { Mail, MapPin, Phone } from "lucide-react";
-import { memo, useCallback, useEffect, useState } from "react";
-import { MdKeyboardArrowRight } from "react-icons/md";
+import { AnimatePresence, motion, useMotionTemplate, useMotionValue } from "framer-motion";
+import { Mail, MapPin, Phone, ArrowRight, Sparkles } from "lucide-react";
+import { useEffect, useState, MouseEvent } from "react";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -15,58 +14,83 @@ const channels = [
     value: "hello@softexedge.com",
     href: "mailto:hello@softexedge.com",
     Icon: Mail,
+    colSpan: "sm:col-span-2", // Full width
   },
   {
     label: "Phone",
     value: "+1 (800) 123-4567",
     href: "tel:+18001234567",
     Icon: Phone,
+    colSpan: "sm:col-span-1", // Half width
   },
   {
     label: "Studio",
-    value: "San Francisco, CA",
+    value: "San Francisco",
     href: "#location",
     Icon: MapPin,
+    colSpan: "sm:col-span-1", // Half width
   },
 ];
 
 const inputClass =
-  "w-full rounded-2xl border border-white/10 bg-zinc-950/50 px-5 py-4 text-base text-white transition-all placeholder:text-zinc-500 hover:bg-zinc-950/80 focus:border-zinc-500 focus:bg-zinc-900 focus:outline-none focus:ring-4 focus:ring-zinc-500/20";
+  "w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-base text-white transition-all placeholder:text-zinc-500 hover:bg-white/10 focus:border-[#2E5BFF]/50 focus:bg-white/10 focus:outline-none focus:ring-4 focus:ring-[#2E5BFF]/20";
 
-// One proximity-grid cell, memoised so only cells whose intensity actually
-// changes re-render (same bg pattern as OurValuesSection).
-const Cell = memo(function Cell({
-  index,
-  intensity,
-  onEnter,
+// --- Premium Spotlight Card Component ---
+function SpotlightCard({
+  children,
+  className = "",
 }: {
-  index: number;
-  intensity: number;
-  onEnter: (i: number) => void;
+  children: React.ReactNode;
+  className?: string;
 }) {
-  const colorVal = Math.round(7 * (1 - intensity));
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove({ currentTarget, clientX, clientY }: MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
+  }
+
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: decorative proximity-glow cell
     <div
-      onMouseEnter={() => onEnter(index)}
-      className="relative aspect-square w-full overflow-hidden rounded-2xl p-[2px] transition-all duration-300 ease-out"
-      style={{ backgroundColor: intensity > 0 ? "transparent" : "#080808" }}
+      className={`group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950 ${className}`}
+      onMouseMove={handleMouseMove}
     >
-      {/* Colored proximity glow */}
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-[#2E5BFF] via-[#149CCB] to-[#2E5BFF]"
-        style={{ opacity: intensity * 0.8 }}
-      />
-      {/* Inner cell */}
-      <div
-        className="relative z-10 h-full w-full rounded-2xl transition-colors duration-300"
+      {/* Dynamic Hover Spotlight */}
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-[2rem] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
         style={{
-          backgroundColor: `rgb(${colorVal}, ${colorVal}, ${colorVal})`,
+          background: useMotionTemplate`
+            radial-gradient(
+              600px circle at ${mouseX}px ${mouseY}px,
+              rgba(46, 91, 255, 0.15),
+              transparent 80%
+            )
+          `,
         }}
       />
+      {/* Border Glow Spotlight */}
+      <motion.div
+        className="pointer-events-none absolute -inset-px rounded-[2rem] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{
+          background: useMotionTemplate`
+            radial-gradient(
+              300px circle at ${mouseX}px ${mouseY}px,
+              rgba(20, 156, 203, 0.4),
+              transparent 80%
+            )
+          `,
+          WebkitMaskImage: "linear-gradient(black, black) content-box, linear-gradient(black, black)",
+          WebkitMaskComposite: "xor",
+          maskComposite: "exclude",
+          padding: "1px",
+        }}
+      />
+      <div className="relative z-10 h-full w-full">{children}</div>
     </div>
   );
-});
+}
 
 export default function ContactSection() {
   const [index, setIndex] = useState(0);
@@ -78,94 +102,65 @@ export default function ContactSection() {
     return () => clearInterval(interval);
   }, []);
 
-  // Background proximity-glow grid (same pattern as OurValuesSection)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const totalItems = 250;
-  const columns = 10;
-  // Cells near the top lit by default to hint interactivity.
-  const initialLitIndices = [13, 27, 32, 48, 54];
-
-  const getIntensity = (gridIndex: number) => {
-    const row = Math.floor(gridIndex / columns);
-    const col = gridIndex % columns;
-
-    if (hoveredIndex !== null) {
-      const hoverRow = Math.floor(hoveredIndex / columns);
-      const hoverCol = hoveredIndex % columns;
-      const distance = Math.sqrt((row - hoverRow) ** 2 + (col - hoverCol) ** 2);
-      return distance > 3.5 ? 0 : 1 - distance / 1.79;
-    }
-
-    let maxIntensity = 0;
-    for (const litIndex of initialLitIndices) {
-      const litRow = Math.floor(litIndex / columns);
-      const litCol = litIndex % columns;
-      const distance = Math.sqrt((row - litRow) ** 2 + (col - litCol) ** 2);
-      if (distance <= 3.5) {
-        maxIntensity = Math.max(maxIntensity, 1 - distance / 1.79);
-      }
-    }
-    return maxIntensity;
-  };
-
-  const handleCellEnter = useCallback((i: number) => setHoveredIndex(i), []);
-
-  // Fixed-size, never-reordered grid → a positional id is a stable key.
-  const cellIds = Array.from({ length: totalItems }, (_, i) => `cell-${i}`);
-  const bgCells = cellIds.map((id, gridIndex) => (
-    <Cell
-      key={id}
-      index={gridIndex}
-      intensity={getIntensity(gridIndex)}
-      onEnter={handleCellEnter}
-    />
-  ));
-
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: section-wide grid mouse-leave reset
-    <section
-      id="contact"
-      onMouseLeave={() => setHoveredIndex(null)}
-      className="relative w-full overflow-hidden bg-black py-20 md:py-32"
-    >
-      {/* Background Proximity Grid Pattern (same as OurValuesSection) */}
-      <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
-        <div
-          className="grid w-[110%] -ml-[5%] gap-3 pointer-events-auto"
-          style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-        >
-          {bgCells}
-        </div>
+    <section id="contact" className="relative w-full overflow-hidden bg-black py-24 md:py-32">
+      {/* Background Orbs */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          className="absolute -left-[10%] -top-[10%] h-[600px] w-[600px] rounded-full bg-[#2E5BFF] opacity-30 blur-[150px]"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.2, 0.4, 0.2],
+          }}
+          transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 2 }}
+          className="absolute -bottom-[20%] -right-[10%] h-[700px] w-[700px] rounded-full bg-[#149CCB] opacity-20 blur-[150px]"
+        />
+        
+        {/* Subtle dot pattern */}
+        <div 
+          className="absolute inset-0 opacity-[0.15]"
+          style={{
+            backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
+            backgroundSize: "32px 32px"
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
       </div>
 
-      {/* Slight black overlay to dim the grid background */}
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-black/45" />
-
-      <div className="relative z-10 mx-auto w-full max-w-[90rem] px-6 md:px-10">
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-8">
+      <div className="relative z-10 mx-auto w-full max-w-[85rem] px-6 md:px-10">
+        <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-12">
+          
           {/* LEFT: messaging + contact channels */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
-            className="flex flex-col lg:col-span-5 lg:pr-12 xl:pr-20"
+            className="flex flex-col lg:col-span-5 lg:pr-8"
           >
-            <div className="mb-6 inline-flex w-fit items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-sm backdrop-blur-md">
+            <div className="mb-8 inline-flex items-center text-sm font-bold uppercase tracking-widest bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent md:text-base">
               Get in touch
             </div>
 
-            <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-6xl lg:leading-[1.1]">
+            <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[64px] lg:leading-[1.05]">
               Let's build <br />
-              <span className="inline-grid overflow-hidden py-1">
+              <span className="inline-grid overflow-hidden py-2">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={index}
-                    initial={{ y: 30, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -30, opacity: 0 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="col-start-1 row-start-1 bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 leading-[1.3em] text-transparent"
+                    initial={{ y: 40, opacity: 0, rotateX: -90 }}
+                    animate={{ y: 0, opacity: 1, rotateX: 0 }}
+                    exit={{ y: -40, opacity: 0, rotateX: 90 }}
+                    transition={{ duration: 0.5, ease: premiumEase }}
+                    className="col-start-1 row-start-1 origin-center bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent"
+                    style={{ transformPerspective: 1000 }}
                   >
                     {rotatingWords[index]}
                   </motion.span>
@@ -173,146 +168,118 @@ export default function ContactSection() {
               </span>
             </h2>
 
-            <p className="mt-6 text-lg leading-relaxed text-zinc-400 md:text-xl">
-              Whether you have a specific project in mind or just want to
-              explore possibilities, our team is ready to collaborate.
+            <p className="mt-6 text-lg font-medium leading-relaxed text-zinc-400 md:text-xl">
+              Ready to redefine the standard? Whether you have a specific project in mind or just want to explore possibilities, our team is ready to collaborate.
             </p>
 
-            {/* Bento-style contact cards (Dark Mode) */}
-            <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
-              {channels.map(({ label, value, href, Icon }) => (
-                <a
-                  key={label}
-                  href={href}
-                  className="group flex items-center gap-5 rounded-3xl border border-white/5 bg-zinc-900/40 p-5 transition-all hover:border-white/20 hover:bg-zinc-800/60 hover:shadow-lg hover:shadow-black/50"
-                >
-                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/5 text-zinc-400 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-[#2E5BFF]">
-                    <Icon className="h-6 w-6" strokeWidth={1.5} />
-                  </span>
-                  <span className="flex flex-col gap-0.5">
-                    <span className="text-sm font-medium text-zinc-500 transition-colors group-hover:text-zinc-400">
-                      {label}
+            {/* Bento-style contact cards with Spotlight */}
+            <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {channels.map(({ label, value, href, Icon, colSpan }, i) => (
+                <SpotlightCard key={label} className={colSpan}>
+                  <a href={href} className="flex h-full flex-col justify-between gap-6 p-6 sm:p-8">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-zinc-400 transition-colors duration-300 group-hover:bg-[#2E5BFF]/20 group-hover:text-[#2E5BFF]">
+                      <Icon className="h-5 w-5" strokeWidth={2} />
                     </span>
-                    <span className="text-lg font-bold text-white transition-colors group-hover:text-white">
-                      {value}
+                    <span className="flex flex-col gap-1">
+                      <span className="text-sm font-semibold tracking-wide text-zinc-500 uppercase">
+                        {label}
+                      </span>
+                      <span className="text-lg font-bold text-white sm:text-xl">
+                        {value}
+                      </span>
                     </span>
-                  </span>
-                </a>
+                  </a>
+                </SpotlightCard>
               ))}
             </div>
           </motion.div>
 
           {/* RIGHT: contact form */}
-          <motion.form
-            initial={{ opacity: 0, y: 30 }}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="relative flex h-full w-full flex-col justify-between gap-6 rounded-[2.5rem] border border-white/5 bg-zinc-900/30 p-8 shadow-2xl backdrop-blur-xl md:p-12 lg:col-span-7"
+            className="lg:col-span-7"
           >
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-              <div className="flex flex-col gap-3">
-                <label
-                  htmlFor="name"
-                  className="pl-1 text-sm font-semibold tracking-wide text-zinc-300"
-                >
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  placeholder="John Doe"
-                  className={inputClass}
-                  required
-                />
-              </div>
+            <div className="h-full overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950">
+              <form className="flex h-full flex-col justify-between gap-8 p-8 sm:p-10 md:p-12">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+                  <div className="flex flex-col gap-3">
+                    <label htmlFor="name" className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      placeholder="John Doe"
+                      className={inputClass}
+                      required
+                    />
+                  </div>
 
-              <div className="flex flex-col gap-3">
-                <label
-                  htmlFor="email"
-                  className="pl-1 text-sm font-semibold tracking-wide text-zinc-300"
-                >
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  placeholder="john@company.com"
-                  className={inputClass}
-                  required
-                />
-              </div>
-            </div>
+                  <div className="flex flex-col gap-3">
+                    <label htmlFor="email" className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      placeholder="john@company.com"
+                      className={inputClass}
+                      required
+                    />
+                  </div>
+                </div>
 
-            <div className="flex flex-col gap-3 pt-2">
-              <label
-                htmlFor="service"
-                className="pl-1 text-sm font-semibold tracking-wide text-zinc-300"
-              >
-                What can we help you with?
-              </label>
-              <div className="relative">
-                <select
-                  id="service"
-                  defaultValue=""
-                  className={`${inputClass} appearance-none pr-12 [&>option]:bg-zinc-900 [&>option]:text-white`}
-                >
-                  <option value="" disabled className="text-zinc-500">
-                    Select a service
-                  </option>
-                  <option value="design">Product Design</option>
-                  <option value="engineering">Software Engineering</option>
-                  <option value="marketing">Digital Marketing</option>
-                  <option value="other">Other Inquiry</option>
-                </select>
-                <div className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                <div className="flex flex-col gap-3">
+                  <label htmlFor="service" className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400">
+                    What can we help you with?
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="service"
+                      defaultValue=""
+                      className={`${inputClass} appearance-none pr-12 [&>option]:bg-zinc-900 [&>option]:text-white cursor-pointer`}
+                    >
+                      <option value="" disabled className="text-zinc-500">Select a service</option>
+                      <option value="design">Product Design</option>
+                      <option value="engineering">Software Engineering</option>
+                      <option value="marketing">Digital Marketing</option>
+                      <option value="other">Other Inquiry</option>
+                    </select>
+                    <div className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <label htmlFor="message" className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    rows={4}
+                    placeholder="Tell us about your goals, timeline, and budget..."
+                    className={`${inputClass} resize-none`}
+                    required
+                  />
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors hover:bg-zinc-200 focus:outline-none"
                   >
-                    <title>Select dropdown chevron</title>
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
+                    <span>Send Message</span>
+                  </button>
                 </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 pt-2">
-              <label
-                htmlFor="message"
-                className="pl-1 text-sm font-semibold tracking-wide text-zinc-300"
-              >
-                Message
-              </label>
-              <textarea
-                id="message"
-                rows={5}
-                placeholder="Tell us about your goals, timeline, and budget..."
-                className={`${inputClass} resize-none`}
-                required
-              />
-            </div>
-
-            <div className="pt-4">
-              <button
-                type="submit"
-                className="group inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-semibold text-zinc-900 transition-all hover:bg-zinc-200 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-4 focus:ring-zinc-500 active:scale-[0.98]"
-              >
-                <span>Send Message</span>
-                <div className="relative flex h-5 w-5 items-center justify-center overflow-hidden">
-                  <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]" />
-                  <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
-                </div>
-              </button>
-            </div>
-          </motion.form>
+              </form>
+            </div >
+          </motion.div>
         </div>
       </div>
     </section>

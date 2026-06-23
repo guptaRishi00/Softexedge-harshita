@@ -1,12 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowUpRight,
-  ChevronDown,
-  Search,
-  SlidersHorizontal,
-} from "lucide-react";
+import { MapPin } from "lucide-react";
 import { useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 
@@ -27,165 +22,102 @@ interface Job {
 
 const jobs: Job[] = [
   {
-    id: "social-media-manager",
-    title: "Social Media Manager",
-    blurb:
-      "Plan, create, and manage content strategies that grow brand presence and drive engagement across platforms.",
-    category: "Marketing",
-    meta: ["Full-time", "Remote"],
-    about:
-      "We're looking for a creative and data-driven Social Media Manager to lead and manage our social presence across platforms. You'll be responsible for content strategy, execution, performance tracking, and community engagement — turning ideas into consistent brand impact.",
-    responsibilities: [
-      "Plan and execute social media strategies aligned with brand and business goals.",
-      "Create, schedule, and publish content across Instagram, LinkedIn, Twitter/X, and other relevant platforms.",
-      "Write engaging captions, hooks, and CTAs tailored to each platform.",
-      "Collaborate with designers, video editors, and marketing teams to produce high-quality content.",
-      "Manage content calendars and ensure timely delivery of posts and campaigns.",
-      "Monitor analytics, insights, and trends to optimize performance and engagement.",
-      "Respond to comments, messages, and build an active online community.",
-      "Run end-to-end paid social campaigns (optional).",
-      "Stay updated with platform trends, algorithm changes, and best practices.",
-    ],
-    requirements: [
-      "1–3 years of experience managing brand or business social media accounts.",
-      "Strong understanding of social media platforms, trends, and content formats.",
-      "Excellent written communication and storytelling skills.",
-      "Experience with content scheduling and analytics tools.",
-      "Ability to manage multiple accounts and deadlines efficiently.",
-      "Creative mindset with a keen eye for design.",
-    ],
-    perks: [
-      "Flexible remote work culture.",
-      "Competitive salary with performance-based growth.",
-      "Opportunity to work on global projects and brands.",
-      "Creative, collaborative, and growth-focused environment.",
-      "Continuous learning and skill development support.",
-    ],
-    goodToHave: [
-      "Experience working with creative agencies or SaaS brands.",
-      "Basic knowledge of paid ads and performance marketing.",
-      "Understanding of branding, design principles, and short-form video trends.",
-      "Familiarity with tools like Meta Business Suite, Buffer, Hootsuite, or similar.",
-    ],
-  },
-  {
-    id: "frontend-developer",
-    title: "Frontend Developer",
-    blurb:
-      "Build responsive, high-performance web interfaces using modern frameworks while ensuring seamless user experiences.",
+    id: "ui-ux-designer",
+    title: "UI UX Designer",
+    blurb: "Design beautiful and intuitive digital experiences.",
     category: "Engineering",
-    meta: ["Full-time", "Onsite", "Bengaluru, Karnataka"],
+    meta: ["Hybrid - Full time", "Mumbai"],
     about:
-      "We're seeking a Frontend Developer who loves crafting fast, accessible, and pixel-perfect interfaces. You'll work closely with designers and backend engineers to ship polished products that feel effortless to use.",
+      "We're looking for an exceptional UI UX Designer to craft stunning digital products. You'll work closely with engineering to build world-class experiences.",
     responsibilities: [
-      "Build and maintain responsive interfaces with React and Next.js.",
-      "Translate Figma designs into clean, reusable components.",
-      "Optimize applications for speed, accessibility, and SEO.",
-      "Integrate REST and GraphQL APIs with robust state management.",
-      "Collaborate with designers and backend engineers across the stack.",
+      "Create wireframes, prototypes, and high-fidelity designs.",
+      "Conduct user research and usability testing.",
+      "Collaborate with developers to ensure pixel-perfect implementation.",
     ],
     requirements: [
-      "2+ years of experience building production web apps.",
-      "Strong command of React, TypeScript, and modern CSS.",
-      "Familiarity with Next.js, Tailwind, and component-driven development.",
-      "Understanding of web performance and accessibility best practices.",
-      "An eye for detail and smooth interaction design.",
+      "3+ years of experience in product design.",
+      "Expertise in Figma and prototyping tools.",
+      "Strong portfolio demonstrating UI and UX skills.",
     ],
     perks: [
-      "Modern, well-equipped onsite studio.",
-      "Competitive salary with performance-based growth.",
-      "Work on ambitious products with a senior team.",
-      "Clear growth path and mentorship.",
+      "Flexible hybrid work culture.",
+      "Competitive salary and stock options.",
+      "Top-tier design equipment.",
     ],
     goodToHave: [
-      "Experience with animation libraries like Framer Motion or GSAP.",
-      "Familiarity with testing tools and CI workflows.",
-      "Contributions to open-source or a strong portfolio.",
+      "Experience with Framer or Webflow.",
+      "Basic understanding of frontend development.",
     ],
   },
   {
-    id: "motion-graphics-editor",
-    title: "Motion Graphics & Video Editor",
-    blurb:
-      "Produce engaging videos, reels, and motion graphics for social media, web, and brand campaigns.",
-    category: "Design",
-    meta: ["Full-time", "Delhi"],
+    id: "marketing-associate",
+    title: "Marketing Associate",
+    blurb: "Drive growth and brand awareness through creative campaigns.",
+    category: "Product",
+    meta: ["Onsite - Full time", "Mumbai"],
     about:
-      "We want a storyteller who can turn raw footage and ideas into scroll-stopping motion. You'll own the edit from concept to final cut across social, web, and brand campaigns.",
+      "Join our product team to lead marketing initiatives, manage campaigns, and accelerate user acquisition.",
     responsibilities: [
-      "Edit short-form and long-form video for social and brand campaigns.",
-      "Design motion graphics, transitions, and animated typography.",
-      "Collaborate with the content team on concepts and storyboards.",
-      "Maintain a consistent visual style across all output.",
-      "Manage project files, versions, and timely delivery.",
+      "Develop and execute marketing campaigns.",
+      "Manage social media accounts and content calendar.",
+      "Analyze campaign performance and optimize strategies.",
     ],
     requirements: [
-      "2+ years of professional video editing experience.",
-      "Proficiency in After Effects, Premiere Pro, or equivalent tools.",
-      "Strong sense of pacing, rhythm, and visual storytelling.",
-      "Ability to manage multiple projects under deadlines.",
+      "1-3 years of marketing experience.",
+      "Strong written and verbal communication skills.",
+      "Data-driven mindset.",
     ],
     perks: [
-      "Creative, idea-driven team culture.",
-      "Competitive salary with performance-based growth.",
-      "Access to top-tier gear and software.",
-      "Variety of brands and formats to work on.",
+      "Vibrant onsite work environment.",
+      "Performance-based bonuses.",
+      "Clear path to leadership roles.",
     ],
     goodToHave: [
-      "Experience with 3D tools like Blender or Cinema 4D.",
-      "Sound design and color grading skills.",
-      "A reel showcasing branded motion work.",
+      "Experience with SEO and paid advertising.",
+      "Familiarity with analytics tools like Google Analytics.",
     ],
   },
   {
-    id: "senior-graphic-designer",
-    title: "Senior Graphic Designer",
-    blurb:
-      "Create high-impact visuals, brand systems, and marketing creatives across digital platforms while maintaining strong brand consistency.",
-    category: "Design",
-    meta: ["Full-time", "Remote"],
+    id: "sales-representative",
+    title: "Sales Representative",
+    blurb: "Expand our client base and drive revenue growth.",
+    category: "Sales",
+    meta: ["Onsite - Full time", "Mumbai"],
     about:
-      "As a Senior Graphic Designer, you'll set the visual bar for our brands. You'll craft cohesive design systems and lead creative execution across campaigns, products, and platforms.",
+      "We are looking for a driven Sales Representative to build relationships with key clients and close high-value deals.",
     responsibilities: [
-      "Design brand systems, marketing creatives, and campaign assets.",
-      "Own visual consistency across digital and print touchpoints.",
-      "Mentor junior designers and review creative output.",
-      "Partner with marketing and product teams on creative direction.",
-      "Translate briefs into polished, on-brand design.",
+      "Identify and prospect new sales opportunities.",
+      "Conduct product demos and presentations.",
+      "Negotiate and close contracts.",
     ],
     requirements: [
-      "4+ years of graphic design experience, ideally agency or in-house brand.",
-      "Mastery of the Adobe Creative Suite and Figma.",
-      "Strong portfolio demonstrating brand and campaign work.",
-      "Excellent typography, layout, and composition skills.",
+      "2+ years of B2B sales experience.",
+      "Proven track record of meeting or exceeding quotas.",
+      "Excellent negotiation and interpersonal skills.",
     ],
     perks: [
-      "Flexible remote work culture.",
-      "Competitive salary with performance-based growth.",
-      "Creative ownership and a seat at the table.",
-      "Continuous learning and skill development support.",
+      "Uncapped commission structure.",
+      "Travel opportunities.",
+      "Comprehensive health benefits.",
     ],
     goodToHave: [
-      "Experience with motion or basic web design.",
-      "Familiarity with design ops and component libraries.",
-      "Illustration or art-direction experience.",
+      "Experience selling software or agency services.",
+      "Strong network in the tech industry.",
     ],
   },
 ];
 
-const categories = ["All Categories", "Marketing", "Engineering", "Design"];
-
 function DetailList({ heading, items }: { heading: string; items: string[] }) {
   return (
     <div>
-      <h4 className="text-base font-bold text-zinc-900">{heading}</h4>
+      <h4 className="text-base font-bold text-white">{heading}</h4>
       <ul className="mt-4 flex flex-col gap-2.5">
         {items.map((item) => (
           <li
             key={item}
-            className="flex gap-3 text-sm leading-relaxed text-zinc-500"
+            className="flex gap-3 text-sm leading-relaxed text-zinc-400"
           >
-            <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-zinc-400" />
+            <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#2E5BFF]" />
             <span>{item}</span>
           </li>
         ))}
@@ -195,136 +127,99 @@ function DetailList({ heading, items }: { heading: string; items: string[] }) {
 }
 
 export default function OpenPositions() {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All Categories");
-  // Each box opens/closes independently; all start closed.
   const [openIds, setOpenIds] = useState<string[]>([]);
 
-  const toggle = (id: string) =>
+  const toggle = (id: string, e: React.MouseEvent) => {
+    // Prevent toggle if they click the Apply button specifically
+    if ((e.target as HTMLElement).closest("a")) return;
+
     setOpenIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
-
-  const filtered = jobs.filter((job) => {
-    const matchesQuery = `${job.title} ${job.blurb}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase());
-    const matchesCategory =
-      category === "All Categories" || job.category === category;
-    return matchesQuery && matchesCategory;
-  });
+  };
 
   return (
-    <section className="w-full bg-white px-6 py-20 text-zinc-900 md:py-28">
-      {/* Shared gradient for the Apply arrow icon (defined once to avoid id clashes) */}
-      <svg width="0" height="0" className="absolute">
-        <title>Apply arrow gradient</title>
-        <defs>
-          <linearGradient
-            id="apply-icon-grad"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="0%"
-          >
-            <stop stopColor="#2E5BFF" offset="0%" />
-            <stop stopColor="#149CCB" offset="100%" />
-          </linearGradient>
-        </defs>
-      </svg>
-
+    <section className="w-full bg-black px-10 py-24 md:py-32 font-sans selection:bg-[#2E5BFF]/20">
       <div className="mx-auto w-full">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.8, ease: premiumEase }}
-          className="text-4xl font-bold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl"
-        >
-          Find Your Career
-        </motion.h2>
-
-        {/* Search / filter bar */}
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="flex flex-1 items-center gap-2.5 rounded-full border border-zinc-200 px-5 py-3 transition-colors focus-within:border-zinc-400">
-            <Search className="h-4 w-4 shrink-0 text-zinc-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search Job"
-              aria-label="Search jobs"
-              className="w-full bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
-            />
-          </label>
-
-          <div className="relative">
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              aria-label="Filter by job category"
-              className="w-full cursor-pointer appearance-none rounded-full border border-zinc-200 py-3 pl-5 pr-12 text-sm text-zinc-600 transition-colors hover:border-zinc-400 focus:border-zinc-400 focus:outline-none sm:w-auto"
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c === "All Categories" ? "Select Job Category" : c}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-          </div>
-
-          <button
-            type="button"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-200 px-5 py-3 text-sm font-medium text-zinc-600 transition-colors hover:border-zinc-400"
+        {/* Header matching the image */}
+        <div className="flex flex-col items-center mb-16 md:mb-24">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: premiumEase }}
+            className="mb-8 inline-flex items-center text-xs font-medium tracking-wide text-zinc-300 backdrop-blur-sm"
           >
-            <SlidersHorizontal className="h-4 w-4" />
-            Filters
-            <span className="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-zinc-900 px-1.5 text-xs font-semibold text-white">
-              {filtered.length}
-            </span>
-          </button>
+            Open Positions
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
+            className="text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl"
+          >
+            Open Positions
+          </motion.h2>
         </div>
 
-        {/* Job list — each role is a box that opens/closes independently */}
-        <div className="mt-12 flex flex-col gap-4">
-          {filtered.map((job) => {
+        {/* Job List matching the image exactly */}
+        <div className="flex flex-col border-t border-white/10">
+          {jobs.map((job, idx) => {
             const open = openIds.includes(job.id);
             return (
-              <div
+              <motion.div
                 key={job.id}
-                className="rounded-2xl border border-zinc-200 bg-white p-6 transition-colors hover:border-zinc-300 md:p-8"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{
+                  duration: 0.6,
+                  delay: idx * 0.1,
+                  ease: premiumEase,
+                }}
+                className="group border-b border-white/10"
               >
-                <div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-center">
-                  <div className="max-w-2xl">
-                    <h3 className="text-2xl font-bold tracking-tight text-zinc-900 md:text-[1.75rem]">
+                {/* Visible Row */}
+                {/* biome-ignore lint/a11y/useKeyWithClickEvents: simple expandable row */}
+                <div
+                  onClick={(e) => toggle(job.id, e)}
+                  className="flex flex-col md:flex-row md:items-center justify-between py-8 cursor-pointer gap-6 transition-colors duration-300 hover:bg-white/[0.02] px-4 -mx-4 rounded-xl"
+                >
+                  {/* Left: Title */}
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-medium tracking-tight text-white transition-colors duration-300 group-hover:text-[#149CCB]">
                       {job.title}
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-zinc-500 md:text-base">
-                      {job.blurb}
-                    </p>
-                    <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                      {job.meta.join(" · ")}
-                    </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => toggle(job.id)}
-                    aria-expanded={open}
-                    className="group inline-flex shrink-0 items-center gap-3 rounded-full bg-zinc-900 py-1.5 pl-5 pr-1.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800"
-                  >
-                    {open ? "Read Less" : "Read More"}
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-zinc-900">
-                      <ArrowUpRight
-                        className={`h-4 w-4 transition-transform duration-300 ${
-                          open ? "rotate-90" : "group-hover:rotate-45"
-                        }`}
-                      />
+                  {/* Center: Outline Pills */}
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3 flex-1 md:justify-center">
+                    <span className="rounded-md border border-white/20 px-3 py-1.5 text-xs text-zinc-300 font-medium whitespace-nowrap">
+                      {job.category}
                     </span>
-                  </button>
+                    <span className="rounded-md border border-white/20 px-3 py-1.5 text-xs text-zinc-300 font-medium whitespace-nowrap">
+                      {job.meta[0]}
+                    </span>
+                    <span className="rounded-md border border-white/20 px-3 py-1.5 text-xs text-zinc-300 font-medium flex items-center gap-1.5 whitespace-nowrap">
+                      <MapPin className="h-3.5 w-3.5 text-zinc-400" />
+                      {job.meta[1] || job.meta[0]}
+                    </span>
+                  </div>
+
+                  {/* Right: Apply Now Button */}
+                  <div className="flex-1 flex md:justify-end">
+                    <a
+                      href={`mailto:careers@softexedge.com?subject=Application for ${job.title}`}
+                      className="relative inline-flex items-center justify-center rounded-full bg-linear-to-r from-[#2E5BFF] to-[#149CCB] px-8 py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+                    >
+                      Apply Now
+                    </a>
+                  </div>
                 </div>
 
+                {/* Hidden Accordion Details */}
                 <AnimatePresence initial={false}>
                   {open && (
                     <motion.div
@@ -332,21 +227,18 @@ export default function OpenPositions() {
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.4, ease: premiumEase }}
-                      className="overflow-hidden"
+                      className="overflow-hidden px-4"
                     >
-                      <div className="pt-10">
-                        {/* About the Role */}
+                      <div className="pb-10 pt-4 border-t border-white/5">
                         <div className="max-w-4xl">
-                          <h4 className="text-base font-bold text-zinc-900">
+                          <h4 className="text-base font-bold text-white">
                             About the Role
                           </h4>
-                          <p className="mt-4 text-sm leading-relaxed text-zinc-500 md:text-base">
+                          <p className="mt-4 text-sm leading-relaxed text-zinc-400 md:text-base">
                             {job.about}
                           </p>
                         </div>
 
-                        {/* Two columns: left = Key Responsibilities + Why Work With Us,
-                            right = Requirements + Good to Have */}
                         <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-2">
                           <div className="flex flex-col gap-10">
                             <DetailList
@@ -369,37 +261,13 @@ export default function OpenPositions() {
                             />
                           </div>
                         </div>
-
-                        {/* Apply — styled like the hero "Search Open Jobs" button */}
-                        <a
-                          href={`mailto:careers@softexedge.com?subject=Application for ${job.title}`}
-                          className="group mt-10 flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
-                        >
-                          <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
-                            Apply Job
-                          </span>
-
-                          <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
-                            <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
-                            <MdArrowOutward
-                              className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
-                              style={{ fill: "url(#apply-icon-grad)" }}
-                            />
-                          </div>
-                        </a>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </motion.div>
             );
           })}
-
-          {filtered.length === 0 && (
-            <p className="py-16 text-center text-sm text-zinc-400">
-              No roles match your search.
-            </p>
-          )}
         </div>
       </div>
     </section>

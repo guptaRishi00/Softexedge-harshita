@@ -1,7 +1,13 @@
-// src/components/career/WhyJoinUs.tsx
 "use client";
 
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
+import {
+  Globe,
+  Users,
+  TrendingUp,
+  BookOpen,
+  type LucideIcon,
+} from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 
@@ -10,23 +16,22 @@ const premiumEase = [0.16, 1, 0.3, 1] as const;
 interface GridCardProps {
   title: string;
   description: string;
+  icon: LucideIcon;
   minHeightClass: string;
 }
 
 function GridBackgroundCard({
   title,
   description,
+  icon: Icon,
   minHeightClass,
 }: GridCardProps) {
-  // The card already shows the proximity glow by default (around DEFAULT_INDEX);
-  // once the user moves the mouse it follows the cursor like a normal hover.
   const DEFAULT_INDEX = 16;
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(
     DEFAULT_INDEX,
   );
   const [hasInteracted, setHasInteracted] = useState(false);
 
-  // Set up motion values to track the mouse position for the spotlight mask
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
 
@@ -34,7 +39,6 @@ function GridBackgroundCard({
   const rows = 5;
   const totalItems = columns * rows;
 
-  // Cursor-following spotlight once interacted; a default revealed region before.
   const cursorMask = useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`;
   const idleMask =
     "radial-gradient(400px circle at 75% 45%, black 0%, transparent 100%)";
@@ -42,13 +46,10 @@ function GridBackgroundCard({
 
   const getIntensity = (index: number) => {
     if (hoveredIndex === null) return 0;
-
     const row = Math.floor(index / columns);
     const col = index % columns;
-
     const hoverRow = Math.floor(hoveredIndex / columns);
     const hoverCol = hoveredIndex % columns;
-
     const distance = Math.sqrt((row - hoverRow) ** 2 + (col - hoverCol) ** 2);
 
     if (distance > 2.5) return 0;
@@ -70,9 +71,9 @@ function GridBackgroundCard({
         setHasInteracted(false);
         setHoveredIndex(DEFAULT_INDEX);
       }}
-      className={`relative flex ${minHeightClass} w-full flex-col justify-between overflow-hidden rounded-[24px] border border-zinc-800/50 bg-black p-8 md:p-10`}
+      className={`group relative flex ${minHeightClass} w-full flex-col justify-between overflow-hidden rounded-[24px] border border-zinc-200 bg-white p-8 md:p-10 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#2E5BFF]/10`}
     >
-      {/* Interactive Proximity Background Grid */}
+      {/* Light Mode Interactive Proximity Background Grid */}
       <motion.div
         className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden transition-opacity duration-500"
         style={{
@@ -82,13 +83,12 @@ function GridBackgroundCard({
       >
         <div
           className="grid w-[110%] -ml-[5%] -mt-[5%] gap-2.5"
-          style={{
-            gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-          }}
+          style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
         >
           {Array.from({ length: totalItems }).map((_, index) => {
             const intensity = getIntensity(index);
-            const colorVal = Math.round(18 * (1 - intensity)); // Grid cell darkness (transitions to black under mouse)
+            // Light mode boxes: transition from white/zinc-50 to transparent to reveal gradient
+            const colorVal = Math.round(255 - 15 * intensity); // 255 (white) to 240 (light gray)
             const bgColor = `rgb(${colorVal}, ${colorVal}, ${colorVal})`;
 
             return (
@@ -99,42 +99,55 @@ function GridBackgroundCard({
                 onMouseEnter={() => setHoveredIndex(index)}
                 className="relative aspect-square w-full overflow-hidden rounded-[14px] p-[1.5px] transition-all duration-300 ease-out"
                 style={{
-                  backgroundColor: intensity > 0 ? "transparent" : "#121212",
+                  backgroundColor: intensity > 0 ? "transparent" : "#f4f4f5", // zinc-100 base
                 }}
               >
-                {/* Glow outline gradient */}
+                {/* Glow outline gradient underneath */}
                 <div
                   className="absolute inset-0 bg-gradient-to-b from-[#2E5BFF] via-[#149CCB] to-[#2E5BFF]"
-                  style={{ opacity: intensity * 0.75 }}
+                  style={{ opacity: intensity * 0.4 }}
                 />
 
-                {/* Inner dark cell */}
+                {/* Inner light cell */}
                 <div
                   className="relative z-10 h-full w-full rounded-[13px] transition-colors duration-300"
-                  style={{ backgroundColor: bgColor }}
+                  style={{
+                    backgroundColor: intensity > 0.8 ? "transparent" : bgColor,
+                  }}
                 />
               </div>
             );
           })}
         </div>
 
-        {/* Blend overlays */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
+        {/* Blend overlays for light mode */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/40 via-transparent to-white/80" />
       </motion.div>
 
-      {/* Grid Text Overlay Fade Protection */}
+      {/* Grid Text Overlay Fade Protection (Light Mode) */}
       <div className="pointer-events-none absolute inset-0 z-[5]">
-        <div className="absolute inset-y-0 left-0 w-full max-w-xl bg-gradient-to-r from-black via-black/80 to-transparent" />
+        <div className="absolute inset-y-0 left-0 w-full max-w-xl bg-gradient-to-r from-white via-white/80 to-transparent" />
       </div>
 
       {/* Card Content (z-10) */}
-      <div className="relative z-10 flex flex-col justify-start max-w-[85%] text-left">
-        <h4 className="text-2xl font-bold tracking-tight text-white mb-4">
-          {title}
-        </h4>
-        <p className="text-zinc-400 text-sm md:text-base leading-relaxed">
-          {description}
-        </p>
+      <div className="relative z-10 flex flex-col h-full justify-between max-w-[90%] text-left">
+        {/* Top: Animated Icon */}
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-200 bg-white shadow-xs transition-all duration-500 group-hover:border-transparent group-hover:bg-[#2E5BFF]/10 group-hover:shadow-[0_0_20px_rgba(46,91,255,0.15)]">
+          <Icon
+            className="h-6 w-6 text-zinc-600 transition-colors duration-500 group-hover:text-[#2E5BFF]"
+            strokeWidth={1.5}
+          />
+        </div>
+
+        {/* Bottom: Text */}
+        <div className="mt-8">
+          <h4 className="text-2xl font-bold tracking-tight text-zinc-900 mb-3 transition-colors duration-300">
+            {title}
+          </h4>
+          <p className="text-zinc-500 text-sm md:text-base leading-relaxed">
+            {description}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -142,24 +155,35 @@ function GridBackgroundCard({
 
 export default function WhyJoinUs() {
   return (
-    <section className="relative w-full bg-white px-6 py-20 md:py-28 text-zinc-900 border-t border-zinc-100">
+    <section className="relative w-full bg-white px-10 py-24 md:py-32 text-zinc-900 border-t border-zinc-100">
       <div className="w-full mx-auto">
-        {/* Title */}
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.8, ease: premiumEase }}
-          className="text-4xl font-bold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl mb-16 text-left"
-        >
-          Why Join Us
-        </motion.h2>
+        {/* Title Section */}
+        <div className="flex flex-col items-start mb-16 md:mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: premiumEase }}
+            className="mb-6 inline-flex items-center text-sm font-bold uppercase tracking-widest bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent md:text-base"
+          >
+            Benefits
+          </motion.div>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
+            className="max-w-3xl text-4xl font-bold leading-[1.05em] tracking-tight text-black sm:text-5xl md:text-6xl lg:text-[4.5rem]"
+          >
+            Why Join Us
+          </motion.h2>
+        </div>
+
+        {/* Light Boxy Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
           {/* Column 1 (Left) */}
-          <div className="flex flex-col gap-3 w-full">
-            {/* Card 1: Flexible Work Culture (Taller) */}
+          <div className="flex flex-col gap-6 w-full">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -169,12 +193,12 @@ export default function WhyJoinUs() {
             >
               <GridBackgroundCard
                 title="Flexible Work Culture"
-                description="Work remotely or in a hybrid setup that fits your lifestyle and productivity."
+                description="Work remotely or in a hybrid setup that fits your lifestyle. We prioritize outcomes and deep work over rigid hours."
+                icon={Globe}
                 minHeightClass="min-h-[380px] md:min-h-[460px]"
               />
             </motion.div>
 
-            {/* Card 2: Creative & Collaborative Team (Shorter) */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -185,14 +209,14 @@ export default function WhyJoinUs() {
               <GridBackgroundCard
                 title="Creative & Collaborative Team"
                 description="Work with passionate designers, developers, and marketers in a supportive, idea-driven culture."
+                icon={Users}
                 minHeightClass="min-h-[280px] md:min-h-[320px]"
               />
             </motion.div>
           </div>
 
           {/* Column 2 (Right) */}
-          <div className="flex flex-col gap-3 w-full">
-            {/* Card 3: Competitive Compensation (Shorter) */}
+          <div className="flex flex-col gap-6 w-full">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -202,12 +226,12 @@ export default function WhyJoinUs() {
             >
               <GridBackgroundCard
                 title="Competitive Compensation"
-                description="Attractive salary packages with performance-based bonuses and growth incentives."
+                description="Attractive salary packages with performance-based bonuses, premium healthcare, and growth incentives."
+                icon={TrendingUp}
                 minHeightClass="min-h-[280px] md:min-h-[320px]"
               />
             </motion.div>
 
-            {/* Card 4: Learning & Growth Support (Taller) */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -217,7 +241,8 @@ export default function WhyJoinUs() {
             >
               <GridBackgroundCard
                 title="Learning & Growth Support"
-                description="Access to learning resources, mentorship, and opportunities to upskill continuously."
+                description="Access to premium learning resources, dedicated mentorship, and unlimited opportunities to continuously upskill your craft."
+                icon={BookOpen}
                 minHeightClass="min-h-[380px] md:min-h-[460px]"
               />
             </motion.div>
