@@ -72,7 +72,7 @@ export default function ApplicationJourney() {
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
             className="text-4xl font-bold tracking-tight text-black sm:text-5xl md:text-6xl"
           >
-            Your Application Journey
+            Your Application Journeyy
           </motion.h2>
 
           <motion.p
