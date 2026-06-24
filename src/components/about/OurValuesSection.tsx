@@ -4,62 +4,9 @@ import { motion } from "framer-motion";
 import { memo, useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Zap,
-  Layers,
-  Shield,
-  Compass,
-  Sparkles,
-  ArrowRight,
-  type LucideIcon,
-} from "lucide-react";
+import { MdArrowOutward } from "react-icons/md";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
-
-interface CulturePillar {
-  id: string;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-}
-
-const culturePillars: CulturePillar[] = [
-  {
-    id: "c1",
-    title: "Bias for action",
-    description:
-      "We ship, learn, and refine. Momentum compounds — so we move while others are still deliberating, and let the work do the talking.",
-    icon: Zap,
-  },
-  {
-    id: "c2",
-    title: "Craft you can feel",
-    description:
-      "The details are the work. We sweat the pixel, the millisecond, and the edge case until the whole thing feels effortless.",
-    icon: Layers,
-  },
-  {
-    id: "c3",
-    title: "Radical ownership",
-    description:
-      "No silos, no hand-offs to nowhere. Everyone owns the outcome end to end — and earns the trust that comes with it.",
-    icon: Shield,
-  },
-  {
-    id: "c4",
-    title: "Curiosity, always",
-    description:
-      "We stay students of the craft, hold opinions loosely, and treat every project as a chance to get a little sharper.",
-    icon: Compass,
-  },
-  {
-    id: "c5",
-    title: "Bold innovation",
-    description:
-      "We challenge conventions and embrace new tech. We dare to design what's next and never settle for the standard path.",
-    icon: Sparkles,
-  },
-];
 
 // One proximity-grid cell, memoised so only cells whose intensity actually changes re-render
 const Cell = memo(function Cell({
@@ -141,7 +88,7 @@ export default function OurValuesSection() {
   return (
     <section
       onMouseLeave={() => setHoveredIndex(null)}
-      className="relative flex w-full flex-col overflow-hidden bg-black font-sans py-16 md:py-24"
+      className="relative flex w-full flex-col overflow-hidden bg-black font-sans py-20 md:py-32"
     >
       {/* Background Proximity Grid Pattern */}
       <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden pointer-events-none">
@@ -152,134 +99,120 @@ export default function OurValuesSection() {
           {bgCells}
         </div>
       </div>
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-black/45" />
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-black/55" />
 
       {/* Content Container */}
       <div className="relative z-10 mx-auto w-full max-w-[90rem] px-6 lg:px-10">
-        {/* Header Section (Unchanged) */}
-        <div className="flex flex-col items-center text-center mb-16 md:mb-24">
-          <motion.span
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/60"
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-stretch">
+          
+          {/* Left Column: Image */}
+          <motion.div 
+            initial={{ opacity: 0, x: -40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: premiumEase }}
+            className="w-full lg:w-5/12 shrink-0 flex flex-col"
           >
-            How We Work
-          </motion.span>
-
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="max-w-6xl text-4xl font-bold leading-[1.05em] tracking-tighter text-white md:text-5xl lg:text-[6.5rem]"
-          >
-            Built on a culture of <br />
-            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent pb-2">
-              curiosity & craft
-            </span>
-          </motion.h2>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-            className="mt-6 max-w-2xl text-lg font-light leading-[1.25em] text-zinc-400 md:text-xl"
-          >
-            It's not just what we build — it's how. A handful of principles
-            shape every decision, every detail, and how we show up for each
-            other.
-          </motion.p>
-        </div>
-
-        {/* New 2-Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
-          {/* Left Column: Full Height Image */}
-          <div className="lg:col-span-5 relative">
-            <div className="h-[350px] sm:h-[450px] lg:h-full lg:absolute lg:inset-0 w-full overflow-hidden rounded-[2.5rem] border border-white/10 bg-zinc-900 shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 z-10" />
-              <img
-                src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1200&auto=format&fit=crop&q=80"
+            <div className="relative w-full aspect-[4/5] lg:h-[800px] overflow-hidden rounded-[2.5rem] bg-zinc-900 border border-white/10 shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 z-10" />
+              <Image
+                src="/assets/ux-store-jJT2r2n7lYA-unsplash.jpg"
                 alt="Our Studio Culture"
-                className="h-full w-full object-cover transition-transform duration-[20s] ease-out hover:scale-110"
+                fill
+                className="object-cover transition-transform duration-[20s] ease-out hover:scale-110"
+                sizes="(max-width: 1024px) 100vw, 40vw"
               />
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right Column: Values List & CTA */}
-          <div className="lg:col-span-7 flex flex-col justify-center py-4 lg:py-12">
-            <div className="flex flex-col gap-12 lg:gap-16">
-              {culturePillars.map((pillar, idx) => {
-                const Icon = pillar.icon;
-                return (
-                  <motion.div
-                    key={pillar.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{
-                      duration: 0.6,
-                      delay: idx * 0.1,
-                      ease: premiumEase,
-                    }}
-                    className="group relative flex gap-6 md:gap-8 items-start"
+          {/* Right Column: Content */}
+          <motion.div 
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
+            className="w-full lg:w-7/12 flex flex-col justify-center py-6 lg:py-12"
+          >
+            {/* Eyebrow */}
+            <div className="flex items-center gap-3 text-sm font-semibold tracking-wider text-white">
+              <span className="h-1.5 w-1.5 rounded-full bg-white" />
+              Our Culture
+            </div>
+
+            {/* Headline */}
+            <h2 className="mt-6 text-4xl md:text-5xl lg:text-[56px] font-bold tracking-tight text-white leading-[1.05em] lg:leading-[1em]">
+              We've created an environment where everyone feels comfortable and open, but we can have a laugh along the way
+            </h2>
+
+            {/* Paragraph */}
+            <p className="mt-8 text-lg font-medium text-zinc-400 leading-[1.6em]">
+              We produce good work for good people, and with the idea that staff and the client will be happy throughout the full process. This in return will bring more work our way, whether that's via recommendation or further work from that client.
+            </p>
+
+            {/* Quote Card (Project Colors: Dark Theme) */}
+            <div className="mt-12 relative flex flex-col gap-8 rounded-3xl bg-zinc-950 p-8 md:p-10 border border-white/10 shadow-2xl transition-colors hover:border-white/20">
+              <p className="text-xl md:text-2xl font-medium leading-[1.4em] tracking-tight text-white">
+                <span className="mr-3 inline-flex align-top font-serif text-4xl text-[#2E5BFF]">
+                  "
+                </span>
+                My vision has always been to look after the clients we work with, but to also look after the staff just as much. That will get the best results for everyone.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mt-4">
+                {/* Profile */}
+                <div className="flex items-center gap-4">
+                  <div className="relative h-14 w-14 overflow-hidden rounded-full border border-white/10 bg-zinc-800">
+                    <Image 
+                      src="/assets/zyro-O-Nemx50zDE-unsplash.jpg"
+                      alt="Andy Golpys"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <h4 className="font-bold text-white text-lg">Andy Golpys</h4>
+                    <p className="text-sm font-medium tracking-wide text-zinc-500 uppercase">Co-Founder</p>
+                  </div>
+                </div>
+
+                {/* ExperimentalTestimonials CTA Button */}
+                <Link href="/about" className="shrink-0 w-full sm:w-auto">
+                  <button
+                    type="button"
+                    className="group flex h-16 w-full sm:w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-white/80 hover:bg-zinc-200 hover:pl-6 hover:pr-3.5"
                   >
-                    {/* Floating Icon */}
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-zinc-900/50 text-zinc-400 transition-all duration-500 ease-out group-hover:border-transparent group-hover:bg-[#2E5BFF]/10 group-hover:text-[#2E5BFF] group-hover:shadow-[0_0_30px_rgba(46,91,255,0.2)] md:h-16 md:w-16">
-                      <Icon
-                        className="h-6 w-6 md:h-7 md:w-7"
-                        strokeWidth={1.5}
+                    <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 pl-4 sm:pl-0">
+                      Learn about our culture
+                    </span>
+
+                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
+                      <svg width="0" height="0" className="absolute">
+                        <title>Connect arrow gradient</title>
+                        <defs>
+                          <linearGradient
+                            id="culture-icon-grad"
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="0%"
+                          >
+                            <stop stopColor="#2E5BFF" offset="0%" />
+                            <stop stopColor="#149CCB" offset="100%" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+
+                      <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                      <MdArrowOutward
+                        className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                        style={{ fill: "url(#culture-icon-grad)" }}
                       />
                     </div>
-
-                    {/* Content */}
-                    <div className="flex flex-col pt-1 md:pt-2">
-                      <h3 className="text-xl font-bold tracking-tight text-white md:text-3xl transition-colors duration-300">
-                        {pillar.title}
-                      </h3>
-                      <p className="mt-3 text-base font-medium leading-[1.6em] text-zinc-400 md:text-lg">
-                        {pillar.description}
-                      </p>
-                      {/* Subtle hover line */}
-                      <div className="mt-5 h-[2px] w-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] transition-all duration-500 ease-out group-hover:w-20" />
-                    </div>
-                  </motion.div>
-                );
-              })}
-
-              {/* CTA Section */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, ease: premiumEase }}
-                className="mt-8 pt-12 border-t border-white/10"
-              >
-                <div className="flex flex-col sm:flex-row items-center gap-6 justify-between rounded-3xl bg-zinc-900/40 p-8 border border-white/5 backdrop-blur-sm">
-                  <div className="flex flex-col">
-                    <h4 className="text-2xl font-bold text-white mb-2">
-                      Want to build with us?
-                    </h4>
-                    <p className="text-zinc-400 font-medium">
-                      We're always looking for ambitious partners.
-                    </p>
-                  </div>
-                  <Link
-                    href="/contact"
-                    className="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-2xl bg-white px-8 py-4 font-bold text-black transition-all hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto shrink-0"
-                  >
-                    <div className="absolute inset-0 bg-linear-to-r from-[#2E5BFF] to-[#149CCB] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    <span className="relative z-10 flex items-center gap-2 transition-colors duration-300 group-hover:text-white">
-                      Get in touch
-                      <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-                    </span>
-                  </Link>
-                </div>
-              </motion.div>
+                  </button>
+                </Link>
+              </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

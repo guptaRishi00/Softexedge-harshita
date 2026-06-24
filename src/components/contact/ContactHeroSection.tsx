@@ -1,156 +1,143 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import Header from "../page/Header";
 
-const premiumEase = [0.16, 1, 0.3, 1] as const;
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
-  },
-} as const;
-
-const textVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.8, ease: premiumEase },
-  },
-} as const;
-
-const bentoVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { duration: 0.8, ease: premiumEase },
-  },
-} as const;
-
-// Mapped perfectly for a 3x3 desktop grid and a 2-column mobile grid
-const BENTO_IMAGES = [
+const STACK_IMAGES = [
   {
     src: "/assets/alex-kotliarskyi-QBpZGqEMsKg-unsplash.jpg",
     alt: "Office setup",
-    className:
-      "col-span-2 aspect-[16/9] lg:aspect-auto lg:col-span-2 lg:row-span-2",
   },
   {
     src: "/assets/milad-fakurian-2gzQL38nWAM-unsplash.jpg",
     alt: "Abstract design",
-    className:
-      "col-span-1 aspect-square lg:aspect-auto lg:col-span-1 lg:row-span-1",
   },
   {
     src: "/assets/egor-litvinov-X1Txy1GTT5A-unsplash.jpg",
     alt: "Creative work",
-    className:
-      "col-span-1 aspect-square lg:aspect-auto lg:col-span-1 lg:row-span-1",
   },
   {
     src: "/assets/xiang-chi-WwCKehYfMCA-unsplash.jpg",
     alt: "Design architecture",
-    className:
-      "col-span-1 aspect-square lg:aspect-auto lg:col-span-1 lg:row-span-1",
   },
   {
     src: "/assets/laptop-screen-with-minimalist-ecommerce-dashboard.jpg",
     alt: "Dashboard interface",
-    className:
-      "col-span-1 aspect-square lg:aspect-auto lg:col-span-2 lg:row-span-1",
   },
 ];
 
+// Framer Motion Variants for staggering the words
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.25, // Controls the delay between each word appearing
+      delayChildren: 0.2,
+    },
+  },
+} as const;
+
+const wordVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }, // Slower, smoother entry
+  },
+} as const;
+
 export default function ContactHeroSection() {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex(
+        (prevIndex) => (prevIndex + 1) % STACK_IMAGES.length,
+      );
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    // Strictly plain white background
-    <section className="relative flex min-h-screen w-full items-center overflow-hidden bg-white text-zinc-900 pt-24 pb-12 lg:pt-20 lg:pb-0">
+    <section className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-white pt-24 pb-12 text-zinc-900">
+      {/* Background glow */}
+      <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-60">
+        <div className="h-[600px] w-[600px] rounded-full bg-zinc-100 blur-[120px]"></div>
+      </div>
+
       {/* Header */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
-      {/* Full width layout container */}
-      <div className="relative z-10 w-full px-6 md:px-12 lg:px-20 xl:px-32">
-        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2 lg:gap-20 xl:gap-24">
-          {/* Left Column: Text Content */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="flex flex-col items-start text-left"
-          >
-            {/* Minimalist Live Pill */}
-            <motion.div
-              variants={textVariants}
-              className="mb-8 inline-flex items-center gap-3 rounded-full border border-zinc-200 bg-zinc-50 px-5 py-2 text-xs font-bold uppercase tracking-widest text-zinc-800 md:text-sm"
+      {/* Center Wrapper */}
+      <div className="relative z-10 flex w-full max-w-7xl flex-col items-center justify-center text-center px-6 md:px-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mb-15 ml-[3px] inline-flex items-center text-md font-semibold uppercase tracking-widest bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent "
+        >
+          Start a project
+        </motion.div>
+
+        {/* Title Container */}
+        <motion.h1
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          onAnimationComplete={() => setIsExpanded(true)} // Split triggers only AFTER words finish
+          className="mb-6 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
+        >
+          {/* Line 1 */}
+          <span className="flex items-center justify-center whitespace-nowrap">
+            <motion.span variants={wordVariants}>Let's</motion.span>
+
+            {/* Split Image Span */}
+            <span
+              className={`relative mx-1.5 inline-block h-[1em] shrink-0 overflow-hidden rounded-2xl align-middle shadow-sm transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] md:mx-2.5 ${
+                isExpanded
+                  ? "w-[1.5em] mx-3 opacity-100 md:mx-5"
+                  : "w-0 opacity-0"
+              }`}
             >
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-black"></span>
-              </span>
-              Start a Project
-            </motion.div>
-
-            {/* Editorial Title */}
-            <h1 className="mb-8 flex flex-col text-[3.5rem] font-black leading-[0.9] tracking-tighter text-black sm:text-7xl md:text-8xl lg:text-[100px]">
-              <motion.span variants={textVariants} className="block">
-                LET'S BUILD
-              </motion.span>
-              <motion.span
-                variants={textVariants}
-                // Hollow text effect for a high-end editorial look
-                className="block text-transparent [-webkit-text-stroke:2px_#000] lg:[-webkit-text-stroke:3px_#000]"
-              >
-                TOGETHER.
-              </motion.span>
-            </h1>
-
-            {/* Description */}
-            <motion.p
-              variants={textVariants}
-              className="max-w-md text-lg font-medium leading-relaxed text-zinc-500 md:text-xl"
-            >
-              Have a project in mind, or just want to say hi? Tell us what
-              you're building — we usually reply within a couple of hours.
-            </motion.p>
-          </motion.div>
-
-          {/* Right Column: Bento Box Gallery */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="w-full"
-          >
-            <div className="grid grid-cols-2 gap-3 md:gap-4 lg:h-[600px] lg:grid-cols-3 lg:grid-rows-3">
-              {BENTO_IMAGES.map((img, i) => (
-                <motion.div
-                  key={i}
-                  variants={bentoVariants}
-                  className={`group relative overflow-hidden rounded-2xl bg-zinc-100 ${img.className}`}
-                >
-                  <Image
-                    src={img.src}
-                    alt={img.alt}
-                    fill
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    sizes="(max-width: 1024px) 50vw, 33vw"
-                    priority={i === 0}
-                  />
-                  {/* Subtle hover overlay to make it feel tactile */}
-                  <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/5" />
-                </motion.div>
+              {STACK_IMAGES.map((img, index) => (
+                <img
+                  key={img.src}
+                  src={img.src}
+                  alt={img.alt}
+                  className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-in-out ${
+                    index === currentImageIndex
+                      ? "translate-x-0 opacity-100 blur-0"
+                      : "-translate-x-4 opacity-0 blur-sm"
+                  }`}
+                />
               ))}
-            </div>
-          </motion.div>
-        </div>
+            </span>
+
+            <motion.span variants={wordVariants}>Build</motion.span>
+          </span>
+
+          {/* Line 2 */}
+          <span className="mt-2 flex space-x-3 md:mt-4 md:space-x-6">
+            <motion.span variants={wordVariants}>Together.</motion.span>
+          </span>
+        </motion.h1>
+
+        {/* Description */}
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-xl text-lg font-normal leading-relaxed text-zinc-500 md:text-xl mt-8"
+        >
+          Have a project in mind, or just want to say hi? Tell us what
+          you're building — we usually reply within a couple of hours.
+        </motion.p>
       </div>
     </section>
   );
