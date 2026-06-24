@@ -1,9 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { MapPin } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { useState } from "react";
-import { MdArrowOutward } from "react-icons/md";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -129,10 +128,7 @@ function DetailList({ heading, items }: { heading: string; items: string[] }) {
 export default function OpenPositions() {
   const [openIds, setOpenIds] = useState<string[]>([]);
 
-  const toggle = (id: string, e: React.MouseEvent) => {
-    // Prevent toggle if they click the Apply button specifically
-    if ((e.target as HTMLElement).closest("a")) return;
-
+  const toggle = (id: string) => {
     setOpenIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
@@ -148,7 +144,7 @@ export default function OpenPositions() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-8 inline-flex items-center text-xs font-medium tracking-wide text-zinc-300 backdrop-blur-sm"
+            className="mb-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/60"
           >
             Open Positions
           </motion.div>
@@ -158,7 +154,7 @@ export default function OpenPositions() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl"
+            className="text-4xl font-bold leading-[1.05em] tracking-tighter text-white md:text-5xl lg:text-[6.5rem]"
           >
             Open Positions
           </motion.h2>
@@ -179,43 +175,45 @@ export default function OpenPositions() {
                   delay: idx * 0.1,
                   ease: premiumEase,
                 }}
-                className="group border-b border-white/10"
+                className="border-b border-white/10"
               >
                 {/* Visible Row */}
                 {/* biome-ignore lint/a11y/useKeyWithClickEvents: simple expandable row */}
+                {/* biome-ignore lint/a11y/noStaticElementInteractions: simple expandable row */}
                 <div
-                  onClick={(e) => toggle(job.id, e)}
-                  className="flex flex-col md:flex-row md:items-center justify-between py-8 cursor-pointer gap-6 transition-colors duration-300 hover:bg-white/[0.02] px-4 -mx-4 rounded-xl"
+                  onClick={() => toggle(job.id)}
+                  className="flex flex-col md:flex-row md:items-center justify-between py-8 cursor-pointer gap-6 px-4 -mx-4 rounded-xl"
                 >
                   {/* Left: Title */}
                   <div className="flex-1">
-                    <h3 className="text-2xl font-medium tracking-tight text-white transition-colors duration-300 group-hover:text-[#149CCB]">
+                    <h3 className="text-2xl font-medium tracking-tight text-white">
                       {job.title}
                     </h3>
                   </div>
 
                   {/* Center: Outline Pills */}
-                  <div className="flex flex-wrap items-center gap-2 md:gap-3 flex-1 md:justify-center">
-                    <span className="rounded-md border border-white/20 px-3 py-1.5 text-xs text-zinc-300 font-medium whitespace-nowrap">
+                  <div className="flex flex-wrap items-center gap-2.5 md:gap-3 flex-1 md:justify-center">
+                    <span className="rounded-lg border border-white/20 px-4 py-2 text-sm text-zinc-300 font-medium whitespace-nowrap">
                       {job.category}
                     </span>
-                    <span className="rounded-md border border-white/20 px-3 py-1.5 text-xs text-zinc-300 font-medium whitespace-nowrap">
+                    <span className="rounded-lg border border-white/20 px-4 py-2 text-sm text-zinc-300 font-medium whitespace-nowrap">
                       {job.meta[0]}
                     </span>
-                    <span className="rounded-md border border-white/20 px-3 py-1.5 text-xs text-zinc-300 font-medium flex items-center gap-1.5 whitespace-nowrap">
-                      <MapPin className="h-3.5 w-3.5 text-zinc-400" />
+                    <span className="rounded-lg border border-white/20 px-4 py-2 text-sm text-zinc-300 font-medium flex items-center gap-1.5 whitespace-nowrap">
+                      <MapPin className="h-4 w-4 text-zinc-400" />
                       {job.meta[1] || job.meta[0]}
                     </span>
                   </div>
 
-                  {/* Right: Apply Now Button */}
+                  {/* Right: Dropdown indicator arrow */}
                   <div className="flex-1 flex md:justify-end">
-                    <a
-                      href={`mailto:careers@softexedge.com?subject=Application for ${job.title}`}
-                      className="relative inline-flex items-center justify-center rounded-full bg-linear-to-r from-[#2E5BFF] to-[#149CCB] px-8 py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
-                    >
-                      Apply Now
-                    </a>
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white">
+                      <ChevronDown
+                        className={`h-5 w-5 transition-transform duration-300 ${
+                          open ? "rotate-180" : ""
+                        }`}
+                      />
+                    </span>
                   </div>
                 </div>
 
@@ -260,6 +258,16 @@ export default function OpenPositions() {
                               items={job.goodToHave}
                             />
                           </div>
+                        </div>
+
+                        {/* Apply button — now inside the dropdown */}
+                        <div className="mt-10">
+                          <a
+                            href={`mailto:careers@softexedge.com?subject=Application for ${job.title}`}
+                            className="inline-flex items-center justify-center rounded-full bg-linear-to-r from-[#2E5BFF] to-[#149CCB] px-8 py-3 text-sm font-semibold text-white shadow-lg"
+                          >
+                            Apply Now
+                          </a>
                         </div>
                       </div>
                     </motion.div>

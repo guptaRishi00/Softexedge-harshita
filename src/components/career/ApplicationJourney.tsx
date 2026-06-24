@@ -1,13 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  BadgeCheck,
-  ClipboardCheck,
-  type LucideIcon,
-  Mail,
-  MessageCircleQuestion,
-} from "lucide-react";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -15,7 +8,7 @@ interface Step {
   number: string;
   title: string;
   description: string;
-  Icon: LucideIcon;
+  image: string;
 }
 
 const steps: Step[] = [
@@ -24,28 +17,32 @@ const steps: Step[] = [
     title: "Apply",
     description:
       "Submit your application with your resume and portfolio. We review every profile carefully.",
-    Icon: BadgeCheck,
+    image:
+      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&auto=format&fit=crop&q=60",
   },
   {
     number: "02",
     title: "Interview",
     description:
       "Let's talk about your journey, mindset, and how you approach creative problem solving.",
-    Icon: MessageCircleQuestion,
+    image:
+      "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&auto=format&fit=crop&q=60",
   },
   {
     number: "03",
     title: "Assignment",
     description:
       "Show us how you approach real-world challenges through a take-home project.",
-    Icon: ClipboardCheck,
+    image:
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&auto=format&fit=crop&q=60",
   },
   {
     number: "04",
     title: "Offer",
     description:
       "Welcome aboard! We'll share the offer, onboarding details, and get you set up for success.",
-    Icon: Mail,
+    image:
+      "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1200&auto=format&fit=crop&q=60",
   },
 ];
 
@@ -54,13 +51,13 @@ export default function ApplicationJourney() {
     <section className="relative w-full bg-zinc-50 px-6 py-24 text-zinc-900 md:py-32">
       <div className="mx-auto w-full">
         {/* Title Area */}
-        <div className="flex flex-col items-center text-center mb-16 md:mb-32">
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-center mb-16 md:mb-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-6 inline-flex items-center text-sm font-bold uppercase tracking-widest bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent md:text-base"
+            className="mb-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-zinc-400"
           >
             The Process
           </motion.div>
@@ -70,9 +67,9 @@ export default function ApplicationJourney() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-4xl font-bold tracking-tight text-black sm:text-5xl md:text-6xl"
+            className="text-4xl font-bold leading-[1.05em] tracking-tighter text-zinc-900 md:text-5xl lg:text-[6.5rem]"
           >
-            Your Application Journeyy
+            Your Application Journey
           </motion.h2>
 
           <motion.p
@@ -87,57 +84,44 @@ export default function ApplicationJourney() {
           </motion.p>
         </div>
 
-        {/* Sticky Scroll Deck Sequence */}
-        <div className="relative flex flex-col gap-8 md:gap-12 pb-32">
-          {steps.map((step, index) => {
-            const Icon = step.Icon;
-
-            return (
-              <motion.div
-                key={step.number}
-                initial={{ opacity: 0, y: 100 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, ease: premiumEase }}
-                className="sticky flex w-full flex-col overflow-hidden rounded-[2.5rem] border border-zinc-200 bg-white/95 p-8 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] backdrop-blur-2xl md:flex-row md:items-center md:justify-between md:p-16 transition-all duration-500 hover:shadow-[0_-10px_40px_rgba(46,91,255,0.08)] group"
-                style={{
-                  // Dynamically stagger the stick top positions so they stack like a deck of cards
-                  top: `calc(15vh + ${index * 2}rem)`,
-                  // Z-index increases so the later cards go on top
-                  zIndex: 10 + index,
-                }}
-              >
-                {/* Giant Watermark Number */}
-                <div className="pointer-events-none absolute -right-4 -top-8 select-none text-[12rem] font-bold leading-none tracking-tighter text-zinc-50 transition-colors duration-500 group-hover:text-[#2E5BFF]/[0.03] md:-bottom-12 md:-right-8 md:top-auto md:text-[20rem]">
-                  {step.number}
-                </div>
-
-                {/* Left Content */}
-                <div className="relative z-10 flex flex-col">
-                  {/* Glowing Icon Container */}
-                  <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-50 border border-zinc-100 transition-colors duration-500 group-hover:border-transparent group-hover:bg-[#2E5BFF]/10 group-hover:shadow-[0_0_30px_rgba(46,91,255,0.15)] md:h-20 md:w-20">
-                    <Icon
-                      className="h-8 w-8 text-zinc-400 transition-colors duration-500 group-hover:text-[#2E5BFF] md:h-10 md:w-10"
-                      strokeWidth={1.5}
-                    />
-                  </div>
-
-                  <h3 className="text-3xl font-bold tracking-tight text-zinc-900 md:text-5xl mb-4 transition-colors duration-300">
+        {/* Step cards — scroll-stacking deck (text left, image right) */}
+        <div className="relative">
+          {steps.map((step, index) => (
+            <div
+              key={step.number}
+              className="sticky w-full"
+              style={{
+                // Each card pins slightly lower so they stack like a deck.
+                top: `calc(8vh + ${index * 2.5}rem)`,
+                zIndex: index,
+              }}
+            >
+              <div className="grid grid-cols-1 gap-6 rounded-[2.5rem] border border-zinc-200 bg-white p-6 md:grid-cols-2 md:items-center md:gap-10 md:p-8 lg:p-10">
+                {/* Left: title + description */}
+                <div className="flex flex-col justify-center gap-4 md:px-4 lg:px-6">
+                  <h3 className="text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl lg:text-5xl">
                     {step.title}
                   </h3>
-
-                  <p className="text-lg leading-relaxed text-zinc-500 md:text-xl">
+                  <p className="text-base leading-relaxed text-zinc-500 md:text-lg">
                     {step.description}
                   </p>
                 </div>
 
-                {/* Optional Right Graphic (Can be expanded later, keeps layout balanced) */}
-                <div className="relative z-10 hidden md:flex h-48 w-48 shrink-0 items-center justify-center opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#2E5BFF] to-[#149CCB] opacity-10 blur-3xl" />
+                {/* Right: image — same rounded box style as SubServices */}
+                <div className="relative h-[350px] w-full overflow-hidden rounded-2xl md:h-[450px]">
+                  <img
+                    src={step.image}
+                    alt={step.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-              </motion.div>
-            );
-          })}
+              </div>
+            </div>
+          ))}
+
+          {/* Runway: lets the last card stay pinned briefly */}
+          <div className="pointer-events-none h-[30vh] w-full" />
         </div>
       </div>
     </section>

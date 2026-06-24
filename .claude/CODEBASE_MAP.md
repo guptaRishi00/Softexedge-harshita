@@ -44,7 +44,7 @@ behind `typeof window !== "undefined"` guards.
 - `src/components/layout/` — Header, Footer, SmoothScroll (Lenis wrapper)
 - `src/components/page/` — **second** Header + resizable-navbar (used by inner pages)
 - `src/components/shared/` — ConnectButton variants (3 of them)
-- `src/components/garbage/` — **DEAD CODE**, 23 files / ~2,859 lines, nothing imports it
+- `src/components/garbage/` — **DEAD CODE**, 24 files, nothing imports it
 - `src/lib/utils.ts` — `cn()` (clsx + tailwind-merge)
 - `public/assets/` — images, `hero.mp4`, logos; `public/fonts/` — Satoshi
 
@@ -58,7 +58,7 @@ All routes are public (static marketing pages, no auth anywhere).
 | AboutPage | Route | `src/app/about/page.tsx:27` | public | About: hero, traditional, culture (OurValuesSection), team, testimonials (+LogoCarousel), FAQ, CTA |
 | BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:15` | public | Service page: hero, sub-services, process, tech stack, showcase, FAQ, blog |
 | ContactPage | Route | `src/app/contact/page.tsx:11` | public | Contact: hero, contact form, testimonials, FAQ, CTA |
-| CareerPage | Route | `src/app/career/page.tsx:5` | public | Careers: `CareerHeroSection` + `WhyJoinUs` (components in `src/components/career/`) |
+| CareerPage | Route | `src/app/career/page.tsx:9` | public | Careers: `CareerHeroSection` → `WhyJoinUs` → `OpenPositions` (accordion job board) → `ApplicationJourney` (sticky-deck process) → `CareerValues` (image cards) → `Footer` (components in `src/components/career/`) |
 
 ## Data
 None. No storage, schema, API calls, or env vars consumed by app code.
@@ -87,7 +87,7 @@ None wired. No SDK keys, no analytics, no form backend (contact form is UI-only)
 - **Nav/footer change:** see duplication gotcha below before editing
 
 ## Risks & gotchas
-- **`src/components/garbage/` is fully unused dead code** (~2,859 lines). Safe to delete; nothing outside it imports it.
+- **`src/components/garbage/` is fully unused dead code** (24 files). Safe to delete; nothing outside it imports it.
 - **Duplicate navigation components — edit the right one:**
   - `layout/Header.tsx` + `layout/SmoothScroll.tsx` → used by `/home` only (via `home/Herosection.tsx`)
   - `page/Header.tsx` + `page/resizable-navbar.tsx` → used by `/about`, `/brand-strategy`, `/contact` hero sections

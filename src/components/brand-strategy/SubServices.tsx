@@ -1,9 +1,26 @@
 "use client";
 
-import { useMotionValueEvent, useScroll } from "framer-motion";
+import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { ReactLenis } from "lenis/react";
 import { useRef, useState } from "react";
 import ConnectButton from "../shared/ConnectButton";
+
+const premiumEase = [0.22, 1, 0.36, 1] as const;
+
+// Card content reveals with a soft upward stagger as each card scrolls in.
+const contentContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
+} as const;
+
+const contentItem = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: premiumEase },
+  },
+} as const;
 
 const services = [
   {
@@ -15,7 +32,7 @@ const services = [
     color: "bg-black",
     tags: ["Market Research", "Positioning", "Visual Identity", "Messaging"],
     image:
-      "https://images.unsplash.com/photo-1645658043538-fc2bb1702cfe?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGJyYW5kJTIwc3RyYXRlZ3l8ZW58MHx8MHx8fDA%3D",
+      "https://plus.unsplash.com/premium_photo-1779749660854-baa8b5457d06?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwzOXx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     title1: "Digital",
@@ -26,7 +43,7 @@ const services = [
     color: "bg-black",
     tags: ["Web Apps", "SaaS Platforms", "Architecture", "API Integration"],
     image:
-      "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGJyYW5kJTIwc3RyYXRlZ3l8ZW58MHx8MHx8fDA%3D",
+      "https://images.unsplash.com/photo-1779896412280-cff477924a69?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw1MHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     title1: "UI/UX",
@@ -37,7 +54,7 @@ const services = [
     color: "bg-black",
     tags: ["User Research", "Wireframing", "Prototyping", "Interaction Design"],
     image:
-      "https://images.unsplash.com/photo-1587440871875-191322ee64b0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8VUklMkZVWHxlbnwwfHwwfHx8MA%3D%3D",
+      "https://images.unsplash.com/photo-1773332585754-f1436987743b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw4NXx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     title1: "E",
@@ -48,7 +65,7 @@ const services = [
     color: "bg-black",
     tags: ["Shopify Plus", "Custom Storefronts", "CRO", "Payment Gateways"],
     image:
-      "https://plus.unsplash.com/premium_photo-1683746792239-6ce8cdd3ac78?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGUlMjBjb21tZXJjZXxlbnwwfHwwfHx8MA%3D%3D",
+      "https://images.unsplash.com/photo-1688561808434-886a6dd97b8c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZSUyMGNvbW1lcmNlfGVufDB8fDB8fHww",
   },
 ];
 
@@ -141,7 +158,7 @@ function Card({
   return (
     <div
       ref={registerRef}
-      className="sticky w-full"
+      className="sticky w-full mb-[22vh]"
       style={{
         // Pins the card exactly spaced by 190px to leave the previous titles showing
         top: `calc(5vh + ${i * 190}px)`,
@@ -153,22 +170,38 @@ function Card({
         className={`relative grid min-h-[50vh] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-6 pb-24 pt-12 md:h-[600px] md:min-h-0 md:grid-cols-2 md:gap-16`}
       >
         {/* LEFT COLUMN: Title, Description & Tags */}
-        <div className="flex w-full flex-col gap-12 md:gap-16 pr-4">
-          <a href={link} className="group inline-block">
+        <motion.div
+          variants={contentContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-120px" }}
+          className="flex w-full flex-col gap-12 md:gap-16 pr-4"
+        >
+          <motion.a
+            variants={contentItem}
+            href={link}
+            className="group inline-block"
+          >
             <h3 className="text-5xl font-medium tracking-tight text-white transition-colors group-hover:text-zinc-400 md:text-6xl lg:text-7xl">
               {title1}
               {title1 === "E" ? "-" : " "}
               {title2}
             </h3>
-          </a>
+          </motion.a>
 
-          <p className="max-w-xl text-lg font-light leading-[1.4em] text-zinc-300 md:text-xl">
-             {description}
-          </p>
+          <motion.p
+            variants={contentItem}
+            className="max-w-xl text-lg font-light leading-[1.4em] text-zinc-300 md:text-xl"
+          >
+            {description}
+          </motion.p>
 
           {/* Tags Container */}
           {tags && tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-3 pt-4">
+            <motion.div
+              variants={contentItem}
+              className="flex flex-wrap items-center gap-3 pt-4"
+            >
               {tags.map((tag: string, index: number) => (
                 <span
                   key={index}
@@ -177,9 +210,9 @@ function Card({
                   {tag}
                 </span>
               ))}
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {/* RIGHT COLUMN: Image Container */}
         {/* Set to a fixed height: 350px on mobile, 450px on medium screens and up */}
@@ -188,8 +221,8 @@ function Card({
             <img
               src={image}
               alt={`${title1} ${title2}`}
-              className={`h-full w-full object-cover transition-opacity duration-500 ${
-                imageHidden ? "opacity-0" : "opacity-100"
+              className={`h-full w-full object-cover transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                imageHidden ? "scale-105 opacity-0" : "scale-100 opacity-100"
               }`}
             />
           )}

@@ -1,11 +1,29 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import Header from "../page/Header";
-import { useMemo } from "react";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
+
+// Word-by-word stagger reveal (same pattern as the brand-strategy hero)
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.15 },
+  },
+} as const;
+
+const wordVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: premiumEase },
+  },
+} as const;
 
 const col1Images = [
   "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop",
@@ -25,7 +43,15 @@ const col3Images = [
   "https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=800&auto=format&fit=crop",
 ];
 
-function InfiniteColumn({ images, direction, speed }: { images: string[], direction: "up" | "down", speed: number }) {
+function InfiniteColumn({
+  images,
+  direction,
+  speed,
+}: {
+  images: string[];
+  direction: "up" | "down";
+  speed: number;
+}) {
   // Duplicate array to create a seamless loop
   const loopImages = [...images, ...images, ...images];
 
@@ -34,7 +60,7 @@ function InfiniteColumn({ images, direction, speed }: { images: string[], direct
       <motion.div
         className="flex flex-col gap-4 absolute w-full"
         animate={{
-          y: direction === "up" ? ["0%", "-33.33%"] : ["-33.33%", "0%"]
+          y: direction === "up" ? ["0%", "-33.33%"] : ["-33.33%", "0%"],
         }}
         transition={{
           repeat: Number.POSITIVE_INFINITY,
@@ -44,7 +70,10 @@ function InfiniteColumn({ images, direction, speed }: { images: string[], direct
         }}
       >
         {loopImages.map((src, i) => (
-          <div key={i} className="relative w-full aspect-[4/5] rounded-[2rem] overflow-hidden shadow-xs hover:shadow-lg transition-shadow duration-300">
+          <div
+            key={i}
+            className="relative w-full aspect-[4/5] rounded-[2rem] overflow-hidden shadow-xs hover:shadow-lg transition-shadow duration-300"
+          >
             <img
               src={src}
               alt="Career Collage"
@@ -67,23 +96,43 @@ export default function CareerHeroSection() {
 
       {/* Main Content Area */}
       <div className="relative z-10 flex w-full flex-col items-center px-6 md:px-12 pt-16 md:pt-24">
-        
-        {/* Title */}
+        {/* Title — word-by-word stagger reveal */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: premiumEase }}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
           className="text-center"
         >
-          <div className="mb-6 inline-flex items-center text-sm font-bold uppercase tracking-widest bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent md:text-base">
-            Careers
-          </div>
-          
           <h1 className="text-[2.75rem] font-bold leading-[1.05] tracking-tight text-black sm:text-6xl md:text-7xl lg:text-[6rem] mb-2">
-            Think. Create. Do.
+            <motion.span variants={wordVariants} className="inline-block">
+              Think.
+            </motion.span>{" "}
+            <motion.span variants={wordVariants} className="inline-block">
+              Create.
+            </motion.span>{" "}
+            <motion.span variants={wordVariants} className="inline-block">
+              Do.
+            </motion.span>
           </h1>
-          <h2 className="text-[2.75rem] font-bold leading-[1.05] tracking-tight bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent sm:text-6xl md:text-7xl lg:text-[6rem] mb-6">
-            Grow With Us
+          <h2 className="text-[2.75rem] font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-[6rem] mb-6">
+            <motion.span
+              variants={wordVariants}
+              className="inline-block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
+            >
+              Grow
+            </motion.span>{" "}
+            <motion.span
+              variants={wordVariants}
+              className="inline-block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
+            >
+              With
+            </motion.span>{" "}
+            <motion.span
+              variants={wordVariants}
+              className="inline-block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
+            >
+              Us
+            </motion.span>
           </h2>
         </motion.div>
 
@@ -155,7 +204,6 @@ export default function CareerHeroSection() {
             </div>
           </a>
         </motion.div>
-        
       </div>
     </section>
   );

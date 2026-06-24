@@ -17,6 +17,172 @@
 - Verified: `npx tsc --noEmit` clean; biome clean (formatted); `next build` ✓
   /career static.
 
+## 2026-06-18 — ApplicationJourney: refine layout, balance & spacing
+- Each sticky deck card was left-heavy: a giant watermark number clipped in the
+  corner + an invisible hover-only "right graphic", so the right side read as empty.
+  Rebuilt each card as a balanced two-part row — constrained left column
+  (`max-w-xl`: branded icon box, title, description) ↔ a clean in-flow gradient
+  step number on the right (`bg-clip-text` brand gradient, `opacity-20`). Removed
+  the absolute watermark, the hover graphic, and the now-dead `group`/group-hover.
+- Constrained the section content to `max-w-5xl` so cards aren't full-width — on
+  wide screens the left text and right number were flung to opposite edges with a
+  big empty middle; now they read as a balanced pair.
+- Spacing pass: title block `mb-16 md:mb-32` → `md:mb-24` + `max-w-3xl` centered;
+  card `md:p-16` → `md:p-14` with `gap-10 md:gap-16`; even internal rhythm
+  (icon `mb-7`, title `mb-4`, description `text-base md:text-lg`); softer entrance
+  (`y:100` → `y:40`).
+- Fixed headline typo "Journeyy" → "Journey". Sticky-deck mechanics (top/zIndex)
+  unchanged. Kept the subtle card hover-shadow (not a balance issue).
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /career static.
+
+## 2026-06-18 — ApplicationJourney: image style match SubServices
+- Image was full-bleed in the right grid cell; changed to SubServices' inset
+  rounded-box style: `relative h-[350px] w-full overflow-hidden rounded-2xl
+  md:h-[450px]` with `object-cover`.
+- To inset it, added card padding (`p-6 md:p-8 lg:p-10`) + column gap
+  (`gap-6 md:gap-10`) + `md:items-center`; dropped the card's `overflow-hidden`
+  and fixed `md:h-[440px]` (card now sizes to the image box + padding, uniform
+  across cards). Sticky-stacking deck + text-left layout unchanged.
+- Verified: `npx tsc --noEmit` clean; biome only tolerated `noImgElement`;
+  `next build` ✓ /career static.
+
+## 2026-06-18 — ApplicationJourney: split cards + scroll-stacking deck
+- Reworked the step cards into a sticky scroll-stacking deck (same pattern as
+  SubServices): each card is `sticky` with `top: calc(8vh + index*2.5rem)` and
+  increasing `zIndex`, plus a `h-[30vh]` runway so the last card stays pinned.
+- Each card is now a 2-column split: title + description (left, vertically
+  centered) and the image (right, `md:h-full object-cover`). `md:grid-cols-2
+  md:h-[440px]`, solid `bg-white` + border + `overflow-hidden` so stacked cards
+  cover cleanly.
+- Re-added the `image` field (interface + 4 verified Unsplash URLs). Robust img
+  stacking (no negative z; image is a normal grid cell).
+- Verified: `npx tsc --noEmit` clean; biome only tolerated `noImgElement`;
+  `next build` ✓ /career static.
+
+## 2026-06-18 — ApplicationJourney: REVERTED image-based cards
+- Per request, reverted the "image-based cards" task: removed the `image` field
+  (interface + the 4 Unsplash URLs) and restored the plain white bordered cards
+  (`bg-white border-zinc-200`, title left + description right, dark text). Back to
+  the state from the "simplify cards / no overlap" task.
+- Verified: no image/img refs remain; `npx tsc --noEmit` clean; biome clean;
+  `next build` ✓ /career static.
+
+## 2026-06-18 — ApplicationJourney: image-based cards
+- Made the step cards image-based (same robust pattern as CareerValues): added an
+  `image` field to Step (interface + data, 4 verified Unsplash URLs → 200). Each
+  card is now `relative min-h-[300px] md:min-h-[360px] justify-end` with an absolute
+  `<img>` (no negative z), a `bg-gradient-to-t from-black/90 …` veil, and the
+  white title + description lifted via `relative z-10`.
+- Verified: image URLs 200; `npx tsc --noEmit` clean; biome only the tolerated
+  `noImgElement` warning; `next build` ✓ /career static.
+
+## 2026-06-18 — ApplicationJourney: simplify cards, match title/tag, no overlap
+- Title/tag style matched to OurValuesSection (adapted to this section's LIGHT bg):
+  tag → `text-xs font-semibold uppercase tracking-[0.25em] text-zinc-400`; title →
+  `text-4xl font-bold leading-[1.05em] tracking-tighter text-zinc-900 md:text-5xl
+  lg:text-[6.5rem]` (white→zinc since bg is light).
+- Cards full width: dropped `max-w-5xl` from the content wrapper.
+- Removed the step number (right gradient span) AND the icon graphic (interpreting
+  "image" as the lucide icon) — also removed the now-unused lucide imports + the
+  `Icon` field from the Step interface/data. Cards are now title (left) +
+  description (right).
+- Removed card shadows (`shadow-[…]` + hover shadow) and the frosted
+  `bg-white/95 backdrop-blur` → plain `bg-white` + border.
+- No more overlap: removed the sticky-stacking entirely (`sticky` + `top` +
+  `zIndex` + `pb-32` runway) → a normal full-width vertical list (`flex-col
+  gap-4 md:gap-6`), so the last card no longer covers the others.
+- Verified: `npx tsc --noEmit` clean; biome fully clean; `next build` ✓ /career.
+
+## 2026-06-18 — CareerHeroSection: remove tag + word-stagger title animation
+- Removed the "Careers" gradient eyebrow tag above the title.
+- Replaced the block fade-in title with the brand-strategy hero's word-by-word
+  stagger: added `containerVariants` (staggerChildren 0.15) + `wordVariants`
+  (opacity 0→1, y 40→0, premiumEase); each word of "Think. Create. Do." and
+  "Grow With Us" is now an `inline-block motion.span`. h2 gradient moved per-word
+  (`bg-clip-text`) so it animates cleanly with the transforms.
+- Pre-existing lint left as-is (dead `useMemo` import, `<img>`, `key={i}` in
+  InfiniteColumn) — not introduced here.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /career static.
+
+## 2026-06-18 — WhyJoinUs: match OurValuesSection title + tag style
+- Tag/eyebrow "Benefits": gradient-clipped `text-[0.65rem] font-bold tracking-[0.2em]`
+  → `text-xs font-semibold uppercase tracking-[0.25em] text-white/60` (matches
+  OurValuesSection / OpenPositions).
+- Title "Why Join Us": `max-w-4xl text-5xl ... leading-[0.9] tracking-[-0.05em]
+  sm:text-6xl md:text-7xl lg:text-[7rem]` → `text-4xl font-bold leading-[1.05em]
+  tracking-tighter text-white md:text-5xl lg:text-[6.5rem]`.
+- Class-only edits. Verified: `npx tsc --noEmit` clean; `next build` ✓ /career
+  static; biome unchanged (same pre-existing img/key warnings, none added).
+
+## 2026-06-18 — OpenPositions: Apply-in-dropdown, chevron, bigger pills, title match
+- Moved the "Apply Now" button off the row and into the accordion dropdown
+  (bottom of the expanded details, `mt-10`).
+- Replaced the row's Apply button with a `ChevronDown` dropdown indicator in a
+  bordered circle that rotates 180° when open (`rotate-180` toggled by `open`).
+- Enlarged the center pills: `text-xs px-3 py-1.5 rounded-md` → `text-sm px-4 py-2
+  rounded-lg`; MapPin icon `h-3.5` → `h-4`.
+- Matched the header to OurValuesSection: tag/eyebrow → `text-xs font-semibold
+  uppercase tracking-[0.25em] text-white/60`; title → `text-4xl font-bold
+  leading-[1.05em] tracking-tighter text-white md:text-5xl lg:text-[6.5rem]`.
+- Cleanup tied to the change: removed dead `MdArrowOutward` import and the now-
+  obsolete `closest("a")` guard in `toggle` (Apply link no longer in the row);
+  added a `noStaticElementInteractions` biome-ignore to the clickable row.
+  Imported `ChevronDown` from lucide.
+- Verified: `npx tsc --noEmit` clean; biome fully clean (was 2 pre-existing
+  errors); `next build` ✓ /career static.
+
+## 2026-06-18 — OpenPositions: remove hover effects
+- Stripped all hover from the reworked dark accordion job list:
+  - Row wrapper: removed `group`.
+  - Clickable header row: removed `transition-colors duration-300 hover:bg-white/[0.02]`.
+  - Job title `h3`: removed `transition-colors duration-300 group-hover:text-[#149CCB]`.
+  - "Apply Now" button: removed `transition-transform hover:scale-105 active:scale-95`.
+- No residual hover/group/active in the file.
+- Pre-existing (not introduced here, left per minimal-diff): dead `MdArrowOutward`
+  import (`noUnusedImports`) + `noStaticElementInteractions` on the onClick row.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /career static.
+
+## 2026-06-18 — WhyJoinUs: show bg images + remove all hover effects
+- Images were invisible: the bento card bg `<img>` wrapper used `-z-20` (same
+  negative-z stacking bug as CareerValues) so it rendered behind the card's
+  `bg-[#0a0a0a]`. Fixed by removing `-z-20` (wrapper is now plain `absolute
+  inset-0`; content stays above via its existing `relative z-10`). All 4 assets
+  confirmed present in public/assets.
+- Removed all hover effects: card `group` + `transition-transform duration-500
+  hover:-translate-y-1 hover:shadow-xl`; image `transition-transform duration-1000
+  group-hover:scale-105`; icon box `transition-colors duration-500
+  group-hover:border-white/40` (+ icon's leftover `transition-colors`). Entrance
+  stagger animation kept (not a hover effect).
+- Pre-existing lint left as-is (`<img>` warning, `key={index}` in cards.map) —
+  user's reworked code, not introduced here.
+- Verified: `npx tsc --noEmit` clean; no residual hover/group/-z; `next build` ✓
+  /career static.
+
+## 2026-06-18 — SubServices: more scroll between sticky cards
+- Problem: sticky stacking cards pinned too close together (card height 600px,
+  pins 190px apart) so the next card slid over the current one before its info was
+  readable — the UI/UX card (index 2) got covered by E-Commerce too fast.
+- Fix: added `mb-[22vh]` to the sticky card wrapper, increasing the flow distance
+  (and thus scroll duration) between pin transitions. Pin offsets
+  (`top: calc(5vh + i*190px)`) and the `imageHidden`/activeIndex trigger are
+  unchanged — stacking + image-hide behave the same, just paced slower so each
+  card lingers fully visible longer.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /brand-strategy static.
+
+## 2026-06-18 — SubServices (brand-strategy): refine animation
+- Card content had no entrance motion and the image hide was a flat opacity fade.
+- Added a soft staggered reveal to each card's content (title `motion.a`,
+  description `motion.p`, tags `motion.div`) via a `contentContainer`/`contentItem`
+  variants pair on a `whileInView` (once, margin -120px) wrapper — content fades +
+  slides up (y 24→0) as each card scrolls in. premiumEase [0.22,1,0.36,1].
+- Refined the image hide: `transition-opacity duration-500` → `transition-all
+  duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]` with a subtle zoom
+  (`scale-105 opacity-0` hidden / `scale-100 opacity-100` visible) for a cinematic
+  feel. Existing sticky-stacking + activeIndex image-hide logic untouched.
+- Pre-existing lint debt left as-is (Card `: any`, `<img>`, `key={i}`/`key={index}`)
+  — not introduced by this change.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /brand-strategy static.
+
 ## 2026-06-18 — ContactSection (home): adopt OurValuesSection bg pattern
 - Replaced the decorative blur-blob bg in `home/ContactSection.tsx` with the same
   proximity-glow grid used in OurValuesSection: ported the memoised `Cell`, the
