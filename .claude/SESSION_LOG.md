@@ -35,6 +35,12 @@
   unchanged. Kept the subtle card hover-shadow (not a balance issue).
 - Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /career static.
 
+## 2026-06-18 — StrategyHeroSection: more gap between title and stats
+- Added `mt-16 md:mt-24` to the bottom Stats (`AgencyStats`) wrapper so there's
+  more breathing room between the centered title block and the stats row.
+- Verified: `npx tsc --noEmit` clean; biome only tolerated `noImgElement`;
+  `next build` ✓ /brand-strategy static.
+
 ## 2026-06-18 — OurValuesSection: CTA transparent + "Connect With Us"
 - CTA button: removed `bg-white` so it has no background initially (transparent on
   the dark quote card), hover now adds `border-white` only (dropped `hover:bg-zinc-200`).

@@ -121,7 +121,7 @@ export default function StrategyHeroSection() {
       </div>
 
       {/* Bottom Stats */}
-      <div className="relative z-20 w-full">
+      <div className="relative z-20 w-full mt-16 md:mt-24">
         <AgencyStats />
       </div>
     </section>
