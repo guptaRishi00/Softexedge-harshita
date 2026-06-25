@@ -75,7 +75,7 @@ export default function ContactHeroSection() {
       </div>
 
       {/* Center Wrapper */}
-      <div className="relative z-10 flex w-full max-w-7xl flex-col items-center justify-center text-center px-6 md:px-10">
+      <div className="relative z-10 flex w-full max-w-7xl flex-col items-center justify-center text-center px-6 md:px-10 mt-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -135,8 +135,8 @@ export default function ContactHeroSection() {
           transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="max-w-xl text-lg font-normal leading-relaxed text-zinc-500 md:text-xl mt-8"
         >
-          Have a project in mind, or just want to say hi? Tell us what
-          you're building — we usually reply within a couple of hours.
+          Have a project in mind, or just want to say hi? Tell us what you're
+          building — we usually reply within a couple of hours.
         </motion.p>
       </div>
     </section>

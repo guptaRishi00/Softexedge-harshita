@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { memo, useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { memo, useCallback, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
@@ -86,6 +86,7 @@ export default function OurValuesSection() {
   ));
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: section-wide mouse-leave resets the proximity grid
     <section
       onMouseLeave={() => setHoveredIndex(null)}
       className="relative flex w-full flex-col overflow-hidden bg-black font-sans py-20 md:py-32"
@@ -104,16 +105,22 @@ export default function OurValuesSection() {
       {/* Content Container */}
       <div className="relative z-10 mx-auto w-full max-w-[90rem] px-6 lg:px-10">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-stretch">
-          
           {/* Left Column: Image */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
             className="w-full lg:w-5/12 shrink-0 flex flex-col"
           >
-            <div className="relative w-full aspect-[4/5] lg:h-[800px] overflow-hidden rounded-[2.5rem] bg-zinc-900 border border-white/10 shadow-2xl">
+            <div
+              className="relative w-full aspect-[4/5] lg:h-[800px] overflow-hidden bg-zinc-900"
+              style={{
+                // Asymmetric rounded shape via clip-path — heavy radius on
+                // top-left + bottom-right, subtle on the others (round edges).
+                clipPath: "inset(0 round 5rem 1.5rem 5rem 1.5rem)",
+              }}
+            >
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 z-10" />
               <Image
                 src="/assets/ux-store-jJT2r2n7lYA-unsplash.jpg"
@@ -126,7 +133,7 @@ export default function OurValuesSection() {
           </motion.div>
 
           {/* Right Column: Content */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -141,12 +148,16 @@ export default function OurValuesSection() {
 
             {/* Headline */}
             <h2 className="mt-6 text-4xl md:text-5xl lg:text-[56px] font-bold tracking-tight text-white leading-[1.05em] lg:leading-[1em]">
-              We've created an environment where everyone feels comfortable and open, but we can have a laugh along the way
+              We've created an environment where everyone feels comfortable and
+              open.
             </h2>
 
             {/* Paragraph */}
             <p className="mt-8 text-lg font-medium text-zinc-400 leading-[1.6em]">
-              We produce good work for good people, and with the idea that staff and the client will be happy throughout the full process. This in return will bring more work our way, whether that's via recommendation or further work from that client.
+              We produce good work for good people, and with the idea that staff
+              and the client will be happy throughout the full process. This in
+              return will bring more work our way, whether that's via
+              recommendation or further work from that client.
             </p>
 
             {/* Quote Card (Project Colors: Dark Theme) */}
@@ -155,14 +166,16 @@ export default function OurValuesSection() {
                 <span className="mr-3 inline-flex align-top font-serif text-4xl text-[#2E5BFF]">
                   "
                 </span>
-                My vision has always been to look after the clients we work with, but to also look after the staff just as much. That will get the best results for everyone.
+                My vision has always been to look after the clients we work
+                with, but to also look after the staff just as much. That will
+                get the best results for everyone.
               </p>
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mt-4">
                 {/* Profile */}
                 <div className="flex items-center gap-4">
                   <div className="relative h-14 w-14 overflow-hidden rounded-full border border-white/10 bg-zinc-800">
-                    <Image 
+                    <Image
                       src="/assets/zyro-O-Nemx50zDE-unsplash.jpg"
                       alt="Andy Golpys"
                       fill
@@ -170,8 +183,12 @@ export default function OurValuesSection() {
                     />
                   </div>
                   <div className="flex flex-col">
-                    <h4 className="font-bold text-white text-lg">Andy Golpys</h4>
-                    <p className="text-sm font-medium tracking-wide text-zinc-500 uppercase">Co-Founder</p>
+                    <h4 className="font-bold text-white text-lg">
+                      Andy Golpys
+                    </h4>
+                    <p className="text-sm font-medium tracking-wide text-zinc-500 uppercase">
+                      Co-Founder
+                    </p>
                   </div>
                 </div>
 
@@ -179,13 +196,13 @@ export default function OurValuesSection() {
                 <Link href="/about" className="shrink-0 w-full sm:w-auto">
                   <button
                     type="button"
-                    className="group flex h-16 w-full sm:w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-white/80 hover:bg-zinc-200 hover:pl-6 hover:pr-3.5"
+                    className="group flex h-16 w-full sm:w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent pl-0 pr-2.5 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5"
                   >
-                    <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 pl-4 sm:pl-0">
-                      Learn about our culture
+                    <span className="text-lg font-bold tracking-tight text-white transition-colors duration-300 pl-4 sm:pl-0">
+                      Connect With Us
                     </span>
 
-                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
+                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-black">
                       <svg width="0" height="0" className="absolute">
                         <title>Connect arrow gradient</title>
                         <defs>

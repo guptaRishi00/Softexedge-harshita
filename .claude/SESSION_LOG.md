@@ -35,6 +35,46 @@
   unchanged. Kept the subtle card hover-shadow (not a balance issue).
 - Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /career static.
 
+## 2026-06-18 — OurValuesSection: CTA transparent + "Connect With Us"
+- CTA button: removed `bg-white` so it has no background initially (transparent on
+  the dark quote card), hover now adds `border-white` only (dropped `hover:bg-zinc-200`).
+- Text "Learn about our culture" → "Connect With Us"; text color `text-black` →
+  `text-white` (visible on transparent/dark). Arrow box flipped `bg-black text-white`
+  → `bg-white text-black` so it stays visible without the button bg. Matches the
+  brand-strategy transparent Connect button look.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /about static.
+
+## 2026-06-18 — OurValuesSection: clip-path with rounded edges
+- Follow-up: swapped the sharp chamfer `polygon()` for a rounded clip — `clip-path:
+  inset(0 round 5rem 1.5rem 5rem 1.5rem)` (heavy radius TL+BR, subtle TR+BL → an
+  asymmetric rounded shape, edges round not cut). `polygon()` can't do rounded
+  corners; `inset(round)` can, is responsive (rem), and is well-supported.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /about static.
+
+## 2026-06-18 — OurValuesSection: left image div uses clip-path
+- Redesigned the left image container with a `clip-path` chamfered-corner polygon
+  (45° cuts on top-left + bottom-right via `calc()`/rem so the angle is consistent
+  across the portrait and `lg:h-[800px]` sizes), replacing `rounded-[2.5rem]`.
+- Dropped the `border-white/10` and `shadow-2xl` (both render poorly on a clipped
+  element — clipped border edges / clipped box-shadow); the clip shape now defines
+  the silhouette. Overlay + Image still clip to the polygon.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /about static.
+
+## 2026-06-18 — OurValuesSection: redesigned to "Our Culture" layout
+- Redesigned to match the reference: two-column — left big rounded image
+  (`aspect-[4/5] lg:h-[800px]`), right column with "● Our Culture" eyebrow, large
+  headline, paragraph, and a quote card (quote + avatar/name/role + CTA).
+- Kept the proximity-glow grid background pattern (Cell grid + `bg-black/55` veil)
+  exactly as-is.
+- Project colors instead of the reference's lime-green card: dark `bg-zinc-950`
+  card with brand-blue quote mark (`#2E5BFF`) — respects the no-bg-gradient pref.
+- CTA reuses the ExperimentalTestimonials "Connect With Us" button (white pill,
+  black arrow box, dual MdArrowOutward + gradient on the 2nd via unique
+  `culture-icon-grad` id), labelled "Learn about our culture".
+- Fixes this pass: restored the section's `noStaticElementInteractions`
+  biome-ignore (lost in the redesign) + formatting. Assets confirmed present.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /about static.
+
 ## 2026-06-18 — ApplicationJourney: image style match SubServices
 - Image was full-bleed in the right grid cell; changed to SubServices' inset
   rounded-box style: `relative h-[350px] w-full overflow-hidden rounded-2xl
