@@ -1,8 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, MapPin } from "lucide-react";
+import { ChevronDown, MapPin, Sparkles, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { MdArrowOutward } from "react-icons/md";
+import { cn } from "@/lib/utils";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -106,36 +108,17 @@ const jobs: Job[] = [
   },
 ];
 
-function DetailList({ heading, items }: { heading: string; items: string[] }) {
-  return (
-    <div>
-      <h4 className="text-base font-bold text-white">{heading}</h4>
-      <ul className="mt-4 flex flex-col gap-2.5">
-        {items.map((item) => (
-          <li
-            key={item}
-            className="flex gap-3 text-sm leading-relaxed text-zinc-400"
-          >
-            <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[#2E5BFF]" />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+// Removed DetailList as we use custom bento cards inline
 
 export default function OpenPositions() {
-  const [openIds, setOpenIds] = useState<string[]>([]);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const toggle = (id: string) => {
-    setOpenIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setOpenId((prev) => (prev === id ? null : id));
   };
 
   return (
-    <section className="w-full bg-black px-10 py-24 md:py-32 font-sans selection:bg-[#2E5BFF]/20">
+    <section className="w-full bg-black px-10 pt-16 pb-24 md:pt-20 md:pb-32 font-sans selection:bg-[#2E5BFF]/20">
       <div className="mx-auto w-full">
         {/* Header matching the image */}
         <div className="flex flex-col items-center mb-16 md:mb-24">
@@ -160,10 +143,10 @@ export default function OpenPositions() {
           </motion.h2>
         </div>
 
-        {/* Job List matching the image exactly */}
-        <div className="flex flex-col border-t border-white/10">
+        {/* Job List with ServiceSection hover style */}
+        <div className="group/list flex w-full flex-col">
           {jobs.map((job, idx) => {
-            const open = openIds.includes(job.id);
+            const open = openId === job.id;
             return (
               <motion.div
                 key={job.id}
@@ -175,47 +158,79 @@ export default function OpenPositions() {
                   delay: idx * 0.1,
                   ease: premiumEase,
                 }}
-                className="border-b border-white/10"
+                className="group relative flex flex-col"
               >
                 {/* Visible Row */}
                 {/* biome-ignore lint/a11y/useKeyWithClickEvents: simple expandable row */}
                 {/* biome-ignore lint/a11y/noStaticElementInteractions: simple expandable row */}
                 <div
                   onClick={() => toggle(job.id)}
-                  className="flex flex-col md:flex-row md:items-center justify-between py-8 cursor-pointer gap-6 px-4 -mx-4 rounded-xl"
+                  className="flex w-full cursor-pointer items-center justify-between py-6 md:py-12"
                 >
-                  {/* Left: Title */}
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-medium tracking-tight text-white">
+                  {/* Left: Tag Reveal & Title */}
+                  <div className="flex items-center">
+                    <div
+                      className={cn(
+                        "relative shrink-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+                        "max-w-0 group-hover:mr-4 group-hover:max-w-[150px] md:group-hover:mr-6",
+                      )}
+                    >
+                      <div className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-medium text-white/80 opacity-0 transition-opacity duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 md:text-sm">
+                        {job.meta[0].includes(" - ") ? job.meta[0].split(" - ")[1] : job.meta[0]}
+                      </div>
+                    </div>
+
+                    <h3
+                      className={cn(
+                        "text-3xl font-medium tracking-tight transition-colors duration-500 sm:text-5xl md:text-[clamp(3rem,6vw,7rem)] leading-none tracking-[-0.04em]",
+                        "text-white group-hover/list:text-white/20 group-hover:!text-white",
+                      )}
+                    >
                       {job.title}
                     </h3>
                   </div>
 
-                  {/* Center: Outline Pills */}
-                  <div className="flex flex-wrap items-center gap-2.5 md:gap-3 flex-1 md:justify-center">
-                    <span className="rounded-lg border border-white/20 px-4 py-2 text-sm text-zinc-300 font-medium whitespace-nowrap">
-                      {job.category}
-                    </span>
-                    <span className="rounded-lg border border-white/20 px-4 py-2 text-sm text-zinc-300 font-medium whitespace-nowrap">
-                      {job.meta[0]}
-                    </span>
-                    <span className="rounded-lg border border-white/20 px-4 py-2 text-sm text-zinc-300 font-medium flex items-center gap-1.5 whitespace-nowrap">
-                      <MapPin className="h-4 w-4 text-zinc-400" />
-                      {job.meta[1] || job.meta[0]}
-                    </span>
-                  </div>
+                  {/* Right: Animated MdArrowOutward */}
+                  <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 text-white transition-colors duration-300 group-hover:border-transparent group-hover:bg-[#1a1a1a] md:h-14 md:w-14">
+                    <svg width="0" height="0" className="absolute">
+                      <title>Arrow gradient</title>
+                      <defs>
+                        <linearGradient
+                          id={`arrow-grad-${job.id}`}
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="0%"
+                        >
+                          <stop stopColor="#2E5BFF" offset="0%" />
+                          <stop stopColor="#149CCB" offset="100%" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
 
-                  {/* Right: Dropdown indicator arrow */}
-                  <div className="flex-1 flex md:justify-end">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 text-white">
-                      <ChevronDown
-                        className={`h-5 w-5 transition-transform duration-300 ${
-                          open ? "rotate-180" : ""
-                        }`}
-                      />
-                    </span>
+                    <MdArrowOutward
+                      className={cn(
+                        "absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8 md:h-6 md:w-6",
+                        open ? "rotate-90" : ""
+                      )}
+                    />
+                    <MdArrowOutward
+                      className={cn(
+                        "absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0 md:h-6 md:w-6",
+                        open ? "rotate-90" : ""
+                      )}
+                      style={{ fill: `url(#arrow-grad-${job.id})` }}
+                    />
                   </div>
                 </div>
+
+                {/* CUSTOM GRADIENT BORDER */}
+                <div
+                  className={cn(
+                    "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500 z-20",
+                    "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
+                  )}
+                />
 
                 {/* Hidden Accordion Details */}
                 <AnimatePresence initial={false}>
@@ -225,48 +240,110 @@ export default function OpenPositions() {
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.4, ease: premiumEase }}
-                      className="overflow-hidden px-4"
+                      className="overflow-hidden"
                     >
-                      <div className="pb-10 pt-4 border-t border-white/5">
-                        <div className="max-w-4xl">
-                          <h4 className="text-base font-bold text-white">
-                            About the Role
-                          </h4>
-                          <p className="mt-4 text-sm leading-relaxed text-zinc-400 md:text-base">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 pt-6 pb-12">
+                        {/* ABOUT THE ROLE - 2 columns */}
+                        <div className="md:col-span-2 flex flex-col justify-center rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 transition-colors hover:bg-white/[0.04]">
+                          <h4 className="text-sm font-bold tracking-widest text-[#2E5BFF] uppercase mb-4">About the Role</h4>
+                          <p className="text-lg md:text-xl leading-relaxed text-zinc-300 font-medium">
                             {job.about}
                           </p>
                         </div>
 
-                        <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-2">
-                          <div className="flex flex-col gap-10">
-                            <DetailList
-                              heading="Key Responsibilities"
-                              items={job.responsibilities}
-                            />
-                            <DetailList
-                              heading="Why Work With Us"
-                              items={job.perks}
-                            />
+                        {/* WHY WORK WITH US - 1 column (Accent Card) */}
+                        <div className="md:col-span-1 rounded-3xl border border-white/10 bg-gradient-to-br from-[#2E5BFF]/10 to-[#149CCB]/10 p-8 md:p-10 relative overflow-hidden group/perks">
+                          <div className="absolute top-0 right-0 p-6 opacity-20 group-hover/perks:opacity-40 transition-opacity duration-500">
+                            <Sparkles className="h-24 w-24 text-[#149CCB] blur-sm" />
                           </div>
-                          <div className="flex flex-col gap-10">
-                            <DetailList
-                              heading="Requirements"
-                              items={job.requirements}
-                            />
-                            <DetailList
-                              heading="Good to Have"
-                              items={job.goodToHave}
-                            />
+                          <h4 className="text-xl font-bold text-white mb-6 flex items-center gap-2 relative z-10">
+                            <Sparkles className="h-5 w-5 text-[#149CCB]" />
+                            Why Work With Us
+                          </h4>
+                          <ul className="flex flex-col gap-4 relative z-10">
+                            {job.perks.map((perk) => (
+                              <li key={perk} className="flex items-start gap-3 text-sm md:text-base text-zinc-300 font-medium">
+                                <CheckCircle2 className="mt-[2px] h-5 w-5 shrink-0 text-[#149CCB]" strokeWidth={2.5} />
+                                <span>{perk}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* KEY RESPONSIBILITIES - 2 columns */}
+                        <div className="md:col-span-2 rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 transition-colors hover:bg-white/[0.04]">
+                          <h4 className="text-xl font-bold text-white mb-6">Key Responsibilities</h4>
+                          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                            {job.responsibilities.map((res) => (
+                              <li key={res} className="flex items-start gap-3 text-sm md:text-base text-zinc-400">
+                                <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#2E5BFF]" />
+                                <span>{res}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* REQUIREMENTS - 1 column */}
+                        <div className="md:col-span-1 rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 transition-colors hover:bg-white/[0.04]">
+                          <h4 className="text-xl font-bold text-white mb-6">Requirements</h4>
+                          <ul className="flex flex-col gap-5">
+                            {job.requirements.map((req) => (
+                              <li key={req} className="flex items-start gap-3 text-sm md:text-base text-zinc-400">
+                                <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-white/40" />
+                                <span>{req}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* GOOD TO HAVE - 2 columns */}
+                        <div className="md:col-span-2 rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 transition-colors hover:bg-white/[0.04] flex flex-col justify-center">
+                          <h4 className="text-xl font-bold text-white mb-6">Good to Have</h4>
+                          <div className="flex flex-wrap gap-3">
+                            {job.goodToHave.map((good) => (
+                              <span key={good} className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm md:text-base font-medium text-zinc-300 hover:bg-white/10 transition-colors cursor-default">
+                                {good}
+                              </span>
+                            ))}
                           </div>
                         </div>
 
-                        {/* Apply button — now inside the dropdown */}
-                        <div className="mt-10">
+                        {/* APPLY BUTTON - 1 column CTA block */}
+                        <div className="md:col-span-1 rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 flex flex-col justify-center items-center relative overflow-hidden group/apply hover:border-white/20 transition-all duration-500">
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#2E5BFF]/10 to-transparent opacity-0 group-hover/apply:opacity-100 transition-opacity duration-500" />
+                          <h4 className="text-lg font-medium text-white mb-6 relative z-10 text-center">Ready to make an impact?</h4>
+                          
                           <a
                             href={`mailto:careers@softexedge.com?subject=Application for ${job.title}`}
-                            className="inline-flex items-center justify-center rounded-full bg-linear-to-r from-[#2E5BFF] to-[#149CCB] px-8 py-3 text-sm font-semibold text-white shadow-lg"
+                            className="group/btn relative z-10 flex h-14 w-full cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-black pl-5 pr-2 transition-all duration-300 hover:border-white hover:bg-white"
                           >
-                            Apply Now
+                            <span className="text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover/btn:text-black">
+                              Apply Now
+                            </span>
+
+                            <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover/btn:bg-black">
+                              <svg width="0" height="0" className="absolute">
+                                <title>Apply arrow gradient</title>
+                                <defs>
+                                  <linearGradient
+                                    id={`apply-grad-${job.id}`}
+                                    x1="0%"
+                                    y1="0%"
+                                    x2="100%"
+                                    y2="0%"
+                                  >
+                                    <stop stopColor="#2E5BFF" offset="0%" />
+                                    <stop stopColor="#149CCB" offset="100%" />
+                                  </linearGradient>
+                                </defs>
+                              </svg>
+
+                              <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover/btn:-translate-y-8 group-hover/btn:translate-x-8" />
+                              <MdArrowOutward
+                                className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover/btn:translate-x-0 group-hover/btn:translate-y-0"
+                                style={{ fill: `url(#apply-grad-${job.id})` }}
+                              />
+                            </div>
                           </a>
                         </div>
                       </div>

@@ -77,51 +77,54 @@ export default function ApplicationJourney() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-            className="mt-6 max-w-2xl text-lg text-zinc-500 md:text-xl"
+            className="mt-6 max-w-2xl text-lg text-zinc-500 md:text-xl leading-[1.2em]"
           >
             We've streamlined our hiring process to be transparent, respectful
             of your time, and focused on discovering your true potential.
           </motion.p>
         </div>
 
-        {/* Step cards — scroll-stacking deck (text left, image right) */}
-        <div className="relative">
+        {/* Image-based Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {steps.map((step, index) => (
-            <div
+            <motion.div
               key={step.number}
-              className="sticky w-full"
-              style={{
-                // Each card pins slightly lower so they stack like a deck.
-                top: `calc(8vh + ${index * 2.5}rem)`,
-                zIndex: index,
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{
+                duration: 0.6,
+                delay: index * 0.1,
+                ease: premiumEase,
               }}
+              className="group relative h-[450px] w-full overflow-hidden rounded-[2.5rem]"
             >
-              <div className="grid grid-cols-1 gap-6 rounded-[2.5rem] border border-zinc-200 bg-white p-6 md:grid-cols-2 md:items-center md:gap-10 md:p-8 lg:p-10">
-                {/* Left: title + description */}
-                <div className="flex flex-col justify-center gap-4 md:px-4 lg:px-6">
-                  <h3 className="text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl lg:text-5xl">
-                    {step.title}
-                  </h3>
-                  <p className="text-base leading-relaxed text-zinc-500 md:text-lg">
-                    {step.description}
-                  </p>
-                </div>
+              <img
+                src={step.image}
+                alt={step.title}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              />
 
-                {/* Right: image — same rounded box style as SubServices */}
-                <div className="relative h-[350px] w-full overflow-hidden rounded-2xl md:h-[450px]">
-                  <img
-                    src={step.image}
-                    alt={step.title}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500" />
+
+              {/* Content */}
+              <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-10">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 backdrop-blur-md">
+                  <span className="text-sm font-bold text-white">
+                    {step.number}
+                  </span>
                 </div>
+                <h3 className="mb-3 text-2xl font-bold tracking-tight text-white md:text-3xl">
+                  {step.title}
+                </h3>
+                <p className="text-base leading-relaxed text-white/80">
+                  {step.description}
+                </p>
               </div>
-            </div>
+            </motion.div>
           ))}
-
-          {/* Runway: lets the last card stay pinned briefly */}
-          <div className="pointer-events-none h-[30vh] w-full" />
         </div>
       </div>
     </section>

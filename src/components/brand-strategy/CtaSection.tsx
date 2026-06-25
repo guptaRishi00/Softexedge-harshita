@@ -187,7 +187,7 @@ export default function CtaSection() {
 
           {/* Bottom Content: Actions & Meta Info */}
           {/* Reduced padding (p-8 md:p-12) to match shorter section */}
-          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 p-8 md:flex-row md:items-center md:justify-between md:w-[70%] md:p-12 lg:p-16">
+          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 p-8 md:flex-row md:items-center md:justify-between md:p-12 lg:p-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -197,13 +197,13 @@ export default function CtaSection() {
             >
               <button
                 type="button"
-                className="group flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-transparent pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-5 hover:pr-3"
+                className="group flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-transparent pl-5 pr-2 transition-all duration-300 hover:border-white hover:bg-white"
               >
-                <span className="text-base font-bold tracking-tight text-white transition-colors duration-300">
+                <span className="text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
                   Connect With Us
                 </span>
 
-                <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black">
+                <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
                   <svg width="0" height="0" className="absolute">
                     <title>Connect arrow gradient</title>
                     <defs>
@@ -235,14 +235,14 @@ export default function CtaSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.15, ease: premiumEase }}
-              className="pointer-events-auto flex flex-col gap-1 text-left"
+              className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
             >
               <span className="text-xs uppercase tracking-wider text-zinc-500">
                 Drop us a line
               </span>
               <a
                 href="mailto:hello@youragency.com"
-                className="text-lg font-bold text-white transition-colors hover:text-[#149CCB] md:text-2xl"
+                className="text-base font-bold text-white md:text-lg"
               >
                 hello@youragency.com
               </a>
@@ -254,12 +254,14 @@ export default function CtaSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-              className="pointer-events-auto flex flex-col gap-1 text-left"
+              className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
             >
               <span className="text-xs uppercase tracking-wider text-zinc-500">
                 Give us a call
               </span>
-              <span className="text-lg font-bold text-white md:text-2xl">+1 (555) 123-4567</span>
+              <span className="text-base font-bold text-white md:text-lg">
+                +1 (555) 123-4567
+              </span>
             </motion.div>
           </div>
         </div>

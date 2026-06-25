@@ -3,7 +3,7 @@
 import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FaFacebookF } from "react-icons/fa";
+import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { RiInstagramLine } from "react-icons/ri";
 import Particles from "@/components/ui/Particles";
@@ -26,6 +26,7 @@ const footerLinksCol2 = [
 const socialLinks = [
   { icon: <FaFacebookF size={14} />, href: "#" },
   { icon: <RiInstagramLine size={14} />, href: "#" },
+  { icon: <FaLinkedinIn size={14} />, href: "#" },
 ];
 
 const brandContainerVariants: Variants = {
@@ -39,12 +40,13 @@ const brandContainerVariants: Variants = {
 };
 
 const letterVariants: Variants = {
-  hidden: { opacity: 0, display: "none" },
+  hidden: { opacity: 0, y: 50 },
   visible: {
     opacity: 1,
-    display: "inline-block",
+    y: 0,
     transition: {
-      duration: 0,
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1],
     },
   },
 };
@@ -86,7 +88,7 @@ export default function Footer() {
     }
   };
 
-  const brandName = "SOFTEXEDGE".split("");
+  const brandName = "Softexedge".split("");
 
   return (
     <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-16 text-white md:pt-24 lg:pt-32">
@@ -166,14 +168,14 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* MIDDLE SECTION: Giant Brand Name with Typewriter Effect */}
-        <div className="relative flex w-full justify-center border-b border-white/10 py-24 md:py-20 overflow-hidden">
+        {/* MIDDLE SECTION: Giant Brand Name */}
+        <div className="relative flex w-full justify-center border-b border-white/10 pt-8 pb-16 md:pt-10 md:pb-20 overflow-hidden">
           <motion.h1
             variants={brandContainerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
-            className="relative z-10 flex select-none text-[13vw] font-bold leading-[0.8] tracking-[-0.02em] text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
+            className="relative z-10 flex select-none text-[16.5vw] font-bold leading-[0.85] tracking-[-0.04em] text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
           >
             {brandName.map((letter, index) => (
               <motion.span

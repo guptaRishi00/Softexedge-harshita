@@ -35,6 +35,75 @@
   unchanged. Kept the subtle card hover-shadow (not a balance issue).
 - Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /career static.
 
+## 2026-06-18 — ContactSection: channel cards get CtaSection's interactive grid
+- Upgraded the static `BoxyGrid` to an interactive `ChannelCard` that replicates
+  CtaSection's effect per card: own `hoveredIndex` + `mouseX/mouseY`, a
+  cursor-following `useMotionTemplate` radial mask (280px) that reveals the dark
+  cell grid (8 cols × 80 cells), and per-cell proximity glow (brand gradient,
+  `getIntensity` distance falloff). Content lifted `relative z-10`; kept the
+  reduced `from-black/40` overlay.
+- Added `useMotionTemplate`/`useMotionValue` imports; `noStaticElementInteractions`
+  biome-ignores on the card + cell (decorative cursor tracking), matching the
+  OurValuesSection/CtaSection pattern. Stable `boxyCellIds` keys (no index keys).
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /home static.
+
+## 2026-06-18 — ContactSection: boxy grid on channel cards, drop dot grid
+- Removed the section's radial dot-grid background (+ its edge-fade overlays);
+  section keeps the solid `bg-[#0a0a0a]`.
+- Added a static "boxy grid" to each channel card — the dark rounded-cell pattern
+  from CtaSection rendered as a card bg via a `BoxyGrid` helper (auto-fill
+  `minmax(2.75rem,1fr)` grid of `aspect-square rounded-xl bg-[#161616]` cells, 72
+  cells, stable `boxyCellIds` keys, no per-card mouse interactivity so it's cheap).
+  Content lifted with `relative z-10`.
+- Reduced black overlay: a light `bg-gradient-to-t from-black/40 to-transparent`
+  (vs CtaSection's heavier `from-black/25 via-black/5 to-black/30`) so the grid
+  shows through while keeping the bottom label/value readable.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /home static.
+
+## 2026-06-18 — Contact page: more gap between hero and ContactSection
+- Added `mt-12 md:mt-24` to the `ContactSection` wrapper div in
+  `src/app/contact/page.tsx` to widen the gap below ContactHeroSection.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /contact static. (biome on
+  this page shows only pre-existing loose-type debt — `type Props = {}`, `{}: any`,
+  unused React import — not from this change.)
+
+## 2026-06-18 — ContactSection: tag matches WhyJoinUs eyebrow
+- "Get in touch" tag restyled to the WhyJoinUs tag: gradient-bold eyebrow
+  (`text-sm font-bold tracking-widest bg-clip-text`) → `inline-flex items-center
+  gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/60` (kept
+  ContactSection's `mb-8`).
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /home static.
+
+## 2026-06-18 — ContactSection: rotating word anim matches ExperimentalTestimonials
+- ContactSection's headline rotating word used a 3D rotateX flip; changed it to
+  exactly match ExperimentalTestimonials' horizontal slide:
+  `initial {x:40,opacity:0}` / `animate {x:0,opacity:1}` / `exit {x:-40,opacity:0}`,
+  `transition {duration:0.4, ease:"easeOut"}`. Dropped `rotateX`,
+  `transformPerspective`, `origin-center`; added `whitespace-nowrap`. Wrapper
+  (`inline-grid overflow-hidden py-2` + `AnimatePresence mode="wait"`) already matched.
+- `premiumEase` still used by the column reveal animations.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /home static.
+
+## 2026-06-18 — Contact descriptions: match OurValuesSection standard
+- Standardized the description `<p>` styling on OurValuesSection's
+  (`text-lg font-medium text-zinc-400 leading-[1.6em]`):
+  - ContactHeroSection (contact): `text-lg font-normal leading-relaxed
+    text-zinc-500 md:text-xl` → `text-lg font-medium leading-[1.6em] text-zinc-400`
+    (kept `max-w-xl mt-8`).
+  - ContactSection (home): `… leading-relaxed … md:text-xl` → `leading-[1.6em]`,
+    dropped `md:text-xl` (color/weight already matched). Kept `mt-6`.
+- Both descriptions now share size/leading/weight/color; only layout classes differ.
+- Verified: `npx tsc --noEmit` clean; biome only tolerated `noImgElement`;
+  `next build` ✓ static.
+
+## 2026-06-18 — ContactSection (home): added Phone + Company fields
+- Added a 2-col row (Phone Number `type="tel"`, Company `type="text"`, both
+  optional) after the Name/Email row in the form, matching the existing field
+  markup (label `text-xs font-bold uppercase` + `inputClass`).
+- Incidental: re-added the `<title>` to the select-chevron `<svg>` (a prior fix
+  the form rework had dropped → `noSvgWithoutTitle`) so the file is lint-clean.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /home static.
+
 ## 2026-06-18 — StrategyHeroSection: more gap between title and stats
 - Added `mt-16 md:mt-24` to the bottom Stats (`AgencyStats`) wrapper so there's
   more breathing room between the centered title block and the stats row.

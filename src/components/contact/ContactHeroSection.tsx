@@ -133,7 +133,7 @@ export default function ContactHeroSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-xl text-lg font-normal leading-relaxed text-zinc-500 md:text-xl mt-8"
+          className="mt-8 max-w-xl text-lg font-medium leading-[1.2em] text-zinc-400"
         >
           Have a project in mind, or just want to say hi? Tell us what you're
           building — we usually reply within a couple of hours.

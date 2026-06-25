@@ -1,6 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+} from "framer-motion";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -35,6 +40,109 @@ const channels = [
 const inputClass =
   "w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-base text-white transition-all placeholder:text-zinc-500 hover:bg-white/10 focus:border-[#2E5BFF]/50 focus:bg-white/10 focus:outline-none focus:ring-4 focus:ring-[#2E5BFF]/20";
 
+const GRID_COLUMNS = 8;
+const boxyCellIds = Array.from({ length: 80 }, (_, i) => `box-${i}`);
+
+// Contact channel card with the same interactive proximity-glow grid as
+// CtaSection: a cursor-following mask reveals the dark cell grid, and cells near
+// the pointer glow with the brand gradient.
+function ChannelCard({
+  label,
+  value,
+  href,
+  Icon,
+  colSpan,
+}: (typeof channels)[number]) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const mouseX = useMotionValue(-1000);
+  const mouseY = useMotionValue(-1000);
+
+  // For half-width cards (sm:col-span-1), use 4 columns to make the squares larger.
+  // For full-width cards (sm:col-span-2), use 8 columns.
+  const gridColumns = colSpan.includes("sm:col-span-1") ? 4 : 8;
+
+  const getIntensity = (i: number) => {
+    if (hoveredIndex === null) return 0;
+    const row = Math.floor(i / gridColumns);
+    const col = i % gridColumns;
+    const hoverRow = Math.floor(hoveredIndex / gridColumns);
+    const hoverCol = hoveredIndex % gridColumns;
+    const distance = Math.sqrt((row - hoverRow) ** 2 + (col - hoverCol) ** 2);
+    return distance > 3.5 ? 0 : 1 - distance / 1.79;
+  };
+
+  const mask = useMotionTemplate`radial-gradient(280px circle at ${mouseX}px ${mouseY}px, black 0%, rgba(0,0,0,0.15) 100%)`;
+
+  return (
+    <a
+      href={href}
+      onMouseMove={(e) => {
+        const { left, top } = e.currentTarget.getBoundingClientRect();
+        mouseX.set(e.clientX - left);
+        mouseY.set(e.clientY - top);
+      }}
+      onMouseLeave={() => setHoveredIndex(null)}
+      className={`group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/20 transition-transform duration-300 block ${colSpan}`}
+    >
+      {/* Interactive proximity grid (same effect as CtaSection) */}
+      <motion.div
+        className="absolute inset-0 z-0 overflow-hidden"
+        style={{ WebkitMaskImage: mask, maskImage: mask }}
+      >
+        <div
+          className="grid gap-2 p-2.5"
+          style={{
+            gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+          }}
+        >
+          {boxyCellIds.map((id, i) => {
+            const intensity = getIntensity(i);
+            const colorVal = Math.round(22 * (1 - intensity));
+            return (
+              // biome-ignore lint/a11y/noStaticElementInteractions: decorative proximity-glow cell
+              <div
+                key={id}
+                onMouseEnter={() => setHoveredIndex(i)}
+                className="relative aspect-square w-full overflow-hidden rounded-md p-[0.8px]"
+                style={{
+                  backgroundColor: intensity > 0 ? "transparent" : "#161616",
+                }}
+              >
+                <div
+                  className="absolute inset-0 bg-gradient-to-b from-[#2E5BFF] via-[#149CCB] to-[#2E5BFF]"
+                  style={{ opacity: intensity * 0.8 }}
+                />
+                <div
+                  className="relative z-10 h-full w-full rounded-md"
+                  style={{
+                    backgroundColor: `rgb(${colorVal}, ${colorVal}, ${colorVal})`,
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* Removed black overlay for maximum pattern visibility */}
+
+      <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between gap-6 p-6 sm:p-8">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-zinc-400 transition-colors duration-300 group-hover:bg-[#2E5BFF]/20 group-hover:text-[#2E5BFF]">
+          <Icon className="h-5 w-5" strokeWidth={2} />
+        </span>
+        <span className="flex flex-col gap-1">
+          <span className="text-sm font-semibold tracking-wide text-zinc-500 uppercase">
+            {label}
+          </span>
+          <span className="text-lg font-bold text-white sm:text-xl">
+            {value}
+          </span>
+        </span>
+      </div>
+    </a>
+  );
+}
+
 export default function ContactSection() {
   const [index, setIndex] = useState(0);
 
@@ -48,22 +156,8 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="relative w-full overflow-hidden bg-[#0a0a0a] py-24 md:py-32"
+      className="relative w-full overflow-hidden bg-black py-24 md:py-32"
     >
-      {/* Prominent Background Dot Grid */}
-      <div className="pointer-events-none absolute inset-0 z-0">
-        <div
-          className="absolute inset-0 opacity-[0.25]"
-          style={{
-            backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-        {/* Soft edge fading so it blends nicely with adjacent sections */}
-        <div className="absolute inset-0 bg-linear-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a] opacity-90" />
-        <div className="absolute inset-0 bg-linear-to-r from-[#0a0a0a] via-transparent to-[#0a0a0a] opacity-60" />
-      </div>
-
       <div className="relative z-10 mx-auto w-full px-6 md:px-10">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-12">
           {/* LEFT: messaging + contact channels */}
@@ -74,22 +168,21 @@ export default function ContactSection() {
             transition={{ duration: 0.8, ease: premiumEase }}
             className="flex flex-col lg:col-span-5 lg:pr-8"
           >
-            <div className="mb-8 inline-flex items-center text-sm font-bold uppercase tracking-widest bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent md:text-base">
+            <div className="mb-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/60">
               Get in touch
             </div>
 
-            <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[64px] lg:leading-[1.05]">
+            <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[64px] lg:leading-[0.9em]">
               Let's build <br />
               <span className="inline-grid overflow-hidden py-2">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={index}
-                    initial={{ y: 40, opacity: 0, rotateX: -90 }}
-                    animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                    exit={{ y: -40, opacity: 0, rotateX: 90 }}
-                    transition={{ duration: 0.5, ease: premiumEase }}
-                    className="col-start-1 row-start-1 origin-center bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent"
-                    style={{ transformPerspective: 1000 }}
+                    initial={{ x: 40, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -40, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r pb-3 from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent"
                   >
                     {rotatingWords[index]}
                   </motion.span>
@@ -97,7 +190,7 @@ export default function ContactSection() {
               </span>
             </h2>
 
-            <p className="mt-6 text-lg font-medium leading-relaxed text-zinc-400 md:text-xl">
+            <p className="mt-6 text-lg font-medium leading-[1.2em] text-zinc-400">
               Ready to redefine the standard? Whether you have a specific
               project in mind or just want to explore possibilities, our team is
               ready to collaborate.
@@ -105,28 +198,8 @@ export default function ContactSection() {
 
             {/* Clean Static Bento Contact Cards */}
             <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {channels.map(({ label, value, href, Icon, colSpan }) => (
-                <div
-                  key={label}
-                  className={`group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950 transition-transform duration-300 hover:-translate-y-1 hover:bg-zinc-900 ${colSpan}`}
-                >
-                  <a
-                    href={href}
-                    className="flex h-full flex-col justify-between gap-6 p-6 sm:p-8"
-                  >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-zinc-400 transition-colors duration-300 group-hover:bg-[#2E5BFF]/20 group-hover:text-[#2E5BFF]">
-                      <Icon className="h-5 w-5" strokeWidth={2} />
-                    </span>
-                    <span className="flex flex-col gap-1">
-                      <span className="text-sm font-semibold tracking-wide text-zinc-500 uppercase">
-                        {label}
-                      </span>
-                      <span className="text-lg font-bold text-white sm:text-xl">
-                        {value}
-                      </span>
-                    </span>
-                  </a>
-                </div>
+              {channels.map((channel) => (
+                <ChannelCard key={channel.label} {...channel} />
               ))}
             </div>
           </motion.div>
@@ -175,6 +248,38 @@ export default function ContactSection() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+                  <div className="flex flex-col gap-3">
+                    <label
+                      htmlFor="phone"
+                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400"
+                    >
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      placeholder="+1 (555) 000-0000"
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <label
+                      htmlFor="company"
+                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400"
+                    >
+                      Company
+                    </label>
+                    <input
+                      type="text"
+                      id="company"
+                      placeholder="Acme Inc."
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
                 <div className="flex flex-col gap-3">
                   <label
                     htmlFor="service"
@@ -208,6 +313,7 @@ export default function ContactSection() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       >
+                        <title>Select dropdown chevron</title>
                         <path d="m6 9 6 6 6-6" />
                       </svg>
                     </div>
