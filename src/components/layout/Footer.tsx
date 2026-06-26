@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
@@ -29,39 +29,6 @@ const socialLinks = [
   { icon: <FaLinkedinIn size={14} />, href: "#" },
 ];
 
-const brandContainerVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const letterVariants: Variants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.8,
-      ease: [0.16, 1, 0.3, 1],
-    },
-  },
-};
-
-const cursorVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: [0, 1, 0],
-    transition: {
-      repeat: Infinity,
-      duration: 0.8,
-      ease: "linear",
-    },
-  },
-};
 
 export default function Footer() {
   const [mounted, setMounted] = useState(false);
@@ -88,7 +55,6 @@ export default function Footer() {
     }
   };
 
-  const brandName = "Softexedge".split("");
 
   return (
     <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-16 text-white md:pt-24 lg:pt-32">
@@ -171,21 +137,13 @@ export default function Footer() {
         {/* MIDDLE SECTION: Giant Brand Name */}
         <div className="relative flex w-full justify-center border-b border-white/10 pt-8 pb-16 md:pt-10 md:pb-20 overflow-hidden">
           <motion.h1
-            variants={brandContainerVariants}
-            initial="hidden"
-            whileInView="visible"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
-            className="relative z-10 flex select-none text-[16.5vw] font-bold leading-[0.85] tracking-[-0.04em] text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10 flex select-none text-[16.5vw] font-medium leading-[0.85] tracking-normal text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
           >
-            {brandName.map((letter, index) => (
-              <motion.span
-                key={index}
-                variants={letterVariants}
-                className="inline-block"
-              >
-                {letter}
-              </motion.span>
-            ))}
+            Softexedge
           </motion.h1>
         </div>
 

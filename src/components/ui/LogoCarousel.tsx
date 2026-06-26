@@ -62,7 +62,7 @@ export default function LogoCarousel({
           );
 
           const boxClass =
-            "flex h-20 shrink-0 items-center justify-center gap-3 rounded-2xl border border-zinc-300 bg-white px-7 shadow-sm md:h-24 md:px-9";
+            "flex h-20 w-48 shrink-0 items-center justify-center gap-3 rounded-2xl border border-zinc-300 bg-white px-7 shadow-sm md:h-24 md:w-56 md:px-9";
 
           return logo.href ? (
             <a

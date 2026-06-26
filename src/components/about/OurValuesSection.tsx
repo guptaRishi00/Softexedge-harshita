@@ -39,7 +39,7 @@ export default function OurValuesSection() {
             className="w-full lg:w-5/12 shrink-0 flex flex-col"
           >
             <div
-              className="relative w-full aspect-[4/5] lg:h-[800px] overflow-hidden bg-zinc-900"
+              className="relative w-full aspect-[4/5] lg:aspect-auto lg:flex-1 overflow-hidden bg-zinc-900"
               style={{
                 // Asymmetric rounded shape via clip-path — heavy radius on
                 // top-left + bottom-right, subtle on the others (round edges).
@@ -48,8 +48,8 @@ export default function OurValuesSection() {
             >
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 z-10" />
               <Image
-                src="https://plus.unsplash.com/premium_photo-1693671725924-302f7a2c450b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Z3Jvd3RofGVufDB8fDB8fHww"
-                alt="Our Studio Culture"
+                src="/assets/ceo2.png"
+                alt="CEO"
                 fill
                 className="object-cover transition-transform duration-[20s] ease-out hover:scale-110"
                 sizes="(max-width: 1024px) 100vw, 40vw"
@@ -89,11 +89,8 @@ export default function OurValuesSection() {
             </p>
 
             {/* Quote Card (Project Colors: Dark Theme) */}
-            <div className="mt-12 relative flex flex-col gap-8 rounded-3xl bg-zinc-950 p-8 md:p-10">
-              <p className="text-xl md:text-2xl font-medium leading-[1.4em] tracking-tight text-white">
-                <span className="mr-3 inline-flex align-top font-serif text-4xl text-[#2E5BFF]">
-                  "
-                </span>
+            <div className="mt-12 relative flex flex-col gap-8 rounded-3xl bg-[#100f0f] p-8 md:p-10">
+              <p className="text-xl md:text-2xl font-medium leading-[1.2em] tracking-tight text-white">
                 My vision has always been to look after the clients we work
                 with, but to also look after the staff just as much. That will
                 get the best results for everyone.
@@ -104,33 +101,33 @@ export default function OurValuesSection() {
                 <div className="flex items-center gap-4">
                   <div className="relative h-14 w-14 overflow-hidden rounded-full bg-zinc-800">
                     <Image
-                      src="/assets/zyro-O-Nemx50zDE-unsplash.jpg"
-                      alt="Andy Golpys"
+                      src="/assets/ceo.jpeg"
+                      alt="Sidhartha Parasramka"
                       fill
                       className="object-cover"
                     />
                   </div>
                   <div className="flex flex-col">
                     <h4 className="font-bold text-white text-lg">
-                      Andy Golpys
+                      Sidhartha Parasramka
                     </h4>
                     <p className="text-sm font-medium tracking-wide text-zinc-500 uppercase">
-                      Co-Founder
+                      CEO
                     </p>
                   </div>
                 </div>
 
-                {/* ExperimentalTestimonials CTA Button */}
+                {/* CTA Button (same style as CtaSection) */}
                 <Link href="/about" className="shrink-0 w-full sm:w-auto">
                   <button
                     type="button"
-                    className="group flex h-16 w-full sm:w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent pl-0 pr-2.5 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5"
+                    className="group relative flex h-14 w-full sm:w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-5 pr-2 transition-colors duration-300 hover:border-white before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100"
                   >
-                    <span className="text-lg font-bold tracking-tight text-white transition-colors duration-300 pl-4 sm:pl-0">
-                      Connect With Us
+                    <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors group-hover:text-black">
+                      Connect With Me
                     </span>
 
-                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-black">
+                    <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
                       <svg width="0" height="0" className="absolute">
                         <title>Connect arrow gradient</title>
                         <defs>
@@ -147,9 +144,9 @@ export default function OurValuesSection() {
                         </defs>
                       </svg>
 
-                      <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                      <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
                       <MdArrowOutward
-                        className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                        className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
                         style={{ fill: "url(#culture-icon-grad)" }}
                       />
                     </div>

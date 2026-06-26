@@ -1,15 +1,22 @@
 "use client";
 
 import AutoScroll from "embla-carousel-auto-scroll";
-import React, { useRef, useState, useCallback } from "react";
+import {
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+  useVelocity,
+} from "framer-motion";
+import { useCallback, useRef, useState } from "react";
 
 import {
   Carousel,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  type CarouselApi,
 } from "@/components/ui/carousel";
 
 interface TeamMember {
@@ -60,13 +67,27 @@ const teamMembers: TeamMember[] = [
 export default function OurTeamSection() {
   const [api, setApi] = useState<CarouselApi>();
 
+  // Scroll-velocity shift: the card row lurches horizontally in the scroll
+  // direction (and springs back to rest), echoing the scroll like a parallax.
+  const { scrollY } = useScroll();
+  const scrollVelocity = useVelocity(scrollY);
+  const smoothVelocity = useSpring(scrollVelocity, {
+    damping: 50,
+    stiffness: 300,
+    mass: 0.5,
+  });
+  // Over-width wrapper has a 5% edge buffer, so clamp the shift under it.
+  const x = useTransform(smoothVelocity, [-2000, 2000], ["4%", "-4%"], {
+    clamp: true,
+  });
+
   const autoScroll = useRef(
     AutoScroll({
       speed: 1.2,
       direction: "backward",
       playOnInit: true,
       stopOnInteraction: false,
-      stopOnMouseEnter: true,
+      stopOnMouseEnter: false,
     }),
   );
 
@@ -115,42 +136,50 @@ export default function OurTeamSection() {
             </div>
 
             <div className="relative hidden gap-3 md:flex items-center min-w-24 min-h-12">
-              <CarouselPrevious className="static translate-y-0 hover:bg-black hover:text-white hover:border-black transition-colors duration-300" onClick={handlePrev} />
-              <CarouselNext className="static translate-y-0 hover:bg-black hover:text-white hover:border-black transition-colors duration-300" onClick={handleNext} />
+              <CarouselPrevious
+                className="static translate-y-0 hover:bg-black hover:text-white hover:border-black transition-colors duration-300"
+                onClick={handlePrev}
+              />
+              <CarouselNext
+                className="static translate-y-0 hover:bg-black hover:text-white hover:border-black transition-colors duration-300"
+                onClick={handleNext}
+              />
             </div>
           </div>
 
-          <CarouselContent className="-ml-4 md:-ml-3">
-            {[...teamMembers, ...teamMembers].map((member, index) => (
-              <CarouselItem
-                key={`${member.id}-${index}`}
-                className="pl-4 md:pl-3 basis-[85%] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
-              >
-                <div className="group relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] bg-zinc-100 border border-zinc-200/60 shadow-xs transition-all duration-500 hover:shadow-xl hover:shadow-zinc-200/40">
-                  <div className="absolute inset-x-0 bottom-0 z-0 h-40 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
+          <motion.div style={{ x }} className="w-[110%] -ml-[5%]">
+            <CarouselContent className="-ml-4 md:-ml-3">
+              {[...teamMembers, ...teamMembers].map((member, index) => (
+                <CarouselItem
+                  key={`${member.id}-${index}`}
+                  className="pl-4 md:pl-3 basis-[85%] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                >
+                  <div className="group relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] bg-zinc-100 border border-zinc-200/60 shadow-xs transition-all duration-500 hover:shadow-xl hover:shadow-zinc-200/40">
+                    <div className="absolute inset-x-0 bottom-0 z-0 h-40 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
 
-                  <div className="absolute inset-0 z-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
+                    <div className="absolute inset-0 z-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
 
-                  <div className="absolute bottom-0 inset-x-0 z-10 p-6 md:p-8 flex flex-col gap-1 bg-black/50 backdrop-blur-sm translate-y-4 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 group-hover:opacity-100">
-                    <h3 className="text-xl font-bold tracking-tight text-white transition-colors duration-300 md:text-2xl">
-                      {member.name}
-                    </h3>
+                    <div className="absolute bottom-0 inset-x-0 z-10 p-6 md:p-8 flex flex-col gap-1 bg-black/50 backdrop-blur-sm translate-y-4 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 group-hover:opacity-100">
+                      <h3 className="text-xl font-bold tracking-tight text-white transition-colors duration-300 md:text-2xl">
+                        {member.name}
+                      </h3>
 
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-300">
-                      {member.role}
-                    </p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                        {member.role}
+                      </p>
+                    </div>
+
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] "
+                    />
                   </div>
-
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] "
-                  />
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </motion.div>
         </Carousel>
       </div>
     </section>

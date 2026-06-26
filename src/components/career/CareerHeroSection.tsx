@@ -59,8 +59,8 @@ function InfiniteRow({
         animate={{
           x:
             direction === "left"
-              ? ["0%", "-33.333333%"]
-              : ["-33.333333%", "0%"],
+              ? ["0%", "-8.333333%"]
+              : ["-8.333333%", "0%"],
         }}
         transition={{
           repeat: Number.POSITIVE_INFINITY,
@@ -69,7 +69,7 @@ function InfiniteRow({
           duration: speed,
         }}
       >
-        {Array.from({ length: 3 }).map((_, loopIndex) => (
+        {Array.from({ length: 12 }).map((_, loopIndex) => (
           <div key={loopIndex} className="flex shrink-0">
             {images.map((src, i) => (
               <div key={i} className="pr-3 shrink-0">

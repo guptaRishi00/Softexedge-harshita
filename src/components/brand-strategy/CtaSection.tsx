@@ -197,13 +197,13 @@ export default function CtaSection() {
             >
               <button
                 type="button"
-                className="group flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-transparent pl-5 pr-2 transition-all duration-300 hover:border-white hover:bg-white"
+                className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100"
               >
-                <span className="text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
+                <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
                   Connect With Us
                 </span>
 
-                <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
+                <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
                   <svg width="0" height="0" className="absolute">
                     <title>Connect arrow gradient</title>
                     <defs>
@@ -235,14 +235,14 @@ export default function CtaSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.15, ease: premiumEase }}
-              className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
+              className="group relative pointer-events-auto flex cursor-pointer flex-col gap-1 overflow-hidden rounded-xl p-3 -m-3 text-left before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100 md:text-start"
             >
-              <span className="text-xs uppercase tracking-wider text-zinc-500">
+              <span className="relative z-10 text-xs uppercase tracking-wider text-zinc-500 transition-colors duration-300 group-hover:text-zinc-800">
                 Drop us a line
               </span>
               <a
                 href="mailto:hello@youragency.com"
-                className="text-base font-bold text-white md:text-lg"
+                className="relative z-10 text-base font-bold text-white transition-colors duration-300 group-hover:text-black md:text-lg"
               >
                 hello@youragency.com
               </a>
@@ -254,12 +254,12 @@ export default function CtaSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-              className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
+              className="group relative pointer-events-auto flex cursor-pointer flex-col gap-1 overflow-hidden rounded-xl p-3 -m-3 text-left before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100 md:text-start"
             >
-              <span className="text-xs uppercase tracking-wider text-zinc-500">
+              <span className="relative z-10 text-xs uppercase tracking-wider text-zinc-500 transition-colors duration-300 group-hover:text-zinc-800">
                 Give us a call
               </span>
-              <span className="text-base font-bold text-white md:text-lg">
+              <span className="relative z-10 text-base font-bold text-white transition-colors duration-300 group-hover:text-black md:text-lg">
                 +1 (555) 123-4567
               </span>
             </motion.div>

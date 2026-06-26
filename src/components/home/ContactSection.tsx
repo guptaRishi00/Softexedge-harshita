@@ -57,9 +57,9 @@ function ChannelCard({
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
 
-  // For half-width cards (sm:col-span-1), use 4 columns to make the squares larger.
-  // For full-width cards (sm:col-span-2), use 8 columns.
-  const gridColumns = colSpan.includes("sm:col-span-1") ? 4 : 8;
+  // For half-width cards (sm:col-span-1), use 3 columns to make the squares medium-large.
+  // For full-width cards (sm:col-span-2), use 6 columns.
+  const gridColumns = colSpan.includes("sm:col-span-1") ? 3 : 6;
 
   const getIntensity = (i: number) => {
     if (hoveredIndex === null) return 0;
@@ -84,13 +84,13 @@ function ChannelCard({
       onMouseLeave={() => setHoveredIndex(null)}
       className={`group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/20 transition-transform duration-300 block ${colSpan}`}
     >
-      {/* Interactive proximity grid (same effect as CtaSection) */}
+      {/* Interactive proximity grid */}
       <motion.div
         className="absolute inset-0 z-0 overflow-hidden"
         style={{ WebkitMaskImage: mask, maskImage: mask }}
       >
         <div
-          className="grid gap-2 p-2.5"
+          className="grid gap-2 relative w-[110%] -left-[5%] -translate-y-6"
           style={{
             gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
           }}
@@ -109,10 +109,6 @@ function ChannelCard({
                 }}
               >
                 <div
-                  className="absolute inset-0 bg-gradient-to-b from-[#2E5BFF] via-[#149CCB] to-[#2E5BFF]"
-                  style={{ opacity: intensity * 0.8 }}
-                />
-                <div
                   className="relative z-10 h-full w-full rounded-md"
                   style={{
                     backgroundColor: `rgb(${colorVal}, ${colorVal}, ${colorVal})`,
@@ -127,7 +123,7 @@ function ChannelCard({
       {/* Removed black overlay for maximum pattern visibility */}
 
       <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between gap-6 p-6 sm:p-8">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-zinc-400 transition-colors duration-300 group-hover:bg-[#2E5BFF]/20 group-hover:text-[#2E5BFF]">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 text-zinc-400 transition-colors duration-300 group-hover:bg-[#2E5BFF] group-hover:text-white">
           <Icon className="h-5 w-5" strokeWidth={2} />
         </span>
         <span className="flex flex-col gap-1">
@@ -225,7 +221,6 @@ export default function ContactSection() {
                     <input
                       type="text"
                       id="name"
-                      placeholder="John Doe"
                       className={inputClass}
                       required
                     />
@@ -241,7 +236,6 @@ export default function ContactSection() {
                     <input
                       type="email"
                       id="email"
-                      placeholder="john@company.com"
                       className={inputClass}
                       required
                     />
@@ -259,7 +253,6 @@ export default function ContactSection() {
                     <input
                       type="tel"
                       id="phone"
-                      placeholder="+1 (555) 000-0000"
                       className={inputClass}
                     />
                   </div>
@@ -274,7 +267,6 @@ export default function ContactSection() {
                     <input
                       type="text"
                       id="company"
-                      placeholder="Acme Inc."
                       className={inputClass}
                     />
                   </div>
@@ -330,7 +322,6 @@ export default function ContactSection() {
                   <textarea
                     id="message"
                     rows={4}
-                    placeholder="Tell us about your goals, timeline, and budget..."
                     className={`${inputClass} resize-none`}
                     required
                   />
@@ -339,9 +330,10 @@ export default function ContactSection() {
                 <div className="pt-4">
                   <button
                     type="submit"
-                    className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors hover:bg-zinc-200 focus:outline-none focus:ring-4 focus:ring-white/20"
+                    className="group relative inline-flex w-full overflow-hidden items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors focus:outline-none focus:ring-4 focus:ring-white/20 hover:text-white"
                   >
-                    <span>Send Message</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <span className="relative z-10 transition-colors duration-300">Send Message</span>
                   </button>
                 </div>
               </form>

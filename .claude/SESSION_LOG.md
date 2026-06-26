@@ -35,6 +35,81 @@
   unchanged. Kept the subtle card hover-shadow (not a balance issue).
 - Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /career static.
 
+## 2026-06-18 — OurTeamSection: switched to scroll-VELOCITY shift (visible)
+- The position-based ±4% drift (over the whole scroll pass) was masked by the
+  steady auto-scroll → "didn't reflect". Switched to a scroll-velocity shift:
+  `useVelocity(scrollY)` → `useSpring` → `x = useTransform(v, [-2000,2000],
+  ["4%","-4%"], {clamp:true})` on the card-row `motion.div`. The row now lurches
+  horizontally in the scroll direction proportional to scroll speed and springs
+  back to rest — a clearly visible reaction distinct from the auto-scroll.
+- Kept the over-width wrapper (`w-[110%] -ml-[5%]`); ±4% clamp (×1.1 = 4.4% < 5%
+  buffer) stays gap-free. Dropped the section ref/target useScroll (page scroll
+  velocity is enough). Header unaffected.
+- Verified: `npx tsc --noEmit` clean; biome (only tolerated `noImgElement`);
+  `next build` ✓ /about static.
+
+## 2026-06-18 — OurTeamSection: horizontal scroll-shift on the card row
+- Added a horizontal scroll-parallax: `useScroll` (section) →
+  `x = useTransform(scrollYProgress, [0,1], ["-4%","4%"])` applied to a `motion.div`
+  wrapping `CarouselContent`, so the card row nudges left/right as you scroll
+  (echoing scroll direction), composing with embla's auto-scroll (different
+  elements, no transform conflict).
+- Gap-free: the wrapper is over-width (`w-[110%] -ml-[5%]`) so the ±4% shift never
+  exposes the section's white edge (buffer 5% > 4%×1.1). Header unaffected (only
+  the cards wrapper shifts). %-based so it's safe across screen sizes.
+- Verified: `npx tsc --noEmit` clean; biome (only tolerated `noImgElement`);
+  `next build` ✓ /about static.
+
+## 2026-06-18 — OurTeamSection: REVERTED parallax (no scroll animation)
+- Reverted the vertical parallax and removed the animation entirely: dropped
+  `useScroll`/`useTransform`/`useSpring`/`y`, the `containerRef` + `ref`, and the
+  `motion.div` wrapper (→ plain `div`); removed the framer-motion import. The
+  section is now a plain carousel (autoscroll + arrows) with no scroll-linked motion.
+- Verified: no motion/parallax residue; `npx tsc --noEmit` clean; biome (only
+  tolerated `noImgElement`); `next build` ✓ /about static.
+
+## 2026-06-18 — OurTeamSection: added vertical scroll-parallax
+- Added a spring-smoothed vertical parallax: `useScroll` (section ref, offset
+  start-end→end-start) → `y = useSpring(useTransform(scrollYProgress,[0,1],[60,-60]))`
+  applied to a `motion.div` wrapping the carousel. The block drifts ±60px as the
+  section scrolls through. Gap-free (vertical within the section) and no conflict
+  with embla's horizontal auto-scroll.
+- Verified: `npx tsc --noEmit` clean; biome (only tolerated `noImgElement`);
+  `next build` ✓ /about static.
+
+## 2026-06-18 — OurTeamSection: removed the scroll-tilt entirely
+- Removed the scroll-driven rotation: dropped `useScroll`/`useTransform`/`rotate`,
+  the `containerRef` + `ref`, and the wrapping `motion.div` (→ plain `div`); removed
+  the now-unused framer-motion import. Carousel + autoscroll (no stop-on-hover) and
+  arrows unchanged.
+- Verified: no motion/rotate/useScroll residue; `npx tsc --noEmit` clean; biome
+  (only tolerated `noImgElement`); `next build` ✓ /about static.
+
+## 2026-06-18 — OurTeamSection: REVERTED the wider scroll-tilt
+- Per request, reverted the prior change: `[-5,5]` + `useSpring` → back to
+  `const rotate = useTransform(scrollYProgress, [0, 1], [-2, 2])`; removed the
+  `useSpring` import. (The earlier verify+cleanup pass — dead React import removal
+  / import sort — stays.)
+- Verified: no `useSpring`/`[-5,5]` residue; `npx tsc --noEmit` clean; biome
+  (only tolerated `noImgElement`); `next build` ✓ /about static.
+
+## 2026-06-18 — OurTeamSection: make the scroll-tilt actually visible
+- Follow-up ("didn't reflect"): the existing tilt was `[-2,2]` centered on 0, so
+  at the viewing position (~center) the angle was ~0° → imperceptible. Widened to
+  `[-5,5]` (10° swing) and spring-smoothed (`useSpring`, stiffness 50 / damping 20)
+  so the orientation visibly swings as the section scrolls through the viewport.
+- Verified: `npx tsc --noEmit` clean; biome (only tolerated `noImgElement`);
+  `next build` ✓ /about static.
+
+## 2026-06-18 — OurTeamSection: scroll-tilt + no stop-on-hover (verify + cleanup)
+- Both requested behaviors were already implemented (prior un-logged turn):
+  scroll-driven orientation via `useScroll` + `rotate = useTransform(scrollYProgress,
+  [0,1], [-2,2])` on a wrapping `motion.div`; AutoScroll `stopOnMouseEnter: false`.
+- Cleanup: removed the dead `React` default import (named hooks still used) and
+  let biome organize the imports, so the file is lint-clean (only the tolerated
+  `noImgElement` warning remains).
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /about static.
+
 ## 2026-06-18 — ContactSection: channel cards get CtaSection's interactive grid
 - Upgraded the static `BoxyGrid` to an interactive `ChannelCard` that replicates
   CtaSection's effect per card: own `hoveredIndex` + `mouseX/mouseY`, a

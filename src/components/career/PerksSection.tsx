@@ -92,28 +92,28 @@ export default function PerksSection() {
                 delay: idx * 0.1,
                 ease: premiumEase,
               }}
-              className="flex flex-col group cursor-pointer"
+              className="flex flex-col"
             >
               {/* Icon & Title Row */}
               <div className="flex items-center gap-4 mb-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#F4F4F5] transition-colors duration-500 group-hover:bg-gradient-to-br group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2E5BFF] to-[#149CCB]">
                   <perk.icon
-                    className="h-6 w-6 text-black transition-colors duration-500 group-hover:text-white"
+                    className="h-6 w-6 text-white"
                     strokeWidth={2.5}
                   />
                 </div>
-                <h3 className="text-2xl font-bold tracking-tight text-black transition-colors duration-300">
+                <h3 className="text-2xl font-bold tracking-tight text-black">
                   {perk.title}
                 </h3>
               </div>
 
               {/* Description */}
-              <p className="text-base leading-relaxed text-zinc-600 mb-8 max-w-sm transition-colors duration-300 group-hover:text-black">
+              <p className="text-base leading-relaxed text-black mb-8 max-w-sm">
                 {perk.description}
               </p>
 
               {/* Bottom Divider */}
-              <div className="h-[1px] w-full bg-zinc-200 transition-colors duration-500 group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]" />
+              <div className="h-[1px] w-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]" />
             </motion.div>
           ))}
         </div>

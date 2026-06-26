@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, MapPin, Sparkles, CheckCircle2 } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import { cn } from "@/lib/utils";
@@ -242,80 +242,60 @@ export default function OpenPositions() {
                       transition={{ duration: 0.4, ease: premiumEase }}
                       className="overflow-hidden"
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 pt-6 pb-12">
-                        {/* ABOUT THE ROLE - 2 columns */}
-                        <div className="md:col-span-2 flex flex-col justify-center rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 transition-colors hover:bg-white/[0.04]">
-                          <h4 className="text-sm font-bold tracking-widest text-[#2E5BFF] uppercase mb-4">About the Role</h4>
-                          <p className="text-lg md:text-xl leading-relaxed text-zinc-300 font-medium">
+                      <div className="flex flex-col gap-8 pt-6 pb-12 max-w-3xl">
+                        {/* ABOUT THE ROLE */}
+                        <div>
+                          <h4 className="text-lg font-bold text-white mb-3">About the Role</h4>
+                          <p className="text-base text-zinc-300 leading-[1.2em]">
                             {job.about}
                           </p>
                         </div>
 
-                        {/* WHY WORK WITH US - 1 column (Accent Card) */}
-                        <div className="md:col-span-1 rounded-3xl border border-white/10 bg-gradient-to-br from-[#2E5BFF]/10 to-[#149CCB]/10 p-8 md:p-10 relative overflow-hidden group/perks">
-                          <div className="absolute top-0 right-0 p-6 opacity-20 group-hover/perks:opacity-40 transition-opacity duration-500">
-                            <Sparkles className="h-24 w-24 text-[#149CCB] blur-sm" />
-                          </div>
-                          <h4 className="text-xl font-bold text-white mb-6 flex items-center gap-2 relative z-10">
-                            <Sparkles className="h-5 w-5 text-[#149CCB]" />
-                            Why Work With Us
-                          </h4>
-                          <ul className="flex flex-col gap-4 relative z-10">
-                            {job.perks.map((perk) => (
-                              <li key={perk} className="flex items-start gap-3 text-sm md:text-base text-zinc-300 font-medium">
-                                <CheckCircle2 className="mt-[2px] h-5 w-5 shrink-0 text-[#149CCB]" strokeWidth={2.5} />
-                                <span>{perk}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        {/* KEY RESPONSIBILITIES - 2 columns */}
-                        <div className="md:col-span-2 rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 transition-colors hover:bg-white/[0.04]">
-                          <h4 className="text-xl font-bold text-white mb-6">Key Responsibilities</h4>
-                          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                        {/* KEY RESPONSIBILITIES */}
+                        <div>
+                          <h4 className="text-lg font-bold text-white mb-3">Key Responsibilities</h4>
+                          <ul className="list-disc pl-5 flex flex-col gap-2 text-base text-zinc-300 leading-[1.2em]">
                             {job.responsibilities.map((res) => (
-                              <li key={res} className="flex items-start gap-3 text-sm md:text-base text-zinc-400">
-                                <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#2E5BFF]" />
-                                <span>{res}</span>
-                              </li>
+                              <li key={res}>{res}</li>
                             ))}
                           </ul>
                         </div>
 
-                        {/* REQUIREMENTS - 1 column */}
-                        <div className="md:col-span-1 rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 transition-colors hover:bg-white/[0.04]">
-                          <h4 className="text-xl font-bold text-white mb-6">Requirements</h4>
-                          <ul className="flex flex-col gap-5">
+                        {/* REQUIREMENTS */}
+                        <div>
+                          <h4 className="text-lg font-bold text-white mb-3">Requirements</h4>
+                          <ul className="list-disc pl-5 flex flex-col gap-2 text-base text-zinc-300 leading-[1.2em]">
                             {job.requirements.map((req) => (
-                              <li key={req} className="flex items-start gap-3 text-sm md:text-base text-zinc-400">
-                                <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-white/40" />
-                                <span>{req}</span>
-                              </li>
+                              <li key={req}>{req}</li>
                             ))}
                           </ul>
                         </div>
 
-                        {/* GOOD TO HAVE - 2 columns */}
-                        <div className="md:col-span-2 rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 transition-colors hover:bg-white/[0.04] flex flex-col justify-center">
-                          <h4 className="text-xl font-bold text-white mb-6">Good to Have</h4>
-                          <div className="flex flex-wrap gap-3">
-                            {job.goodToHave.map((good) => (
-                              <span key={good} className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm md:text-base font-medium text-zinc-300 hover:bg-white/10 transition-colors cursor-default">
-                                {good}
-                              </span>
+                        {/* WHY WORK WITH US / PERKS */}
+                        <div>
+                          <h4 className="text-lg font-bold text-white mb-3">Why Work With Us</h4>
+                          <ul className="list-disc pl-5 flex flex-col gap-2 text-base text-zinc-300 leading-[1.2em]">
+                            {job.perks.map((perk) => (
+                              <li key={perk}>{perk}</li>
                             ))}
-                          </div>
+                          </ul>
                         </div>
 
-                        {/* APPLY BUTTON - 1 column CTA block */}
-                        <div className="md:col-span-1 rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 flex flex-col justify-center items-center relative overflow-hidden group/apply hover:border-white/20 transition-all duration-500">
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#2E5BFF]/10 to-transparent opacity-0 group-hover/apply:opacity-100 transition-opacity duration-500" />
-                          <h4 className="text-lg font-medium text-white mb-6 relative z-10 text-center">Ready to make an impact?</h4>
-                          
+                        {/* GOOD TO HAVE */}
+                        <div>
+                          <h4 className="text-lg font-bold text-white mb-3">Good to Have</h4>
+                          <ul className="list-disc pl-5 flex flex-col gap-2 text-base text-zinc-300 leading-[1.2em]">
+                            {job.goodToHave.map((good) => (
+                              <li key={good}>{good}</li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* APPLY BUTTON */}
+                        <div className="pt-2">
                           <a
                             href={`mailto:careers@softexedge.com?subject=Application for ${job.title}`}
-                            className="group/btn relative z-10 flex h-14 w-full cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-black pl-5 pr-2 transition-all duration-300 hover:border-white hover:bg-white"
+                            className="group/btn relative z-10 flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-black pl-5 pr-2 transition-all duration-300 hover:border-white hover:bg-white"
                           >
                             <span className="text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover/btn:text-black">
                               Apply Now
