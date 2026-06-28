@@ -10,7 +10,7 @@ import Particles from "@/components/ui/Particles";
 
 const footerLinksCol1 = [
   { name: "Services", href: "/services" },
-  { name: "Work", href: "#portfolio" },
+  { name: "Work", href: "/work" },
   { name: "About", href: "#about" },
   { name: "Culture", href: "#" },
   { name: "Meet The Team", href: "#" },
@@ -18,7 +18,7 @@ const footerLinksCol1 = [
 
 const footerLinksCol2 = [
   { name: "Testimonials", href: "#" },
-  { name: "Blog & Resources", href: "#" },
+  { name: "Blog & Resources", href: "/blog" },
   { name: "Webinars", href: "#" },
   { name: "Careers", href: "/career" },
 ];

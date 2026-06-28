@@ -102,8 +102,8 @@ const navItems: NavItem[] = [
     link: "/career",
   },
   {
-    name: "Book Consultation",
-    link: "#contact",
+    name: "Work",
+    link: "/work",
   },
 ];
 
