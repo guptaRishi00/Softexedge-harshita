@@ -35,6 +35,137 @@
   unchanged. Kept the subtle card hover-shadow (not a balance issue).
 - Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /career static.
 
+## 2026-06-18 — ContactHeroSection: add description + larger title
+- Re-added a description `<motion.p>` below the title in the left column
+  (`mt-8 max-w-md text-lg font-medium leading-[1.5em] text-zinc-500`, fade-in).
+- Bumped title size a notch: `text-5xl sm:text-6xl … lg:text-[4rem] xl:text-[5rem]`
+  → `text-6xl sm:text-7xl … lg:text-[4.5rem] xl:text-[5.5rem]`.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /contact static (biome: only
+  tolerated `noImgElement`).
+
+## 2026-06-18 — ContactHeroSection: match ContactSection width, bigger globe, title image back
+- Width/x-padding now match ContactSection: two-column container `mx-auto w-full
+  px-6 md:px-10` (dropped `max-w-7xl` → full-width).
+- Bigger globe: gave `Globe3DDemo` an optional `className` prop (forwarded to
+  `Globe3D`); hero passes `h-[520px] md:h-[640px] lg:h-[700px]` (was the default
+  `h-[500px]`).
+- Re-added the title split-image animation (cycling STACK_IMAGES between "Let's"
+  and "Build", `isExpanded` split reveal via `onAnimationComplete`) + the
+  `currentImageIndex` interval and `useEffect`/`useState`.
+- Pre-existing biome left as-is: demo `useImportType` (`GlobeMarker`), hero
+  `noImgElement`. Verified: `npx tsc --noEmit` clean; `next build` ✓ /contact static.
+
+## 2026-06-18 — ContactHeroSection: 2-col (text left, globe right), no title image
+- Redesigned to two columns: copy left (eyebrow + "Let's Build / Together." title,
+  left-aligned on lg), `Globe3DDemo` right (`lg:w-1/2`). Removed the title's cycling
+  split-image and the now-dead `STACK_IMAGES` + `currentImageIndex`/`isExpanded`
+  state + interval `useEffect` + `useEffect`/`useState` imports.
+- Title size steps down at lg (`lg:text-[4rem]`) to fit the half column; globe is
+  the unchanged `Globe3DDemo` (self-sizes `h-[500px] w-full`).
+- Verified: `npx tsc --noEmit` clean; biome fully clean (no more `<img>`);
+  `next build` ✓ /contact static.
+
+## 2026-06-18 — ContactHeroSection: add 3D globe below title, drop description
+- Added the user's `Globe3DDemo` (`src/components/3d-globe-demo.tsx`, wrapping
+  `Globe3D` from `ui/3d-globe`) below the title in the centered hero, wrapped in a
+  `motion.div` fade-in (`mt-6 w-full max-w-3xl`). Removed the description `<motion.p>`.
+  Hero layout otherwise unchanged.
+- No new deps: the globe uses `@react-three/fiber`/`drei`/`three` (all already
+  installed); it does NOT import `three-globe` (so that missing pkg is irrelevant).
+  Globe3D self-sizes (`h-[500px] w-full`). Client-side Canvas → page still
+  prerenders static.
+- Verified: `npx tsc --noEmit` clean; biome (only tolerated `noImgElement`);
+  `next build` ✓ /contact static.
+
+## 2026-06-18 — ContactHeroSection: REVERTED to pre-CardSwap (centered hero)
+- Removed CardSwap entirely and restored the original centered hero: the
+  word-stagger title with the cycling split-image between "Let's" and "Build"
+  (STACK_IMAGES + currentImageIndex interval + isExpanded split reveal), centered
+  layout, original description. Reverts the two-column redesign + CardSwap.
+- Verified: no CardSwap refs remain; `npx tsc --noEmit` clean; `next build` ✓
+  /contact static (biome: only tolerated `noImgElement`).
+
+## 2026-06-18 — ContactHeroSection: bigger CardSwap
+- Enlarged the CardSwap: `width` 440→580, `height` 320→420; bumped stack offsets
+  `cardDistance` 60→70, `verticalDistance` 70→80 (proportional spread); wrapper
+  heights `h-[420px]/sm:500/lg:620` → `h-[480px]/sm:580/lg:720`.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /contact static (biome: only
+  tolerated `noImgElement`).
+
+## 2026-06-18 — ContactHeroSection: two-column redesign (text left, CardSwap right)
+- Redesigned from a centered title into a 2-col layout: copy left (eyebrow, title,
+  description — left-aligned on lg), CardSwap right. Right column is `lg:w-1/2`
+  flush to the section's right edge (no right padding) so the CardSwap (anchored
+  `absolute bottom-right`) touches the section end.
+- Removed the cycling split-image from the title (now just "Let's Build /
+  Together.") and the now-dead `currentImageIndex`/`isExpanded` state + the
+  interval `useEffect` + the `useEffect`/`useState` imports.
+- CardSwap uses the 3 STACK_IMAGES as image cards; title size steps down at lg to
+  fit the half-column. `overflow-hidden` section clips the cards at the right edge.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /contact static (biome: only
+  tolerated `noImgElement`).
+
+## 2026-06-18 — ContactHeroSection: use the new CardSwap component
+- Integrated the user-added `CardSwap` (GSAP 3D card-swap; default export + `Card`
+  named export) into the contact hero as a decorative bottom-right 3D stack
+  (`absolute bottom-0 right-0 z-10 hidden lg:block`, `pointer-events-none`), using
+  the example props (cardDistance 60, verticalDistance 70, delay 5000,
+  pauseOnHover false) + `width={400} height={290}`.
+- Card content: the 3 existing `STACK_IMAGES` as image cards (object-cover +
+  bottom gradient) instead of the example's placeholder text. Desktop-only so it
+  doesn't clash with the centered title on smaller screens. `gsap` already a dep.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /contact static (biome: only
+  tolerated `noImgElement` warnings).
+
+## 2026-06-18 — WorkProjectShowcase: stronger, more-visible BorderGlow
+- Glow was too subtle. Boosted the BorderGlow props: `glowIntensity` 1 → 2.6
+  (brighter), `glowRadius` 26 → 50 (bigger spread), added `edgeSensitivity={10}`
+  (triggers across much more of the card, not just the very edge) and
+  `fillOpacity={0.9}` (stronger edge fill); `glowColor` lightness 62 → 65.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /work static (biome unchanged
+  — same pre-existing img/useButtonType findings, none added).
+
+## 2026-06-18 — WorkProjectShowcase: BorderGlow on the project cards
+- Integrated the (previously unused) `BorderGlow` ui component as each project
+  card's frame: the scale `motion.div` now wraps `<BorderGlow>` (borderRadius 20,
+  black bg, brand colors `#2E5BFF/#149CCB/#7C3AED`, blue `glowColor`), and an inner
+  `relative overflow-hidden rounded-[20px]` div holds the image/overlays/content
+  (heights moved there). So BorderGlow's cursor-following mesh-gradient glow + drop
+  shadow now surround the cards.
+- Structure chosen so BorderGlow's outer glow isn't clipped (scale on the outer
+  wrapper, not inside BorderGlow's overflow-auto). Removed the card's two old
+  border effects (static `border-white/10` + spinning conic hover border) since
+  BorderGlow replaces them.
+- Pre-existing biome left as-is (not from this change): `<img>` warning +
+  `useButtonType` on the category tab.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /work static.
+
+## 2026-06-18 — WorkHeroSection: split-reveal the Strands bead
+- Words appear first, then split + Strands appears: wired the (previously unused)
+  `isExpanded` state — `onAnimationComplete` on the h1 sets it after the word
+  stagger; the bead container then transitions `mx-1.5 w-0 opacity-0` →
+  `mx-3 md:mx-6 w-[1.2em] opacity-100` (1200ms, premium ease), opening the gap and
+  fading the orb in. (Also fixes the prior unused-`isExpanded` lint.)
+- Strands.tsx: added a `ResizeObserver` on its container so the WebGL canvas
+  resizes as the bead's width animates open (window-resize-only wasn't enough);
+  disconnected on cleanup. Pre-existing Strands lint (vendored WebGL: import-type,
+  optional-chain, exhaustive-deps) left untouched — not from this change.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /work static.
+
+## 2026-06-18 — WorkHeroSection: place Strands bead properly + map /work
+- The `Strands` glass-orb (renders a circle of radius 0.46×height) sat in a
+  `2.5em × 1em` (wide/short) box, so the orb was a small circle lost in a wide box
+  with big empty side-gaps + asymmetric spacing (`Creative` had an extra
+  `ml-3 md:ml-6` on top of the box's `0.25em` margin).
+- Fix: made the container **square** (`h-[1.2em] w-[1.2em]`) so the orb fills it as
+  a bead, symmetric `mx-3 md:mx-6` spacing (removed Creative's `ml-`), `shrink-0`,
+  Tailwind instead of inline style. Strands props unchanged.
+- Map: added the **/work** route (`WorkPage` `src/app/work/page.tsx:9`,
+  components dir `work/`) — it was missing — and corrected CareerPage line to `:11`.
+- Pre-existing biome (not from this change, left): unused `isExpanded` state
+  (vestigial from the StrategyHeroSection copy) + `key={index}` in the stats map.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ /work static.
+
 ## 2026-06-18 — OurTeamSection: switched to scroll-VELOCITY shift (visible)
 - The position-based ±4% drift (over the whole scroll pass) was masked by the
   steady auto-scroll → "didn't reflect". Switched to a scroll-velocity shift:

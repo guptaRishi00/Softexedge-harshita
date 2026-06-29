@@ -3,16 +3,9 @@
 import { motion, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import Header from "../page/Header";
+import Strands from "../ui/Strands";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
-
-const ROTATING_IMAGES = [
-  "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
-  "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
-  "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
-  "/assets/fotis-fotopoulos-SyvsTmuuZyM-unsplash.jpg",
-  "/assets/kelly-sikkema-IkHwu5xLXxs-unsplash.jpg",
-];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -76,18 +69,7 @@ function Counter({ value, suffix }: { value: number; suffix: string }) {
 }
 
 export default function WorkHeroSection() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex(
-        (prevIndex) => (prevIndex + 1) % ROTATING_IMAGES.length,
-      );
-    }, 2500);
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#FAFAFA] font-sans selection:bg-[#2E5BFF]/20">
@@ -130,31 +112,40 @@ export default function WorkHeroSection() {
           {/* Line 1 */}
           <span className="flex items-center justify-center whitespace-nowrap">
             <motion.span variants={wordVariants}>Our</motion.span>
-            <motion.span variants={wordVariants} className="ml-3 md:ml-6">
-              Creative
-            </motion.span>
 
-            {/* Expanding image pill */}
-            <span
-              className={`relative mx-1.5 inline-block h-[1em] shrink-0 overflow-hidden rounded-2xl align-middle shadow-sm transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] md:mx-2.5 ${
+            {/* Glass-orb Strands bead — collapsed until the words finish
+                animating in (onAnimationComplete → isExpanded); then the gap
+                opens (width + margin) and the Strands fades in. */}
+            <div
+              className={`relative h-[1.2em] shrink-0 transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 isExpanded
-                  ? "w-[1.5em] mx-3 opacity-100 md:mx-5"
-                  : "w-0 opacity-0"
+                  ? "mx-3 w-[1.2em] opacity-100 md:mx-6"
+                  : "mx-1.5 w-0 opacity-0"
               }`}
             >
-              {ROTATING_IMAGES.map((img, index) => (
-                <img
-                  key={img}
-                  src={img}
-                  alt="Project visual"
-                  className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-in-out ${
-                    index === currentImageIndex
-                      ? "translate-x-0 opacity-100 blur-0"
-                      : "-translate-x-4 opacity-0 blur-sm"
-                  }`}
-                />
-              ))}
-            </span>
+              <Strands
+                colors={["#F97316", "#7C3AED", "#06B6D4"]}
+                count={3}
+                speed={0.5}
+                amplitude={1}
+                waviness={0.2}
+                thickness={0.7}
+                glow={1.15}
+                taper={3}
+                spread={0}
+                intensity={0.6}
+                saturation={2}
+                opacity={1}
+                scale={1.5}
+                glass
+                refraction={1}
+                dispersion={1}
+                glassSize={1}
+                hueShift={0}
+              />
+            </div>
+
+            <motion.span variants={wordVariants}>Creative</motion.span>
           </span>
 
           {/* Line 2 */}

@@ -39,7 +39,7 @@ behind `typeof window !== "undefined"` guards.
 
 ## Directory layout
 - `src/app/` — App Router routes (`page.tsx` per route), `layout.tsx`, `globals.css`
-- `src/components/home|about|brand-strategy|contact|career/` — page-specific section components
+- `src/components/home|about|brand-strategy|contact|career|work/` — page-specific section components
 - `src/components/ui/` — reusable visual/WebGL effects + base UI (button, carousel, navbar)
 - `src/components/layout/` — Header, Footer, SmoothScroll (Lenis wrapper)
 - `src/components/page/` — **second** Header + resizable-navbar (used by inner pages)
@@ -58,7 +58,8 @@ All routes are public (static marketing pages, no auth anywhere).
 | AboutPage | Route | `src/app/about/page.tsx:27` | public | About: hero, traditional, culture (OurValuesSection), team, testimonials (+LogoCarousel), FAQ, CTA |
 | BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:15` | public | Service page: hero, sub-services, process, tech stack, showcase, FAQ, blog |
 | ContactPage | Route | `src/app/contact/page.tsx:11` | public | Contact: hero, contact form, testimonials, FAQ, CTA |
-| CareerPage | Route | `src/app/career/page.tsx:9` | public | Careers: `CareerHeroSection` → `WhyJoinUs` → `OpenPositions` (accordion job board) → `ApplicationJourney` (sticky-deck process) → `CareerValues` (image cards) → `Footer` (components in `src/components/career/`) |
+| CareerPage | Route | `src/app/career/page.tsx:11` | public | Careers: `CareerHeroSection` → `WhyJoinUs` → `OpenPositions` (accordion job board) → `ApplicationJourney` (sticky-deck process) → `CareerValues` (image cards) → `Footer` (components in `src/components/career/`) |
+| WorkPage | Route | `src/app/work/page.tsx:9` | public | Work/portfolio: `WorkHeroSection` (Strands WebGL bead in the title, stat counters) + `WorkProjectShowcase` (components in `src/components/work/`) |
 
 ## Data
 None. No storage, schema, API calls, or env vars consumed by app code.

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const satoshi = localFont({
   src: "../../public/fonts/Satoshi-Variable.woff2",
@@ -18,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${satoshi.variable} h-full antialiased`}>
+    <html lang="en" className={cn("h-full", "antialiased", satoshi.variable, "font-sans", geist.variable)}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
