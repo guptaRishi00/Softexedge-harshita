@@ -184,7 +184,7 @@ const VariableProximity = forwardRef<HTMLSpanElement, VariableProximityProps>(
         onClick={onClick}
         style={{
           display: "inline",
-          fontFamily: '"Roboto Flex", sans-serif',
+          fontFamily: "var(--font-sans)",
           ...style,
         }}
         className={className}

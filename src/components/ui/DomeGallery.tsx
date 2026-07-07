@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useCallback } from "react";
 import { useGesture } from "@use-gesture/react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 type ImageItem = string | { src: string; alt?: string };
 
@@ -21,6 +21,8 @@ type DomeGalleryProps = {
   imageBorderRadius?: string;
   openedImageBorderRadius?: string;
   grayscale?: boolean;
+  autoRotate?: boolean;
+  autoRotateSpeed?: number;
 };
 
 type ItemDef = {
@@ -166,6 +168,8 @@ export default function DomeGallery({
   imageBorderRadius = "30px",
   openedImageBorderRadius = "30px",
   grayscale = true,
+  autoRotate = false,
+  autoRotateSpeed = 4,
 }: DomeGalleryProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
@@ -313,6 +317,36 @@ export default function DomeGallery({
     applyTransform(rotationRef.current.x, rotationRef.current.y);
   }, []);
 
+  // Slow, continuous horizontal (x-axis) auto-rotation. Pauses while the user is
+  // dragging, inertia is coasting, or an image is enlarged, and resumes after.
+  useEffect(() => {
+    if (!autoRotate) return;
+    let raf = 0;
+    let last = 0;
+    const step = (t: number) => {
+      if (last === 0) last = t;
+      const dt = (t - last) / 1000;
+      last = t;
+      const enlarging =
+        rootRef.current?.getAttribute("data-enlarging") === "true";
+      if (
+        !draggingRef.current &&
+        inertiaRAF.current === null &&
+        !focusedElRef.current &&
+        !enlarging
+      ) {
+        const nextY = wrapAngleSigned(
+          rotationRef.current.y + autoRotateSpeed * dt,
+        );
+        rotationRef.current = { x: rotationRef.current.x, y: nextY };
+        applyTransform(rotationRef.current.x, nextY);
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [autoRotate, autoRotateSpeed]);
+
   const stopInertia = useCallback(() => {
     if (inertiaRAF.current) {
       cancelAnimationFrame(inertiaRAF.current);
@@ -429,7 +463,7 @@ export default function DomeGallery({
             }
           }
 
-          let [vMagX, vMagY] = velArr;
+          const [vMagX, vMagY] = velArr;
           const [dirX, dirY] = dirArr;
           let vx = vMagX * dirX;
           let vy = vMagY * dirY;

@@ -235,16 +235,17 @@ export default function CtaSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.15, ease: premiumEase }}
-              className="group relative pointer-events-auto flex cursor-pointer flex-col gap-1 overflow-hidden rounded-xl p-3 -m-3 text-left before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100 md:text-start"
+              className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
             >
-              <span className="relative z-10 text-xs uppercase tracking-wider text-zinc-500 transition-colors duration-300 group-hover:text-zinc-800">
+              <span className="text-xs uppercase tracking-wider text-zinc-500">
                 Drop us a line
               </span>
               <a
                 href="mailto:hello@youragency.com"
-                className="relative z-10 text-base font-bold text-white transition-colors duration-300 group-hover:text-black md:text-lg"
+                className="group relative w-fit text-base font-bold text-white/90 transition-colors duration-300 hover:text-white md:text-lg"
               >
                 hello@youragency.com
+                <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
               </a>
             </motion.div>
 
@@ -254,13 +255,14 @@ export default function CtaSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-              className="group relative pointer-events-auto flex cursor-pointer flex-col gap-1 overflow-hidden rounded-xl p-3 -m-3 text-left before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100 md:text-start"
+              className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
             >
-              <span className="relative z-10 text-xs uppercase tracking-wider text-zinc-500 transition-colors duration-300 group-hover:text-zinc-800">
+              <span className="text-xs uppercase tracking-wider text-zinc-500">
                 Give us a call
               </span>
-              <span className="relative z-10 text-base font-bold text-white transition-colors duration-300 group-hover:text-black md:text-lg">
+              <span className="group relative w-fit cursor-pointer text-base font-bold text-white/90 transition-colors duration-300 hover:text-white md:text-lg">
                 +1 (555) 123-4567
+                <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
               </span>
             </motion.div>
           </div>

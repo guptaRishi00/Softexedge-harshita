@@ -37,7 +37,7 @@ function RotatingWord({
             duration: 0.5,
             ease: premiumEase,
           }}
-          className="block bg-linear-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] bg-clip-text px-2 py-2 text-transparent"
+          className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text px-2 py-2 text-transparent"
         >
           {words[index]}
         </motion.span>
@@ -161,7 +161,7 @@ export default function AboutSection() {
 
               <motion.span
                 variants={wordAnimation}
-                className="block bg-linear-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] bg-clip-text py-1 text-transparent"
+                className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text py-1 text-transparent"
               >
                 cinematic
               </motion.span>

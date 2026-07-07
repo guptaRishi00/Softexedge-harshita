@@ -23,6 +23,7 @@ import StatsSection from "@/components/home/StatsSection";
 import Footer from "@/components/layout/Footer";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import LogoLoop from "@/components/ui/LogoLoop";
+import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -172,6 +173,7 @@ export default function HomePage() {
             </div>
 
             <ExperimentalTestimonials />
+            <TechLogoCarousel />
             <ContactSection />
             <BlogSection />
           </div>

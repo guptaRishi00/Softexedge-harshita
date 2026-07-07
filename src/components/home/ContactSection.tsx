@@ -123,7 +123,7 @@ function ChannelCard({
       {/* Removed black overlay for maximum pattern visibility */}
 
       <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between gap-6 p-6 sm:p-8">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 text-zinc-400 transition-colors duration-300 group-hover:bg-[#2E5BFF] group-hover:text-white">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 text-zinc-400 transition-colors duration-300 group-hover:bg-zinc-900 group-hover:text-white">
           <Icon className="h-5 w-5" strokeWidth={2} />
         </span>
         <span className="flex flex-col gap-1">
@@ -250,11 +250,7 @@ export default function ContactSection() {
                     >
                       Phone Number
                     </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      className={inputClass}
-                    />
+                    <input type="tel" id="phone" className={inputClass} />
                   </div>
 
                   <div className="flex flex-col gap-3">
@@ -264,11 +260,7 @@ export default function ContactSection() {
                     >
                       Company
                     </label>
-                    <input
-                      type="text"
-                      id="company"
-                      className={inputClass}
-                    />
+                    <input type="text" id="company" className={inputClass} />
                   </div>
                 </div>
 
@@ -333,7 +325,9 @@ export default function ContactSection() {
                     className="group relative inline-flex w-full overflow-hidden items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors focus:outline-none focus:ring-4 focus:ring-white/20 hover:text-white"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    <span className="relative z-10 transition-colors duration-300">Send Message</span>
+                    <span className="relative z-10 transition-colors duration-300">
+                      Send Message
+                    </span>
                   </button>
                 </div>
               </form>

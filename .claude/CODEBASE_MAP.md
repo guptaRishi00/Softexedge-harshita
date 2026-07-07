@@ -17,7 +17,7 @@ scroll-driven GSAP animations, WebGL/Three.js effects, smooth scrolling.
 - **Animation:** GSAP + ScrollTrigger, Framer Motion, Lenis (smooth scroll)
 - **3D/WebGL:** Three.js + @react-three/fiber/drei, ogl, postprocessing
 - **UI libs:** Radix slot, Embla carousel, Tabler/Lucide/react-icons
-- **Font:** Satoshi Variable, local via `next/font` (`public/fonts/Satoshi-Variable.woff2`)
+- **Font:** Satoshi Variable — self-hosted via `@font-face` in `globals.css` (`public/fonts/Satoshi-Variable.woff2`), set as `--font-sans` default (no `next/font`)
 
 ## Commands
 | Action | Command |
@@ -60,15 +60,20 @@ All routes are public (static marketing pages, no auth anywhere).
 | ContactPage | Route | `src/app/contact/page.tsx:11` | public | Contact: hero, contact form, testimonials, FAQ, CTA |
 | CareerPage | Route | `src/app/career/page.tsx:11` | public | Careers: `CareerHeroSection` → `WhyJoinUs` → `OpenPositions` (accordion job board) → `ApplicationJourney` (sticky-deck process) → `CareerValues` (image cards) → `Footer` (components in `src/components/career/`) |
 | WorkPage | Route | `src/app/work/page.tsx:9` | public | Work/portfolio: `WorkHeroSection` (Strands WebGL bead in the title, stat counters) + `WorkProjectShowcase` (components in `src/components/work/`) |
+| BlogPage | Route | `src/app/blog/page.tsx:7` | public | Blog index: `BlogFeaturedSection` (featured post + Header) → `BlogListSection` (filterable grid, excludes the featured post) → CTA → Footer. `BlogHeroSection` (DomeGallery) is no longer used (orphaned file). |
+| BlogArticlePage | Route | `src/app/blog/[slug]/page.tsx:36` | public | Per-article read page. SSG via `generateStaticParams` over the 6 slugs (`dynamicParams=false` → unknown slug 404s); per-post `generateMetadata`. Renders `BlogArticle` (hero, cover, sticky share rail + prose blocks, tags, author bio, related) + `CtaSection` + Footer |
 
 ## Data
-None. No storage, schema, API calls, or env vars consumed by app code.
+No backend/storage/API. One static content module: **`src/data/blog.ts`** —
+typed blog posts (`BlogPost`, `ContentBlock` union, `categories`) plus helpers
+`getPostBySlug` / `getRelatedPosts`. Consumed by `BlogListSection` (cards) and
+`/blog/[slug]` (article pages). No env vars.
 Remote images allowed from `images.unsplash.com`, `plus.unsplash.com`,
 `randomuser.me` (`next.config.ts` `remotePatterns`).
 
 ## Assets
 - Source/static served from `public/assets/` (referenced by `/assets/...` paths)
-- Local font: `public/fonts/Satoshi-Variable.woff2` → CSS var `--font-satoshi`
+- Local font: `public/fonts/Satoshi-Variable.woff2` → `@font-face` in `globals.css`, exposed as `--font-sans`
 - `next/image` used for remote (unsplash) and local images
 
 ## External services
@@ -93,6 +98,7 @@ None wired. No SDK keys, no analytics, no form backend (contact form is UI-only)
   - `layout/Header.tsx` + `layout/SmoothScroll.tsx` → used by `/home` only (via `home/Herosection.tsx`)
   - `page/Header.tsx` + `page/resizable-navbar.tsx` → used by `/about`, `/brand-strategy`, `/contact` hero sections
   - `ui/resizable-navbar.tsx` (464 lines) ≈ near-duplicate of `page/resizable-navbar.tsx` (465 lines)
+  - `work/WorkHeader.tsx` — standalone white header (logo.png + white links + Get in Touch) used only by the dark `WorkHeroSection`; does not use the resizable-navbar
   - Three `shared/ConnectButton*.tsx` variants exist
 - **No Header in `layout.tsx`** — each hero section imports its own Header. There is no shared/global nav.
 - **SmoothScroll (Lenis) only on `/home`** — inner pages scroll natively; inconsistent feel.

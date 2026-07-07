@@ -4,6 +4,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
+import {
+  type BlogPost,
+  blogPosts,
+  type Category,
+  categories,
+} from "@/data/blog";
+import TracingBorder from "../ui/TracingBorder";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -14,115 +21,17 @@ const smoothSpring = {
   mass: 1,
 } as const;
 
-const categories = [
-  "All",
-  "Company News",
-  "Resources",
-  "Guides",
-  "Case Studies",
-] as const;
-
-type Category = (typeof categories)[number];
-
-interface BlogPost {
-  id: number;
-  title: string;
-  author: string;
-  readTime: string;
-  category: Category;
-  image: string;
-  href: string;
-  excerpt: string;
-  featured?: boolean;
-}
-
-const blogPosts: BlogPost[] = [
-  {
-    id: 1,
-    title:
-      "Google IO 2026: What Your C-Suite Needs to Know (AI Mode Google Guide UPDATED)",
-    author: "Carrie Rose",
-    readTime: "15 mins",
-    category: "Resources",
-    image:
-      "https://images.unsplash.com/photo-1780006015851-2d1b3bcadbfd?w=600&auto=format&fit=crop&q=60",
-    href: "/blog/google-io-2026",
-    excerpt:
-      "A comprehensive breakdown of the most significant announcements at Google IO, specifically tailored for enterprise leaders looking to implement new AI models.",
-    featured: true,
-  },
-  {
-    id: 2,
-    title:
-      "Rise at Seven Exits Sheffield and Triples Manchester as new HQ as they go for global expansion",
-    author: "Ray Saddiq",
-    readTime: "8 mins",
-    category: "Company News",
-    image:
-      "https://plus.unsplash.com/premium_photo-1776661561367-93c4100618d6?w=600&auto=format&fit=crop&q=60",
-    href: "/blog/rise-at-seven-expansion",
-    excerpt:
-      "Our journey to global expansion continues with a major strategic move to triple our presence in Manchester.",
-  },
-  {
-    id: 3,
-    title:
-      "The Future of Framer Motion: Building Fluid Interfaces for the Next Decade",
-    author: "Elena Rodriguez",
-    readTime: "12 mins",
-    category: "Guides",
-    image:
-      "https://images.unsplash.com/photo-1773332611613-dbdc64f09807?w=600&auto=format&fit=crop&q=60",
-    href: "/blog/future-framer-motion",
-    excerpt:
-      "Explore the advanced techniques and undocumented features that will help you build the most fluid interfaces.",
-  },
-  {
-    id: 4,
-    title: "How We Reduced Cloud Costs by 40% Without Sacrificing Performance",
-    author: "David Chen",
-    readTime: "10 mins",
-    category: "Case Studies",
-    image:
-      "https://images.unsplash.com/photo-1654875185977-4a97176ef3f9?w=600&auto=format&fit=crop&q=60",
-    href: "/blog/cloud-cost-reduction",
-    excerpt:
-      "A deep dive into our infrastructure optimization process and the tools we used to cut costs dramatically.",
-  },
-  {
-    id: 5,
-    title: "Designing for Accessibility: Beyond Color Contrast",
-    author: "Sarah Jenkins",
-    readTime: "7 mins",
-    category: "Resources",
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&auto=format&fit=crop&q=60",
-    href: "/blog/designing-accessibility",
-    excerpt:
-      "Accessibility is more than just passing contrast checkers. Learn how to design true inclusive digital experiences.",
-  },
-  {
-    id: 6,
-    title: "Q3 Company Retreat: Aligning Our Vision for 2027",
-    author: "Ray Saddiq",
-    readTime: "5 mins",
-    category: "Company News",
-    image:
-      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&auto=format&fit=crop&q=60",
-    href: "/blog/q3-retreat",
-    excerpt:
-      "Key takeaways and strategic alignments from our latest executive leadership retreat in the Swiss Alps.",
-  },
-];
-
 export default function BlogListSection() {
   const [activeCategory, setActiveCategory] = useState<Category>("All");
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
+  // The featured post opens the page (BlogFeaturedSection), so keep it out of
+  // the list to avoid showing it twice.
+  const listPosts = blogPosts.filter((p) => !p.featured);
   const filteredPosts =
     activeCategory === "All"
-      ? blogPosts
-      : blogPosts.filter((p) => p.category === activeCategory);
+      ? listPosts
+      : listPosts.filter((p) => p.category === activeCategory);
 
   return (
     <section className="relative overflow-hidden bg-[#0a0a0a] py-24 font-sans text-white md:py-32">
@@ -276,25 +185,13 @@ function BlogCard({
             : "h-auto md:h-[600px]"
         }`}
       >
-        {/* Animated gradient border on hover */}
-        <div
-          className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[20px] p-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          style={{
-            WebkitMask:
-              "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-            WebkitMaskComposite: "xor",
-            maskComposite: "exclude",
-          }}
-        >
-          <div
-            className="absolute left-[-50%] top-[-50%] h-[200%] w-[200%] group-hover:[animation:spin_2.2s_linear_infinite]"
-            style={{
-              background:
-                "conic-gradient(from 0deg, transparent 0deg, #2E5BFF 30deg, #149CCB 65deg, transparent 100deg, transparent 260deg, #149CCB 295deg, #2E5BFF 330deg, transparent 360deg)",
-              willChange: "transform",
-            }}
-          />
-        </div>
+        {/* Border light that traces the card once on hover and rests at the
+            top-right corner. */}
+        <TracingBorder
+          active={isHovered}
+          radius={20}
+          gradientId={`blog-trace-${post.id}`}
+        />
 
         {/* Image Section */}
         <div
@@ -338,7 +235,7 @@ function BlogCard({
             </div>
 
             <h3
-              className={`font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-[#149CCB] ${post.featured ? "text-2xl md:text-3xl lg:text-4xl" : "text-xl md:text-2xl"}`}
+              className={`font-bold tracking-tight text-white ${post.featured ? "text-2xl md:text-3xl lg:text-4xl" : "text-xl md:text-2xl"}`}
             >
               {post.title}
             </h3>

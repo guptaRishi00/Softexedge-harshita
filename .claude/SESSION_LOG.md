@@ -1,5 +1,269 @@
 # Session Log
 
+## 2026-07-07 — Replace the "random blue" gradient with the brand gradient
+- Project-wide analysis (grep sweep of all hover effects + hex colours, excluding
+  dead `garbage/`): the only non-brand blue was the triad `#3445E7 / #2F85EA /
+  #07D6F3`. Other blues (`#4da6ff`, `#88ccff`) are WebGL globe colours (not
+  hover); the rest are purples or the brand `#2E5BFF`/`#149CCB`.
+- Replaced all 4 uses of that triad with the brand `from-[#2E5BFF] to-[#149CCB]`
+  (dropped the 3rd `via` stop):
+  - HOVER effects (the ask): navbar dropdown sub-link hover in
+    `page/resizable-navbar.tsx:338` and `ui/resizable-navbar.tsx:331`.
+  - Static heading gradients (same random blue, folded in per "not any random
+    blue"): `home/AboutSection.tsx` ×2.
+- Brand single-colour hovers (`group-hover:text-[#149CCB]`, `group-hover:bg-
+  [#2E5BFF]`, focus rings) left as-is — already on-brand, not "random blue".
+- Verified: triad grep → 0 in src; `npx tsc --noEmit` clean (biome findings on the
+  navbars are pre-existing `any`/index-key debt); `next build` ✓; `next start` →
+  home & about 200 with `#3445E7` absent from rendered HTML; new brand-hover class
+  confirmed in navbar source (dropdown links render on interaction). Server
+  cleaned up. Not committed.
+
+## 2026-07-07 — PerksSection: x-axis padding matches ExperimentalTestimonials
+- `src/components/career/PerksSection.tsx`: removed `md:px-10` from the section so
+  horizontal padding is a uniform `px-6` at all breakpoints — matching the
+  `ExperimentalTestimonials` container (`px-6`). Verified: `npx tsc --noEmit`
+  clean; biome clean. Not committed.
+
+## 2026-07-07 — Career PerksSection: redesigned into cards
+- `src/components/career/PerksSection.tsx`: turned the flat grid (icon+title row,
+  description, gradient divider line) into proper cards — each perk is now a
+  white `rounded-3xl border border-zinc-200 bg-white p-8` card with a stacked
+  icon chip (brand-gradient, the only gradient) → title → description, and a
+  subtle hover (lift + shadow + border + icon scale). Tightened grid gaps to
+  `gap-6 md:gap-8`; equal-height via `h-full`. Removed the unused `cn` import.
+- Header (Benefits eyebrow + "A snippet of our perks") and the perks data
+  unchanged. Verified: biome clean; `npx tsc --noEmit` clean; `next build` ✓;
+  `next start` → /career 200 with perks rendering. Server cleaned. Not committed.
+
+## 2026-07-07 — Work cards: same tracing-border comet as blog cards
+- Extracted the blog cards' `TracingBorder` (comet traces the rounded border once
+  on hover, blurred brand gradient, rests at the top-right corner) into a shared
+  `src/components/ui/TracingBorder.tsx`. `BlogListSection` now imports it (removed
+  the local copy + its now-unused `useEffect`/`useRef` imports).
+- `WorkProjectShowcase.tsx`: replaced the per-card `BorderGlow` wrapper with the
+  shared `<TracingBorder active={isHovered} radius={20} gradientId=... />` inside
+  the card (gradient id `work-trace-${id}`), so work cards get the identical
+  moving border. `BorderGlow` is now orphaned (only self-referenced) — left in
+  place; safe to delete.
+- Verified: `npx tsc --noEmit` clean; `TracingBorder` biome-clean (remaining
+  `noImgElement`/`useButtonType` findings are pre-existing on both card files);
+  `next build` ✓; `next start` smoke test → /work & /blog both 200. Server
+  cleaned up. Not committed.
+
+## 2026-07-07 — Tech logo carousel below ExperimentalTestimonials everywhere
+- New shared `src/components/ui/TechLogoCarousel.tsx`: bundles the 11-icon
+  `techLogos` array + the about page's exact `<section>` wrapper + `LogoCarousel`
+  ("Technology partners"). Single source of truth.
+- Added `<TechLogoCarousel />` directly below `ExperimentalTestimonials` on the 4
+  pages that lacked it: `home`, `work`, `brand-strategy`, `contact`.
+- Refactored `about/page.tsx` to use the shared component (removed its inline
+  `techLogos` + the 11 `react-icons/si` imports + `LogoCarousel` import + inline
+  section) — identical render, no duplication.
+- Done inline (small, cohesive); no subagents, no new deps.
+- Verified: `npx tsc --noEmit` clean; new component biome-clean (the 3 biome
+  errors across the pages are pre-existing `type Props = {}` / empty-pattern /
+  `any` / contact's unused `React`); `next build` ✓; `next start` smoke test →
+  all 5 routes 200 with the "Technology partners" carousel present (home shows 2:
+  its existing top "Trusted By" LogoLoop + the new one). Server cleaned up. Not
+  committed.
+
+## 2026-07-07 — Featured blog: Read Article button matches the list cards
+- `src/components/blog/BlogFeaturedSection.tsx`: replaced the plain `bg-zinc-900`
+  pill with the same "Read Article" CTA used in the `BlogListSection` cards —
+  transparent-until-hover pill, dual `MdArrowOutward` slide, `before:` fill-wipe,
+  `pl-0→hover:pl-5` padding shift. Adapted the palette for this light section
+  (dark text/icon at rest → dark fill on hover, text flips white) since the card
+  version is built for dark cards. Swapped the lucide `ArrowUpRight` import for
+  `react-icons/md` `MdArrowOutward`; unique gradient id `cta-featured-icon-grad`.
+- Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ (/blog
+  prerenders). Not committed.
+
+## 2026-07-07 — Blog page: drop hero, open with a featured article
+- Removed `BlogHeroSection` (DomeGallery hero) from `src/app/blog/page.tsx`; the
+  page now opens with a new `BlogFeaturedSection` then `BlogListSection`.
+- New `src/components/blog/BlogFeaturedSection.tsx`: light editorial hero for the
+  featured post (falls back to first post) — carries the `page/Header` (which the
+  removed hero used to provide), category pill, big linked title, excerpt,
+  author/date/read-time meta, "Read Article" CTA, and a large linked cover with a
+  "Featured" badge. Two-column, image-first on mobile.
+- `BlogListSection.tsx`: excludes `featured` posts from the grid so the featured
+  article isn't shown twice (verified: featured title appears once on the page).
+- `BlogHeroSection.tsx` is now orphaned (no imports) — left in place; safe to
+  delete if wanted.
+- Verified: `next build` ✓ (/blog prerenders); `next start` smoke test → /blog
+  200 with "Featured Article"/"Read Article"/"Explore our" present, old hero
+  label "Blog & Resources" absent, featured title count = 1. tsc clean; new file
+  biome-clean. Pre-existing `noUnusedImports` on the user-commented `FaqSection`
+  import left as-is. Server cleaned up. Updated CODEBASE_MAP. Not committed.
+
+## 2026-07-07 — Work hero: dedicated white header + stronger black overlay
+- New `src/components/work/WorkHeader.tsx`: standalone header for the dark Work
+  hero — `/assets/logo.png` logo, white nav links (Services/About Us/Careers/
+  Work) with the footer-style underline hover, a `DynamicButton` "Get in Touch",
+  and a responsive mobile menu. Replaced the shared `page/Header` in
+  `WorkHeroSection` (its links rendered dark/illegible on the dark hero).
+- Overlay: the previous radial was too subtle. Now a flat `bg-black/45` tint plus
+  a soft centre radial (`rgba(0,0,0,0.35)→transparent`) at `z-[1]` — sits above
+  the dome, below the content, so both the header and hero title read clearly
+  while the colour dome still shows through.
+- Verified: biome-clean (WorkHeader) — only pre-existing `key={index}` remains on
+  WorkHeroSection; `npx tsc --noEmit` clean; `next build` ✓ (/work prerenders);
+  `next start` smoke test → `/work` 200 with the new header ("Careers"/"Get in
+  Touch") + "Selected Work" present. Server cleaned up. Updated CODEBASE_MAP
+  (WorkHeader note). Not committed.
+
+## 2026-07-07 — WorkHeroSection: blog-style DomeGallery bg, rotating + colour
+- Rebuilt `src/components/work/WorkHeroSection.tsx` to mirror `BlogHeroSection`:
+  a full `DomeGallery` background behind the centred label/title/subtitle + the
+  bottom 4-stat grid. Kept Work's copy ("Selected Work" / "Our Creative
+  Portfolio" / work subtitle / work stats). Dropped the old glow-blob backgrounds
+  and the Strands bead (to match the blog hero's clean title).
+- Per the ask: dome is now colour (`grayscale={false}`) with a slight black
+  overlay (`radial-gradient` ~0.38→0.62 black) so text reads; theme flipped dark
+  (`bg-black`, white title/stats, `zinc-300` subtitle, `border-white/15`).
+- `src/components/ui/DomeGallery.tsx`: added opt-in `autoRotate` +
+  `autoRotateSpeed` (deg/sec, default 4) — a rAF loop that slowly advances the
+  horizontal (x-axis) `y` rotation and pauses during drag/inertia/enlarge, then
+  resumes. Default off, so `BlogHeroSection` is unaffected. Work hero uses
+  `autoRotate autoRotateSpeed={4}`.
+- Verified: biome-formatted (remaining findings pre-existing: DomeGallery
+  any/template/non-null debt, WorkHero `key={index}`); `npx tsc --noEmit` clean;
+  `next build` ✓ (/work prerenders); `next start` smoke test → `/work` 200 with
+  "Selected Work"/"Portfolio"/"Client satisfaction" present. Server processes
+  cleaned up. Not committed.
+
+## 2026-07-07 — CtaSection: footer-style underline on email/phone (drop white fill)
+- `src/components/brand-strategy/CtaSection.tsx`: the "Drop us a line" and "Give
+  us a call" blocks previously wiped a full white background in on hover (a
+  `before:` pseudo-element) with text flipping to black. Removed that (and the
+  `overflow-hidden rounded-xl p-3 -m-3` container hacks + `group-hover:text-*`
+  color flips).
+- Added the Footer's follow-through underline to the email `<a>` and phone
+  `<span>`: `w-fit` value with `text-white/90 → hover:text-white`, plus an
+  `absolute -bottom-1 h-[0.5px] w-full origin-right scale-x-0` underline that
+  `group-hover:origin-left group-hover:scale-x-100` (wipes in from the left,
+  out to the right on leave) — matching `layout/Footer.tsx`.
+- Applies everywhere CtaSection is used (home/about/blog/brand-strategy/contact/
+  career). Verified: `npx tsc --noEmit` clean; biome format clean; remaining
+  biome findings on the file are pre-existing and on untouched lines.
+
+## 2026-07-07 — Fix: dev-server 500s from a leftover `next start` (cache clash)
+- Diagnosed the `.next` corruption (`Persisting failed`, `Another write batch or
+  compaction is already active`, missing `build-manifest.json` /
+  `routes-manifest.json` / `[turbopack]_runtime.js` → 500s on /blog).
+- Root cause: a leftover `next start -p 3123` server (started during the earlier
+  /build verification; its `pkill/taskkill` cleanup silently failed on Windows)
+  was running against the same `.next` as the user's `bun dev` (`next dev`). Two
+  Next processes writing one `.next` cache → corruption. Not a code bug.
+- Fix: killed all project Next processes (leftover 3123 server + the broken dev
+  server) and deleted the corrupted `.next`. No source changes.
+- Verified: `npx tsc --noEmit` clean; no project `next` processes remain.
+- Note (unrelated/benign, left as-is): `GET /noise.png 404` — `public/noise.png`
+  doesn't exist but is referenced by `bg-[url('/noise.png')]` in AboutSection/
+  Footer (cosmetic, no texture). The `bis_*` / `fdprocessedid` hydration-mismatch
+  warning is injected by browser extensions (Bitdefender / autofill), not code.
+
+## 2026-07-07 — Build: detailed "Read Article" pages for every blog card
+- The blog cards linked to `/blog/{slug}` routes that didn't exist (404). Built
+  the full article experience matching the site design system (Satoshi, brand
+  gradient `#2E5BFF→#149CCB`, premiumEase, `page/Header`, `layout/Footer`,
+  reused `CtaSection`).
+- New `src/data/blog.ts`: single source of truth — typed `BlogPost` +
+  `ContentBlock` union (heading/paragraph/quote/list/callout/image), `categories`,
+  and helpers `getPostBySlug`/`getRelatedPosts`. Added `slug`, `date`,
+  `authorMeta`, `lead`, `tags`, and detailed per-post `content` (distinct,
+  topic-specific article body for all 6 posts).
+- Refactored `BlogListSection.tsx` to import the data from `@/data/blog`
+  (removed the inline array/types — no logic change).
+- New `src/components/blog/BlogArticle.tsx` (client): reading-progress bar
+  (useScroll+useSpring), hero (back link, gradient category pill, title, lead,
+  author/date/read-time meta), rounded cover image, two-column body with a
+  sticky share rail (X/LinkedIn/copy-link) + typographic prose block renderer,
+  tags, author bio card, and a "Continue reading" related-posts grid.
+- New `src/app/blog/[slug]/page.tsx` (server): `generateStaticParams` over the 6
+  slugs, `dynamicParams=false` (unknown slug → 404), per-post `generateMetadata`
+  (title/description/OG — closes a prior SEO gap); composes BlogArticle + CTA +
+  Footer.
+- Done inline (cohesive design work); no subagents, no new deps.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓ with all 6 routes
+  prerendered as SSG (`● /blog/[slug]` → 6 paths); `next start` smoke test:
+  `/blog/google-io-2026` → 200 with hero/callout/author/related all rendering,
+  unknown slug → 404. New files biome-clean (BlogListSection's pre-existing
+  `noImgElement`/`useButtonType` untouched). Updated CODEBASE_MAP (blog routes,
+  data module, corrected font note). Not committed.
+
+## 2026-07-07 — Blog cards: add blur to the moving border
+- `src/components/blog/BlogListSection.tsx` (`TracingBorder`): added
+  `style={{ filter: "blur(0.8px)" }}` to the comet path to soften it. Just blur —
+  no glow/drop-shadow — so the gradient stroke stays the only color.
+- Verified: `npx tsc --noEmit` clean; biome format clean.
+
+## 2026-07-07 — Blog cards: tracing border = just the gradient, no glow/blur
+- `src/components/blog/BlogListSection.tsx` (`TracingBorder`): removed the path's
+  `filter` (the `blur(0.8px)` + `drop-shadow` glow) so the moving border is now
+  only the `#2E5BFF → #149CCB` gradient stroke (unchanged linearGradient) —
+  nothing more. Lap timing/easing left as-is.
+- Verified: `npx tsc --noEmit` clean; biome format clean.
+
+## 2026-07-07 — Blog cards: tune the tracing border (visible lap + soft blur)
+- `src/components/blog/BlogListSection.tsx` (`TracingBorder`): the comet was
+  already travelling exactly one lap, but `premiumEase` (easeOutExpo) reached
+  ~90% progress in the first ~30% of the time, so the lap flashed by and it just
+  looked parked at the corner. Swapped it for easeInOutCubic (`[0.65, 0, 0.35, 1]`)
+  over `1.5s` so the full round is clearly visible at a steady pace, then
+  decelerates and settles onto the top-right corner.
+- Softened the "very sharp" stroke: added `blur(0.8px)` to the path filter
+  (alongside the glow drop-shadow) and bumped `strokeWidth` 2 → 2.5 to keep it
+  readable under the blur.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓; biome-formatted.
+
+## 2026-07-07 — Blog cards: border traces once on hover, rests at top-right
+- `src/components/blog/BlogListSection.tsx`: replaced the infinite spinning
+  conic-gradient hover border with a new `TracingBorder` component. On hover a
+  single brand-gradient comet (16% of the perimeter) traces the card's rounded
+  border exactly once and decelerates (premiumEase) to a stop resting on the
+  top-right corner.
+- Precise across aspect ratios (featured card is wide, others tall): it's a
+  measured SVG rounded-rect `<path>` whose start point IS the top-right corner
+  (45° arc midpoint), with `pathLength={1}` so one `strokeDashoffset` lap
+  (START→REST, a decrease of exactly 1) begins and ends there regardless of size.
+  Size read via `offsetWidth/Height` (immune to the card's hover-scale) + a
+  ResizeObserver; path inset 1.5px stays inside the card's `overflow-hidden`
+  rounded clip. AnimatePresence fades it out on unhover (no reverse trace) so it
+  replays cleanly on the next hover. Driven by the existing `isHovered` state.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓; biome-formatted. Remaining
+  biome findings on the file (`noImgElement`, `useButtonType`) are pre-existing
+  and on untouched lines.
+
+## 2026-07-07 — About page: more gap between testimonials and logo carousel
+- `src/app/about/page.tsx`: increased the LogoCarousel section's top padding from
+  `pt-6 md:pt-6` to `pt-20 md:pt-28` (bottom padding `pb-16 md:pb-24` unchanged).
+  Widens only the space between `ExperimentalTestimonials` and the `LogoCarousel`.
+- Verified: `npx tsc --noEmit` clean.
+
+## 2026-07-07 — Reverted: about-page gap between carousel and testimonials
+- Reverted the earlier padding bump; `ExperimentalTestimonials` wrapper in
+  `src/app/about/page.tsx` is back to `pt-16 [&>section]:pb-6 md:pt-24 md:pb-10`.
+- Verified: `npx tsc --noEmit` clean.
+
+## 2026-07-07 — Fix: Satoshi font not applying (browser default showing)
+- Root cause: `globals.css` `@theme inline` block declared `--font-sans:
+  var(--font-sans);` — a self-reference. Because it processed after the real
+  `@theme { --font-sans: "Satoshi", ... }`, it overrode the good value; the
+  compiled CSS emitted `--font-sans:var(--font-sans)`, which is invalid at
+  computed-value time, so `font-family: var(--font-sans)` fell back to the
+  browser default everywhere.
+- Fix: removed the circular `--font-sans: var(--font-sans);` line from the
+  `@theme inline` block (kept `--font-heading: var(--font-sans);`, now
+  non-circular). Single source of truth is the first `@theme` block.
+- Verified: clean `next build` ✓; compiled CSS now emits
+  `--font-sans:"Satoshi", ui-sans-serif, system-ui, sans-serif` and the
+  `@font-face{font-family:Satoshi;src:url(/fonts/Satoshi-Variable.woff2)...}`;
+  woff2 confirmed present at `public/fonts/Satoshi-Variable.woff2`.
+- Note: `.next/dev` had stale artifacts (old Geist/next-font CSS) — restart the
+  dev server + hard-refresh to see the change locally.
+
 ## 2026-06-18 — New "Find Your Career" section (career page)
 - Added `src/components/career/OpenPositions.tsx` — an accordion job board
   matching the supplied mockup: a "Find Your Career" title, a search/category/
@@ -34,6 +298,60 @@
 - Fixed headline typo "Journeyy" → "Journey". Sticky-deck mechanics (top/zIndex)
   unchanged. Kept the subtle card hover-shadow (not a balance issue).
 - Verified: `npx tsc --noEmit` clean; biome clean; `next build` ✓ /career static.
+
+## 2026-06-18 — Fonts: declare Satoshi via @font-face in globals.css (default)
+- globals.css: added `@font-face { font-family:"Satoshi"; src:
+  url("/fonts/Satoshi-Variable.woff2") format("woff2"); font-weight:100 900;
+  font-display:swap }` and set `--font-sans: "Satoshi", ui-sans-serif, system-ui,
+  sans-serif` (body/html already `font-family: var(--font-sans)` → Satoshi default).
+- Removed the redundant `next/font/local` loader from layout.tsx (import, `satoshi`
+  const, `satoshi.variable`) so the woff2 isn't loaded twice; nothing else
+  referenced `--font-satoshi`.
+- Verified: no `next/font`/`--font-satoshi` refs remain; `npx tsc --noEmit` clean;
+  biome clean; `next build` ✓.
+
+## 2026-06-18 — Fonts (pass 2): remove Roboto Flex ref + delete unused font files
+- Deeper audit found `ui/VariableProximity.tsx` hardcoded `fontFamily: '"Roboto
+  Flex", sans-serif'` (unused component, but an other-font ref) → changed to
+  `var(--font-sans)` (Satoshi; both variable fonts so the proximity effect still
+  works).
+- Deleted the unused font files from public/fonts (confirmed unreferenced — no
+  code/@font-face refs): `Mersad.ttf`, 8× `PPMori-*.otf`, `Satoshi-VariableItalic.woff2`.
+  Folder now holds ONLY `Satoshi-Variable.woff2`.
+- No live `font-serif`/`font-mono`/arbitrary `font-[...]`/inline fontFamily remain
+  (garbage/ dead code still has `font-mono`, not shipped).
+- Verified: no other-font refs in live src; `npx tsc --noEmit` clean; `next build` ✓.
+
+## 2026-06-18 — Fonts: single Satoshi, removed Geist
+- `layout.tsx` loaded a second font — `Geist` (next/font/google) — and assigned it
+  to `--font-sans`, which was OVERRIDING Satoshi (so the app was actually rendering
+  Geist). Removed the `Geist` import, the `geist` const, and `geist.variable` from
+  the html class. Now only `satoshi = localFont(Satoshi-Variable.woff2)` →
+  `--font-satoshi`, and `--font-sans: var(--font-satoshi)` (globals) resolves
+  font-sans to Satoshi everywhere.
+- Fixed the stale globals.css comment ("Zalando Sans" → Satoshi).
+- Audit: only `Satoshi-Variable.woff2` is referenced in code; no `@font-face`
+  anywhere. Other files in public/fonts (PPMori*, Mersad, Satoshi-VariableItalic)
+  are NOT referenced/loaded — unused clutter, left in place (safe to delete).
+  `font-mono` usages are only in dead `garbage/` components.
+- Verified: no `Geist`/`next/font/google` refs remain; `npx tsc --noEmit` clean;
+  biome clean; `next build` ✓.
+
+## 2026-06-18 — ContactHeroSection: UI polish pass (user's CardSwap+stats rework)
+- Fixed a layout collision: the CardSwap wrapper was `absolute inset-0` over the
+  whole section, anchoring the card stack bottom-right ON the stats block.
+  Constrained it to the first screen (`absolute right-0 top-0 h-screen w-full
+  overflow-hidden`, inner `relative`) so the stack pins to the hero corner and
+  never touches the stats.
+- Card polish: `customClass="overflow-hidden"`, `object-cover` img + subtle
+  bottom `from-black/50` veil for depth; stable `key={img.src}` (was index).
+- "Together." got the brand-gradient accent (bg-clip-text + pb-4/pr-1 to avoid
+  descender clipping) — matches every other hero's accent word.
+- Stats digits stepped down `text-6xl/md:7xl/lg:9xl` → `text-5xl/md:6xl/lg:8xl` so
+  long suffixes ("hrs", "/7") don't overflow their grid columns at lg; stable
+  `key={stat.label}`. Formatting normalized (biome).
+- Verified: `npx tsc --noEmit` clean; biome clean (only tolerated `noImgElement`);
+  `next build` ✓ /contact static.
 
 ## 2026-06-18 — ContactHeroSection: add description + larger title
 - Re-added a description `<motion.p>` below the title in the left column

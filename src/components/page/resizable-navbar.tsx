@@ -335,7 +335,7 @@ export const NavItems = ({
                                     key={`sub-${ssIdx}`}
                                     href={sub.link}
                                     onClick={onItemClick}
-                                    className="block px-4 py-3 text-[16px] font-medium text-zinc-900 hover:text-white hover:bg-gradient-to-r hover:from-[#3445E7] hover:via-[#2F85EA] hover:to-[#07D6F3] rounded-xl transition-all duration-200"
+                                    className="block px-4 py-3 text-[16px] font-medium text-zinc-900 hover:text-white hover:bg-gradient-to-r hover:from-[#2E5BFF] hover:to-[#149CCB] rounded-xl transition-all duration-200"
                                   >
                                     {sub.name}
                                   </Link>

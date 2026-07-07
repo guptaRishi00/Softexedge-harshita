@@ -2,8 +2,8 @@
 
 import { motion, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import Header from "../page/Header";
-import Strands from "../ui/Strands";
+import DomeGallery from "../ui/DomeGallery";
+import WorkHeader from "./WorkHeader";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -69,28 +69,35 @@ function Counter({ value, suffix }: { value: number; suffix: string }) {
 }
 
 export default function WorkHeroSection() {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   return (
-    <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#FAFAFA] font-sans selection:bg-[#2E5BFF]/20">
+    <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-black font-sans selection:bg-[#2E5BFF]/20">
       {/* Header */}
       <div className="absolute left-0 top-0 z-50 w-full">
-        <Header />
+        <WorkHeader />
       </div>
 
-      {/* Background glow effects */}
-      <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-60">
-        <div className="h-[600px] w-[600px] rounded-full bg-zinc-100 blur-[120px]" />
+      {/* Rotating dome background (colour, slow horizontal auto-rotation) */}
+      <div className="absolute inset-0 z-0 h-full w-full">
+        <DomeGallery
+          fit={0.8}
+          minRadius={600}
+          maxVerticalRotationDeg={0}
+          segments={34}
+          dragDampening={2}
+          autoRotate
+          autoRotateSpeed={4}
+          grayscale={false}
+        />
       </div>
-      <div className="pointer-events-none absolute top-[20%] right-[10%] z-0 opacity-30">
-        <div className="h-[400px] w-[400px] rounded-full bg-[#2E5BFF]/10 blur-[100px]" />
-      </div>
-      <div className="pointer-events-none absolute bottom-[20%] left-[10%] z-0 opacity-20">
-        <div className="h-[300px] w-[300px] rounded-full bg-[#149CCB]/10 blur-[80px]" />
-      </div>
+
+      {/* Black overlay so the text (and header) stays clear over the imagery.
+          A flat tint plus a touch more darkening toward the centre where the
+          title sits. */}
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-black/45" />
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.35)_0%,transparent_65%)]" />
 
       {/* Main Content */}
-      <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 pt-48 pb-32 md:pt-50 text-center md:px-10">
+      <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 pt-48 pb-32 md:pt-50 text-center md:px-10 pointer-events-none">
         {/* Label */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -106,46 +113,14 @@ export default function WorkHeroSection() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          onAnimationComplete={() => setIsExpanded(true)}
-          className="mb-6 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
+          className="mb-6 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-white sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
         >
           {/* Line 1 */}
           <span className="flex items-center justify-center whitespace-nowrap">
             <motion.span variants={wordVariants}>Our</motion.span>
-
-            {/* Glass-orb Strands bead — collapsed until the words finish
-                animating in (onAnimationComplete → isExpanded); then the gap
-                opens (width + margin) and the Strands fades in. */}
-            <div
-              className={`relative h-[1.2em] shrink-0 transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                isExpanded
-                  ? "mx-3 w-[1.2em] opacity-100 md:mx-6"
-                  : "mx-1.5 w-0 opacity-0"
-              }`}
-            >
-              <Strands
-                colors={["#F97316", "#7C3AED", "#06B6D4"]}
-                count={3}
-                speed={0.5}
-                amplitude={1}
-                waviness={0.2}
-                thickness={0.7}
-                glow={1.15}
-                taper={3}
-                spread={0}
-                intensity={0.6}
-                saturation={2}
-                opacity={1}
-                scale={1.5}
-                glass
-                refraction={1}
-                dispersion={1}
-                glassSize={1}
-                hueShift={0}
-              />
-            </div>
-
-            <motion.span variants={wordVariants}>Creative</motion.span>
+            <motion.span variants={wordVariants} className="ml-3 md:ml-6">
+              Creative
+            </motion.span>
           </span>
 
           {/* Line 2 */}
@@ -163,7 +138,7 @@ export default function WorkHeroSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.2, ease: premiumEase }}
-          className="mt-4 max-w-2xl text-lg font-medium leading-[1.4em] text-zinc-400 md:text-xl"
+          className="mt-4 max-w-2xl text-lg font-medium leading-[1.4em] text-zinc-300 md:text-xl"
         >
           From concept to launch — explore the digital experiences we've crafted
           for ambitious brands across the globe.
@@ -176,24 +151,24 @@ export default function WorkHeroSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-        className="relative z-10 grid w-full grid-cols-2 gap-8 px-6 py-12 md:grid-cols-4 md:gap-4 md:px-12 md:py-20"
+        className="relative z-10 grid w-full grid-cols-2 gap-8 px-6 py-12 md:grid-cols-4 md:gap-4 md:px-12 md:py-20 pointer-events-none"
       >
         {stats.map((stat, index) => (
           <div
             key={index}
             className={[
               "flex flex-col items-center text-center",
-              index !== 0 ? "border-zinc-200 md:border-l md:border-t-0" : "",
-              index === 1 || index === 3 ? "border-l border-zinc-200" : "",
-              index === 2 || index === 3 ? "border-t border-zinc-200" : "",
+              index !== 0 ? "border-white/15 md:border-l md:border-t-0" : "",
+              index === 1 || index === 3 ? "border-l border-white/15" : "",
+              index === 2 || index === 3 ? "border-t border-white/15" : "",
             ]
               .filter(Boolean)
               .join(" ")}
           >
-            <h4 className="mb-5 text-6xl font-bold tracking-tighter text-zinc-900 md:text-7xl lg:text-9xl">
+            <h4 className="mb-5 text-6xl font-bold tracking-tighter text-white md:text-7xl lg:text-9xl">
               <Counter value={stat.value} suffix={stat.suffix} />
             </h4>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-500 md:text-base">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-400 md:text-base">
               {stat.label}
             </p>
           </div>

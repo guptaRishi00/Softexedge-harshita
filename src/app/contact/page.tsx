@@ -5,6 +5,7 @@ import ContactHeroSection from "@/components/contact/ContactHeroSection";
 import ContactSection from "@/components/home/ContactSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
+import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
 
 type Props = {};
 
@@ -20,6 +21,7 @@ export default function ContactPage({}: any) {
       <div className="[&>section]:pt-16 [&>section]:pb-6 md:[&>section]:pt-40 md:[&>section]:pb-20">
         <ExperimentalTestimonials />
       </div>
+      <TechLogoCarousel />
       <div className="[&>section]:py-16 md:[&>section]:pt-24">
         <ContactFaqSection />
       </div>

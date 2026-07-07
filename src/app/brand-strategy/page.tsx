@@ -9,6 +9,7 @@ import BlogSection from "@/components/home/BlogSection";
 
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
+import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
 
 type Props = {};
 
@@ -22,6 +23,7 @@ export default function BrandStrategyPage({}: Props) {
         <OurTechStack />
         <ProjectShowcase />
         <ExperimentalTestimonials />
+        <TechLogoCarousel />
         <div className="p-3">
           <CtaSection />
         </div>

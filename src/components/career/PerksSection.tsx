@@ -2,14 +2,13 @@
 
 import { motion } from "framer-motion";
 import {
+  Clock,
+  Gift,
+  Monitor,
+  Music,
   Palmtree,
   Smartphone,
-  Monitor,
-  Gift,
-  Music,
-  Clock,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -54,7 +53,7 @@ const perks = [
 
 export default function PerksSection() {
   return (
-    <section className="w-full bg-white px-6 py-24 md:px-10 md:py-32 font-sans selection:bg-[#2E5BFF]/20 selection:text-white">
+    <section className="w-full bg-white px-6 py-24 md:py-32 font-sans selection:bg-[#2E5BFF]/20 selection:text-white">
       <div className="mx-auto w-full ">
         {/* Header */}
         <div className="flex flex-col mb-16 md:mb-24">
@@ -79,8 +78,8 @@ export default function PerksSection() {
           </motion.h2>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 md:gap-y-20">
+        {/* Cards */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 md:gap-8">
           {perks.map((perk, idx) => (
             <motion.div
               key={perk.title}
@@ -92,28 +91,22 @@ export default function PerksSection() {
                 delay: idx * 0.1,
                 ease: premiumEase,
               }}
-              className="flex flex-col"
+              className="group flex h-full flex-col rounded-3xl border border-zinc-200 bg-white p-8 transition-all duration-300 hover:-translate-y-1 hover:border-zinc-300 hover:shadow-[0_24px_50px_-24px_rgba(0,0,0,0.18)]"
             >
-              {/* Icon & Title Row */}
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2E5BFF] to-[#149CCB]">
-                  <perk.icon
-                    className="h-6 w-6 text-white"
-                    strokeWidth={2.5}
-                  />
-                </div>
-                <h3 className="text-2xl font-bold tracking-tight text-black">
-                  {perk.title}
-                </h3>
+              {/* Icon */}
+              <div className="mb-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2E5BFF] to-[#149CCB] transition-transform duration-300 group-hover:scale-105">
+                <perk.icon className="h-6 w-6 text-white" strokeWidth={2.5} />
               </div>
 
+              {/* Title */}
+              <h3 className="text-xl font-bold tracking-tight text-black md:text-2xl">
+                {perk.title}
+              </h3>
+
               {/* Description */}
-              <p className="text-base leading-relaxed text-black mb-8 max-w-sm">
+              <p className="mt-3 text-base leading-relaxed text-zinc-600">
                 {perk.description}
               </p>
-
-              {/* Bottom Divider */}
-              <div className="h-[1px] w-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]" />
             </motion.div>
           ))}
         </div>

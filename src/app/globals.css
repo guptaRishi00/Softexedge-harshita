@@ -2,11 +2,19 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Satoshi — the single, default font for the entire app */
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* This makes Zalando Sans the default font for your entire app */
-  --font-sans: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
 }
 body {
   font-family: var(--font-sans);
@@ -63,7 +71,6 @@ html.lenis body {
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -183,4 +190,7 @@ html.lenis body {
   html {
     @apply font-sans;
   }
+}
+body {
+  font-family: var(--font-sans);
 }
