@@ -19,25 +19,14 @@ export default function BlogFeaturedSection() {
   const featured = blogPosts.find((p) => p.featured) ?? blogPosts[0];
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#FAFAFA] font-sans selection:bg-[#2E5BFF]/20">
+    <section className="relative flex min-h-[100svh] flex-col justify-center w-full overflow-hidden bg-[#FAFAFA] font-sans selection:bg-[#2E5BFF]/20">
       {/* Header */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
-      <div className="relative z-10 mx-auto w-full px-6 pt-36 pb-16 md:px-10 md:pt-44 md:pb-24">
+      <div className="relative z-10 mx-auto w-full px-6 pt-36 pb-16 md:px-10 md:pt-40 md:pb-24">
         {/* Eyebrow */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: premiumEase }}
-          className="mb-10 flex items-center gap-3"
-        >
-          <span className="text-xs font-semibold uppercase tracking-[0.25em] text-zinc-500">
-            Featured Article
-          </span>
-          <span className="h-px flex-1 bg-zinc-200" />
-        </motion.div>
 
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
           {/* Text */}
@@ -47,8 +36,7 @@ export default function BlogFeaturedSection() {
             transition={{ duration: 0.8, ease: premiumEase }}
             className="order-2 lg:order-1"
           >
-            <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.2em]">
-              <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]" />
+            <span className="inline-flex items-center text-[0.7rem] font-bold uppercase tracking-[0.2em]">
               <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 {featured.category}
               </span>

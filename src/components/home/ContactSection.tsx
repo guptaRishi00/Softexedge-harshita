@@ -63,13 +63,34 @@ function ChannelCard({
   // cursor leaves), so the grid is visible on the right when idle.
   const parkMaskRight = useCallback(() => {
     const el = cardRef.current;
-    if (!el) return;
+    if (!el || el.offsetWidth === 0) return;
     mouseX.set(el.offsetWidth * 0.85);
     mouseY.set(el.offsetHeight / 2);
   }, [mouseX, mouseY]);
 
+  // Ref callback: fires every time the DOM node is attached, including after
+  // Next.js client-side navigation (unlike useEffect/useLayoutEffect which may
+  // not re-run when React recycles component fibers with stable deps).
+  const setCardRef = useCallback(
+    (node: HTMLAnchorElement | null) => {
+      cardRef.current = node;
+      if (node && !hoveringRef.current) {
+        // Double-schedule: rAF ensures layout is complete, then position mask.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (cardRef.current && !hoveringRef.current) {
+              mouseX.set(cardRef.current.offsetWidth * 0.85);
+              mouseY.set(cardRef.current.offsetHeight / 2);
+            }
+          });
+        });
+      }
+    },
+    [mouseX, mouseY],
+  );
+
+  // ResizeObserver keeps the mask parked correctly when the card resizes.
   useEffect(() => {
-    parkMaskRight();
     const el = cardRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
@@ -98,7 +119,7 @@ function ChannelCard({
   return (
     <a
       href={href}
-      ref={cardRef}
+      ref={setCardRef}
       onMouseMove={(e) => {
         hoveringRef.current = true;
         const { left, top } = e.currentTarget.getBoundingClientRect();

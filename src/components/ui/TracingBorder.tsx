@@ -60,11 +60,12 @@ export default function TracingBorder({
         ` A ${r} ${r} 0 0 1 ${sx} ${sy} Z`
       : "";
 
-  // Comet = 16% of the perimeter; rest offset centers it on the corner, and one
-  // full lap decreases the offset by exactly 1.
-  const DASH = 0.16;
-  const REST = DASH / 2;
-  const START = REST + 1;
+  // Dash is 100% of the perimeter (1). Gap is also 1.
+  // Animating dashoffset from 1 (hidden) to 0 (fully drawn) makes the border
+  // wrap around the entire card, ending at the top-right corner where it started.
+  const DASH = 1;
+  const REST = 0;
+  const START = 1;
 
   return (
     <div ref={ref} className="pointer-events-none absolute inset-0 z-30">
@@ -83,31 +84,65 @@ export default function TracingBorder({
           >
             <title>Animated card border</title>
             <defs>
-              <linearGradient
+              <radialGradient
                 id={gradientId}
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="100%"
+                cx="100%"
+                cy="0%"
+                r="120%"
               >
-                <stop stopColor="#2E5BFF" offset="0%" />
-                <stop stopColor="#149CCB" offset="100%" />
-              </linearGradient>
+                <stop stopColor="#149CCB" offset="0%" />
+                <stop stopColor="#2E5BFF" offset="30%" />
+                <stop stopColor="rgba(46, 91, 255, 0)" offset="100%" />
+              </radialGradient>
+
+              <filter
+                id={`liquid-${gradientId}`}
+                x="-20%"
+                y="-20%"
+                width="140%"
+                height="140%"
+              >
+                <feTurbulence
+                  type="fractalNoise"
+                  baseFrequency="0.03"
+                  numOctaves="3"
+                  result="noise"
+                >
+                  <animate
+                    attributeName="baseFrequency"
+                    values="0.03; 0.04; 0.03"
+                    dur="3s"
+                    repeatCount="indefinite"
+                  />
+                </feTurbulence>
+                <feDisplacementMap
+                  in="SourceGraphic"
+                  in2="noise"
+                  scale="4"
+                  xChannelSelector="R"
+                  yChannelSelector="G"
+                  result="displaced"
+                />
+                <feGaussianBlur in="displaced" stdDeviation="1.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="displaced" />
+                </feMerge>
+              </filter>
             </defs>
+
+            {/* Glowing liquid trail */}
             <motion.path
               d={d}
               pathLength={1}
               stroke={`url(#${gradientId})`}
-              strokeWidth={2.5}
+              strokeWidth={3}
               strokeLinecap="round"
-              strokeDasharray={`${DASH} ${1 - DASH}`}
+              strokeDasharray="1 1"
               initial={{ strokeDashoffset: START }}
               animate={{ strokeDashoffset: REST }}
-              // easeInOutCubic: comet leaves the corner, travels one full,
-              // clearly visible lap at a steady pace, then decelerates and
-              // settles back onto the top-right corner.
-              transition={{ duration: 1.5, ease: [0.65, 0, 0.35, 1] }}
-              style={{ filter: "blur(0.8px)" }}
+              transition={{ duration: 0.8, ease: [0.65, 0, 0.35, 1] }}
+              style={{ filter: `url(#liquid-${gradientId})` }}
             />
           </motion.svg>
         )}
