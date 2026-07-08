@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import Header from "../page/Header";
 import { cn } from "@/lib/utils";
@@ -81,6 +81,10 @@ export default function ContactHeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const { scrollY } = useScroll();
+  const topX = useTransform(scrollY, [0, 500], [0, -200]);
+  const bottomX = useTransform(scrollY, [0, 500], [0, 200]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex(
@@ -123,7 +127,7 @@ export default function ContactHeroSection() {
           className="mb-6 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
         >
           {/* Line 1 */}
-          <span className="flex items-center justify-center whitespace-nowrap">
+          <motion.span style={{ x: topX }} className="flex items-center justify-center whitespace-nowrap">
             <motion.span variants={wordVariants}>Let's</motion.span>
 
             {/* Split Image Span */}
@@ -149,12 +153,12 @@ export default function ContactHeroSection() {
             </span>
 
             <motion.span variants={wordVariants}>Build</motion.span>
-          </span>
+          </motion.span>
 
           {/* Line 2 */}
-          <span className="mt-2 flex space-x-3 md:mt-4 md:space-x-6">
+          <motion.span style={{ x: bottomX }} className="mt-2 flex space-x-3 md:mt-4 md:space-x-6">
             <motion.span variants={wordVariants}>Together.</motion.span>
-          </span>
+          </motion.span>
         </motion.h1>
       </div>
 
