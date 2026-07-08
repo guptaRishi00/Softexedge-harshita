@@ -1,5 +1,75 @@
 # Session Log
 
+## 2026-07-07 — (toolkit maint, not project) universal-kit git pull + bootstrap
+- `~/.claude/universal-kit`: `git pull` = already up to date. `./bootstrap.sh`
+  first failed (`ln: .../skills/api-design/api-design: cannot overwrite
+  directory`). Root cause: Windows Git Bash `ln -s` COPIES (no symlinks), and
+  pre-existing real skill dirs made `ln -sfn` copy INTO them → nested
+  `<skill>/<skill>` junk; 12 skills were polluted and their top-level SKILL.md
+  was STALE (kit's current version was buried in the nested subdir).
+- Fix (user chose "back up & use kit version"): moved all 16 kit-skill dirs to
+  `~/.claude/skills-pre-bootstrap.bak` (reversible; incl. the old 13.6KB
+  api-design), then re-ran `bootstrap.sh` clean → exit 0 (18 agents, 16 skills,
+  6 commands, AGENT_INDEX regenerated, 185 resources).
+- Verified: all 16 skills' top-level SKILL.md == kit, no nested junk; backup
+  intact. No softexedge project files changed. Caveat surfaced: bootstrap.sh
+  isn't idempotent on Windows (copies, not symlinks) — future re-runs must clear
+  kit-skill dests first.
+
+## 2026-07-07 — ContactSection ChannelCard: default reveal mask parked on right
+- `src/components/home/ContactSection.tsx` (`ChannelCard`): the cursor-follow
+  reveal mask started off-screen (`mouseX/Y = -1000`) so nothing showed by
+  default. Added `cardRef` + `parkMaskRight()` (sets `mouseX = offsetWidth*0.85`,
+  `mouseY = offsetHeight/2`) called on mount, on `mouseLeave`, and via a
+  ResizeObserver while idle — so the grid is revealed on the RIGHT when idle.
+  `onMouseMove` still follows the cursor (a `hoveringRef` gates the observer so a
+  resize mid-hover doesn't yank the mask); cell-glow (`getIntensity`/hoveredIndex)
+  unchanged — "rest working same".
+- Verified: `npx tsc --noEmit` clean; `next build` ✓; `next start` → /home &
+  /contact 200. Biome: only a pre-existing unused-`GRID_COLUMNS` warning (not
+  mine). Single-file; no subagents. Server cleaned up. Not committed.
+
+## 2026-07-07 — Blog page: nudge CtaSection↔Footer gap back up a little
+- `src/app/blog/page.tsx`: bumped CtaSection bottom `pb-6 md:pb-8` → `pb-8
+  md:pb-12` and Footer top `pt-6 md:pt-8` → `pt-8 md:pt-12` (gap now ≈ 24 desktop
+  / 16 mobile, up from 16/12). `npx tsc --noEmit` clean. Not committed.
+
+## 2026-07-07 — Blog page: reduce gap between CtaSection and Footer
+- `src/app/blog/page.tsx`: the gap was CtaSection wrapper bottom padding
+  (`md:py-24`) + Footer wrapper top padding (`md:pt-24`) ≈ 48 (12rem) desktop.
+  Trimmed CtaSection bottom to `pb-6 md:pb-8` (kept its top `pt-16 md:pt-24`) and
+  Footer top to `pt-6 md:pt-8` → gap now ≈ 16 desktop / 12 mobile. Empty
+  commented-`FaqSection` div contributes nothing (its `[&>section]` matches no
+  child). Verified: `npx tsc --noEmit` clean; biome (only the pre-existing unused
+  `FaqSection` import warning remains). Not committed.
+
+## 2026-07-07 — Work page: use the shared header (fix hover + behavior parity)
+- The work page used a bespoke `WorkHeader` (static, underline hover) — different
+  from every other page's `page/Header` (resizable-navbar: white sliding-pill
+  hover, scroll-to-pill, Services dropdown). Switched `/work` to the shared
+  `Header` so behavior + hover are identical.
+- Added a backward-compatible `onDark` prop so the work page (dark dome hero)
+  shows light links + white `logo.png` at the top while every hover/scroll/
+  dropdown behaviour stays identical: `page/Header.tsx` threads `onDark` to
+  `NavItems` (at-top light links via `visible || onDark`), `CustomLogo` (white
+  logo via `visible || onDark`), and `MobileNavToggle` (white icon) in
+  `page/resizable-navbar.tsx`. Other pages call `<Header />` → `onDark=false` →
+  unchanged. `WorkHeroSection` now renders `<Header onDark />`; `WorkHeader.tsx`
+  orphaned (left in place).
+- Also removed a dead `visible` param from `MobileNavToggle` (was already unused
+  in `page/resizable-navbar` pre-change; flagged by spec-verifier).
+- Specialists: `spec-verifier` (T2 done-gate) — confirmed hover pill unchanged,
+  prop-threading via cloneElement merges `visible`+`onDark`, other pages'
+  desktop rendering unchanged, hero clears the fixed navbar. Its P2 (mobile-icon
+  regression) was a false positive — it used `ui/resizable-navbar` as baseline,
+  but `page/Header` imports `page/resizable-navbar` whose original toggle was
+  `text-black` unconditionally, so `onDark=false` is identical. P3 (dead param)
+  fixed.
+- Verified: `npx tsc --noEmit` clean; `next build` ✓; `next start` → /work & /about
+  200; /work SSR shows shared nav (Services/About Us/Careers) + white `logo.png`;
+  biome findings on the navbar files are pre-existing `any`/index-key debt.
+  Server cleaned up. Not committed.
+
 ## 2026-07-07 — Replace the "random blue" gradient with the brand gradient
 - Project-wide analysis (grep sweep of all hover effects + hex colours, excluding
   dead `garbage/`): the only non-brand blue was the triad `#3445E7 / #2F85EA /

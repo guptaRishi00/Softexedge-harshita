@@ -7,7 +7,7 @@ import {
   useMotionValue,
 } from "framer-motion";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -54,8 +54,30 @@ function ChannelCard({
   colSpan,
 }: (typeof channels)[number]) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const hoveringRef = useRef(false);
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
+
+  // Park the reveal mask at the card's right-center by default (and whenever the
+  // cursor leaves), so the grid is visible on the right when idle.
+  const parkMaskRight = useCallback(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    mouseX.set(el.offsetWidth * 0.85);
+    mouseY.set(el.offsetHeight / 2);
+  }, [mouseX, mouseY]);
+
+  useEffect(() => {
+    parkMaskRight();
+    const el = cardRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      if (!hoveringRef.current) parkMaskRight();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [parkMaskRight]);
 
   // For half-width cards (sm:col-span-1), use 3 columns to make the squares medium-large.
   // For full-width cards (sm:col-span-2), use 6 columns.
@@ -76,12 +98,18 @@ function ChannelCard({
   return (
     <a
       href={href}
+      ref={cardRef}
       onMouseMove={(e) => {
+        hoveringRef.current = true;
         const { left, top } = e.currentTarget.getBoundingClientRect();
         mouseX.set(e.clientX - left);
         mouseY.set(e.clientY - top);
       }}
-      onMouseLeave={() => setHoveredIndex(null)}
+      onMouseLeave={() => {
+        hoveringRef.current = false;
+        setHoveredIndex(null);
+        parkMaskRight();
+      }}
       className={`group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/20 transition-transform duration-300 block ${colSpan}`}
     >
       {/* Interactive proximity grid */}
@@ -97,7 +125,7 @@ function ChannelCard({
         >
           {boxyCellIds.map((id, i) => {
             const intensity = getIntensity(i);
-            const colorVal = Math.round(22 * (1 - intensity));
+            const colorVal = Math.round(22 + 30 * intensity);
             return (
               // biome-ignore lint/a11y/noStaticElementInteractions: decorative proximity-glow cell
               <div

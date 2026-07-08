@@ -2,8 +2,8 @@
 
 import { motion, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import Header from "../page/Header";
 import DomeGallery from "../ui/DomeGallery";
-import WorkHeader from "./WorkHeader";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -71,9 +71,9 @@ function Counter({ value, suffix }: { value: number; suffix: string }) {
 export default function WorkHeroSection() {
   return (
     <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-black font-sans selection:bg-[#2E5BFF]/20">
-      {/* Header */}
+      {/* Header — shared site header, dark-hero variant (light links + logo) */}
       <div className="absolute left-0 top-0 z-50 w-full">
-        <WorkHeader />
+        <Header onDark />
       </div>
 
       {/* Rotating dome background (colour, slow horizontal auto-rotation) */}

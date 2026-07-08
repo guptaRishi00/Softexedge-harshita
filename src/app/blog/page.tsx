@@ -9,13 +9,13 @@ export default function BlogPage() {
     <div className="bg-white">
       <BlogFeaturedSection />
       <BlogListSection />
-      <div className="px-3 [&>section]:py-16 md:[&>section]:py-24">
+      <div className="px-3 [&>section]:pt-16 [&>section]:pb-8 md:[&>section]:pt-24 md:[&>section]:pb-12">
         <CtaSection />
       </div>
       <div className="[&>section]:py-16 md:[&>section]:py-24">
         {/* <FaqSection /> */}
       </div>
-      <div className="px-3 pt-16 pb-3 md:pt-24">
+      <div className="px-3 pt-8 pb-3 md:pt-12">
         <Footer />
       </div>
     </div>

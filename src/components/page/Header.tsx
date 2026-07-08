@@ -16,10 +16,16 @@ import {
 } from "@/components/page/resizable-navbar";
 import DynamicButton from "../ui/DynamicButton";
 
-const CustomLogo = ({ visible }: { visible?: boolean }) => (
+const CustomLogo = ({
+  visible,
+  onDark,
+}: {
+  visible?: boolean;
+  onDark?: boolean;
+}) => (
   <Link href="/" className="flex items-center gap-2 group">
     <Image
-      src={visible ? "/assets/logo.png" : "/assets/logoBlue.png"}
+      src={visible || onDark ? "/assets/logo.png" : "/assets/logoBlue.png"}
       alt="Grovio Logo"
       width={85}
       height={30}
@@ -107,7 +113,7 @@ const navItems: NavItem[] = [
   },
 ];
 
-export default function Header() {
+export default function Header({ onDark = false }: { onDark?: boolean }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesExpanded, setIsServicesExpanded] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -134,10 +140,11 @@ export default function Header() {
     <div className="relative w-full">
       <AceternityNavbar className="z-[100]">
         <NavBody>
-          <CustomLogo />
+          <CustomLogo onDark={onDark} />
           {/* 2. Remove the hardcoded text-white from here so resizable-navbar can handle it */}
           <NavItems
             items={navItems}
+            onDark={onDark}
             className="text-[17px] font-medium transition-colors"
           />
           <DynamicButton
@@ -150,10 +157,11 @@ export default function Header() {
 
         <MobileNav>
           <MobileNavHeader className="transition-all duration-300">
-            <CustomLogo />
+            <CustomLogo onDark={onDark} />
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
               onClick={toggleMobileMenu}
+              onDark={onDark}
             />
           </MobileNavHeader>
 

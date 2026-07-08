@@ -98,7 +98,8 @@ None wired. No SDK keys, no analytics, no form backend (contact form is UI-only)
   - `layout/Header.tsx` + `layout/SmoothScroll.tsx` → used by `/home` only (via `home/Herosection.tsx`)
   - `page/Header.tsx` + `page/resizable-navbar.tsx` → used by `/about`, `/brand-strategy`, `/contact` hero sections
   - `ui/resizable-navbar.tsx` (464 lines) ≈ near-duplicate of `page/resizable-navbar.tsx` (465 lines)
-  - `work/WorkHeader.tsx` — standalone white header (logo.png + white links + Get in Touch) used only by the dark `WorkHeroSection`; does not use the resizable-navbar
+  - `page/Header.tsx` accepts an `onDark` prop → threads to `NavItems`/`CustomLogo`/`MobileNavToggle` in `page/resizable-navbar.tsx` for light links + white logo at the top over a dark hero. `WorkHeroSection` uses `<Header onDark />` (identical hover/scroll/dropdown as other pages).
+  - `work/WorkHeader.tsx` — now ORPHANED (work page uses the shared `page/Header` with `onDark`); safe to delete.
   - Three `shared/ConnectButton*.tsx` variants exist
 - **No Header in `layout.tsx`** — each hero section imports its own Header. There is no shared/global nav.
 - **SmoothScroll (Lenis) only on `/home`** — inner pages scroll natively; inconsistent feel.

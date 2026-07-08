@@ -43,6 +43,8 @@ interface NavItemsProps {
   className?: string;
   onItemClick?: () => void;
   visible?: boolean;
+  // Force the light (over-dark-hero) link treatment even before scroll.
+  onDark?: boolean;
 }
 
 interface MobileNavProps {
@@ -152,6 +154,7 @@ export const NavItems = ({
   className,
   onItemClick,
   visible,
+  onDark,
 }: NavItemsProps) => {
   const [hovered, setHovered] = useState<number | null>(null);
 
@@ -203,7 +206,7 @@ export const NavItems = ({
                 "relative px-4 py-2 transition-colors flex items-center gap-1 group",
                 hovered === idx
                   ? "text-black"
-                  : visible
+                  : visible || onDark
                     ? "text-white hover:text-zinc-300"
                     : "text-black hover:text-zinc-600",
               )}
@@ -444,20 +447,21 @@ export const MobileNavMenu = ({
 export const MobileNavToggle = ({
   isOpen,
   onClick,
-  visible,
+  onDark,
 }: {
   isOpen: boolean;
   onClick: () => void;
-  visible?: boolean;
+  onDark?: boolean;
 }) => {
+  const color = onDark ? "text-white" : "text-black";
   return isOpen ? (
     <IconX
-      className="cursor-pointer transition-colors text-black"
+      className={cn("cursor-pointer transition-colors", color)}
       onClick={onClick}
     />
   ) : (
     <IconMenu2
-      className="cursor-pointer transition-colors text-black"
+      className={cn("cursor-pointer transition-colors", color)}
       onClick={onClick}
     />
   );
