@@ -2,15 +2,12 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import type { Project } from "@/data/projects";
 
-const premiumEase = [0.16, 1, 0.3, 1] as const;
-
 export default function NextProject({ nextProject }: { nextProject: Project }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -23,26 +20,16 @@ export default function NextProject({ nextProject }: { nextProject: Project }) {
   return (
     <section
       ref={containerRef}
-      className="relative bg-[#0a0a0a] px-6 py-24 md:px-12 md:py-32"
+      className="relative bg-[#0a0a0a] px-6 pt-12 pb-24 md:px-12 md:pt-16 md:pb-32"
     >
-      <Link href={nextProject.href}>
+      <Link href={nextProject.href} className="block w-full">
         <motion.div
           style={{ y, scale }}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className="group relative mx-auto flex min-h-[500px] w-full max-w-7xl cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[40px] bg-white/5 md:min-h-[600px]"
+          className="relative mx-auto flex min-h-[500px] w-full max-w-7xl cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[40px] bg-white/5 md:min-h-[600px]"
         >
-          {/* Background Media (revealed on hover) */}
+          {/* Background Media (Always visible, no hover effects) */}
           <div className="absolute inset-0 z-0 overflow-hidden">
-            <motion.div
-              initial={false}
-              animate={{
-                scale: isHovered ? 1.05 : 1.2,
-                opacity: isHovered ? 0.4 : 0,
-              }}
-              transition={{ duration: 0.8, ease: premiumEase }}
-              className="h-full w-full"
-            >
+            <div className="h-full w-full opacity-40">
               {nextProject.type === "video" && nextProject.video ? (
                 <video
                   autoPlay
@@ -60,43 +47,55 @@ export default function NextProject({ nextProject }: { nextProject: Project }) {
                   className="h-full w-full object-cover"
                 />
               )}
-            </motion.div>
+            </div>
           </div>
 
-          <div className="absolute inset-0 z-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute inset-0 z-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
           {/* Content */}
           <div className="relative z-10 flex flex-col items-center justify-center text-center">
-            <motion.span
-              animate={{ y: isHovered ? -10 : 0, opacity: isHovered ? 0.6 : 1 }}
-              transition={{ duration: 0.5, ease: premiumEase }}
-              className="mb-6 text-sm font-bold uppercase tracking-[0.25em] text-white/60"
-            >
+            <span className="mb-6 text-sm font-bold uppercase tracking-[0.25em] text-white/60">
               Next Project
-            </motion.span>
+            </span>
 
-            <motion.h2
-              animate={{ y: isHovered ? -10 : 0, scale: isHovered ? 1.05 : 1 }}
-              transition={{ duration: 0.5, ease: premiumEase }}
-              className="px-4 text-5xl font-bold tracking-tight text-white md:text-7xl lg:text-[6rem]"
-            >
+            <h2 className="px-4 text-5xl font-bold leading-[1.2em] tracking-tight text-white md:text-7xl lg:text-[6rem]">
               {nextProject.title}
-            </motion.h2>
+            </h2>
 
-            <motion.div
-              initial={false}
-              animate={{
-                opacity: isHovered ? 1 : 0,
-                y: isHovered ? 20 : 40,
-              }}
-              transition={{ duration: 0.5, ease: premiumEase }}
-              className="absolute -bottom-8 flex items-center gap-3 rounded-full bg-white px-6 py-3 text-black"
-            >
-              <span className="text-sm font-bold tracking-tight">
-                View Case Study
-              </span>
-              <MdArrowOutward className="h-5 w-5" />
-            </motion.div>
+            {/* CTA Button Style - replacing the old View Case Study button */}
+            <div className="mt-12 pointer-events-auto">
+              <div className="group relative flex h-14 w-fit items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100">
+                <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
+                  View Case Study
+                </span>
+
+                <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
+                  <svg width="0" height="0" className="absolute">
+                    <title>View case study arrow gradient</title>
+                    <defs>
+                      <linearGradient
+                        id={`next-project-grad-${nextProject.id}`}
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop stopColor="#2E5BFF" offset="0%" />
+                        <stop stopColor="#149CCB" offset="100%" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+
+                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                  <MdArrowOutward
+                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    style={{
+                      fill: `url(#next-project-grad-${nextProject.id})`,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
       </Link>

@@ -13,7 +13,7 @@ export default function ProjectDetailsContent({
 }) {
   return (
     <section className="bg-[#0a0a0a] px-6 py-24 md:px-12 md:py-32">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-24">
           {/* Sticky Sidebar */}
           <div className="lg:col-span-4">
@@ -27,7 +27,7 @@ export default function ProjectDetailsContent({
                 <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/40">
                   Client
                 </h3>
-                <p className="text-xl font-medium text-white">
+                <p className="text-xl font-medium text-white leading-[1.2em]">
                   {project.title}
                 </p>
               </motion.div>
@@ -41,7 +41,7 @@ export default function ProjectDetailsContent({
                 <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/40">
                   Services
                 </h3>
-                <p className="text-xl font-medium text-white">
+                <p className="text-xl font-medium text-white leading-[1.2em]">
                   {project.category}
                 </p>
               </motion.div>
@@ -78,12 +78,35 @@ export default function ProjectDetailsContent({
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex w-fit items-center gap-3 overflow-hidden rounded-full bg-white px-6 py-4 text-black transition-transform hover:scale-105"
+                  className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100"
                 >
-                  <span className="text-sm font-bold tracking-tight">
+                  <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
                     Visit Live Site
                   </span>
-                  <MdArrowOutward className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
+
+                  <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
+                    <svg width="0" height="0" className="absolute">
+                      <title>Visit live site arrow gradient</title>
+                      <defs>
+                        <linearGradient
+                          id={`live-site-grad-${project.id}`}
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="0%"
+                        >
+                          <stop stopColor="#2E5BFF" offset="0%" />
+                          <stop stopColor="#149CCB" offset="100%" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+
+                    <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                    <MdArrowOutward
+                      className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                      style={{ fill: `url(#live-site-grad-${project.id})` }}
+                    />
+                  </div>
                 </a>
               </motion.div>
             </div>
@@ -98,10 +121,10 @@ export default function ProjectDetailsContent({
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, ease: premiumEase }}
               >
-                <h2 className="mb-8 text-3xl font-bold tracking-tight text-white md:text-4xl">
+                <h2 className="mb-8 text-3xl font-bold tracking-tight text-white md:text-4xl leading-[1.2em]">
                   Overview
                 </h2>
-                <p className="text-lg font-light leading-relaxed text-white/70 md:text-xl md:leading-loose">
+                <p className="text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
                   {project.description} This project challenged us to rethink
                   standard conventions and deliver an experience that not only
                   meets user needs but sets a new benchmark in the industry.
@@ -114,10 +137,10 @@ export default function ProjectDetailsContent({
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, ease: premiumEase }}
               >
-                <h2 className="mb-8 text-3xl font-bold tracking-tight text-white md:text-4xl">
+                <h2 className="mb-8 text-3xl font-bold tracking-tight text-white md:text-4xl leading-[1.2em]">
                   The Challenge
                 </h2>
-                <p className="text-lg font-light leading-relaxed text-white/70 md:text-xl md:leading-loose">
+                <p className="text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
                   The primary hurdle was unifying a disjointed digital presence
                   into a cohesive, lightning-fast platform. Stakeholders
                   required a solution that could scale effortlessly while
@@ -132,10 +155,10 @@ export default function ProjectDetailsContent({
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, ease: premiumEase }}
               >
-                <h2 className="mb-8 text-3xl font-bold tracking-tight text-white md:text-4xl">
+                <h2 className="mb-8 text-3xl font-bold tracking-tight text-white md:text-4xl leading-[1.2em]">
                   Our Approach
                 </h2>
-                <p className="text-lg font-light leading-relaxed text-white/70 md:text-xl md:leading-loose">
+                <p className="text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
                   We employed a modern tech stack focused on performance and
                   fluid interactivity. By leveraging advanced animation
                   techniques and an incredibly optimized asset pipeline, we

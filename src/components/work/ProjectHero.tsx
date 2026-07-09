@@ -54,7 +54,7 @@ export default function ProjectHero({ project }: { project: Project }) {
       />
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-7xl px-6 pb-24 md:px-12 md:pb-32">
+      <div className="relative z-10 w-full px-6 pb-24 md:px-10 md:pb-32">
         <div className="flex flex-col gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -74,7 +74,7 @@ export default function ProjectHero({ project }: { project: Project }) {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3, ease: premiumEase }}
-            className="max-w-5xl text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[6rem]"
+            className="max-w-5xl text-5xl font-bold leading-[1.2em] tracking-tight text-white md:text-7xl lg:text-[6rem]"
           >
             {project.title}
           </motion.h1>
@@ -83,7 +83,7 @@ export default function ProjectHero({ project }: { project: Project }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4, ease: premiumEase }}
-            className="max-w-2xl text-lg font-light leading-relaxed text-white/70 md:text-xl"
+            className="max-w-2xl text-lg font-light leading-[1.2em] text-white/70 md:text-xl"
           >
             {project.subtitle}
           </motion.p>

@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/page/Header";
+import CtaSection from "@/components/brand-strategy/CtaSection";
+import ContactFaqSection from "@/components/contact/ContactFaqSection";
 import NextProject from "@/components/work/NextProject";
 import ProjectDetailsContent from "@/components/work/ProjectDetailsContent";
+import ProjectGallery from "@/components/work/ProjectGallery";
 import ProjectHero from "@/components/work/ProjectHero";
 import { getProjectBySlug, projects } from "@/data/projects";
 
@@ -39,7 +42,15 @@ export default async function ProjectPage(props: {
 
       <ProjectHero project={project} />
       <ProjectDetailsContent project={project} />
+      <ProjectGallery project={project} />
       <NextProject nextProject={nextProject} />
+
+      <div className="bg-white pt-24">
+        <ContactFaqSection />
+        <div className="px-3">
+          <CtaSection />
+        </div>
+      </div>
 
       <div className="px-3 pt-16 pb-3 md:pt-24 bg-white">
         <Footer />

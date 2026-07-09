@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { MdArrowOutward } from "react-icons/md";
 import { blogPosts } from "@/data/blog";
-import Header from "../page/Header";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -19,13 +18,8 @@ export default function BlogFeaturedSection() {
   const featured = blogPosts.find((p) => p.featured) ?? blogPosts[0];
 
   return (
-    <section className="relative flex min-h-[100svh] flex-col justify-center w-full overflow-hidden bg-[#FAFAFA] font-sans selection:bg-[#2E5BFF]/20">
-      {/* Header */}
-      <div className="absolute left-0 top-0 z-50 w-full">
-        <Header />
-      </div>
-
-      <div className="relative z-10 mx-auto w-full px-6 pt-36 pb-16 md:px-10 md:pt-40 md:pb-24">
+    <section className="relative flex flex-col justify-center w-full overflow-hidden bg-white font-sans selection:bg-[#2E5BFF]/20">
+      <div className="relative z-10 mx-auto w-full px-6 pb-16 md:px-10 md:pb-24">
         {/* Eyebrow */}
 
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">

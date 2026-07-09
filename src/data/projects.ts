@@ -22,6 +22,7 @@ export interface Project {
   type: "image" | "video";
   href: string;
   featured?: boolean;
+  gallery?: string[];
 }
 
 export const projects: Project[] = [
@@ -38,6 +39,12 @@ export const projects: Project[] = [
     type: "image",
     href: "/work/aura-skincare",
     featured: true,
+    gallery: [
+      "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
+      "/assets/cake.png",
+      "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
+      "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
+    ],
   },
   {
     id: 2,
@@ -51,6 +58,12 @@ export const projects: Project[] = [
     category: "SaaS",
     type: "image",
     href: "/work/finova-dashboard",
+    gallery: [
+      "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+      "/assets/project-dashboard-displaying-key-metrics-like-progress-budget-deadlines.jpg",
+      "/assets/fotis-fotopoulos-SyvsTmuuZyM-unsplash.jpg",
+      "/assets/branding.webp",
+    ],
   },
   {
     id: 3,
@@ -65,6 +78,12 @@ export const projects: Project[] = [
     type: "image",
     href: "/work/lumina-festival",
     featured: true,
+    gallery: [
+      "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
+      "/assets/branding.webp",
+      "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
+      "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+    ],
   },
   {
     id: 4,
@@ -79,6 +98,12 @@ export const projects: Project[] = [
     category: "Campaign",
     type: "video",
     href: "/work/nova-workspace",
+    gallery: [
+      "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
+      "/assets/fotis-fotopoulos-SyvsTmuuZyM-unsplash.jpg",
+      "/assets/project-dashboard-displaying-key-metrics-like-progress-budget-deadlines.jpg",
+      "/assets/cake.png",
+    ],
   },
   {
     id: 5,
@@ -92,6 +117,12 @@ export const projects: Project[] = [
     category: "Web App",
     type: "image",
     href: "/work/zephyr-mobility",
+    gallery: [
+      "/assets/fotis-fotopoulos-SyvsTmuuZyM-unsplash.jpg",
+      "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
+      "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+      "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
+    ],
   },
   {
     id: 6,
@@ -106,6 +137,12 @@ export const projects: Project[] = [
     type: "image",
     href: "/work/cake-commerce",
     featured: true,
+    gallery: [
+      "/assets/cake.png",
+      "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
+      "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
+      "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
+    ],
   },
   {
     id: 7,
@@ -120,6 +157,12 @@ export const projects: Project[] = [
     category: "SaaS",
     type: "image",
     href: "/work/apex-analytics",
+    gallery: [
+      "/assets/project-dashboard-displaying-key-metrics-like-progress-budget-deadlines.jpg",
+      "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+      "/assets/branding.webp",
+      "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
+    ],
   },
   {
     id: 8,
@@ -133,6 +176,12 @@ export const projects: Project[] = [
     category: "Branding",
     type: "image",
     href: "/work/brand-elevate",
+    gallery: [
+      "/assets/branding.webp",
+      "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
+      "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
+      "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+    ],
   },
 ];
 

@@ -1,12 +1,13 @@
+import BlogHeroSection from "@/components/blog/BlogHeroSection";
 import BlogFeaturedSection from "@/components/blog/BlogFeaturedSection";
 import BlogListSection from "@/components/blog/BlogListSection";
 import CtaSection from "@/components/brand-strategy/CtaSection";
-import FaqSection from "@/components/brand-strategy/FaqSection";
 import Footer from "@/components/layout/Footer";
 
 export default function BlogPage() {
   return (
-    <div className="bg-white">
+    <div className="bg-[#FAFAFA]">
+      <BlogHeroSection />
       <BlogFeaturedSection />
       <BlogListSection />
       <div className="px-3 [&>section]:pt-16 [&>section]:pb-8 md:[&>section]:pt-24 md:[&>section]:pb-12">
