@@ -127,7 +127,10 @@ export default function ContactHeroSection() {
           className="mb-6 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
         >
           {/* Line 1 */}
-          <motion.span style={{ x: topX }} className="flex items-center justify-center whitespace-nowrap">
+          <motion.span
+            style={{ x: topX }}
+            className="flex items-center justify-center whitespace-nowrap"
+          >
             <motion.span variants={wordVariants}>Let's</motion.span>
 
             {/* Split Image Span */}
@@ -156,7 +159,10 @@ export default function ContactHeroSection() {
           </motion.span>
 
           {/* Line 2 */}
-          <motion.span style={{ x: bottomX }} className="mt-2 flex space-x-3 md:mt-4 md:space-x-6">
+          <motion.span
+            style={{ x: bottomX }}
+            className="mt-2 flex space-x-3 md:mt-4 md:space-x-6"
+          >
             <motion.span variants={wordVariants}>Together.</motion.span>
           </motion.span>
         </motion.h1>

@@ -29,7 +29,6 @@ const socialLinks = [
   { icon: <FaLinkedinIn size={14} />, href: "#" },
 ];
 
-
 export default function Footer() {
   const [mounted, setMounted] = useState(false);
   const [time, setTime] = useState(new Date());
@@ -54,7 +53,6 @@ export default function Footer() {
       return "00:00:00 AM";
     }
   };
-
 
   return (
     <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-16 text-white md:pt-24 lg:pt-32">

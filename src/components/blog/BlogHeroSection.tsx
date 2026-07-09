@@ -60,9 +60,7 @@ function Counter({ value, suffix }: { value: number; suffix: string }) {
   return (
     <span ref={ref}>
       {count}
-      <span className="text-black ml-1 pr-1">
-        {suffix}
-      </span>
+      <span className="text-black ml-1 pr-1">{suffix}</span>
     </span>
   );
 }
@@ -131,7 +129,8 @@ export default function BlogHeroSection() {
           transition={{ duration: 0.8, delay: 1.2, ease: premiumEase }}
           className="mt-4 max-w-2xl text-lg font-medium leading-[1.4em] text-black md:text-xl"
         >
-          Explore expert perspectives, deep dives into emerging technologies, and stories on shaping the future of digital products.
+          Explore expert perspectives, deep dives into emerging technologies,
+          and stories on shaping the future of digital products.
         </motion.p>
       </div>
 
@@ -148,7 +147,9 @@ export default function BlogHeroSection() {
             key={index}
             className={[
               "flex flex-col items-center text-center",
-              index !== 0 ? "border-zinc-200 md:border-l md:border-t-0 border-t pt-8 md:pt-0" : "",
+              index !== 0
+                ? "border-zinc-200 md:border-l md:border-t-0 border-t pt-8 md:pt-0"
+                : "",
             ]
               .filter(Boolean)
               .join(" ")}

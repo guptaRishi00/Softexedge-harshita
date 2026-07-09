@@ -176,7 +176,9 @@ export default function OpenPositions() {
                       )}
                     >
                       <div className="whitespace-nowrap rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-medium text-white/80 opacity-0 transition-opacity duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 md:text-sm">
-                        {job.meta[0].includes(" - ") ? job.meta[0].split(" - ")[1] : job.meta[0]}
+                        {job.meta[0].includes(" - ")
+                          ? job.meta[0].split(" - ")[1]
+                          : job.meta[0]}
                       </div>
                     </div>
 
@@ -211,13 +213,13 @@ export default function OpenPositions() {
                     <MdArrowOutward
                       className={cn(
                         "absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8 md:h-6 md:w-6",
-                        open ? "rotate-90" : ""
+                        open ? "rotate-90" : "",
                       )}
                     />
                     <MdArrowOutward
                       className={cn(
                         "absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0 md:h-6 md:w-6",
-                        open ? "rotate-90" : ""
+                        open ? "rotate-90" : "",
                       )}
                       style={{ fill: `url(#arrow-grad-${job.id})` }}
                     />
@@ -245,7 +247,9 @@ export default function OpenPositions() {
                       <div className="flex flex-col gap-8 pt-6 pb-12 max-w-3xl">
                         {/* ABOUT THE ROLE */}
                         <div>
-                          <h4 className="text-lg font-bold text-white mb-3">About the Role</h4>
+                          <h4 className="text-lg font-bold text-white mb-3">
+                            About the Role
+                          </h4>
                           <p className="text-base text-zinc-300 leading-[1.2em]">
                             {job.about}
                           </p>
@@ -253,7 +257,9 @@ export default function OpenPositions() {
 
                         {/* KEY RESPONSIBILITIES */}
                         <div>
-                          <h4 className="text-lg font-bold text-white mb-3">Key Responsibilities</h4>
+                          <h4 className="text-lg font-bold text-white mb-3">
+                            Key Responsibilities
+                          </h4>
                           <ul className="list-disc pl-5 flex flex-col gap-2 text-base text-zinc-300 leading-[1.2em]">
                             {job.responsibilities.map((res) => (
                               <li key={res}>{res}</li>
@@ -263,7 +269,9 @@ export default function OpenPositions() {
 
                         {/* REQUIREMENTS */}
                         <div>
-                          <h4 className="text-lg font-bold text-white mb-3">Requirements</h4>
+                          <h4 className="text-lg font-bold text-white mb-3">
+                            Requirements
+                          </h4>
                           <ul className="list-disc pl-5 flex flex-col gap-2 text-base text-zinc-300 leading-[1.2em]">
                             {job.requirements.map((req) => (
                               <li key={req}>{req}</li>
@@ -273,7 +281,9 @@ export default function OpenPositions() {
 
                         {/* WHY WORK WITH US / PERKS */}
                         <div>
-                          <h4 className="text-lg font-bold text-white mb-3">Why Work With Us</h4>
+                          <h4 className="text-lg font-bold text-white mb-3">
+                            Why Work With Us
+                          </h4>
                           <ul className="list-disc pl-5 flex flex-col gap-2 text-base text-zinc-300 leading-[1.2em]">
                             {job.perks.map((perk) => (
                               <li key={perk}>{perk}</li>
@@ -283,7 +293,9 @@ export default function OpenPositions() {
 
                         {/* GOOD TO HAVE */}
                         <div>
-                          <h4 className="text-lg font-bold text-white mb-3">Good to Have</h4>
+                          <h4 className="text-lg font-bold text-white mb-3">
+                            Good to Have
+                          </h4>
                           <ul className="list-disc pl-5 flex flex-col gap-2 text-base text-zinc-300 leading-[1.2em]">
                             {job.goodToHave.map((good) => (
                               <li key={good}>{good}</li>

@@ -57,10 +57,7 @@ function InfiniteRow({
       <motion.div
         className="flex w-max"
         animate={{
-          x:
-            direction === "left"
-              ? ["0%", "-8.333333%"]
-              : ["-8.333333%", "0%"],
+          x: direction === "left" ? ["0%", "-8.333333%"] : ["-8.333333%", "0%"],
         }}
         transition={{
           repeat: Number.POSITIVE_INFINITY,

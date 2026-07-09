@@ -84,12 +84,7 @@ export default function TracingBorder({
           >
             <title>Animated card border</title>
             <defs>
-              <radialGradient
-                id={gradientId}
-                cx="100%"
-                cy="0%"
-                r="120%"
-              >
+              <radialGradient id={gradientId} cx="100%" cy="0%" r="120%">
                 <stop stopColor="#149CCB" offset="0%" />
                 <stop stopColor="#2E5BFF" offset="30%" />
                 <stop stopColor="rgba(46, 91, 255, 0)" offset="100%" />
@@ -123,7 +118,11 @@ export default function TracingBorder({
                   yChannelSelector="G"
                   result="displaced"
                 />
-                <feGaussianBlur in="displaced" stdDeviation="1.5" result="blur" />
+                <feGaussianBlur
+                  in="displaced"
+                  stdDeviation="1.5"
+                  result="blur"
+                />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="displaced" />
@@ -141,7 +140,7 @@ export default function TracingBorder({
               strokeDasharray="1 1"
               initial={{ strokeDashoffset: START }}
               animate={{ strokeDashoffset: REST }}
-              transition={{ duration: 0.8, ease: [0.65, 0, 0.35, 1] }}
+              transition={{ duration: 0.6, ease: [0.65, 0, 0.35, 1] }}
               style={{ filter: `url(#liquid-${gradientId})` }}
             />
           </motion.svg>

@@ -1,5 +1,28 @@
 # Session Log
 
+## 2026-07-07 — Work slug page: add the site header
+- `src/app/work/[slug]/page.tsx` had no nav. Added `<Header onDark />` (shared
+  `page/Header`, dark-hero variant — same as the work listing page) in an
+  `absolute top-0 z-50` wrapper; root div made `relative`. ProjectHero anchors
+  content at the bottom (`items-end`, `pb-24/32`) with an empty top, so the fixed
+  navbar floats over it with no overlap — no padding change needed.
+- Verified: tsc + biome clean; `next build` ✓; `next start` → /work/finova-dashboard
+  200 with header nav (About Us/Careers/Get in Touch) + white logo.png + project
+  content all present. Server cleaned up. Not committed.
+
+## 2026-07-07 — Diagnose /work/<slug> 404 (stale dev cache) + speed up comet
+- `/work/finova-dashboard` 404 on localhost:3000: NOT a code bug. The route
+  (`src/app/work/[slug]/page.tsx`), data (`src/data/projects.ts` has
+  finova-dashboard id 2), and `getProjectBySlug` all resolve correctly.
+  `npx tsc` clean; `next build` prerenders all 8 `/work/<slug>` (SSG); `next
+  start` → /work/finova-dashboard, aura-skincare, apex-analytics all 200 with
+  real content, unknown slug 404. Root cause: stale/leftover Turbopack dev cache
+  (route not picked up by the running dev server). Fix: cleared `.next` (no dev
+  server was running); user restarts `bun dev`. No code change.
+- Animation goal ("make it a bit faster"): `src/components/ui/TracingBorder.tsx`
+  comet lap `duration 0.8 → 0.6`. tsc clean. Server processes cleaned up.
+  Not committed.
+
 ## 2026-07-07 — (toolkit maint, not project) universal-kit git pull + bootstrap
 - `~/.claude/universal-kit`: `git pull` = already up to date. `./bootstrap.sh`
   first failed (`ln: .../skills/api-design/api-design: cannot overwrite
