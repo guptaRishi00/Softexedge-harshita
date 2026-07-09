@@ -75,7 +75,8 @@ export default function WhyJoinUs() {
         "Work remotely or in a hybrid setup that fits your lifestyle. We prioritize outcomes and deep work over rigid hours, giving you the freedom to do your best work from anywhere.",
       icon: Globe,
       className: "md:col-span-2",
-      image: "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
+      image:
+        "https://plus.unsplash.com/premium_photo-1668383778601-067f1b9e0551?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8RmxleGlibGUlMjBXb3JrJTIwQ3VsdHVyZXxlbnwwfHwwfHx8MA%3D%3D",
     },
     {
       title: "Creative Team",
@@ -83,7 +84,8 @@ export default function WhyJoinUs() {
         "Work with passionate designers, developers, and marketers in a supportive, idea-driven culture.",
       icon: Users,
       className: "md:col-span-1",
-      image: "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
+      image:
+        "https://plus.unsplash.com/premium_photo-1661767467261-4a4bed92a507?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Q3JlYXRpdmUlMjBUZWFtfGVufDB8fDB8fHww",
     },
     {
       title: "Competitive Comp",
@@ -91,7 +93,8 @@ export default function WhyJoinUs() {
         "Attractive salary packages with performance-based bonuses, premium healthcare, and robust growth incentives.",
       icon: TrendingUp,
       className: "md:col-span-1",
-      image: "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+      image:
+        "https://plus.unsplash.com/premium_photo-1678567671952-4028b2ec6c71?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c2FsYXJ5fGVufDB8fDB8fHww",
     },
     {
       title: "Learning & Growth Support",
@@ -99,7 +102,8 @@ export default function WhyJoinUs() {
         "Access to premium learning resources, dedicated mentorship, conference budgets, and unlimited opportunities to continuously upskill your craft and accelerate your career.",
       icon: BookOpen,
       className: "md:col-span-2",
-      image: "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
+      image:
+        "https://images.unsplash.com/photo-1773530057098-6db992c0f90b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8R3Jvd3RoJTIwU3VwcG9ydHxlbnwwfHwwfHx8MA%3D%3D",
     },
   ];
 

@@ -19,21 +19,21 @@ const channels = [
     value: "hello@softexedge.com",
     href: "mailto:hello@softexedge.com",
     Icon: Mail,
-    colSpan: "sm:col-span-2", // Full width
+    colSpan: "sm:col-span-2",
   },
   {
     label: "Phone",
     value: "+1 (800) 123-4567",
     href: "tel:+18001234567",
     Icon: Phone,
-    colSpan: "sm:col-span-1", // Half width
+    colSpan: "sm:col-span-1",
   },
   {
     label: "Studio",
     value: "San Francisco",
     href: "#location",
     Icon: MapPin,
-    colSpan: "sm:col-span-1", // Half width
+    colSpan: "sm:col-span-1",
   },
 ];
 
@@ -43,9 +43,6 @@ const inputClass =
 const GRID_COLUMNS = 8;
 const boxyCellIds = Array.from({ length: 80 }, (_, i) => `box-${i}`);
 
-// Contact channel card with the same interactive proximity-glow grid as
-// CtaSection: a cursor-following mask reveals the dark cell grid, and cells near
-// the pointer glow with the brand gradient.
 function ChannelCard({
   label,
   value,
@@ -59,8 +56,6 @@ function ChannelCard({
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
 
-  // Park the reveal mask at the card's right-center by default (and whenever the
-  // cursor leaves), so the grid is visible on the right when idle.
   const parkMaskRight = useCallback(() => {
     const el = cardRef.current;
     if (!el || el.offsetWidth === 0) return;
@@ -68,14 +63,10 @@ function ChannelCard({
     mouseY.set(el.offsetHeight / 2);
   }, [mouseX, mouseY]);
 
-  // Ref callback: fires every time the DOM node is attached, including after
-  // Next.js client-side navigation (unlike useEffect/useLayoutEffect which may
-  // not re-run when React recycles component fibers with stable deps).
   const setCardRef = useCallback(
     (node: HTMLAnchorElement | null) => {
       cardRef.current = node;
       if (node && !hoveringRef.current) {
-        // Double-schedule: rAF ensures layout is complete, then position mask.
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             if (cardRef.current && !hoveringRef.current) {
@@ -89,7 +80,6 @@ function ChannelCard({
     [mouseX, mouseY],
   );
 
-  // ResizeObserver keeps the mask parked correctly when the card resizes.
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
@@ -100,8 +90,6 @@ function ChannelCard({
     return () => ro.disconnect();
   }, [parkMaskRight]);
 
-  // For half-width cards (sm:col-span-1), use 3 columns to make the squares medium-large.
-  // For full-width cards (sm:col-span-2), use 6 columns.
   const gridColumns = colSpan.includes("sm:col-span-1") ? 3 : 6;
 
   const getIntensity = (i: number) => {
@@ -133,7 +121,6 @@ function ChannelCard({
       }}
       className={`group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/20 transition-transform duration-300 block ${colSpan}`}
     >
-      {/* Interactive proximity grid */}
       <motion.div
         className="absolute inset-0 z-0 overflow-hidden"
         style={{ WebkitMaskImage: mask, maskImage: mask }}
@@ -146,9 +133,8 @@ function ChannelCard({
         >
           {boxyCellIds.map((id, i) => {
             const intensity = getIntensity(i);
-            const colorVal = Math.round(22 + 30 * intensity);
+            const colorVal = Math.round(22 + 14 * intensity);
             return (
-              // biome-ignore lint/a11y/noStaticElementInteractions: decorative proximity-glow cell
               <div
                 key={id}
                 onMouseEnter={() => setHoveredIndex(i)}
@@ -168,8 +154,6 @@ function ChannelCard({
           })}
         </div>
       </motion.div>
-
-      {/* Removed black overlay for maximum pattern visibility */}
 
       <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between gap-6 p-6 sm:p-8">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 text-zinc-400 transition-colors duration-300 group-hover:bg-zinc-900 group-hover:text-white">
@@ -205,7 +189,6 @@ export default function ContactSection() {
     >
       <div className="relative z-10 mx-auto w-full px-6 md:px-10">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-12">
-          {/* LEFT: messaging + contact channels */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -218,7 +201,7 @@ export default function ContactSection() {
             </div>
 
             <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[64px] lg:leading-[0.9em]">
-              Let's build <br />
+              Let&apos;s build <br />
               <span className="inline-grid overflow-hidden py-2">
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -241,7 +224,6 @@ export default function ContactSection() {
               ready to collaborate.
             </p>
 
-            {/* Clean Static Bento Contact Cards */}
             <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {channels.map((channel) => (
                 <ChannelCard key={channel.label} {...channel} />
@@ -249,7 +231,6 @@ export default function ContactSection() {
             </div>
           </motion.div>
 
-          {/* RIGHT: contact form */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
