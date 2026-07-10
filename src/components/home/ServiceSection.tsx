@@ -104,7 +104,7 @@ export default function ServiceSection() {
     <section
       ref={containerRef}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full overflow-hidden bg-black py-32 text-white"
+      className="relative w-full overflow-hidden bg-black py-16 md:py-32 text-white"
     >
       <div className="w-full px-4 md:px-10">
         {/* HEADER SECTION */}

@@ -104,10 +104,10 @@ export default function BlogSection() {
   );
 
   return (
-    <section className="w-full overflow-hidden bg-white text-black md:pt-0 pb-40">
+    <section className="w-full overflow-hidden bg-white text-black md:pt-0 pb-20 md:pb-40">
       <div className="mx-auto w-full ">
         {/* HEADER LAYER */}
-        <div className="mb-30 flex w-full flex-col items-start justify-between gap-8 px-6 md:mb-35 md:flex-row md:items-end md:px-6">
+        <div className="mb-16 flex w-full flex-col items-start justify-between gap-8 px-6 md:mb-35 md:flex-row md:items-end md:px-6">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}

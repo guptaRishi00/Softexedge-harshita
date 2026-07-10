@@ -47,7 +47,7 @@ export default function Herosection({}: any) {
   }, []);
 
   return (
-    <div className="relative lg:min-h-[96.5vh] rounded-[20px] overflow-hidden bg-zinc-950">
+    <div className="relative min-h-[100svh] rounded-[20px] overflow-hidden bg-zinc-950 lg:min-h-[96.5vh]">
       {/* 3. Attach the ref to the main background video */}
       <video
         ref={mainVideoRef}

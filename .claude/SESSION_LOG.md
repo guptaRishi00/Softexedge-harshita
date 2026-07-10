@@ -1780,3 +1780,54 @@
 - Verified: tsc + biome clean on both files; `next build` ✓ /work. (Border only
   renders on hover with measured size, so not in SSR — verified at code level +
   build; user eyeballs hover on :3000.) Minimal diff (~5 lines, 2 files), no deps.
+
+## 2026-07-10 — Homepage mobile responsiveness, desktop pixel-identical (/worker)
+- Explore-agent audit first: homepage largely responsive already (hero text,
+  header hamburger, footer vw-brand, contact/blog grids all stack; about pin +
+  service rotate GSAP size-agnostic; Stats/Testimonials already have <768 JS
+  branches). Real issues were fixed additively — smaller base/sm: values with
+  every old value re-asserted at its original breakpoint (md+ byte-identical):
+  1. AboutSection: rings 520/420px → 320/260px base (md: restores); card stack
+     h-560 → h-420 base (md:h-[560px]).
+  2. StatsSection: number text-[7rem] → text-[4.5rem] base + sm:text-[7rem]
+     (md:text-[10rem] untouched).
+  3. ExperimentalTestimonials: cards w-[300px] sm:w-[360px] md:w-[440px] + step
+     JS 3-tier (<640→316, <768→376, ≥768→452; ≥640 identical to old 360+16/440+12).
+  4. home/page.tsx Trusted-By row stacks at base (flex-col gap-4, divider hidden),
+     sm: restores row layout. GSAP untouched.
+  5. Blog pb-40→pb-20 md:pb-40, mb-30→mb-16 (md:mb-35 kept); Service py-32→
+     py-16 md:py-32.
+- Deliberately untouched (documented): Portfolio horizontal-scroll pin (recalcs
+  from innerWidth, scroll-scrub works on touch) and hover-only custom cursors
+  (inert on touch) — per "don't change desktop animations".
+- Routing: 4 sonnet + 1 opus (testimonials CSS/JS lockstep), 0 driver, all 5
+  dispatched in parallel, no reroutes/failures.
+- Verified: tsc + biome clean (6 files); `next build` ✓ /home; SSR /home HTML
+  shows every new class incl. 8× three-tier card widths; spec-verifier APPROVED
+  (md+ invariant confirmed hunk-by-hunk, 640-767 band identical, step/gap math
+  cross-checked; no P0-P2).
+
+## 2026-07-10 — Fix invisible mobile hero + mobile animation removal (/worker)
+- **Hero bug root cause:** Herosection root was `relative lg:min-h-[96.5vh]` with
+  ALL children absolute → 0px height below lg (invisible on mobile AND tablet).
+  Fixed: base `min-h-[100svh]` added, `lg:min-h-[96.5vh]` kept (desktop identical).
+- **Mobile (<768px) now animation-free / native:** all via matchMedia so desktop
+  code paths are byte-identical:
+  - `app/home/page.tsx`: about pin+scale/fade + service scale/rotate scrubs moved
+    (indent-only) into `gsap.matchMedia().add("(min-width: 768px)")` + revert.
+  - `layout/SmoothScroll.tsx`: `(max-width: 767px)` early-return — no Lenis/ticker
+    on mobile (native scroll), keeps plugin registration + delayed ST.refresh.
+  - `home/PortfolioSection.tsx`: entire useGSAP body (cursor, 500vw horizontal
+    pin, text reveals) gated to ≥768; mobile layout = simple vertical stack
+    (section h-auto md:h-screen; track flex-col md:w-max md:flex-row, inline
+    500vw width REMOVED — md:w-max × md:w-screen panels ≡ 500vw; panels
+    h-[70svh] w-full md:h-screen md:w-screen).
+  - Light entrance fades/marquees deliberately kept (approved interpretation).
+- Routing: 3 sonnet + 1 opus (portfolio), 0 driver, parallel dispatch, no
+  reroutes. spec-verifier round 1 caught a real P1: the "View Project" cursor
+  pill's only hide (gsap.set scale:0) was now desktop-gated → visible top-left
+  on mobile. Driver fixed via `hidden ... md:flex` on the pill; round 2 APPROVED.
+- Verified: tsc + biome clean (4 files); `next build` ✓ /home; SSR /home shows
+  min-h-[100svh] hero, 5 stacked h-[70svh] panels, flex-col track with md:
+  restores, zero inline 500vw. 768-1023 band: hero now visible (was 0px) —
+  strict improvement, desktop lg unchanged.

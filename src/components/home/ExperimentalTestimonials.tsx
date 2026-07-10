@@ -59,7 +59,9 @@ export default function ExperimentalTestimonials() {
 
   useEffect(() => {
     const update = () =>
-      setStep(window.innerWidth >= 768 ? 440 + 12 : 360 + 16);
+      setStep(
+        window.innerWidth < 640 ? 316 : window.innerWidth < 768 ? 376 : 452,
+      );
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
@@ -172,7 +174,7 @@ export default function ExperimentalTestimonials() {
             {duplicatedTestimonials.map((item, i) => (
               <div
                 key={`${item.name}-${i}`}
-                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors hover:border-zinc-300 hover:bg-linear-to-br hover:from-white hover:to-zinc-200 md:min-h-[440px] md:w-[440px] md:py-10"
+                className="group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors hover:border-zinc-300 hover:bg-linear-to-br hover:from-white hover:to-zinc-200 sm:w-[360px] md:min-h-[440px] md:w-[440px] md:py-10"
               >
                 {/* Outlined Quote Icon (Top Right) */}
                 <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">

@@ -54,60 +54,66 @@ export default function HomePage() {
   const serviceInnerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    // 1. ABOUT SECTION ANIMATION
-    if (
-      aboutContainerRef.current &&
-      aboutInnerRef.current &&
-      portfolioRef.current
-    ) {
-      ScrollTrigger.create({
-        trigger: aboutContainerRef.current,
-        start: "top top",
-        endTrigger: portfolioRef.current,
-        end: "top top",
-        pin: true,
-        pinSpacing: false,
-      });
+    const mm = gsap.matchMedia();
 
-      gsap.to(aboutInnerRef.current, {
-        scale: 0.85,
-        opacity: 0,
-        y: 40,
-        ease: "none",
-        scrollTrigger: {
+    mm.add("(min-width: 768px)", () => {
+      // 1. ABOUT SECTION ANIMATION
+      if (
+        aboutContainerRef.current &&
+        aboutInnerRef.current &&
+        portfolioRef.current
+      ) {
+        ScrollTrigger.create({
           trigger: aboutContainerRef.current,
           start: "top top",
           endTrigger: portfolioRef.current,
           end: "top top",
-          scrub: true,
-        },
-      });
-    }
+          pin: true,
+          pinSpacing: false,
+        });
 
-    // 2. SERVICE SECTION SCALE UP & UN-ROTATE
-    if (serviceContainerRef.current && serviceInnerRef.current) {
-      gsap.fromTo(
-        serviceInnerRef.current,
-        {
-          scale: 0.65, // Starts small
-          rotation: 20, // Rotated 20 degrees
-          borderRadius: "40px", // Giving it rounded edges while it acts as a card
-          overflow: "hidden",
-        },
-        {
-          scale: 1, // Ends at full size
-          rotation: 0,
-          borderRadius: "0px",
+        gsap.to(aboutInnerRef.current, {
+          scale: 0.85,
+          opacity: 0,
+          y: 40,
           ease: "none",
           scrollTrigger: {
-            trigger: serviceContainerRef.current,
-            start: "top bottom",
+            trigger: aboutContainerRef.current,
+            start: "top top",
+            endTrigger: portfolioRef.current,
             end: "top top",
-            scrub: 1,
+            scrub: true,
           },
-        },
-      );
-    }
+        });
+      }
+
+      // 2. SERVICE SECTION SCALE UP & UN-ROTATE
+      if (serviceContainerRef.current && serviceInnerRef.current) {
+        gsap.fromTo(
+          serviceInnerRef.current,
+          {
+            scale: 0.65, // Starts small
+            rotation: 20, // Rotated 20 degrees
+            borderRadius: "40px", // Giving it rounded edges while it acts as a card
+            overflow: "hidden",
+          },
+          {
+            scale: 1, // Ends at full size
+            rotation: 0,
+            borderRadius: "0px",
+            ease: "none",
+            scrollTrigger: {
+              trigger: serviceContainerRef.current,
+              start: "top bottom",
+              end: "top top",
+              scrub: 1,
+            },
+          },
+        );
+      }
+    });
+
+    return () => mm.revert();
   });
 
   return (
@@ -117,13 +123,13 @@ export default function HomePage() {
           <Herosection />
         </div>
 
-        <section className="flex w-full items-center gap-8 overflow-hidden bg-white px-6 py-12 md:pt-20">
+        <section className="flex w-full flex-col items-start gap-4 overflow-hidden bg-white px-6 py-12 sm:flex-row sm:items-center sm:gap-8 md:pt-20">
           <div className="shrink-0">
             <p className="text-sm font-medium tracking-wide text-black/60">
               Trusted By
             </p>
           </div>
-          <div className="h-6 w-px bg-black/10" />
+          <div className="hidden h-6 w-px bg-black/10 sm:block" />
           <div className="relative min-w-0 flex-1 overflow-hidden">
             <LogoLoop
               logos={techLogos}
