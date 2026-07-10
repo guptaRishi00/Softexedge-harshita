@@ -342,6 +342,7 @@ function ProjectCard({
             active={isHovered}
             radius={20}
             gradientId={`work-trace-${project.id}`}
+            color="#2E5BFF"
           />
         </div>
       </motion.div>
