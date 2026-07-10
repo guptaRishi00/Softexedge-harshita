@@ -34,7 +34,8 @@ export const projects: Project[] = [
       "Redefining digital beauty retail. We crafted a highly conversion-optimized, visually stunning headless e-commerce platform that elevated Aura's brand positioning and increased online sales by 140% in Q1.",
     tech: ["SHOPIFY", "NEXT.JS", "TAILWIND"],
     year: "2024",
-    image: "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
+    image:
+      "https://images.unsplash.com/photo-1580870069867-74c57ee1bb07?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8c2tpbmNhcmV8ZW58MHx8MHx8fDA%3D",
     category: "E-Commerce",
     type: "image",
     href: "/work/aura-skincare",
@@ -54,7 +55,8 @@ export const projects: Project[] = [
       "A complete UX/UI overhaul for Finova's enterprise wealth management suite. By simplifying complex data visualizations and streamlining workflows, we reduced user onboarding time by over 60%.",
     tech: ["REACT", "D3.JS", "NODE.JS", "TYPESCRIPT"],
     year: "2024",
-    image: "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+    image:
+      "https://images.unsplash.com/photo-1542744173-05336fcc7ad4?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGRhc2hib2FyZHxlbnwwfHwwfHx8MA%3D%3D",
     category: "SaaS",
     type: "image",
     href: "/work/finova-dashboard",
@@ -73,7 +75,8 @@ export const projects: Project[] = [
       "An immersive digital portal for Europe's premier light and sound festival. The site features dynamic WebGL interactions that mirror the festival's physical installations, driving record-breaking ticket sales.",
     tech: ["THREE.JS", "GSAP", "NEXT.JS", "CONTENTFUL"],
     year: "2023",
-    image: "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
+    image:
+      "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZmVzdGl2YWx8ZW58MHx8MHx8fDA%3D",
     category: "Branding",
     type: "image",
     href: "/work/lumina-festival",
@@ -94,7 +97,8 @@ export const projects: Project[] = [
     tech: ["NEXT.JS", "FRAMER MOTION", "TAILWIND"],
     year: "2024",
     video: "/assets/video3.mp4",
-    image: "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
+    image:
+      "https://images.unsplash.com/photo-1761327076784-49b85d203d03?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDV8eEh4WVRNSExnT2N8fGVufDB8fHx8fA%3D%3D",
     category: "Campaign",
     type: "video",
     href: "/work/nova-workspace",
@@ -132,7 +136,8 @@ export const projects: Project[] = [
       "A delightful custom e-commerce experience for an artisan bakery brand, complete with 3D product visualizations, subscription models, and a seamless checkout experience.",
     tech: ["NEXT.JS", "STRIPE", "SANITY", "TAILWIND"],
     year: "2024",
-    image: "/assets/cake.png",
+    image:
+      "https://images.unsplash.com/photo-1761327076784-49b85d203d03?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDV8eEh4WVRNSExnT2N8fGVufDB8fHx8fA%3D%3D",
     category: "E-Commerce",
     type: "image",
     href: "/work/cake-commerce",
@@ -172,7 +177,8 @@ export const projects: Project[] = [
       "A comprehensive brand identity overhaul for a Fortune 500 company, including logo redesign, design system, marketing collateral, and a showcase website that tells their brand story.",
     tech: ["FIGMA", "NEXT.JS", "FRAMER", "GSAP"],
     year: "2023",
-    image: "/assets/branding.webp",
+    image:
+      "https://images.unsplash.com/photo-1633533452148-a9657d2c9a5f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YnJhbmR8ZW58MHx8MHx8fDA%3D",
     category: "Branding",
     type: "image",
     href: "/work/brand-elevate",

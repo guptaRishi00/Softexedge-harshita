@@ -45,8 +45,14 @@ behind `typeof window !== "undefined"` guards.
 - `src/components/page/` — **second** Header + resizable-navbar (used by inner pages)
 - `src/components/shared/` — ConnectButton variants (3 of them)
 - `src/components/garbage/` — **DEAD CODE**, 24 files, nothing imports it
+- `src/data/` — static content modules (`blog.ts`, `projects.ts`)
 - `src/lib/utils.ts` — `cn()` (clsx + tailwind-merge)
 - `public/assets/` — images, `hero.mp4`, logos; `public/fonts/` — Satoshi
+
+Notable shared `ui/` components (added recently): `TracingBorder` (the
+comet border that traces once on hover — used by blog + work cards),
+`TechLogoCarousel` (tech-stack logo marquee shown under `ExperimentalTestimonials`
+on every page), `DomeGallery` (has an opt-in `autoRotate`/`autoRotateSpeed`).
 
 ## Surfaces
 All routes are public (static marketing pages, no auth anywhere).
@@ -54,27 +60,28 @@ All routes are public (static marketing pages, no auth anywhere).
 | Name | Type | File:Line | Auth | Purpose |
 |---|---|---|---|---|
 | Home (redirect) | Route | `src/app/page.tsx:3` | public | Redirects `/` → `/home` |
-| HomePage | Route | `src/app/home/page.tsx:31` | public | Main landing: hero, logos, about, portfolio, stats, services, testimonials, contact, blog |
-| AboutPage | Route | `src/app/about/page.tsx:27` | public | About: hero, traditional, culture (OurValuesSection), team, testimonials (+LogoCarousel), FAQ, CTA |
-| BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:15` | public | Service page: hero, sub-services, process, tech stack, showcase, FAQ, blog |
-| ContactPage | Route | `src/app/contact/page.tsx:11` | public | Contact: hero, contact form, testimonials, FAQ, CTA |
-| CareerPage | Route | `src/app/career/page.tsx:11` | public | Careers: `CareerHeroSection` → `WhyJoinUs` → `OpenPositions` (accordion job board) → `ApplicationJourney` (sticky-deck process) → `CareerValues` (image cards) → `Footer` (components in `src/components/career/`) |
-| WorkPage | Route | `src/app/work/page.tsx:9` | public | Work/portfolio: `WorkHeroSection` (Strands WebGL bead in the title, stat counters) + `WorkProjectShowcase` (components in `src/components/work/`) |
-| WorkProjectPage | Route | `src/app/work/[slug]/page.tsx:22` | public | Per-project case-study page. SSG via `generateStaticParams` over `projects` (slug from each `project.href`); unknown slug → `notFound()`. Renders `ProjectHero` → `ProjectDetailsContent` → `ProjectGallery` → `NextProject` (cycles to next project) + `ContactFaqSection` + `CtaSection` + Footer. Uses shared `page/Header` with `onDark`. |
-| BlogPage | Route | `src/app/blog/page.tsx:7` | public | Blog index: `BlogFeaturedSection` (featured post + Header) → `BlogListSection` (filterable grid, excludes the featured post) → CTA → Footer. `BlogHeroSection` (DomeGallery) is no longer used (orphaned file). |
-| BlogArticlePage | Route | `src/app/blog/[slug]/page.tsx:36` | public | Per-article read page. SSG via `generateStaticParams` over the 6 slugs (`dynamicParams=false` → unknown slug 404s); per-post `generateMetadata`. Renders `BlogArticle` (hero, cover, sticky share rail + prose blocks, tags, author bio, related) + `CtaSection` + Footer |
+| HomePage | Route | `src/app/home/page.tsx:32` | public | Main landing: hero, Trusted-By logo loop, about, portfolio, stats, services, testimonials (+`TechLogoCarousel`), contact, blog |
+| AboutPage | Route | `src/app/about/page.tsx:14` | public | About: hero, traditional, culture (OurValuesSection), team, testimonials + `TechLogoCarousel`, FAQ, CTA |
+| BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:16` | public | Service page: hero, sub-services, process, tech stack, showcase, testimonials + `TechLogoCarousel`, CTA, FAQ, blog |
+| ContactPage | Route | `src/app/contact/page.tsx:12` | public | Contact: hero, `ContactSection` form, testimonials + `TechLogoCarousel`, FAQ, CTA |
+| CareerPage | Route | `src/app/career/page.tsx:11` | public | Careers: `CareerHeroSection` → `WhyJoinUs` → `OpenPositions` (accordion job board) → `PerksSection` (benefit cards) → `OurTeamSection` → `ApplicationJourney` (sticky-deck) → Footer. (`CareerValues` present but commented out.) |
+| WorkPage | Route | `src/app/work/page.tsx:10` | public | Work index: `WorkHeroSection` (rotating colour `DomeGallery` bg + black overlay + `<Header onDark/>`, stat counters) + `WorkProjectShowcase` (cards → `/work/<slug>`, `TracingBorder` hover) |
+| WorkProjectPage | Route | `src/app/work/[slug]/page.tsx:22` | public | Per-project case study. SSG via `generateStaticParams` over the 8 `projects` (`data/projects.ts`); unknown slug → `getProjectBySlug` → 404. `<Header onDark/>` + `ProjectHero` → `ProjectDetailsContent` → `NextProject` + Footer |
+| BlogPage | Route | `src/app/blog/page.tsx:7` | public | Blog index: `BlogFeaturedSection` (featured post + Header) → `BlogListSection` (filterable grid, excludes the featured post) → CTA → Footer. `BlogHeroSection` (DomeGallery) is orphaned. |
+| BlogArticlePage | Route | `src/app/blog/[slug]/page.tsx:36` | public | Per-article read page. SSG via `generateStaticParams` over the 6 slugs (`dynamicParams=false` → unknown slug 404s); per-post `generateMetadata`. `BlogArticle` (hero, cover, sticky share rail + prose blocks, tags, author bio, related) + `CtaSection` + Footer |
 
 ## Data
-No backend/storage/API. Two static content modules under `src/data/`:
-- **`src/data/blog.ts`** — typed blog posts (`BlogPost`, `ContentBlock` union,
-  `categories`) plus helpers `getPostBySlug` / `getRelatedPosts`. Consumed by
-  `BlogListSection` (cards) and `/blog/[slug]` (article pages).
-- **`src/data/projects.ts`** — typed portfolio `projects` plus `getProjectBySlug`.
-  Consumed by `WorkProjectShowcase` and `/work/[slug]` (case-study pages); slugs
-  derive from each `project.href`.
-No env vars.
-Remote images allowed from `images.unsplash.com`, `plus.unsplash.com`,
-`randomuser.me` (`next.config.ts` `remotePatterns`).
+No backend/storage/API. Two static content modules in **`src/data/`**:
+- **`blog.ts`** — 6 typed `BlogPost`s (`ContentBlock` union, `categories`) +
+  `getPostBySlug` / `getRelatedPosts`. Consumed by `BlogListSection` and
+  `/blog/[slug]`.
+- **`projects.ts`** — 8 typed `Project`s + `getProjectBySlug`. Consumed by
+  `/work/[slug]`. **Gotcha:** `WorkProjectShowcase.tsx` has its OWN inline
+  `projects` array (the listing cards) that must stay in sync with `data/projects.ts`
+  (the detail pages) — same 8 slugs, duplicated.
+
+No env vars. Remote images allowed from `images.unsplash.com`,
+`plus.unsplash.com`, `randomuser.me` (`next.config.ts` `remotePatterns`).
 
 ## Assets
 - Source/static served from `public/assets/` (referenced by `/assets/...` paths)

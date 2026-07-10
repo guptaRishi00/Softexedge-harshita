@@ -23,6 +23,18 @@
   comet lap `duration 0.8 → 0.6`. tsc clean. Server processes cleaned up.
   Not committed.
 
+## 2026-07-10 — (toolkit maint, not project) universal-kit update #2
+- `~/.claude/universal-kit`: `git pull` fetched real updates (updated
+  `model-adaptation` skill, commands incl. new `/worker`, EFFICIENCY_STACK.md,
+  README). Avoided the known Windows non-idempotency bug (bootstrap `ln -sfn`
+  copies → re-running over existing real skill dirs makes nested `<skill>/<skill>`
+  junk): cleared the 16 kit-skill dests first (clean kit-copies; kit is source of
+  truth), then ran `bootstrap.sh` → exit 0 (18 agents, 16 skills, 7 commands,
+  AGENT_INDEX 185 resources).
+- Verified: no nested junk; all 16 skills top-level == kit (incl. updated
+  model-adaptation); `worker.md` installed == kit. Restart Claude Code to pick up
+  `/worker`. No softexedge project files changed.
+
 ## 2026-07-07 — (toolkit maint, not project) universal-kit git pull + bootstrap
 - `~/.claude/universal-kit`: `git pull` = already up to date. `./bootstrap.sh`
   first failed (`ln: .../skills/api-design/api-design: cannot overwrite
@@ -1654,3 +1666,168 @@
   (idle mask + DEFAULT_INDEX) so the effect persists when not hovering.
 - Verified: `npx tsc --noEmit` clean; biome clean (formatted); `next build` ✓
   /career static.
+
+## 2026-07-10 — WorkHeroSection DomeGallery: uneven tiles + mixed image/video (/worker)
+- `ui/DomeGallery.tsx`: item model now supports video (`type?: "image"|"video"`,
+  inferred from .mp4/.webm/.mov). `buildItems` assigns deterministic per-slot
+  sizes — videos landscape 2×1.3, every 3rd image slot portrait 1.5×2, rest
+  square 2×2 (never >2 per axis: sphere-grid overlap). Video tiles capped at 12
+  (stride = totalSlots/12) to avoid ~50+ autoplaying videos. Tile JSX renders
+  `<video muted loop autoPlay playsInline preload="metadata">` for video items;
+  enlarge overlay + close animation handle `img, video` (playing video enlarges).
+  Backward compatible: all-image pools fill every slot as before.
+- `work/WorkHeroSection.tsx`: passes explicit `GALLERY_MEDIA` (6 unsplash images
+  + local `/assets/video1–4.mp4`) to the dome.
+- Routing (worker mode): step1 DomeGallery model → opus ✓, step2 video
+  render/enlarge → opus ✓, step3 hero media pool → sonnet ✓; 0 driver steps,
+  no reroutes.
+- Verified: tsc clean; biome clean on both files (repo has 9 pre-existing errors
+  elsewhere); `next build` ✓ /work static; SSR HTML of /work shows 12 video
+  tiles (all 4 mp4s), 12× size-y:1.3, 53× size-x:1.5, 105× 2×2;
+  spec-verifier APPROVED (no P0–P2).
+
+## 2026-07-10 — DomeGallery: reduce + even out the card gap (/worker)
+- The uneven-card sizing (portrait 1.5×2, landscape 2×1.3) had made gaps big and
+  asymmetric because the `.sphere-item` rotation centered each cell with a
+  SIZE-DEPENDENT term `((--item-size-x)-1)/2`, pinning a rectangular card's edge
+  to its slot instead of centering it. Fix (user chose "uniform gap, keep aspect
+  variety"): replaced that term with the fixed slot constant `0.5` in BOTH the CSS
+  transform AND JS `computeItemBaseRotation` (lockstep, so the enlarge animation
+  stays aligned) → every card now sits centered in its 2-unit slot with symmetric
+  gaps. Cards keep varied size (`.sphere-item` width/height still use
+  `--item-size-x/y`). Also shrank the tile inset `10px → 4px` in the 3 gap spots
+  (`.item__image`, `.item__image--reference`, inline tile style) — gap ~20px→8px
+  for square cards; left both `box-shadow:0 10px 30px` values intact.
+- Routing: step1 centering (CSS+JS coherence) → opus ✓; step2 inset 10→4 → sonnet
+  ✓. 0 driver steps, no reroutes.
+- Verified: tsc clean; biome clean on the file; `next build` ✓ /work static; live
+  SSR /work HTML shows `offset-x)+0.5` centering + `inset: 4px` and no old
+  size-based centering; spec-verifier APPROVED (only P3 = 2 now-inert params in
+  computeItemBaseRotation, Biome-clean, left as-is for minimal diff).
+
+## 2026-07-10 — DomeGallery: more video tiles (/task)
+- Bumped the video-tile cap in `buildItems` (`ui/DomeGallery.tsx`) from `12` → `24`
+  (one-line constant), doubling how many dome tiles render as autoplaying video.
+  Stride auto-recomputes (`floor(totalSlots/cap)`), so the 24 video tiles stay
+  evenly spaced and keep cycling the 4 clips (`/assets/video1–4.mp4`). Aspect
+  (video = landscape 2×1.3) and all other geometry unchanged.
+- Verified: `npx tsc --noEmit` clean; full SSR `/work` HTML shows 24
+  `data-src="/assets/videoN.mp4"` wrapper tiles (was 12). Minimal diff; no deps.
+
+## 2026-07-10 — Reduce ExperimentalTestimonials → TechLogoCarousel gap (all pages) (/task)
+- The gap between the testimonials section and the tech-logo carousel (paired on
+  home/about/brand-strategy/contact/work) was the sum of the testimonials' bottom
+  padding + the carousel's top padding. Carousel top padding (`pt-20 md:pt-28`) was
+  never overridden on any page → the common big contributor. Fixed in 2 shared
+  components (0 page files):
+  - `ui/TechLogoCarousel.tsx`: `pt-20 … md:pt-28` → `pt-6 … md:pt-10` (bottom
+    `pb-16 md:pb-24` kept — that's the gap to the next section). Reduces the gap on
+    ALL 5 pages.
+  - `home/ExperimentalTestimonials.tsx`: `py-16 md:py-20` → `pt-16 pb-6 md:pt-20
+    md:pb-10` (top kept; bottom trimmed). Only bites on home + brand-strategy
+    (the unwrapped pages); about/contact/work already override the section's
+    bottom via `[&>section]:pb-*` wrappers, so no change there — makes all pages
+    consistent.
+- Verified: `npx tsc --noEmit` clean; biome clean on both files; `next build` ✓;
+  SSR HTML of all 5 pages shows the reduced carousel `pt-6 md:pt-10` and the
+  trimmed testimonials padding. Minimal diff (2 lines), no deps, no page edits.
+
+## 2026-07-10 — TracingBorder: smooth comet + stronger TR/BL corner handoff (/worker)
+- Work-page project cards' moving border (`ui/TracingBorder.tsx`, shared with blog
+  cards). Two fixes:
+  1. **Smoothness:** the single cubic-bezier spanned both comet laps (crawl at
+     start/end) and the dash tween ended at LAP_DURATION while opacity faded a
+     FROZEN comet (visible hitch). Now keyframed `strokeDashoffset: [2,1,0]`,
+     `times [0,0.45,1]`, ease `[easeIn, easeOut]` (accelerate lap 1, decelerate
+     landing), LAP_DURATION 2.2→2.6, and the fade overlaps motion
+     (`delay: LAP_DURATION-0.45`, 0.45s) — comet dissolves while still moving.
+  2. **Corner weight:** glow reach 0.35→0.5·min(w,h); both corner mask gradients
+     softened (white→25%, #555 @65%); edge fade level #222→#2e2e2e over 1.1s; BL
+     stagger +0.15→+0.12; static border strokeWidth 2→2.25. Comet path untouched.
+- Routing: step1 comet timing → opus ✓; step2 corner values → sonnet ✓; 0 driver
+  steps, no reroutes. Driver fixed a P3 stale comment (#222→#2e2e2e) post-verify.
+- Verified: tsc + biome clean; `next build` ✓ /work + /blog; spec-verifier
+  APPROVED (values, framer v12 keyframe semantics, timing coherence — no dead
+  window between comet fade [2.15–2.6] and corner bloom start [2.45] — and mask
+  polarity all confirmed; only the P3 comment nit, fixed).
+
+## 2026-07-10 — DomeGallery rebuilt on user's revert: varied image sizes, consistent gaps (/task)
+- User reverted `ui/DomeGallery.tsx` to a pre-session version, dropping video
+  support, uneven sizing, 0.5-centering, 4px inset AND `autoRotate` → tsc was
+  FAILING (WorkHeroSection passes autoRotate) and video pool entries would have
+  rendered as broken img tiles. User chose: images only, varied sizes,
+  consistent gaps, restore autoRotate, drop videos.
+- `ui/DomeGallery.tsx` (on the reverted base): buildItems now assigns
+  deterministic per-slot variants — `i%3===1` portrait 1.5×2, else `i%4===3`
+  landscape 2×1.3, else square 2×2 (never >2/axis); re-applied 0.5 centering
+  (CSS transform + computeItemBaseRotation lockstep) and inset 10px→4px (3 spots);
+  restored `autoRotate`/`autoRotateSpeed` props + pause-aware RAF effect. NO
+  video code (respecting revert).
+- `work/WorkHeroSection.tsx`: removed the 4 `/assets/videoN.mp4` entries from
+  GALLERY_MEDIA (6 unsplash images remain).
+- Verified: tsc failing→clean; biome clean both files; `next build` ✓ /work;
+  SSR /work shows 57 portrait / 28 landscape / 85 square tiles, 0.5 centering,
+  inset 4px, zero dome video tiles; spec-verifier APPROVED (no P0–P2; one P3
+  `let`-vs-`const` nit inside user-reverted code, left untouched).
+
+## 2026-07-10 — TracingBorder: solid #2E5BFF on work project cards only (/task)
+- Added optional `color?: string` prop to `ui/TracingBorder.tsx`; when set, the
+  comet + static-border strokes use that solid color via `stroke={color ??
+  url(#gradient)}` (gradient <defs> stay, unused when color is set). Passed
+  `color="#2E5BFF"` from `work/WorkProjectShowcase.tsx` only → work project cards'
+  moving border is now solid brand blue. Blog cards pass no `color` → keep the
+  blue→cyan gradient (unchanged). Corner-glow luminance masks untouched.
+- Verified: tsc + biome clean on both files; `next build` ✓ /work. (Border only
+  renders on hover with measured size, so not in SSR — verified at code level +
+  build; user eyeballs hover on :3000.) Minimal diff (~5 lines, 2 files), no deps.
+
+## 2026-07-10 — Homepage mobile responsiveness, desktop pixel-identical (/worker)
+- Explore-agent audit first: homepage largely responsive already (hero text,
+  header hamburger, footer vw-brand, contact/blog grids all stack; about pin +
+  service rotate GSAP size-agnostic; Stats/Testimonials already have <768 JS
+  branches). Real issues were fixed additively — smaller base/sm: values with
+  every old value re-asserted at its original breakpoint (md+ byte-identical):
+  1. AboutSection: rings 520/420px → 320/260px base (md: restores); card stack
+     h-560 → h-420 base (md:h-[560px]).
+  2. StatsSection: number text-[7rem] → text-[4.5rem] base + sm:text-[7rem]
+     (md:text-[10rem] untouched).
+  3. ExperimentalTestimonials: cards w-[300px] sm:w-[360px] md:w-[440px] + step
+     JS 3-tier (<640→316, <768→376, ≥768→452; ≥640 identical to old 360+16/440+12).
+  4. home/page.tsx Trusted-By row stacks at base (flex-col gap-4, divider hidden),
+     sm: restores row layout. GSAP untouched.
+  5. Blog pb-40→pb-20 md:pb-40, mb-30→mb-16 (md:mb-35 kept); Service py-32→
+     py-16 md:py-32.
+- Deliberately untouched (documented): Portfolio horizontal-scroll pin (recalcs
+  from innerWidth, scroll-scrub works on touch) and hover-only custom cursors
+  (inert on touch) — per "don't change desktop animations".
+- Routing: 4 sonnet + 1 opus (testimonials CSS/JS lockstep), 0 driver, all 5
+  dispatched in parallel, no reroutes/failures.
+- Verified: tsc + biome clean (6 files); `next build` ✓ /home; SSR /home HTML
+  shows every new class incl. 8× three-tier card widths; spec-verifier APPROVED
+  (md+ invariant confirmed hunk-by-hunk, 640-767 band identical, step/gap math
+  cross-checked; no P0-P2).
+
+## 2026-07-10 — Fix invisible mobile hero + mobile animation removal (/worker)
+- **Hero bug root cause:** Herosection root was `relative lg:min-h-[96.5vh]` with
+  ALL children absolute → 0px height below lg (invisible on mobile AND tablet).
+  Fixed: base `min-h-[100svh]` added, `lg:min-h-[96.5vh]` kept (desktop identical).
+- **Mobile (<768px) now animation-free / native:** all via matchMedia so desktop
+  code paths are byte-identical:
+  - `app/home/page.tsx`: about pin+scale/fade + service scale/rotate scrubs moved
+    (indent-only) into `gsap.matchMedia().add("(min-width: 768px)")` + revert.
+  - `layout/SmoothScroll.tsx`: `(max-width: 767px)` early-return — no Lenis/ticker
+    on mobile (native scroll), keeps plugin registration + delayed ST.refresh.
+  - `home/PortfolioSection.tsx`: entire useGSAP body (cursor, 500vw horizontal
+    pin, text reveals) gated to ≥768; mobile layout = simple vertical stack
+    (section h-auto md:h-screen; track flex-col md:w-max md:flex-row, inline
+    500vw width REMOVED — md:w-max × md:w-screen panels ≡ 500vw; panels
+    h-[70svh] w-full md:h-screen md:w-screen).
+  - Light entrance fades/marquees deliberately kept (approved interpretation).
+- Routing: 3 sonnet + 1 opus (portfolio), 0 driver, parallel dispatch, no
+  reroutes. spec-verifier round 1 caught a real P1: the "View Project" cursor
+  pill's only hide (gsap.set scale:0) was now desktop-gated → visible top-left
+  on mobile. Driver fixed via `hidden ... md:flex` on the pill; round 2 APPROVED.
+- Verified: tsc + biome clean (4 files); `next build` ✓ /home; SSR /home shows
+  min-h-[100svh] hero, 5 stacked h-[70svh] panels, flex-col track with md:
+  restores, zero inline 500vw. 768-1023 band: hero now visible (was 0px) —
+  strict improvement, desktop lg unchanged.

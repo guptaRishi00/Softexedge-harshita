@@ -234,18 +234,17 @@ export default function AboutSection() {
             <motion.div
               animate={isDesktop ? { rotate: 360 } : undefined}
               transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
-              className="absolute h-[520px] w-[520px] rounded-full border border-black/10"
+              className="absolute h-[320px] w-[320px] md:h-[520px] md:w-[520px] rounded-full border border-black/10"
             />
             <motion.div
               animate={isDesktop ? { rotate: -360 } : undefined}
               transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-              className="absolute h-[420px] w-[420px] rounded-full border border-black/[0.06]"
+              className="absolute h-[260px] w-[260px] md:h-[420px] md:w-[420px] rounded-full border border-black/[0.06]"
             />
 
             {/* CARD STACK ANIMATION */}
             <div className="relative w-full max-w-[600px]">
-              <div className="perspective-[1200px] relative h-[560px] w-full max-md:h-[420px]">
-                {isDesktop ? (
+              <div className="perspective-[1200px] relative h-[420px] w-full md:h-[560px]">
                 <AnimatePresence>
                   {visibleCards.map((card) => (
                     <motion.div

@@ -55,6 +55,7 @@ export default function HomePage() {
 
   useGSAP(() => {
     const mm = gsap.matchMedia();
+
     mm.add("(min-width: 768px)", () => {
       // 1. ABOUT SECTION ANIMATION
       if (
@@ -122,13 +123,13 @@ export default function HomePage() {
           <Herosection />
         </div>
 
-        <section className="flex w-full items-center gap-8 overflow-hidden bg-white px-6 py-12 md:pt-20">
+        <section className="flex w-full flex-col items-start gap-4 overflow-hidden bg-white px-6 py-12 sm:flex-row sm:items-center sm:gap-8 md:pt-20">
           <div className="shrink-0">
             <p className="text-sm font-medium tracking-wide text-black/60">
               Trusted By
             </p>
           </div>
-          <div className="h-6 w-px bg-black/10" />
+          <div className="hidden h-6 w-px bg-black/10 sm:block" />
           <div className="relative min-w-0 flex-1 overflow-hidden">
             <LogoLoop
               logos={techLogos}

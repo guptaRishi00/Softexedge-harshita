@@ -61,7 +61,9 @@ export default function ExperimentalTestimonials() {
 
   useEffect(() => {
     const update = () =>
-      setStep(window.innerWidth >= 768 ? 440 + 12 : 360 + 16);
+      setStep(
+        window.innerWidth < 640 ? 316 : window.innerWidth < 768 ? 376 : 452,
+      );
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
@@ -72,7 +74,7 @@ export default function ExperimentalTestimonials() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white py-16 text-zinc-900 md:py-20">
+    <section className="relative overflow-hidden bg-white pt-16 pb-6 text-zinc-900 md:pt-20 md:pb-10">
       <div className="mx-auto flex w-full flex-col gap-10 px-6 lg:flex-row lg:items-stretch lg:gap-10">
         {/* LEFT COLUMN: title + description + CTA on top, arrows pinned to the bottom */}
         <motion.div
@@ -180,7 +182,7 @@ export default function ExperimentalTestimonials() {
             {(isDesktop ? duplicatedTestimonials : testimonials).map((item, i) => (
               <div
                 key={`${item.name}-${i}`}
-                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors hover:border-zinc-300 hover:bg-linear-to-br hover:from-white hover:to-zinc-200 md:min-h-[440px] md:w-[440px] md:py-10 max-md:w-full"
+                className="group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors hover:border-zinc-300 hover:bg-linear-to-br hover:from-white hover:to-zinc-200 sm:w-[360px] md:min-h-[440px] md:w-[440px] md:py-10"
               >
                 {/* Outlined Quote Icon (Top Right) */}
                 <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">

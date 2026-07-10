@@ -1,5 +1,7 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useCallback } from "react";
 import { useGesture } from "@use-gesture/react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
 
 type ImageItem = string | { src: string; alt?: string };
 
@@ -130,11 +132,27 @@ function buildItems(pool: ImageItem[], seg: number): ItemDef[] {
     }
   }
 
-  return coords.map((c, i) => ({
-    ...c,
-    src: usedImages[i].src,
-    alt: usedImages[i].alt,
-  }));
+  // Deterministic per-slot size variants (no randomness — SSR/hydration safe).
+  // Never exceed 2 on either axis: slots are 2 units apart on the sphere, so a
+  // larger card would overlap its neighbours.
+  return coords.map((c, i) => {
+    let sizeX = 2;
+    let sizeY = 2;
+    if (i % 3 === 1) {
+      // portrait
+      sizeX = 1.5;
+    } else if (i % 4 === 3) {
+      // landscape
+      sizeY = 1.3;
+    }
+    return {
+      ...c,
+      sizeX,
+      sizeY,
+      src: usedImages[i].src,
+      alt: usedImages[i].alt,
+    };
+  });
 }
 
 function computeItemBaseRotation(
@@ -145,8 +163,8 @@ function computeItemBaseRotation(
   segments: number,
 ) {
   const unit = 360 / segments / 2;
-  const rotateY = unit * (offsetX + (sizeX - 1) / 2);
-  const rotateX = unit * (offsetY - (sizeY - 1) / 2);
+  const rotateY = unit * (offsetX + 0.5);
+  const rotateX = unit * (offsetY - 0.5);
   return { rotateX, rotateY };
 }
 
@@ -463,7 +481,7 @@ export default function DomeGallery({
             }
           }
 
-          const [vMagX, vMagY] = velArr;
+          let [vMagX, vMagY] = velArr;
           const [dirX, dirY] = dirArr;
           let vx = vMagX * dirX;
           let vy = vMagY * dirY;
@@ -819,8 +837,8 @@ export default function DomeGallery({
       transform-origin: 50% 50%;
       backface-visibility: hidden;
       transition: transform 300ms;
-      transform: rotateY(calc(var(--rot-y) * (var(--offset-x) + ((var(--item-size-x) - 1) / 2)) + var(--rot-y-delta, 0deg))) 
-                 rotateX(calc(var(--rot-x) * (var(--offset-y) - ((var(--item-size-y) - 1) / 2)) + var(--rot-x-delta, 0deg))) 
+      transform: rotateY(calc(var(--rot-y) * (var(--offset-x) + 0.5) + var(--rot-y-delta, 0deg)))
+                 rotateX(calc(var(--rot-x) * (var(--offset-y) - 0.5) + var(--rot-x-delta, 0deg)))
                  translateZ(var(--radius));
     }
     
@@ -848,7 +866,7 @@ export default function DomeGallery({
     // }
     .item__image {
       position: absolute;
-      inset: 10px;
+      inset: 4px;
       border-radius: var(--tile-radius, 12px);
       overflow: hidden;
       cursor: pointer;
@@ -861,7 +879,7 @@ export default function DomeGallery({
     }
     .item__image--reference {
       position: absolute;
-      inset: 10px;
+      inset: 4px;
       pointer-events: none;
     }
   `;
@@ -942,7 +960,7 @@ export default function DomeGallery({
                       openItemFromElement(e.currentTarget as HTMLElement);
                     }}
                     style={{
-                      inset: "10px",
+                      inset: "4px",
                       borderRadius: `var(--tile-radius, ${imageBorderRadius})`,
                       backfaceVisibility: "hidden",
                     }}

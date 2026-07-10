@@ -10,6 +10,14 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     // Register the ScrollTrigger plugin
     gsap.registerPlugin(ScrollTrigger);
 
+    // Native scrolling on mobile — no smooth-scroll hijack.
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      const timer = setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),

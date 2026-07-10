@@ -10,10 +10,14 @@ export default function TracingBorder({
   active,
   radius = 20,
   gradientId,
+  color,
 }: {
   active: boolean;
   radius?: number;
   gradientId: string;
+  // When set, the comet + border render as this solid color instead of the
+  // default blue→cyan gradient.
+  color?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -67,12 +71,12 @@ export default function TracingBorder({
   const trY = inset;
 
   // Glow radius — how far the bright corner spot extends (in pixels).
-  const glowR = Math.min(w, h) * 0.35;
+  const glowR = Math.min(w, h) * 0.5;
 
   // Timing: the comet completes its 2 laps, then dissolves right as the
   // corner glows bloom and the edges fade in — one continuous handoff
   // instead of a hard cut between "comet" and "static" states.
-  const LAP_DURATION = 2.2;
+  const LAP_DURATION = 2.6;
   const HANDOFF = LAP_DURATION - 0.15;
 
   return (
@@ -129,8 +133,8 @@ export default function TracingBorder({
                 gradientUnits="userSpaceOnUse"
               >
                 <stop stopColor="white" offset="0%" />
-                <stop stopColor="white" offset="30%" />
-                <stop stopColor="#444" offset="70%" />
+                <stop stopColor="white" offset="25%" />
+                <stop stopColor="#555" offset="65%" />
                 <stop stopColor="black" offset="100%" />
               </radialGradient>
 
@@ -142,8 +146,8 @@ export default function TracingBorder({
                 gradientUnits="userSpaceOnUse"
               >
                 <stop stopColor="white" offset="0%" />
-                <stop stopColor="white" offset="30%" />
-                <stop stopColor="#444" offset="70%" />
+                <stop stopColor="white" offset="25%" />
+                <stop stopColor="#555" offset="65%" />
                 <stop stopColor="black" offset="100%" />
               </radialGradient>
 
@@ -151,7 +155,7 @@ export default function TracingBorder({
                 Luminance mask — this is what actually creates the "weight
                 shift":
                 - base rect starts fully hidden (black) and fades up to the
-                  faint #222 edge level → edges fade in
+                  faint #2e2e2e edge level → edges fade in
                 - the two corner circles grow from r:0 to glowR, staggered
                   slightly (top-right first, since that's where the comet
                   lands) → weight visibly gathers into the corners
@@ -163,9 +167,9 @@ export default function TracingBorder({
                   width={w}
                   height={h}
                   initial={{ fill: "#000000" }}
-                  animate={{ fill: "#222222" }}
+                  animate={{ fill: "#2e2e2e" }}
                   transition={{
-                    duration: 0.9,
+                    duration: 1.1,
                     delay: HANDOFF,
                     ease: "easeOut",
                   }}
@@ -190,7 +194,7 @@ export default function TracingBorder({
                   animate={{ r: glowR }}
                   transition={{
                     duration: 0.9,
-                    delay: HANDOFF + 0.15,
+                    delay: HANDOFF + 0.12,
                     ease: [0.16, 1, 0.3, 1],
                   }}
                 />
@@ -220,20 +224,21 @@ export default function TracingBorder({
             <motion.path
               d={d}
               pathLength={1}
-              stroke={`url(#comet-${gradientId})`}
+              stroke={color ?? `url(#comet-${gradientId})`}
               strokeWidth={2.5}
               strokeLinecap="round"
               strokeDasharray={`${TAIL} ${GAP}`}
               initial={{ strokeDashoffset: 2.0, opacity: 1 }}
-              animate={{ strokeDashoffset: 0, opacity: 0 }}
+              animate={{ strokeDashoffset: [2, 1, 0], opacity: 0 }}
               transition={{
                 strokeDashoffset: {
                   duration: LAP_DURATION,
-                  ease: [0.25, 0.1, 0.25, 1],
+                  times: [0, 0.45, 1],
+                  ease: ["easeIn", "easeOut"],
                 },
                 opacity: {
-                  duration: 0.5,
-                  delay: LAP_DURATION - 0.1,
+                  duration: 0.45,
+                  delay: LAP_DURATION - 0.45,
                   ease: "easeOut",
                 },
               }}
@@ -244,8 +249,8 @@ export default function TracingBorder({
                  by the animated mask above ═══ */}
             <path
               d={d}
-              stroke={`url(#border-color-${gradientId})`}
-              strokeWidth={2}
+              stroke={color ?? `url(#border-color-${gradientId})`}
+              strokeWidth={2.25}
               strokeLinecap="round"
               mask={`url(#corner-mask-${gradientId})`}
               style={{ filter: `url(#glow-${gradientId})` }}

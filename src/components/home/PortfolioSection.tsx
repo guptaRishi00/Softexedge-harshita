@@ -93,90 +93,89 @@ export default function PortfolioSection() {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 768px)", () => {
-      // 1. CUSTOM CURSOR TRACKING
-      let moveCursor: (e: MouseEvent) => void = () => {};
-      const cursor = cursorRef.current;
+        // 1. CUSTOM CURSOR TRACKING
+        let moveCursor: (e: MouseEvent) => void = () => {};
+        const cursor = cursorRef.current;
 
-      if (cursor) {
-        gsap.set(cursor, { scale: 0, xPercent: -50, yPercent: -50 });
+        if (cursor) {
+          gsap.set(cursor, { scale: 0, xPercent: -50, yPercent: -50 });
 
-        const xTo = gsap.quickTo(cursor, "x", {
-          duration: 0.15,
-          ease: "power3",
-          force3D: true,
-        });
-        const yTo = gsap.quickTo(cursor, "y", {
-          duration: 0.15,
-          ease: "power3",
-          force3D: true,
-        });
-
-        moveCursor = (e: MouseEvent) => {
-          xTo(e.clientX);
-          yTo(e.clientY);
-        };
-
-        window.addEventListener("mousemove", moveCursor);
-      }
-
-      // 2. HORIZONTAL SCROLL ANIMATION
-      const track = trackRef.current;
-      if (track) {
-        const totalWidth = track.scrollWidth - window.innerWidth;
-        const scrollTween = gsap.to(track, {
-          x: () => -totalWidth,
-          ease: "none",
-          force3D: true,
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top top",
-            end: () => `+=${totalWidth}`,
-            pin: true,
-            scrub: 1,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-            onUpdate: (self) => {
-              const newIndex = Math.round(
-                self.progress * (projects.length - 1),
-              );
-              setActiveIndex(newIndex);
-            },
-          },
-        });
-
-        // 3. TEXT REVEALS ON SCROLL
-        gsap.utils
-          .toArray<HTMLElement>(".project-panel")
-          .forEach((panel, index) => {
-            const isFirst = index === 0;
-            const content = panel.querySelectorAll(".reveal-item");
-            if (!isFirst) {
-              gsap.set(content, { y: 60, opacity: 0 });
-              gsap.to(content, {
-                y: 0,
-                opacity: 1,
-                duration: 1,
-                stagger: 0.08,
-                ease: "power3.out",
-                scrollTrigger: {
-                  trigger: panel,
-                  containerAnimation: scrollTween,
-                  start: "left 85%",
-                  toggleActions: "play none none none",
-                },
-              });
-            }
+          const xTo = gsap.quickTo(cursor, "x", {
+            duration: 0.15,
+            ease: "power3",
+            force3D: true,
           });
-      }
+          const yTo = gsap.quickTo(cursor, "y", {
+            duration: 0.15,
+            ease: "power3",
+            force3D: true,
+          });
 
-      // CLEANUP LISTENER
-      return () => {
-        if (moveCursor) {
-          window.removeEventListener("mousemove", moveCursor);
+          moveCursor = (e: MouseEvent) => {
+            xTo(e.clientX);
+            yTo(e.clientY);
+          };
+
+          window.addEventListener("mousemove", moveCursor);
         }
-      };
-      });
 
+        // 2. HORIZONTAL SCROLL ANIMATION
+        const track = trackRef.current;
+        if (track) {
+          const totalWidth = track.scrollWidth - window.innerWidth;
+          const scrollTween = gsap.to(track, {
+            x: () => -totalWidth,
+            ease: "none",
+            force3D: true,
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top top",
+              end: () => `+=${totalWidth}`,
+              pin: true,
+              scrub: 1,
+              anticipatePin: 1,
+              invalidateOnRefresh: true,
+              onUpdate: (self) => {
+                const newIndex = Math.round(
+                  self.progress * (projects.length - 1),
+                );
+                setActiveIndex(newIndex);
+              },
+            },
+          });
+
+          // 3. TEXT REVEALS ON SCROLL
+          gsap.utils
+            .toArray<HTMLElement>(".project-panel")
+            .forEach((panel, index) => {
+              const isFirst = index === 0;
+              const content = panel.querySelectorAll(".reveal-item");
+              if (!isFirst) {
+                gsap.set(content, { y: 60, opacity: 0 });
+                gsap.to(content, {
+                  y: 0,
+                  opacity: 1,
+                  duration: 1,
+                  stagger: 0.08,
+                  ease: "power3.out",
+                  scrollTrigger: {
+                    trigger: panel,
+                    containerAnimation: scrollTween,
+                    start: "left 85%",
+                    toggleActions: "play none none none",
+                  },
+                });
+              }
+            });
+        }
+
+        // CLEANUP LISTENER
+        return () => {
+          if (moveCursor) {
+            window.removeEventListener("mousemove", moveCursor);
+          }
+        };
+      });
       return () => mm.revert();
     },
     { scope: containerRef },
@@ -202,18 +201,17 @@ export default function PortfolioSection() {
       ref={containerRef}
       id="portfolio"
       onMouseLeave={handleMouseLeave}
-      className="relative h-screen w-full overflow-hidden bg-[#0a0a0a] text-white max-md:h-auto max-md:overflow-visible"
+      className="relative h-auto w-full overflow-hidden bg-[#0a0a0a] text-white md:h-screen"
     >
       {/* TRACK */}
       <div
         ref={trackRef}
-        className="flex h-full max-md:flex-col max-md:h-auto max-md:gap-4 max-md:p-4"
-        style={isDesktop ? { width: `${projects.length * 100}vw` } : undefined}
+        className="flex w-full flex-col md:h-full md:w-max md:flex-row"
       >
         {projects.map((project) => (
           <div
             key={project.id}
-            className="project-panel relative flex h-screen w-screen shrink-0 flex-col justify-end overflow-hidden p-8 md:p-16 lg:px-20 lg:pb-12 lg:pt-20 max-md:w-full max-md:h-auto max-md:min-h-[70vh] max-md:rounded-2xl max-md:overflow-hidden"
+            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
           >
             {/* FULL BLEED INTERACTIVE LINK WRAPPER */}
             <Link
@@ -281,7 +279,7 @@ export default function PortfolioSection() {
       <div
         ref={cursorRef}
         className={cn(
-          "pointer-events-none fixed left-0 top-0 z-9999 flex h-10 w-33 items-center justify-center rounded-lg bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-white",
+          "pointer-events-none fixed left-0 top-0 z-9999 hidden h-10 w-33 items-center justify-center rounded-lg bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-white md:flex",
           "will-change-transform",
         )}
       >
