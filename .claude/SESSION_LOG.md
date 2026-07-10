@@ -1,5 +1,26 @@
 # Session Log
 
+## 2026-07-10 — Reconcile parallel mobile de-animation work; push to origin/main
+- **Situation:** local `main` (`b615c64` "update" + WIP) and `origin/main` (3 commits)
+  had **independently** implemented the same "mobile: remove animations → static cards"
+  task from base `0a8149c`, overlapping on 8 homepage files. Push was rejected
+  (non-fast-forward); pull blocked by uncommitted Blog/Contact edits.
+- **User chose:** merge remote into local, resolve, push (over keep-remote / force-push).
+- **Did:** committed WIP (`c7b417e`), made backup branch `backup/pre-merge-c7b417e`,
+  then `git merge -X theirs origin/main` (prefer remote on conflicts — it's the complete
+  impl and carries extra WorkHeroSection/DomeGallery/TracingBorder/projects.ts work).
+  Non-overlapping local hunks (e.g. `ContactSection` de-animation + `useIsDesktop` hook)
+  survived. Merge = `7b5d3d5`.
+- **Fixed:** merge dropped the `isDesktop` opening ternary around About's card-stack →
+  unbalanced JSX (tsc TS1381). Restored it + `biome format` that one file (`8580b28`).
+- **Removed:** `package-lock.json` — accidental artifact from this session's npm
+  troubleshooting; project uses Bun. Recoverable from `b615c64`.
+- **Verified:** `bunx tsc --noEmit` clean; Biome error count identical pre/post-merge
+  (324 — pre-existing repo-wide debt, no new errors introduced). NOTE: no visual/mobile
+  verification was possible from this environment (no browser could reach localhost;
+  Next refused a 2nd dev server) — desktop-unchanged guaranteed structurally
+  (`gsap.matchMedia('(min-width:768px)')` + `max-md:`/`isDesktop` gating only).
+
 ## 2026-07-07 — Work slug page: add the site header
 - `src/app/work/[slug]/page.tsx` had no nav. Added `<Header onDark />` (shared
   `page/Header`, dark-hero variant — same as the work listing page) in an
