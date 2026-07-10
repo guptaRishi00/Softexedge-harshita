@@ -52,6 +52,7 @@ const blogPosts = [
 const rotatingWords = ["Perspectives.", "Insights.", "Ideas.", "Stories."];
 
 export default function BlogSection() {
+  const isDesktop = useIsDesktop();
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -65,14 +66,14 @@ export default function BlogSection() {
 
   // Card list component to render identical tracks
   const CardTrack = () => (
-    <div className="flex shrink-0 gap-4 md:gap-3">
+    <div className="flex shrink-0 gap-4 md:gap-3 max-md:w-full max-md:flex-col">
       {blogPosts.map((post) => (
         <div
           key={post.id}
           // INCREASED WIDTHS slightly (+5vw across breakpoints)
-          className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw]"
+          className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw] max-md:w-full"
         >
-          <article className="group flex h-full cursor-pointer flex-col">
+          <article className="group flex h-full cursor-pointer flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
             {/* IMAGE CONTAINER - Kept aspect-square */}
             <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-[1.25rem] bg-zinc-100">
               <Image
@@ -110,8 +111,8 @@ export default function BlogSection() {
         {/* HEADER LAYER */}
         <div className="mb-30 flex w-full flex-col items-start justify-between gap-8 px-6 md:mb-35 md:flex-row md:items-end md:px-6">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={isDesktop ? { opacity: 0, x: -20 } : false}
+            whileInView={isDesktop ? { opacity: 1, x: 0 } : undefined}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             viewport={{ once: true, margin: "-50px" }}
             className="flex flex-col items-start"
@@ -119,18 +120,24 @@ export default function BlogSection() {
             <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
               Thoughts & {/* Rotating Gradient Text */}
               <span className="inline-grid overflow-hidden py-1">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={index}
-                    initial={{ y: 30, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -30, opacity: 0 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent"
-                  >
-                    {rotatingWords[index]}
-                  </motion.span>
-                </AnimatePresence>
+                {isDesktop ? (
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={index}
+                      initial={{ y: 30, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -30, opacity: 0 }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent"
+                    >
+                      {rotatingWords[index]}
+                    </motion.span>
+                  </AnimatePresence>
+                ) : (
+                  <span className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent">
+                    {rotatingWords[0]}
+                  </span>
+                )}
               </span>
             </h2>
           </motion.div>
@@ -149,13 +156,15 @@ export default function BlogSection() {
         <div className="relative w-full overflow-hidden">
           {/* Main animated element container holding two identical tracks */}
           <motion.div
-            className="flex w-max flex-nowrap gap-4 md:gap-3"
+            className="flex w-max flex-nowrap gap-4 md:gap-3 max-md:w-full max-md:flex-col"
             animate={
-              isPaused
-                ? "paused"
-                : {
-                    x: ["0%", "-50%"],
-                  }
+              isDesktop
+                ? isPaused
+                  ? "paused"
+                  : {
+                      x: ["0%", "-50%"],
+                    }
+                : undefined
             }
             transition={{
               x: {
@@ -168,8 +177,14 @@ export default function BlogSection() {
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            <CardTrack />
-            <CardTrack />
+            {isDesktop ? (
+              <>
+                <CardTrack />
+                <CardTrack />
+              </>
+            ) : (
+              <CardTrack />
+            )}
           </motion.div>
         </div>
       </div>

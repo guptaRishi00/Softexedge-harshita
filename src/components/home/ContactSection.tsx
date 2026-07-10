@@ -8,6 +8,7 @@ import {
 } from "framer-motion";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -173,6 +174,7 @@ function ChannelCard({
 }
 
 export default function ContactSection() {
+  const isDesktop = useIsDesktop();
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -190,8 +192,8 @@ export default function ContactSection() {
       <div className="relative z-10 mx-auto w-full px-6 md:px-10">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-12">
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={isDesktop ? { opacity: 0, y: 40 } : false}
+            whileInView={isDesktop ? { opacity: 1, y: 0 } : undefined}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
             className="flex flex-col lg:col-span-5 lg:pr-8"
@@ -203,18 +205,24 @@ export default function ContactSection() {
             <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[64px] lg:leading-[0.9em]">
               Let&apos;s build <br />
               <span className="inline-grid overflow-hidden py-2">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={index}
-                    initial={{ x: 40, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -40, opacity: 0 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r pb-3 from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent"
-                  >
-                    {rotatingWords[index]}
-                  </motion.span>
-                </AnimatePresence>
+                {isDesktop ? (
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={index}
+                      initial={{ x: 40, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -40, opacity: 0 }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r pb-3 from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent"
+                    >
+                      {rotatingWords[index]}
+                    </motion.span>
+                  </AnimatePresence>
+                ) : (
+                  <span className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r pb-3 from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent">
+                    {rotatingWords[0]}
+                  </span>
+                )}
               </span>
             </h2>
 
@@ -232,8 +240,8 @@ export default function ContactSection() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={isDesktop ? { opacity: 0, y: 40 } : false}
+            whileInView={isDesktop ? { opacity: 1, y: 0 } : undefined}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
             className="lg:col-span-7"
