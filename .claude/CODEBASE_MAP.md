@@ -1,5 +1,5 @@
 # softexedge-may-2026 — Codebase Map
-_Last updated: 2026-06-18_
+_Last updated: 2026-07-10_
 
 ## Identity
 Marketing/agency website for **SoftexEdge**. Frontend-only, animation-heavy
@@ -60,14 +60,19 @@ All routes are public (static marketing pages, no auth anywhere).
 | ContactPage | Route | `src/app/contact/page.tsx:11` | public | Contact: hero, contact form, testimonials, FAQ, CTA |
 | CareerPage | Route | `src/app/career/page.tsx:11` | public | Careers: `CareerHeroSection` → `WhyJoinUs` → `OpenPositions` (accordion job board) → `ApplicationJourney` (sticky-deck process) → `CareerValues` (image cards) → `Footer` (components in `src/components/career/`) |
 | WorkPage | Route | `src/app/work/page.tsx:9` | public | Work/portfolio: `WorkHeroSection` (Strands WebGL bead in the title, stat counters) + `WorkProjectShowcase` (components in `src/components/work/`) |
+| WorkProjectPage | Route | `src/app/work/[slug]/page.tsx:22` | public | Per-project case-study page. SSG via `generateStaticParams` over `projects` (slug from each `project.href`); unknown slug → `notFound()`. Renders `ProjectHero` → `ProjectDetailsContent` → `ProjectGallery` → `NextProject` (cycles to next project) + `ContactFaqSection` + `CtaSection` + Footer. Uses shared `page/Header` with `onDark`. |
 | BlogPage | Route | `src/app/blog/page.tsx:7` | public | Blog index: `BlogFeaturedSection` (featured post + Header) → `BlogListSection` (filterable grid, excludes the featured post) → CTA → Footer. `BlogHeroSection` (DomeGallery) is no longer used (orphaned file). |
 | BlogArticlePage | Route | `src/app/blog/[slug]/page.tsx:36` | public | Per-article read page. SSG via `generateStaticParams` over the 6 slugs (`dynamicParams=false` → unknown slug 404s); per-post `generateMetadata`. Renders `BlogArticle` (hero, cover, sticky share rail + prose blocks, tags, author bio, related) + `CtaSection` + Footer |
 
 ## Data
-No backend/storage/API. One static content module: **`src/data/blog.ts`** —
-typed blog posts (`BlogPost`, `ContentBlock` union, `categories`) plus helpers
-`getPostBySlug` / `getRelatedPosts`. Consumed by `BlogListSection` (cards) and
-`/blog/[slug]` (article pages). No env vars.
+No backend/storage/API. Two static content modules under `src/data/`:
+- **`src/data/blog.ts`** — typed blog posts (`BlogPost`, `ContentBlock` union,
+  `categories`) plus helpers `getPostBySlug` / `getRelatedPosts`. Consumed by
+  `BlogListSection` (cards) and `/blog/[slug]` (article pages).
+- **`src/data/projects.ts`** — typed portfolio `projects` plus `getProjectBySlug`.
+  Consumed by `WorkProjectShowcase` and `/work/[slug]` (case-study pages); slugs
+  derive from each `project.href`.
+No env vars.
 Remote images allowed from `images.unsplash.com`, `plus.unsplash.com`,
 `randomuser.me` (`next.config.ts` `remotePatterns`).
 
@@ -107,6 +112,8 @@ None wired. No SDK keys, no analytics, no form backend (contact form is UI-only)
 - **Loose types:** empty `type Props = {}` in pages; `ContactPage({}: any)`.
 - **No tests, no CI.**
 - `structure.txt` and `tsconfig.tsbuildinfo` exist; `structure.txt` is gitignored.
+- **Orphaned file:** `src/components/3d-globe-demo.tsx` sits loose at the top of
+  `src/components/` and is imported nowhere — safe to delete.
 
 ## Open questions
 - Is `src/components/garbage/` intentionally kept (scratch/reference) or safe to remove?

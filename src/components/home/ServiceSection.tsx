@@ -53,6 +53,8 @@ export default function ServiceSection() {
 
   const { contextSafe } = useGSAP(
     () => {
+      const mm = gsap.matchMedia();
+      mm.add("(min-width: 768px)", () => {
       // 1. CUSTOM CURSOR TRACKING
       const cursor = cursorRef.current;
       if (cursor) {
@@ -80,6 +82,9 @@ export default function ServiceSection() {
           window.removeEventListener("mousemove", moveCursor);
         };
       }
+      });
+
+      return () => mm.revert();
     },
     { scope: containerRef, dependencies: [mounted] }, // Add mounted to dependencies so GSAP attaches after portal renders
   );
@@ -119,14 +124,14 @@ export default function ServiceSection() {
         </div>
 
         {/* SERVICES LIST */}
-        <div className="group/list flex w-full flex-col">
+        <div className="group/list flex w-full flex-col max-md:gap-4">
           {services.map((service, index) => (
             <a
               key={index}
               href={service.href}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              className="group relative flex w-full cursor-none items-center justify-between py-6 md:py-12"
+              className="group relative flex w-full cursor-none items-center justify-between py-6 md:py-12 max-md:cursor-pointer max-md:rounded-2xl max-md:border max-md:border-white/10 max-md:bg-white/5 max-md:p-5 max-md:shadow-sm"
             >
               <div className="flex items-center">
                 {/* IMAGE REVEAL CONTAINER */}

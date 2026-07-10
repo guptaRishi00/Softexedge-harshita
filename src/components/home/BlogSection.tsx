@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 import DynamicButton from "../ui/DynamicButton";
 
 const blogPosts = [

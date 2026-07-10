@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 import DynamicButton from "../ui/DynamicButton";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
@@ -10,11 +11,23 @@ const exitEase = [0.32, 0, 0.67, 0] as const;
 function RotatingWord({
   words,
   activeIndex,
+  isDesktop,
 }: {
   words: string[];
   activeIndex: number;
+  isDesktop: boolean;
 }) {
   const index = activeIndex % words.length;
+
+  if (!isDesktop) {
+    return (
+      <span className="relative flex items-center justify-center overflow-hidden px-2 -mx-2 py-2 -my-2">
+        <span className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text px-2 py-2 text-transparent">
+          {words[0]}
+        </span>
+      </span>
+    );
+  }
 
   return (
     <span className="relative flex items-center justify-center overflow-hidden px-2 -mx-2 py-2 -my-2">
@@ -110,6 +123,7 @@ const initialCards = [
 
 export default function AboutSection() {
   const [frontIndex, setFrontIndex] = useState(0);
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -132,9 +146,9 @@ export default function AboutSection() {
     <motion.section
       id="about"
       variants={sectionVariants}
-      initial="hidden"
-      whileInView="visible"
-      exit="exit"
+      initial={isDesktop ? "hidden" : false}
+      whileInView={isDesktop ? "visible" : undefined}
+      exit={isDesktop ? "exit" : undefined}
       viewport={{ once: false, amount: 0.2 }}
       className="relative overflow-hidden bg-white px-6 py-10 text-zinc-900 before:absolute before:inset-0 md:px-12 lg:px-10 lg:mb-20"
     >
@@ -143,7 +157,7 @@ export default function AboutSection() {
       <div className="relative z-10 mx-auto">
         <div className="grid items-center gap-16 lg:grid-cols-[1fr_0.9fr]">
           {/* LEFT CONTENT */}
-          <div className="relative mt-20">
+          <div className="relative mt-20 max-md:mt-0 max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
             <motion.p
               variants={textReveal}
               className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500"
@@ -182,6 +196,7 @@ export default function AboutSection() {
                 <RotatingWord
                   words={["brands.", "startups.", "founders.", "creators."]}
                   activeIndex={frontIndex}
+                  isDesktop={isDesktop}
                 />
               </motion.span>
             </motion.h1>
@@ -207,27 +222,30 @@ export default function AboutSection() {
 
           {/* RIGHT VISUAL */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 40 }}
-            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            initial={isDesktop ? { opacity: 0, scale: 0.95, y: 40 } : false}
+            whileInView={
+              isDesktop ? { opacity: 1, scale: 1, y: 0 } : undefined
+            }
             transition={{ duration: 1.2, ease: premiumEase }}
             viewport={{ once: false }}
             className="relative flex items-center justify-center pt-10"
           >
             {/* RINGS */}
             <motion.div
-              animate={{ rotate: 360 }}
+              animate={isDesktop ? { rotate: 360 } : undefined}
               transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
               className="absolute h-[520px] w-[520px] rounded-full border border-black/10"
             />
             <motion.div
-              animate={{ rotate: -360 }}
+              animate={isDesktop ? { rotate: -360 } : undefined}
               transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
               className="absolute h-[420px] w-[420px] rounded-full border border-black/[0.06]"
             />
 
             {/* CARD STACK ANIMATION */}
             <div className="relative w-full max-w-[600px]">
-              <div className="perspective-[1200px] relative h-[560px] w-full">
+              <div className="perspective-[1200px] relative h-[560px] w-full max-md:h-[420px]">
+                {isDesktop ? (
                 <AnimatePresence>
                   {visibleCards.map((card) => (
                     <motion.div
@@ -269,11 +287,25 @@ export default function AboutSection() {
                     </motion.div>
                   ))}
                 </AnimatePresence>
+                ) : (
+                  <div className="absolute inset-0 overflow-hidden rounded-[28px] border border-black/10 bg-zinc-200 shadow-sm">
+                    <img
+                      src={initialCards[0].url}
+                      alt="Creative Studio"
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
+                  </div>
+                )}
               </div>
 
               {/* GLOW */}
               <motion.div
-                animate={{ opacity: [0.15, 0.4, 0.15], scale: [1, 1.05, 1] }}
+                animate={
+                  isDesktop
+                    ? { opacity: [0.15, 0.4, 0.15], scale: [1, 1.05, 1] }
+                    : undefined
+                }
                 transition={{
                   duration: 5,
                   repeat: Infinity,

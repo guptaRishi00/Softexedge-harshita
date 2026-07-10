@@ -4,6 +4,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const testimonials = [
   {
@@ -44,6 +45,7 @@ const rotatingWords = ["Collective", "Visionaries", "Innovators", "Future"];
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
 export default function ExperimentalTestimonials() {
+  const isDesktop = useIsDesktop();
   const [wordIndex, setWordIndex] = useState(0);
   const [active, setActive] = useState(0);
   // Step = card width + gap (per breakpoint) so the arrows move exactly one card.
@@ -74,8 +76,8 @@ export default function ExperimentalTestimonials() {
       <div className="mx-auto flex w-full flex-col gap-10 px-6 lg:flex-row lg:items-stretch lg:gap-10">
         {/* LEFT COLUMN: title + description + CTA on top, arrows pinned to the bottom */}
         <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={isDesktop ? { opacity: 0, x: -30 } : false}
+          whileInView={isDesktop ? { opacity: 1, x: 0 } : undefined}
           transition={{ duration: 0.8, ease: premiumEase }}
           viewport={{ once: true, margin: "-50px" }}
           className="flex w-full shrink-0 flex-col justify-between lg:w-1/3"
@@ -85,18 +87,24 @@ export default function ExperimentalTestimonials() {
             <h2 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl lg:leading-[0.95em]">
               Voices of the <br />
               <span className="inline-grid overflow-hidden py-2">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={wordIndex}
-                    initial={{ x: 40, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -40, opacity: 0 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
-                  >
-                    {rotatingWords[wordIndex]}
-                  </motion.span>
-                </AnimatePresence>
+                {isDesktop ? (
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={wordIndex}
+                      initial={{ x: 40, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -40, opacity: 0 }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
+                    >
+                      {rotatingWords[wordIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                ) : (
+                  <span className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+                    {rotatingWords[0]}
+                  </span>
+                )}
               </span>
             </h2>
 
@@ -142,7 +150,7 @@ export default function ExperimentalTestimonials() {
           </div>
 
           {/* BOTTOM: navigation arrows + counter */}
-          <div className="mt-12 flex items-center gap-4">
+          <div className="mt-12 flex items-center gap-4 max-md:hidden">
             <button
               type="button"
               onClick={() => paginate(-1)}
@@ -163,16 +171,16 @@ export default function ExperimentalTestimonials() {
         </motion.div>
 
         {/* RIGHT COLUMN: card row, navigated by the arrows */}
-        <div className="relative -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1">
+        <div className="relative -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1 max-md:h-auto max-md:overflow-visible">
           <motion.div
-            animate={{ x: -active * step }}
+            animate={isDesktop ? { x: -active * step } : undefined}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="flex w-max flex-row gap-4 px-4 md:gap-3"
+            className="flex w-max flex-row gap-4 px-4 md:gap-3 max-md:w-full max-md:flex-col max-md:px-0"
           >
-            {duplicatedTestimonials.map((item, i) => (
+            {(isDesktop ? duplicatedTestimonials : testimonials).map((item, i) => (
               <div
                 key={`${item.name}-${i}`}
-                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors hover:border-zinc-300 hover:bg-linear-to-br hover:from-white hover:to-zinc-200 md:min-h-[440px] md:w-[440px] md:py-10"
+                className="group relative flex min-h-[360px] w-[360px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors hover:border-zinc-300 hover:bg-linear-to-br hover:from-white hover:to-zinc-200 md:min-h-[440px] md:w-[440px] md:py-10 max-md:w-full"
               >
                 {/* Outlined Quote Icon (Top Right) */}
                 <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">

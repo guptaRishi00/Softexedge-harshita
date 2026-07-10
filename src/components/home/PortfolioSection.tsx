@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 import { cn } from "@/lib/utils";
 
 if (typeof window !== "undefined") {
@@ -86,9 +87,12 @@ export default function PortfolioSection() {
   const cursorRef = useRef<HTMLDivElement>(null);
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const isDesktop = useIsDesktop();
 
   const { contextSafe } = useGSAP(
     () => {
+      const mm = gsap.matchMedia();
+      mm.add("(min-width: 768px)", () => {
       // 1. CUSTOM CURSOR TRACKING
       let moveCursor: (e: MouseEvent) => void = () => {};
       const cursor = cursorRef.current;
@@ -171,6 +175,9 @@ export default function PortfolioSection() {
           window.removeEventListener("mousemove", moveCursor);
         }
       };
+      });
+
+      return () => mm.revert();
     },
     { scope: containerRef },
   );
@@ -195,23 +202,23 @@ export default function PortfolioSection() {
       ref={containerRef}
       id="portfolio"
       onMouseLeave={handleMouseLeave}
-      className="relative h-screen w-full overflow-hidden bg-[#0a0a0a] text-white"
+      className="relative h-screen w-full overflow-hidden bg-[#0a0a0a] text-white max-md:h-auto max-md:overflow-visible"
     >
       {/* TRACK */}
       <div
         ref={trackRef}
-        className="flex h-full"
-        style={{ width: `${projects.length * 100}vw` }}
+        className="flex h-full max-md:flex-col max-md:h-auto max-md:gap-4 max-md:p-4"
+        style={isDesktop ? { width: `${projects.length * 100}vw` } : undefined}
       >
         {projects.map((project) => (
           <div
             key={project.id}
-            className="project-panel relative flex h-screen w-screen shrink-0 flex-col justify-end overflow-hidden p-8 md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
+            className="project-panel relative flex h-screen w-screen shrink-0 flex-col justify-end overflow-hidden p-8 md:p-16 lg:px-20 lg:pb-12 lg:pt-20 max-md:w-full max-md:h-auto max-md:min-h-[70vh] max-md:rounded-2xl max-md:overflow-hidden"
           >
             {/* FULL BLEED INTERACTIVE LINK WRAPPER */}
             <Link
               href={project.href}
-              className="absolute inset-0 z-20 cursor-none"
+              className="absolute inset-0 z-20 cursor-none max-md:cursor-pointer"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >

@@ -24,6 +24,8 @@ export default function StatsSection() {
 
   useGSAP(
     () => {
+      const mm = gsap.matchMedia();
+      mm.add("(min-width: 768px)", () => {
       const rows = gsap.utils.toArray<HTMLElement>(".stat-row");
 
       rows.forEach((row, index) => {
@@ -73,6 +75,9 @@ export default function StatsSection() {
           },
         );
       });
+      });
+
+      return () => mm.revert();
     },
     { scope: containerRef },
   );
@@ -128,6 +133,13 @@ export default function StatsSection() {
                 "md:items-center",
                 "md:px-10",
                 "md:py-10",
+                "max-md:mx-4",
+                "max-md:my-2",
+                "max-md:rounded-2xl",
+                "max-md:border",
+                "max-md:border-black/10",
+                "max-md:bg-white",
+                "max-md:shadow-sm",
               )}
             >
               <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-10">
@@ -142,6 +154,7 @@ export default function StatsSection() {
                     "to-[#149CCB]",
                     "bg-clip-text",
                     "text-[7rem]",
+                    "max-md:text-[4.5rem]",
                     "font-bold",
                     "leading-none",
                     "tracking-[-0.04em]",
