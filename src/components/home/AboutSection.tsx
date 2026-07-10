@@ -223,9 +223,7 @@ export default function AboutSection() {
           {/* RIGHT VISUAL */}
           <motion.div
             initial={isDesktop ? { opacity: 0, scale: 0.95, y: 40 } : false}
-            whileInView={
-              isDesktop ? { opacity: 1, scale: 1, y: 0 } : undefined
-            }
+            whileInView={isDesktop ? { opacity: 1, scale: 1, y: 0 } : undefined}
             transition={{ duration: 1.2, ease: premiumEase }}
             viewport={{ once: false }}
             className="relative flex items-center justify-center pt-10"
@@ -245,47 +243,48 @@ export default function AboutSection() {
             {/* CARD STACK ANIMATION */}
             <div className="relative w-full max-w-[600px]">
               <div className="perspective-[1200px] relative h-[420px] w-full md:h-[560px]">
-                <AnimatePresence>
-                  {visibleCards.map((card) => (
-                    <motion.div
-                      key={card.uniqueId}
-                      layout
-                      initial={{
-                        y: -30,
-                        scale: 0.85,
-                        opacity: 0,
-                      }}
-                      animate={{
-                        y: card.offset * -25,
-                        scale: 1 - card.offset * 0.05,
-                        opacity: 1 - card.offset * 0.15,
-                        zIndex: 10 - card.offset,
-                        x: 0,
-                        rotateZ: 0,
-                      }}
-                      exit={{
-                        x: 1000,
-                        y: 400,
-                        rotateZ: 90,
-                        opacity: 1,
-                        scale: 1,
-                        zIndex: 50,
-                      }}
-                      transition={{
-                        duration: 3,
-                        ease: premiumEase,
-                      }}
-                      className="absolute inset-0 origin-bottom-right overflow-hidden rounded-[28px] bg-zinc-200 "
-                    >
-                      <img
-                        src={card.url}
-                        alt="Creative Studio"
-                        className="h-full w-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                {isDesktop ? (
+                  <AnimatePresence>
+                    {visibleCards.map((card) => (
+                      <motion.div
+                        key={card.uniqueId}
+                        layout
+                        initial={{
+                          y: -30,
+                          scale: 0.85,
+                          opacity: 0,
+                        }}
+                        animate={{
+                          y: card.offset * -25,
+                          scale: 1 - card.offset * 0.05,
+                          opacity: 1 - card.offset * 0.15,
+                          zIndex: 10 - card.offset,
+                          x: 0,
+                          rotateZ: 0,
+                        }}
+                        exit={{
+                          x: 1000,
+                          y: 400,
+                          rotateZ: 90,
+                          opacity: 1,
+                          scale: 1,
+                          zIndex: 50,
+                        }}
+                        transition={{
+                          duration: 3,
+                          ease: premiumEase,
+                        }}
+                        className="absolute inset-0 origin-bottom-right overflow-hidden rounded-[28px] bg-zinc-200 "
+                      >
+                        <img
+                          src={card.url}
+                          alt="Creative Studio"
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 ) : (
                   <div className="absolute inset-0 overflow-hidden rounded-[28px] border border-black/10 bg-zinc-200 shadow-sm">
                     <img
