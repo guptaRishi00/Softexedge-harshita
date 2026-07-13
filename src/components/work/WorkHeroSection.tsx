@@ -56,12 +56,10 @@ const GALLERY_MEDIA = [
 export default function WorkHeroSection() {
   return (
     <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-black font-sans selection:bg-[#2E5BFF]/20">
-      {/* Header — shared site header, dark-hero variant (light links + logo) */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header onDark />
       </div>
 
-      {/* Rotating dome background (colour, slow horizontal auto-rotation) */}
       <div className="absolute left-0 top-[-20vh] z-0 h-[140vh] w-full">
         <DomeGallery
           images={GALLERY_MEDIA}
@@ -77,15 +75,11 @@ export default function WorkHeroSection() {
         />
       </div>
 
-      {/* Black overlay so the text (and header) stays clear over the imagery.
-          A flat tint plus a touch more darkening toward the centre where the
-          title sits. */}
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-black/70" />
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.6)_0%,transparent_65%)]" />
+      {/* Black scrim confined to an ellipse behind the centered title, so the
+          rest of the dome stays visible (no full-screen darkening). */}
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_58%_44%_at_50%_50%,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.42)_46%,transparent_78%)]" />
 
-      {/* Main Content — Title only, vertically centered */}
       <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 text-center md:px-10 pointer-events-none">
-        {/* Label */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -95,14 +89,12 @@ export default function WorkHeroSection() {
           Selected Work
         </motion.div>
 
-        {/* Title Container */}
         <motion.h1
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           className="mb-6 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-white sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
         >
-          {/* Line 1 */}
           <span className="flex items-center justify-center whitespace-nowrap">
             <motion.span variants={wordVariants}>Our</motion.span>
             <motion.span variants={wordVariants} className="ml-3 md:ml-6">
@@ -110,7 +102,6 @@ export default function WorkHeroSection() {
             </motion.span>
           </span>
 
-          {/* Line 2 */}
           <span className="mt-2 flex space-x-3 md:mt-4 md:space-x-6">
             <motion.span variants={wordVariants}>
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">

@@ -72,12 +72,15 @@ export default function OurTeamSection() {
   const { scrollY } = useScroll();
   const scrollVelocity = useVelocity(scrollY);
   const smoothVelocity = useSpring(scrollVelocity, {
-    damping: 50,
-    stiffness: 300,
-    mass: 0.5,
+    damping: 30,
+    stiffness: 120,
+    mass: 0.7,
   });
-  // Over-width wrapper has a 5% edge buffer, so clamp the shift under it.
-  const x = useTransform(smoothVelocity, [-2000, 2000], ["4%", "-4%"], {
+  // Looser spring + wider travel so the row glides horizontally with scroll
+  // instead of snapping back (felt "stuck"). Over-width wrapper has a 7% edge
+  // buffer, so keep the ±6% shift under it. Narrower input range = reaches full
+  // travel at lower scroll speed (more responsive).
+  const x = useTransform(smoothVelocity, [-1500, 1500], ["6%", "-6%"], {
     clamp: true,
   });
 
@@ -147,7 +150,7 @@ export default function OurTeamSection() {
             </div>
           </div>
 
-          <motion.div style={{ x }} className="w-[110%] -ml-[5%]">
+          <motion.div style={{ x }} className="w-[114%] -ml-[7%]">
             <CarouselContent className="-ml-4 md:-ml-3">
               {[...teamMembers, ...teamMembers].map((member, index) => (
                 <CarouselItem

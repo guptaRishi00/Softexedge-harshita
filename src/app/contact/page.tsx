@@ -1,7 +1,7 @@
 import React from "react";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import ContactFaqSection from "@/components/contact/ContactFaqSection";
-import ContactHeroSection from "@/components/contact/ContactHeroSection";
+import ContactHeroSectionTwo from "@/components/contact/ContactHeroSectionTwo";
 import ContactSection from "@/components/home/ContactSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
@@ -14,7 +14,7 @@ export default function ContactPage({}: any) {
     // Section spacing mirrors the about page: each section's vertical padding is
     // controlled by a `[&>section]` override wrapper so the inter-section gaps match.
     <div className="bg-white">
-      <ContactHeroSection />
+      <ContactHeroSectionTwo />
       <div className="[&>section]:py-16 md:[&>section]:py-30 mt-20">
         <ContactSection />
       </div>

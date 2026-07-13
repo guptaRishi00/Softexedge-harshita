@@ -15,7 +15,7 @@ export default function AboutPage({}: Props) {
   return (
     <div className="bg-white">
       <AboutHeroSection />
-      <div className="[&>section]:py-16 md:[&>section]:py-24">
+      <div className="[&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-32 md:[&>section]:pb-24">
         <AboutTraditional />
       </div>
       <div className="[&>section]:py-16 md:[&>section]:py-24">

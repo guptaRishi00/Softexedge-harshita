@@ -1,90 +1,111 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
+import { MdKeyboardArrowDown } from "react-icons/md";
+import { blogPosts } from "@/data/blog";
 import Header from "../page/Header";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
-    },
-  },
-} as const;
-
-const wordVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
+const fadeUp = {
+  hidden: { opacity: 0, y: 26 },
+  visible: (delay: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: premiumEase },
-  },
-} as const;
-
-// Detached from the word stagger — starts only after the last word
-// has finished animating in (see delay below).
-const imageVariants = {
-  hidden: { width: 0, opacity: 0, margin: "0px" },
-  visible: {
-    width: "2.5em",
-    opacity: 1,
-    margin: "0 8px",
-    transition: { duration: 1.2, ease: premiumEase, delay: 1.6 },
-  },
+    transition: { duration: 0.8, delay, ease: premiumEase },
+  }),
 } as const;
 
 export default function BlogHeroSection() {
+  const reduce = useReducedMotion();
+  const total = blogPosts.length;
+
   return (
-    <section className="relative w-full bg-[#FAFAFA] pt-40 pb-16 md:pt-48 md:pb-20 font-sans selection:bg-[#2E5BFF]/20">
+    <section className="relative w-full overflow-hidden bg-white pb-14 pt-40 font-sans selection:bg-[#2E5BFF]/20 md:pb-20 md:pt-48">
       {/* Header */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
-      <div className="mx-auto flex w-full flex-col items-start justify-start px-6 text-left md:px-8">
-        {/* Title Container */}
-        <motion.h1
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-wrap items-center justify-start gap-y-3 gap-x-3 text-5xl font-bold leading-[1.1] tracking-tight text-zinc-900 md:gap-y-4 md:text-7xl lg:text-[5.5rem]"
-        >
-          <motion.span variants={wordVariants}>Explore</motion.span>
-          <motion.span variants={wordVariants}>Our</motion.span>
-          <motion.span variants={wordVariants}>Latest</motion.span>
+      <div className="mx-auto w-full px-6 md:px-10">
+        {/* Headline */}
+        <h1 className="text-left text-6xl font-bold leading-[0.9] tracking-tight text-zinc-900 sm:text-7xl md:text-8xl lg:text-[7rem]">
+          {/* Line 1: News, [inline image] views */}
+          <span className="flex flex-wrap items-center gap-x-4 md:gap-x-6">
+            <motion.span
+              custom={0.1}
+              variants={fadeUp}
+              initial={reduce ? false : "hidden"}
+              animate="visible"
+            >
+              News,
+            </motion.span>
 
-          {/* Animated Inline Image — self-orchestrated, not part of the
-              parent's stagger, so it waits for the words to finish first */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={imageVariants}
-            className="relative inline-block h-[0.9em] overflow-hidden rounded-xl align-middle"
-          >
-            <div className="relative h-full w-[2.5em]">
+            <motion.span
+              initial={reduce ? false : { opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.9, delay: 0.35, ease: premiumEase }}
+              className="relative inline-block h-[0.78em] w-[1.02em] shrink-0 overflow-hidden rounded-[0.22em] align-middle"
+            >
               <Image
-                src="https://images.unsplash.com/photo-1755497595318-7e5e3523854f?q=80&w=600&auto=format&fit=crop"
-                alt="Creative Insights"
+                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&auto=format&fit=crop&q=80"
+                alt="The team at work"
                 fill
-                sizes="300px"
+                sizes="180px"
                 className="object-cover"
               />
-            </div>
-          </motion.div>
+            </motion.span>
 
-          <motion.span variants={wordVariants}>
-            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
-              Insights
-            </span>
+            <motion.span
+              custom={0.2}
+              variants={fadeUp}
+              initial={reduce ? false : "hidden"}
+              animate="visible"
+            >
+              views
+            </motion.span>
+          </span>
+
+          {/* Line 2 */}
+          <motion.span
+            custom={0.3}
+            variants={fadeUp}
+            initial={reduce ? false : "hidden"}
+            animate="visible"
+            className="mt-1 block md:mt-2"
+          >
+            and everything else
           </motion.span>
-          <motion.span variants={wordVariants}>&</motion.span>
-          <motion.span variants={wordVariants}>Perspectives</motion.span>
-        </motion.h1>
+        </h1>
+
+        {/* List header: count + filters */}
+        <motion.div
+          custom={0.6}
+          variants={fadeUp}
+          initial={reduce ? false : "hidden"}
+          animate="visible"
+          className="mt-12 flex flex-col gap-6 md:mt-20 md:flex-row md:items-center md:justify-between"
+        >
+          <p className="text-sm text-zinc-500 md:text-base">
+            Showing{" "}
+            <span className="font-semibold text-zinc-900">1-{total}</span> of{" "}
+            <span className="font-semibold text-zinc-900">{total}</span> posts.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {["By Category", "By Author"].map((label) => (
+              <button
+                key={label}
+                type="button"
+                className="flex items-center gap-2 rounded-full border border-zinc-300 bg-transparent px-5 py-2.5 text-sm font-medium text-zinc-800 transition-colors duration-300 hover:border-zinc-900"
+              >
+                {label}
+                <MdKeyboardArrowDown className="h-4 w-4 text-zinc-500" />
+              </button>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </section>
   );

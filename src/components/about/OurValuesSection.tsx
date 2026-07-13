@@ -81,7 +81,7 @@ export default function OurValuesSection() {
             </h2>
 
             {/* Paragraph */}
-            <p className="mt-8 text-lg font-medium text-zinc-400 leading-[1.2em]">
+            <p className="max-w-3xl text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
               We produce good work for good people, and with the idea that staff
               and the client will be happy throughout the full process. This in
               return will bring more work our way, whether that's via

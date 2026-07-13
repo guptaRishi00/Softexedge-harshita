@@ -32,7 +32,7 @@ export default function WorkProjectShowcase() {
       : projects.filter((p) => p.category === activeCategory);
 
   return (
-    <section className="relative overflow-hidden bg-[#0a0a0a] px-6 py-24 font-sans text-white md:py-32">
+    <section className="relative overflow-hidden bg-black px-6 py-24 font-sans text-white md:py-32">
       {/* Subtle noise overlay */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 
@@ -93,7 +93,7 @@ export default function WorkProjectShowcase() {
               {activeCategory === category && (
                 <motion.div
                   layoutId="activeCategory"
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+                  className="absolute inset-0 rounded-full border border-white/10 bg-[#100f0f]"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
@@ -190,7 +190,7 @@ function ProjectCard({
               filter:
                 isAnyHovered && !isHovered
                   ? "brightness(0.3) grayscale(80%)"
-                  : "brightness(0.7)",
+                  : "brightness(1)",
             }}
             transition={smoothSpring}
             className="absolute inset-0 h-full w-full"
@@ -215,12 +215,19 @@ function ProjectCard({
             )}
           </motion.div>
 
-          {/* Gradient overlays */}
+          {/* Bottom gradient — always present, keeps the default title legible
+              without darkening the whole image. */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
+
+          {/* Whole-image scrim — appears ONLY on hover, so the expanded hover
+              content is legible across the full card. */}
           <motion.div
-            animate={{ opacity: isHovered ? 1 : 0.6 }}
-            transition={{ duration: 0.5 }}
-            className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"
+            animate={{ opacity: isHovered ? 1 : 0 }}
+            transition={{ duration: 0.4, ease: premiumEase }}
+            className="pointer-events-none absolute inset-0 bg-black/55"
           />
+
+          {/* Subtle sheen */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-30 transition-opacity duration-700 group-hover:opacity-60" />
 
           {/* Card Content */}
@@ -282,7 +289,7 @@ function ProjectCard({
                       {project.title}
                     </h3>
 
-                    <p className="mt-4 max-w-xl text-sm font-light leading-relaxed text-zinc-300 md:text-base">
+                    <p className="mt-4 max-w-xl text-sm font-light leading-[1.2em] text-zinc-300 md:text-base">
                       {project.description}
                     </p>
 

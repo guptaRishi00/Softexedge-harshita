@@ -17,7 +17,7 @@ export default function ProjectDetailsContent({
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-24">
           {/* Sticky Sidebar */}
           <div className="lg:col-span-4">
-            <div className="sticky top-32 flex flex-col gap-12">
+            <div className="sticky top-32 flex flex-col gap-12 rounded-2xl border border-white/5 bg-[#100F0F] p-8 md:p-10">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}

@@ -88,13 +88,43 @@ const getDataNumber = (el: HTMLElement, name: string, fallback: number) => {
 };
 
 function buildItems(pool: ImageItem[], seg: number): ItemDef[] {
-  const xCols = Array.from({ length: seg }, (_, i) => -37 + i * 2);
+  // Masonry columns: uneven WIDTHS with a CONSTANT gap. Each column's pitch is
+  // its own width plus a fixed GAP (cumulative positioning), so a narrow column
+  // no longer leaves a bigger gap than a wide one — the extra space that made
+  // gaps uneven is gone. Card height is constant (CARD_H) and rows stay on the
+  // 2-unit grid, so the vertical gap (2 - CARD_H) equals the horizontal GAP.
+  // Widths are normalized so the columns wrap the full 360°: the cyclic sum of
+  // pitches = sum(width) + seg*GAP = seg*2.
+  const GAP = 0.15;
+  const CARD_H = 2 - GAP;
+  const widthPattern = [2.2, 1.5, 1.9, 1.6, 2.1, 1.7];
+  const rawWidths = Array.from(
+    { length: seg },
+    (_, i) => widthPattern[i % widthPattern.length],
+  );
+  const rawSum = rawWidths.reduce((a, b) => a + b, 0);
+  const colWidths = rawWidths.map((w) => (w * seg * (2 - GAP)) / rawSum);
+
+  const xCenters: number[] = [];
+  for (let c = 0; c < seg; c++) {
+    xCenters[c] =
+      c === 0
+        ? -37
+        : xCenters[c - 1] + colWidths[c - 1] / 2 + GAP + colWidths[c] / 2;
+  }
+
   const evenYs = [-4, -2, 0, 2, 4];
   const oddYs = [-3, -1, 1, 3, 5];
 
-  const coords = xCols.flatMap((x, c) => {
+  const coords = xCenters.flatMap((xc, c) => {
     const ys = c % 2 === 0 ? evenYs : oddYs;
-    return ys.map((y) => ({ x, y, sizeX: 2, sizeY: 2 }));
+    // xc is the column CENTER; the CSS transform adds +0.5, so subtract it here.
+    return ys.map((y) => ({
+      x: xc - 0.5,
+      y,
+      sizeX: colWidths[c],
+      sizeY: CARD_H,
+    }));
   });
 
   const totalSlots = coords.length;
@@ -132,27 +162,13 @@ function buildItems(pool: ImageItem[], seg: number): ItemDef[] {
     }
   }
 
-  // Deterministic per-slot size variants (no randomness — SSR/hydration safe).
-  // Never exceed 2 on either axis: slots are 2 units apart on the sphere, so a
-  // larger card would overlap its neighbours.
-  return coords.map((c, i) => {
-    let sizeX = 2;
-    let sizeY = 2;
-    if (i % 3 === 1) {
-      // portrait
-      sizeX = 1.5;
-    } else if (i % 4 === 3) {
-      // landscape
-      sizeY = 1.3;
-    }
-    return {
-      ...c,
-      sizeX,
-      sizeY,
-      src: usedImages[i].src,
-      alt: usedImages[i].alt,
-    };
-  });
+  // Sizes are already set per column above (uneven widths, constant height); the
+  // equal gap comes from the cumulative positioning, not from shrinking cards.
+  return coords.map((c, i) => ({
+    ...c,
+    src: usedImages[i].src,
+    alt: usedImages[i].alt,
+  }));
 }
 
 function computeItemBaseRotation(

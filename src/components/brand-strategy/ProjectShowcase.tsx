@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useState } from "react";
+import TracingBorder from "../ui/TracingBorder";
 
 const smoothSpring = {
   type: "spring",
@@ -191,27 +192,14 @@ function ProjectCard({
       {/* Default Border (Fades out when hovered) */}
       <div className="pointer-events-none absolute inset-0 z-10 rounded-[20px] border border-white/10 transition-opacity duration-500 group-hover:opacity-0" />
 
-      {/* ANIMATED GRADIENT BORDER — dual-comet ring that spins ONLY on hover.
-          Pure CSS transform (GPU), so idle cards do zero work (was a framer
-          infinite rotate running on every card at once → laggy). */}
-      <div
-        className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[20px] p-[2px] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{
-          WebkitMask:
-            "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-          WebkitMaskComposite: "xor",
-          maskComposite: "exclude",
-        }}
-      >
-        <div
-          className="absolute left-[-50%] top-[-50%] h-[200%] w-[200%] group-hover:[animation:spin_2.2s_linear_infinite]"
-          style={{
-            background:
-              "conic-gradient(from 0deg, transparent 0deg, #2E5BFF 30deg, #149CCB 65deg, transparent 100deg, transparent 260deg, #149CCB 295deg, #2E5BFF 330deg, transparent 360deg)",
-            willChange: "transform",
-          }}
-        />
-      </div>
+      {/* Moving comet border — same TracingBorder effect as WorkProjectShowcase
+          (traces the border on hover, then settles into TR/BL corner glows). */}
+      <TracingBorder
+        active={isHovered}
+        radius={20}
+        gradientId={`bs-trace-${project.id}`}
+        color="#2E5BFF"
+      />
 
       <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-10">
         <motion.div

@@ -2063,3 +2063,267 @@
 - Verified: tsc + biome clean (unused-import check passes); no ConnectButton refs
   left in SubServices; `next build` ✓ /brand-strategy; the only remaining
   "Connect With Us" in SSR is CtaSection's. 1 file, no deps.
+
+## 2026-07-10 — Contact hero: retire old, build ContactHeroSectionTwo (/task)
+- `git mv` `contact/ContactHeroSection.tsx` → `garbage/` (card-stack hero retired).
+- New `contact/ContactHeroSectionTwo.tsx` matching the reference image: flat
+  `bg-[#F4F5F7]` (NO bg gradient per user), Header on top; LEFT = "Contact Us"
+  eyebrow → 3-line headline "Let's Build / Something / Great Together." (last line
+  brand gradient `from-[#2E5BFF] to-[#149CCB] bg-clip-text`) → gray subtext → two
+  CTAs ("Start a Conversation" gradient+arrow-in-box → `#contact`; "View Our Work"
+  white/bordered → `/work`); RIGHT = `/assets/contact2.png` via next/image
+  (fill, object-contain, priority — effects baked into the PNG, no bg behind it);
+  bottom-center "Scroll to Connect" indicator. framer-motion stagger, premiumEase,
+  react-icons (MdArrowOutward/MdKeyboardArrowDown) — all existing deps.
+- `app/contact/page.tsx`: import + usage swapped to ContactHeroSectionTwo.
+- Verified: tsc + biome clean; `next build` ✓ /contact; SSR shows headline,
+  contact2.png, both CTAs, scroll indicator; old "Great conversations" gone; no
+  active import of the retired component. spec-verifier APPROVED (design elements,
+  no-bg-gradient constraint, image path, conventions, a11y) — no P0/P1/P2.
+- NOTE: visual pixel-fidelity to the image can't be verified in this session
+  (no browser) — structure/spec verified; user to eyeball on :3000.
+
+## 2026-07-10 — ContactHeroSectionTwo: CtaSection-style buttons + bigger image (/task)
+- Buttons: replaced the gradient-fill + outline pair with a local `CtaStyleButton`
+  matching CtaSection's "Connect With Us" button — white wipe-fill via `before:`
+  scale-x + the dual-MdArrowOutward arrow-flip icon box — COLOR-INVERTED for the
+  light hero (CtaSection is dark-bg/white-text; here: black text/black icon box,
+  `before:bg-black`, hover→text-white + icon box white w/ gradient arrow). Added a
+  subtle `border border-zinc-300` for legibility on the light bg (CtaSection is
+  borderless on its black card). Each button gets a unique SVG gradient id
+  (c2-start-grad / c2-work-grad) to avoid duplicate ids. Links preserved
+  (#contact via <a>, /work via next/link).
+- Image: contact2.png is 1536×1024 (aspect 1.5, landscape) → object-contain is
+  WIDTH-bound, so widened the column `md:w-1/2`→`md:w-[56%]` (left `md:w-[44%]`)
+  and bumped heights `h-[380px] md:h-[560px] lg:h-[680px]` (was 340/520/600).
+- Verified: tsc + biome clean; `next build` ✓ /contact; SSR shows 2 wipe-fill
+  buttons, both unique gradient defs, image `md:w-[56%] lg:h-[680px]`, old
+  gradient-fill buttons gone.
+- TUNING (visual, user's :3000): button border (drop for exact CtaSection
+  fidelity), image split 56/44 + heights. Note: narrower left column may wrap the
+  big headline onto more lines at md — headline sizes untouched.
+
+## 2026-07-10 — brand-strategy ProjectShowcase: use WorkProjectShowcase's moving border (/task)
+- Replaced ProjectShowcase's conic-gradient spin-border (the `[animation:spin]`
+  masked ring) with the shared `TracingBorder` component — the exact moving
+  border WorkProjectShowcase uses (comet traces on hover → settles into TR/BL
+  corner glows), same props: `active={isHovered} radius={20} color="#2E5BFF"`,
+  unique `gradientId={`bs-trace-${project.id}`}`. Card already had isHovered +
+  rounded-[20px] + overflow-hidden (radius matches). Kept the static default
+  border that fades on hover.
+- Verified: tsc + biome clean; `next build` ✓ /brand-strategy; TracingBorder
+  imported+used, zero conic-gradient left. 1 file (+ existing shared component),
+  no deps.
+- NOTE (visual, user's :3000): TracingBorder is a hover effect (client-only,
+  measured size) so not in SSR — verified at code/build level. The card also
+  grows (flex→4) on hover; TracingBorder's ResizeObserver re-measures so the
+  trace follows the growing card — worth an eyeball to confirm it feels smooth.
+
+## 2026-07-10 — TracingBorder: slower comet + longer corner-weight glow (/task)
+- `ui/TracingBorder.tsx` (shared — work cards, blog cards, brand-strategy
+  ProjectShowcase): two constants:
+  1. `LAP_DURATION` 2.6 → 5 — comet traces the 2 laps much slower ("move very
+     slow"). Handoff/fade timings are relative to LAP_DURATION so they auto-scale
+     (comet opacity fade at LAP_DURATION-0.45=4.55s still precedes the corner
+     bloom at HANDOFF=4.85s — continuous transition preserved).
+  2. `glowR` 0.5 → 0.75·min(w,h) — the TR/BL corner glow reaches ~50% further
+     along the adjacent edges when the weight settles ("increase its length").
+- Verified: tsc + biome clean; `next build` ✓ /brand-strategy + /work; values
+  confirmed in source; timing coherence checked. 2-const diff, no deps.
+- NOTE (visual, user's :3000): hover-only effect, not in SSR — verified at
+  code/build level. LAP_DURATION=5 is quite slow; glowR 0.75 is tunable.
+
+## 2026-07-10 — about: pb on AboutHeroSection + pt before AboutTraditional (/task)
+- `about/AboutHeroSection.tsx`: root `<main>` gained `pb-16 md:pb-24` (a little
+  bottom padding under the hero).
+- `app/about/page.tsx`: AboutTraditional's own section `py` is overridden by its
+  `[&>section]` page wrapper, so added the top padding THERE — wrapper
+  `[&>section]:py-16 md:[&>section]:py-24` → `[&>section]:pt-24 [&>section]:pb-16
+  md:[&>section]:pt-32 md:[&>section]:pb-24` (more top, bottom kept). The other 4
+  identical wrappers on the page are untouched.
+- Verified: tsc + biome clean; source diff = exactly these 2 changes; SSR /about
+  shows hero `pb-16` and the AboutTraditional wrapper `pt-24…pt-32`. No deps.
+
+## 2026-07-10 — OurTeamSection: freer page-scroll parallax on the card row (/task)
+- User confirmed the "stuck" = the page-scroll-velocity horizontal parallax
+  (row lurched ±4% and snapped back stiffly). Made it glide more freely:
+  - velocity spring loosened: damping 50→30, stiffness 300→120, mass 0.5→0.7
+    (slower, softer return — no stiff snap-back).
+  - travel ±4% → ±6%; velocity input range [-2000,2000] → [-1500,1500] (reaches
+    full travel at lower scroll speed = more responsive).
+  - wrapper edge buffer widened `w-[110%] -ml-[5%]` → `w-[114%] -ml-[7%]` so the
+    ±6% shift stays clipped under the buffer (section is overflow-hidden).
+- Verified: tsc + biome clean; `next build` ✓ /about; values confirmed in source.
+- SIDE EFFECT (flag): the wrapper widened 110%→114%, so the cards (basis is % of
+  the wrapper) render ~3.6% wider. Minor; revertable by trimming the basis if
+  unwanted. Scroll-feel itself needs the user's eyes (:3000) — not verifiable in
+  this session. Values (±6%, spring, buffer) are single tunable constants.
+
+## 2026-07-10 — PerksSection redesign via taste-skill (design-taste-frontend) (/task)
+- Retired the AI-tell "6 identical 3-column cards" for an ASYMMETRIC BENTO
+  (career/PerksSection.tsx). Design read: agency careers perks, premium-modern,
+  brand-blue + Satoshi. Dials (overhaul): variance 7 / motion 6 / density 4.
+- 6 items → exactly 6 cells, no gaps: alternating wide(md:col-span-2)/narrow tiles
+  (row1 wide+narrow, row2 narrow+wide, row3 wide+narrow). 3 cells carry real
+  visual variety (brand-gradient hero, bg-zinc-950 dark, brand-tint) + 3 plain
+  white; wide tiles get an oversized low-opacity watermark glyph. One accent
+  (#2E5BFF→#149CCB), one radius (rounded-3xl), lucide kept (project dep),
+  strokeWidth standardized, reduced-motion honored (useReducedMotion), scroll
+  stagger + hover lift. Content/copy + "Benefits"/"A snippet of our perks"
+  preserved verbatim. ZERO em-dashes (fixed one in a comment).
+- Verified: tsc + biome clean; `next build` ✓ /career; SSR shows the gradient/
+  dark/tint tiles, watermark glyphs, wide col-spans, all 6 perk titles; em-dash
+  count 0.
+- FLAG (user live-edited the file): the "Benefits" eyebrow was changed to
+  `text-white/60` on the `bg-white` section = invisible (white-on-white). Left as
+  the user's edit, not reverted — surfaced for them to fix (e.g. back to
+  `text-[#2E5BFF]` or `text-black/60`). Also the gradient tile's shadow was
+  removed by the edit. Visual fidelity needs the user's eyes (:3000) — not
+  verifiable in this session.
+
+## 2026-07-10 — DomeGallery: masonry — uneven card widths, equal gaps (/task)
+- Problem: on the uniform 2-unit slot grid, cards smaller than their slot left
+  BIGGER gaps → uneven gaps with varied sizes (geometrically unavoidable while
+  centered on a fixed grid). User chose masonry (uneven widths, equal gaps,
+  equal heights).
+- Fix (`ui/DomeGallery.tsx`, `buildItems` only): replaced the fixed `x=-37+i*2`
+  grid + per-card size variants with MASONRY — per-column widths from a
+  normalized `widthPattern`, CUMULATIVE x-positioning where each column's pitch =
+  its own width + a constant `GAP` (0.15), so the edge-to-edge gap is exactly GAP
+  for every pair regardless of width. Constant card height `CARD_H = 2 - GAP` on
+  the unchanged 2-unit y-grid → vertical gap = GAP too. Widths normalized so
+  `sum(width) + seg*GAP = seg*2` → seamless 360° wrap. Item `x = colCenter - 0.5`
+  (CSS transform's `+0.5` unchanged; enlarge math untouched). Removed the
+  "≤2 per axis" overlap constraint (cumulative + GAP>0 → never overlaps).
+- Verified: tsc + biome clean; `next build` ✓ /work; SSR shows 6 distinct
+  `--item-size-x` widths + constant `--item-size-y:1.85` on all 170 tiles.
+  NUMERICAL PROOF (node): widths 1.52–2.23 (uneven), all gaps — horizontal, the
+  wrap seam, vertical — exactly 0.1500 (ALL GAPS EQUAL: true). spec-verifier
+  independently re-derived the algebra and APPROVED (no P0/P1/P2). Aesthetic
+  appearance still needs the user's eyes (:3000) — not browser-verifiable here.
+  Map's DomeGallery note updated (masonry, obsolete ≤2 rule).
+
+## 2026-07-10 — WorkHeroSection: scrim only behind the text (/task)
+- Removed the two full-screen dark overlays (flat `bg-black/70` + the wide
+  `circle_at_center` radial) that darkened the whole dome. Replaced with ONE
+  ellipse gradient confined behind the centered title:
+  `radial-gradient(ellipse 58% 44% at 50% 50%, rgba(0,0,0,0.8) 0%,
+  rgba(0,0,0,0.42) 46%, transparent 78%)` — dark behind the text for legibility,
+  transparent everywhere else so the rest of the dome is visible.
+- Verified: tsc + biome clean; SSR /work shows the ellipse scrim, zero
+  `bg-black/70` / old center-radial. 1-file, minimal diff. Ellipse size/darkness
+  are single tunable values; behind-text framing needs the user's eyes (:3000).
+
+## 2026-07-10 — TracingBorder: +50% corner-glow length (/task)
+- `ui/TracingBorder.tsx`: `glowR` 0.75 → 1.125 (× min(w,h)) — a 50% increase, so
+  both the TR and BL corner-weight glows (all four `glowR` uses: the two radial
+  mask cx/cy radii + the two grow-to-`glowR` circle animations) reach ~50%
+  further along the edges when the weight settles. Shared component (work + blog
+  + brand-strategy cards).
+- Verified: tsc + biome clean; value confirmed in source. Hover-only effect, not
+  in SSR — verified at code level; user eyeballs on :3000. glowR is a single
+  tunable constant.
+
+## 2026-07-10 — WorkProjectShowcase ProjectCard: bottom-only overlay by default, full scrim on hover (/task)
+- Was: the whole image was always dimmed (`filter: brightness(0.7)`) + a bottom
+  gradient. Now:
+  - Image filter default `brightness(0.7)` → `brightness(1)` (full brightness; the
+    sibling-dim `brightness(0.3) grayscale` when ANOTHER card is hovered is kept).
+  - Overlays split: a STATIC bottom gradient (`bg-gradient-to-t from-black/90
+    via-black/25 to-transparent`) always present so the default title stays
+    legible without darkening the whole image; PLUS a new whole-image scrim
+    (`bg-black/55`, opacity `isHovered ? 1 : 0`, 0.4s) that appears ONLY on hover
+    so the expanded hover content reads across the full card. Sheen kept.
+- Verified: tsc + biome clean; SSR /work shows the new bottom gradient + hover
+  scrim; old `brightness(0.7)` and `via-black/20` gone. 1-file. Hover behavior
+  needs the user's eyes (:3000) — scrim darkness (bg-black/55) is a single token.
+
+## 2026-07-10 — work/[slug] ProjectDetailsContent: wrap sidebar in a #100F0F box (/task)
+- The sticky sidebar (CLIENT / SERVICES / TECH STACK / Visit Live Site) is now
+  inside a box: sticky wrapper className gained `rounded-2xl border
+  border-white/5 bg-[#100F0F] p-8 md:p-10`. Box color #100F0F per the request;
+  added padding, rounded corners, and a subtle white/5 border so the box reads
+  against the near-identical #0a0a0a section bg.
+- Verified: tsc + biome clean; SSR /work/[slug] shows the box class on the sidebar.
+  1-line diff. Visual framing needs the user's eyes (:3000).
+
+## 2026-07-10 — WorkProjectShowcase: active filter pill #100f0f (no gradient) (/task)
+- Active category pill (layoutId="activeCategory") bg
+  `bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]` → `bg-[#100f0f]` (gradient
+  removed, solid color per request). Added `border border-white/10` so the dark
+  pill is visible on the black section (#100f0f ≈ the near-black bg). The
+  "Projects" header gradient TEXT (not a pill) left untouched.
+- Verified: tsc + biome clean; SSR /work shows the #100f0f pill, old pill
+  gradient gone, header gradient text kept. 1-line diff. Border is my addition
+  for visibility (removable); visual needs the user's eyes (:3000).
+
+## 2026-07-10 — BlogHeroSection redesign via taste-skill (/task)
+- Was a BARE headline only ("Explore Our Latest Insights & Perspectives", pt-48
+  float, no reduced-motion guard). Redesigned (overhaul) as a refined kinetic-type
+  editorial hero: eyebrow "The Journal" (brand blue) → word-stagger headline
+  "Insights, ideas & [inline growing image] perspectives." (gradient on the last
+  word) → subline "Case studies, deep dives, and essays on the craft of design and
+  engineering." Left-aligned, `bg-[#FAFAFA]`, Satoshi. Kept the distinctive inline
+  image beat (real next/image). Added `useReducedMotion` guard (initial=false).
+  Trimmed top padding pt-40/48 → pt-28/36 (toward the skill's hero-padding cap
+  while clearing the absolute Header). One eyebrow, one accent (#2E5BFF→#149CCB),
+  ZERO em-dashes.
+- Verified: tsc + biome clean; `next build` ✓ /blog; SSR shows eyebrow, all 3
+  headline words, subline, inline image; em-dash 0; confirmed NO double-header
+  (BlogFeaturedSection has none). Map's stale "BlogHeroSection orphaned (DomeGallery)"
+  note fixed — it's now used + is a kinetic-type hero.
+- NOTE (user live-edited): dropped `max-w-[1400px]` from the container (full-bleed
+  now) — left as-is. Visual fidelity needs the user's eyes (:3000).
+
+## 2026-07-10 — BlogHeroSection re-redesign (v1 rejected) — mirror AboutHeroSection (/task)
+- User said the prior left-aligned kinetic-inline-image hero "not looking good";
+  wanted the site's design language kept. Grounded the retry in the site's actual
+  hero pattern (read AboutHeroSection): CENTERED, min-h-screen, bg-[#FAFAFA], huge
+  word-stagger BLUR-reveal headline split by an EDGE-TO-EDGE image marquee,
+  closing on a gradient line. (v1 was left-aligned with a tiny inline image = off
+  the site language, hence the "not good".)
+- New BlogHeroSection mirrors that structure/animations/timings with blog content:
+  line 1 "Explore our latest" (word-stagger blur reveal) → edge-to-edge marquee of
+  6 known-valid unsplash images → gradient line "insights & ideas." Added
+  `useReducedMotion` guards (initial=false; marquee x-animation disabled when
+  reduced) per taste-skill. ZERO em-dashes (fixed 3 in comments).
+- Verified: tsc + biome clean; `next build` ✓ /blog; SSR shows line-1 words,
+  6 carousel images, the gradient close line (`insights &amp; ideas`), em-dash 0.
+  Map note updated. Visual fidelity still needs the user's eyes (:3000) — but the
+  structure now matches a hero the user already approves (About).
+
+## 2026-07-10 — BlogHeroSection v3 (grounded in user screenshot) (/task)
+- User uploaded a SS of v2 (the About-style carousel). VISIBLE problem: the
+  carousel was filled with RANDOM irrelevant stock (dog, mountains, a person) and
+  read as a literal About-page clone. (The big centered gradient headline itself
+  looked fine.)
+- v3: dropped the carousel + random images. Clean centered editorial TYPE hero,
+  same site language (bg-[#FAFAFA], centered, huge Satoshi, blur word-reveal,
+  brand-blue gradient close): eyebrow "The Journal" → headline "Sharper thinking
+  on / design & code." (gradient line 2) → subline "Case studies, deep dives, and
+  essays from the SoftexEdge team." → a RELEVANT topic chip row built from
+  `data/blog` categories (Company News, Resources, Guides, Case Studies) instead
+  of random images. Reduced-motion guarded, zero em-dashes.
+- Verified: tsc + biome clean; `next build` ✓ /blog; SSR shows eyebrow, headline
+  words, gradient close, all 4 topic chips; no random carousel imgs. Map updated.
+- Note: browser pane CAN reach the user's :3000 (navOk true) but the screenshot
+  tool timed out twice on the heavy /blog page; user is providing visual feedback
+  via manual screenshots. This attempt is grounded in their SS (removed the exact
+  thing that looked bad), not a blind guess.
+
+## 2026-07-10 — BlogHeroSection v4: rebuilt to match a provided design image (/task)
+- User provided a concrete reference image. Rebuilt to match: LEFT-aligned huge
+  black headline "News, [inline rounded image] views" / "and everything else"
+  (monochrome, no gradient this time — per the image), followed by a list-header
+  row: "Showing 1-{blogPosts.length} of {blogPosts.length} posts." (numbers
+  bolded) on the left + "By Category ▾" / "By Author ▾" filter pills (rounded,
+  bordered, chevron) on the right. Inline image = next/image (people photo),
+  scale-in reveal. fadeUp motion, reduced-motion guarded, zero em-dashes.
+- Post count uses the real `blogPosts.length` (6), not the image's mock "247".
+- Verified: tsc + biome clean; `next build` ✓ /blog; SSR shows all 3 headline
+  parts, the count, both filter pills + chevrons, the inline image; old v3 gone.
+  Map note updated (4th BlogHeroSection change).
+- FLAGS: (1) the "By Category/By Author" dropdowns are VISUAL only (styled buttons
+  matching the image) — no working menu/filtering (that lives in BlogListSection;
+  wiring it is a separate feature). (2) User live-edited the section bg
+  `bg-[#EEEDEB]` → `bg-white` — kept as-is.

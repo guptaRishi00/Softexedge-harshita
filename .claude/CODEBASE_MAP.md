@@ -44,7 +44,7 @@ behind `typeof window !== "undefined"` guards.
 - `src/components/layout/` — Header, Footer, SmoothScroll (Lenis wrapper)
 - `src/components/page/` — **second** Header + resizable-navbar (used by inner pages)
 - `src/components/shared/` — ConnectButton variants (3 of them)
-- `src/components/garbage/` — **DEAD CODE**, 24 files, nothing imports it
+- `src/components/garbage/` — **DEAD CODE**, 25 files, nothing imports it
 - `src/data/` — static content modules (`blog.ts`, `projects.ts`)
 - `src/lib/utils.ts` — `cn()` (clsx + tailwind-merge)
 - `public/assets/` — images, `hero.mp4`, logos; `public/fonts/` — Satoshi
@@ -54,10 +54,17 @@ border that traces on hover then settles into TR/BL corner glows — blog +
 work cards; optional `color` prop renders it as a solid color instead of the
 gradient — work passes `#2E5BFF`, blog keeps the gradient), `TechLogoCarousel`
 (tech-stack logo marquee under `ExperimentalTestimonials` on every page),
-`DomeGallery` (opt-in `autoRotate`/`autoRotateSpeed`; image-only tiles in
-deterministic varied sizes — square 2×2 / portrait 1.5×2 / landscape 2×1.3,
-uniform 0.5-slot centering + 4px inset for consistent gaps; sizes must never
-exceed 2 per axis or tiles overlap on the sphere).
+`DomeGallery` (opt-in `autoRotate`/`autoRotateSpeed`; image-only tiles).
+**Layout = masonry** (`buildItems`): columns have UNEVEN widths (normalized
+`widthPattern`) positioned CUMULATIVELY with a constant `GAP` (each column's
+pitch = its width + GAP), so a narrow column no longer leaves a bigger gap.
+Card height is constant (`CARD_H = 2 - GAP`) and rows stay on the 2-unit grid,
+so vertical gap == horizontal GAP == every gap (proven equal). Widths are
+normalized so `sum(colWidths) + seg*GAP = seg*2` → the columns wrap the full
+360° seamlessly. Item `x = columnCenter - 0.5` (the CSS transform +
+`computeItemBaseRotation` still add `+0.5`, so don't reintroduce a slot-index
+`x`). With cumulative positioning + GAP>0 cards never overlap, so widths MAY
+exceed 2 now (the old "≤2 per axis" rule is obsolete). 4px inset per tile.
 
 ## Surfaces
 All routes are public (static marketing pages, no auth anywhere).
@@ -72,7 +79,7 @@ All routes are public (static marketing pages, no auth anywhere).
 | CareerPage | Route | `src/app/career/page.tsx:11` | public | Careers: `CareerHeroSection` → `WhyJoinUs` → `OpenPositions` (accordion job board) → `PerksSection` (benefit cards) → `OurTeamSection` → `ApplicationJourney` (sticky-deck) → Footer. (`CareerValues` present but commented out.) |
 | WorkPage | Route | `src/app/work/page.tsx:10` | public | Work index: `WorkHeroSection` (rotating colour `DomeGallery` bg + black overlay + `<Header onDark/>`, stat counters) + `WorkProjectShowcase` (cards → `/work/<slug>`, `TracingBorder` hover) |
 | WorkProjectPage | Route | `src/app/work/[slug]/page.tsx:22` | public | Per-project case study. SSG via `generateStaticParams` over the 8 `projects` (`data/projects.ts`); unknown slug → `getProjectBySlug` → 404. `<Header onDark/>` + `ProjectHero` → `ProjectDetailsContent` → `NextProject` + Footer |
-| BlogPage | Route | `src/app/blog/page.tsx:7` | public | Blog index: `BlogFeaturedSection` (featured post + Header) → `BlogListSection` (filterable grid, excludes the featured post) → CTA → Footer. `BlogHeroSection` (DomeGallery) is orphaned. |
+| BlogPage | Route | `src/app/blog/page.tsx:7` | public | Blog index: `BlogHeroSection` (left-aligned blog-index hero matching a provided design: huge two-line headline "News, [inline rounded image] views / and everything else" + a list-header row ("Showing 1-N of N posts" from `blogPosts.length` + "By Category"/"By Author" filter-style pills, currently VISUAL/non-functional). Carries the page `Header`) → `BlogFeaturedSection` (featured post; no Header) → `BlogListSection` (filterable grid, excludes the featured post) → CTA → Footer. |
 | BlogArticlePage | Route | `src/app/blog/[slug]/page.tsx:36` | public | Per-article read page. SSG via `generateStaticParams` over the 6 slugs (`dynamicParams=false` → unknown slug 404s); per-post `generateMetadata`. `BlogArticle` (hero, cover, sticky share rail + prose blocks, tags, author bio, related) + `CtaSection` + Footer |
 
 ## Data
@@ -110,7 +117,7 @@ None wired. No SDK keys, no analytics, no form backend (contact form is UI-only)
 - **Nav/footer change:** see duplication gotcha below before editing
 
 ## Risks & gotchas
-- **`src/components/garbage/` is fully unused dead code** (24 files). Safe to delete; nothing outside it imports it.
+- **`src/components/garbage/` is fully unused dead code** (25 files). Safe to delete; nothing outside it imports it.
 - **Duplicate navigation components — edit the right one:**
   - `layout/Header.tsx` + `layout/SmoothScroll.tsx` → used by `/home` only (via `home/Herosection.tsx`)
   - `page/Header.tsx` + `page/resizable-navbar.tsx` → used by `/about`, `/brand-strategy`, `/contact` hero sections

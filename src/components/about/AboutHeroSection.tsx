@@ -104,7 +104,7 @@ function EdgeToEdgeCarousel({ images }: { images: string[] }) {
 
 export default function AboutHeroSection() {
   return (
-    <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#FAFAFA] font-sans selection:bg-[#2E5BFF]/20">
+    <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#FAFAFA] pb-16 font-sans selection:bg-[#2E5BFF]/20 md:pb-24">
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>

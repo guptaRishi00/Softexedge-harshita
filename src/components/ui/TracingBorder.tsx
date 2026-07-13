@@ -70,13 +70,14 @@ export default function TracingBorder({
   const trX = inset + W;
   const trY = inset;
 
-  // Glow radius — how far the bright corner spot extends (in pixels).
-  const glowR = Math.min(w, h) * 0.5;
+  // Glow radius — how far the bright corner spot extends (in pixels). Larger =
+  // the TR/BL corner weight reaches further along the adjacent edges.
+  const glowR = Math.min(w, h) * 1.125;
 
   // Timing: the comet completes its 2 laps, then dissolves right as the
   // corner glows bloom and the edges fade in — one continuous handoff
   // instead of a hard cut between "comet" and "static" states.
-  const LAP_DURATION = 2.6;
+  const LAP_DURATION = 5;
   const HANDOFF = LAP_DURATION - 0.15;
 
   return (
