@@ -124,12 +124,12 @@ export default function HomePage() {
         </div>
 
         <section className="flex w-full flex-col items-start gap-4 overflow-hidden bg-white px-6 py-12 sm:flex-row sm:items-center sm:gap-8 md:pt-20">
-          <div className="shrink-0">
+          <div className="w-full shrink-0 text-center sm:w-auto sm:text-left">
             <p className="text-sm font-medium tracking-wide text-black/60">
               Trusted By
             </p>
           </div>
-          <div className="hidden h-6 w-px bg-black/10 sm:block" />
+          <div className="hidden h-6 w-px bg-black/10 md:block" />
           <div className="relative min-w-0 flex-1 overflow-hidden">
             <LogoLoop
               logos={techLogos}
@@ -181,7 +181,9 @@ export default function HomePage() {
             <ExperimentalTestimonials />
             <TechLogoCarousel />
             <ContactSection />
-            <BlogSection />
+            <div className="[&>section]:pt-16 md:[&>section]:pt-24">
+              <BlogSection />
+            </div>
           </div>
         </div>
 

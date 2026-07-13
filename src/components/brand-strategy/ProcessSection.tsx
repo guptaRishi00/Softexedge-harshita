@@ -39,7 +39,7 @@ const processSteps = [
 
 export default function ProcessSection() {
   return (
-    <section className="w-full bg-black font-sans md:pb-35">
+    <section className="w-full bg-black font-sans pt-20 md:pt-32 md:pb-35">
       <div className="mx-auto w-full px-6 md:px-6">
         {/* Header Section */}
         <div className="mb-16 flex flex-col items-start justify-between gap-6 md:mb-35 md:flex-row md:items-start">

@@ -115,7 +115,7 @@ export default function StatsSection() {
             )}
           >
             {index !== stats.length - 1 && (
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-black/10" />
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-black/10 max-md:hidden" />
             )}
 
             <div
@@ -123,6 +123,7 @@ export default function StatsSection() {
                 "stat-inner",
                 "flex",
                 "w-full",
+                "max-md:w-auto",
                 "flex-col",
                 "items-start",
                 "justify-center",

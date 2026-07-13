@@ -1852,3 +1852,214 @@
   min-h-[100svh] hero, 5 stacked h-[70svh] panels, flex-col track with md:
   restores, zero inline 500vw. 768-1023 band: hero now visible (was 0px) —
   strict improvement, desktop lg unchanged.
+
+## 2026-07-10 — Homepage header: smaller mobile logo + more mobile padding (/task)
+- `layout/Header.tsx` (home-only header) — two scoped edits, no shared-component
+  changes:
+  1. `CustomLogo` (local): replaced fixed inline `width:90px` with responsive
+     classes `w-[64px] md:w-[90px]` (kept `style={{height:"auto"}}` for aspect).
+     Phones → 64px; md+ → 90px. NavBody is `lg:hidden`-gated's counterpart (shows
+     only lg+) so desktop logo stays 90px — identical.
+  2. Mobile top bar: passed `className="px-8 py-6 ..."` to `<MobileNavHeader>` (was
+     px-6 py-4 base); cn/tailwind-merge lets the passed values win. MobileNav is
+     `lg:hidden`, so this only affects mobile/tablet — desktop NavBody padding
+     untouched.
+- Verified: tsc + biome clean; SSR /home shows both logo instances with
+  `w-[64px] md:w-[90px]` (2×) and the mobile header `px-8 py-6` (1×), zero
+  leftover inline `width:90px`. Minimal diff (2 lines, 1 file), no deps.
+
+## 2026-07-10 — Fix ServiceSection "View Services" cursor leaking into hero on mobile (/task)
+- Same bug class as the earlier Portfolio "View Project" pill: ServiceSection's
+  custom cursor `<div>` (`fixed left-0 top-0 z-[9999]`, rendered via createPortal)
+  had its only hide (`gsap.set(cursor,{scale:0})`) inside the desktop-gated
+  `mm.add("(min-width: 768px)")` block. On mobile that never runs → the "View
+  Services" pill renders at scale 1 in the top-left corner, overlapping the hero.
+- Fix (`home/ServiceSection.tsx`, 1 line): cursor pill className `flex` →
+  `hidden ... md:flex` so it's display:none <768px regardless of GSAP; md+
+  identical (flex + transform scale coexist). Mirrors the portfolio pill fix.
+- Verified: tsc + biome clean; source confirms `hidden ... md:flex`. (Pill is a
+  client-only portal, absent from SSR HTML — verified at code level.) Minimal
+  diff (1 line), no deps.
+
+## 2026-07-10 — Homepage mobile header: more y padding (/task)
+- `layout/Header.tsx`: `<MobileNavHeader>` className `px-8 py-6` → `px-8 py-8`
+  (mobile top bar y padding 24px → 32px). MobileNav is `lg:hidden` so desktop
+  NavBody untouched. Verified: tsc + biome clean; SSR /home shows `px-8 py-8`
+  (1×), zero leftover `py-6`. 1-line diff, no deps.
+
+## 2026-07-10 — Homepage Trusted-By row: center text + drop divider on mobile (/task)
+- `app/home/page.tsx` Trusted-By/LogoLoop row (mobile scope):
+  1. "Trusted By" wrapper `shrink-0` → `w-full shrink-0 text-center sm:w-auto
+     sm:text-left` — centers the text on mobile (flex-col); reverts to left/auto
+     at sm+ (desktop identical). Loop div untouched (no width regression).
+  2. Vertical divider `hidden ... sm:block` → `hidden ... md:block` — the row's
+     only border/line element; now hidden through the whole mobile range
+     (<768), shown at md+ (desktop unchanged). NOTE: section has NO literal
+     border-bottom class — the divider is the only line, so treated it as the
+     "border bottom" the user described.
+- Verified: tsc + biome clean; SSR /home shows centered wrapper + `md:block`
+  divider, zero `sm:block`. Preview harness still can't hold a server for this
+  workspace (parent-dir cwd), so no screenshot — verified via rendered DOM.
+
+## 2026-07-10 — AboutSection: smaller title + less x-padding (/task)
+- `home/AboutSection.tsx` (all breakpoints — task not scoped to mobile):
+  1. Title `text-5xl md:text-7xl lg:text-[4rem]` → `text-4xl md:text-6xl
+     lg:text-[3.5rem]` (48→36 / 72→60 / 64→56px).
+  2. Section x-padding `md:px-12 lg:px-10` → `md:px-8 lg:px-8` (48/40 → 32px);
+     base `px-6` kept.
+- Verified: tsc + biome clean; SSR /home shows new title + `md:px-8 lg:px-8`,
+  zero old `text-5xl … text-7xl` title / `md:px-12`. 1-file, 2-line diff, no deps.
+
+## 2026-07-10 — ServiceSection: reveal thumbnails on mobile (/task)
+- Root cause: each service's image container is `w-0 opacity-0` by default and
+  only expands via `group-hover:w-[80px] group-hover:opacity-100` — on touch
+  there's no hover, so the thumbnails never appear on mobile.
+- Fix (`home/ServiceSection.tsx`, 1 added class line): appended
+  `max-md:mr-4 max-md:w-[80px] max-md:opacity-100` to the reveal container so the
+  thumbnail is visible by default below md; md+ hover-reveal behavior unchanged
+  (desktop identical). Mirrors the file's existing `max-md:` card overrides.
+- Verified: tsc + biome clean; SSR /home shows the new classes on all 5 service
+  cards. Minimal diff (1 line), no deps.
+
+## 2026-07-10 — StatsSection: fix number-card overflow on mobile (/task)
+- Root cause: the stat number `<h2>` is explicitly `overflow-visible`, and
+  nothing between it and the outer `.stat-row` clips at the CARD's boundary —
+  `.stat-row` only clips at the full-bleed row edge, not the inset rounded card
+  (`stat-inner`, `max-md:mx-4 ... rounded-2xl border`). So on mobile the number
+  could visually bleed past the card's rounded border/edge. An unconditional
+  `pr-8` (32px) on the number's wrapper was also eating mobile width that's only
+  needed for desktop's two-column (`md:w-[55%] md:pr-10`) layout.
+- Fix (`home/StatsSection.tsx`, both mobile-scoped, desktop untouched):
+  1. `stat-inner` (rounded card): added `max-md:overflow-hidden` so the card
+     clips its own content below md — safety net against any residual bleed.
+  2. Number wrapper: `pr-8` → `pr-2` (base/sm; `md:pr-10` unchanged restores
+     desktop exactly, since it already overrides pr-* at md+).
+- Verified: tsc + biome clean; SSR /home shows `max-md:overflow-hidden` (4×,
+  one per stat) and `pr-2 ... md:pr-10` (4×) with zero leftover `pr-8`; desktop
+  `md:pr-10` count unchanged (4) confirming no desktop regression. 2-line diff,
+  1 file, no deps.
+
+## 2026-07-10 — StatsSection mobile overflow — REAL fix (supersedes prior entry) (/task)
+- Re-issued after the earlier `max-md:overflow-hidden`+`pr-2` attempt didn't
+  resolve it. Real root cause (CSS box model): `stat-inner` is `w-full`
+  (width:100%) AND `max-md:mx-4` (16px margins each side) → margin-box = 100%+32px,
+  32px wider than its parent → the card overflows horizontally and the parent's
+  `overflow-hidden` clips its right edge. The prior band-aids never addressed the
+  card width.
+- Fix: added `max-md:w-auto` to `stat-inner` so below md the card's auto width
+  fills the parent MINUS its margins (no overflow). Reverted the two prior
+  band-aids (`max-md:overflow-hidden` removed, `pr-2`→`pr-8`) so the net diff vs
+  original is a single line: `+max-md:w-auto`. Desktop keeps `w-full` (md+
+  unaffected; `md:w-[55%]`/`md:pr-10` intact).
+- Verified: tsc + biome clean; `git diff` shows exactly `+max-md:w-auto`; SSR
+  /home shows `max-md:w-auto` on all 4 cards, band-aid gone, desktop classes
+  intact. NOTE: couldn't capture pixels — preview harness won't hold a server for
+  this workspace and the only connected browser is a remote macOS instance that
+  can't reach this machine's :3000 — so verified by CSS box-model reasoning +
+  static checks, not a screenshot.
+
+## 2026-07-10 — StatsSection: remove inter-card divider on mobile (/task)
+- `home/StatsSection.tsx`: the between-rows separator `<div class="absolute
+  bottom-0 ... h-px bg-black/10">` (rendered for all rows except the last) got
+  `max-md:hidden` — on mobile the stats are already self-bordered rounded cards
+  (`max-md:rounded-2xl max-md:border`), so that line was a redundant "border
+  between cards". Desktop (md+) keeps the divider.
+- Verified: tsc + biome clean; SSR /home shows `h-px bg-black/10 max-md:hidden`
+  on all 3 dividers, zero bare dividers left. 1-line diff, no deps, desktop
+  untouched.
+
+## 2026-07-10 — Homepage: bigger gap between ContactSection and BlogSection (/task)
+- Gap was tight because BlogSection root is `md:pt-0` (zero top padding) — the
+  Contact→Blog separation was only ContactSection's black `py-24 md:py-32` bottom.
+- Fix (`app/home/page.tsx`): wrapped `<BlogSection />` in
+  `<div className="[&>section]:pt-16 md:[&>section]:pt-24">` — the SAME
+  inter-component spacing value the about page uses (`about/page.tsx` wraps every
+  component in `[&>section]:py-16 md:[&>section]:py-24`). Applied as TOP padding
+  only, so it adds white breathing room above Blog without touching Blog's
+  `pb-40` bottom (→ Footer). The `[&>section]:` wrapper overrides Blog's own
+  `md:pt-0` by specificity (same mechanism the about page relies on).
+- Verified: tsc + biome clean; SSR /home shows the wrapper rendered
+  (`[&amp;&gt;section]:pt-16 md:[&amp;&gt;section]:pt-24`, entity-escaped);
+  git diff = the one wrapper. 1 file, minimal, no deps.
+
+## 2026-07-10 — brand-strategy SubServices: more header padding-bottom (/task)
+- `brand-strategy/SubServices.tsx` HEADER SECTION div: `py-20` → `pt-20 pb-32`
+  (bottom padding 80px → 128px; top kept at 80px). All breakpoints.
+- Verified: tsc + biome clean; SSR /brand-strategy shows `px-6 pt-20 pb-32`,
+  zero leftover `py-20` on the header. 1-line diff, no deps.
+
+## 2026-07-10 — SubServices stacking-card titles: invert hover-dim (/task)
+- Was: each title `<h3>` had `group-hover:text-zinc-400` (its own `<motion.a
+  class="group">`), so hovering a title grayed THAT title. User wanted the
+  inverse — hovered title stays white, the others dim.
+- Fix (`brand-strategy/SubServices.tsx`, 2 lines): tagged the STACKING CARDS
+  WRAPPER `group/cards`; changed the h3 to
+  `group-has-[a:hover]/cards:text-white/40 group-hover:!text-white`. The title
+  `<motion.a>` is the ONLY `<a>` in the wrapper, so `.group/cards:has(a:hover)`
+  fires only on title hover → all titles dim to white/40; the hovered card's own
+  `group:hover` → `!text-white` keeps that one white (important beats the dim).
+  Description/image/tag hovers don't trigger it.
+- Verified: tsc + biome clean; `next build` ✓; compiled CSS contains both rules —
+  dim `:where(.group/cards):has(:is(a:hover)) *{...text-white/40}` and un-dim
+  `.group:hover *{color:white!important}`. (CSS-only hover, not in SSR — grounded
+  via generated CSS + !important precedence.) 2-line diff, no deps.
+
+## 2026-07-10 — SubServices last-card pin + ProcessSection overlap — DEFERRED to interactive session (/task)
+- Requested: last stacking card pins at top and holds; ProcessSection slides in
+  OVER it (overlap). Investigated the mechanism (SubServices sticky cards inside
+  `div ref={container}`; ProcessSection is a separate sibling in page.tsx).
+- Core blocker: `position: sticky` only pins within its containing block, so a
+  sibling ProcessSection can't overlap a still-pinned last card — ProcessSection
+  must be moved INSIDE SubServices' sticky container. Structural, 2-file, HIGH
+  risk (reworks a working effect), and needs on-screen tuning of pin/z/margin.
+- Not implemented: the effect can only be verified by scrolling in a browser, and
+  this session's preview harness can't hold a server for this workspace (+ the
+  only connected browser is remote macOS, can't reach :3000). User chose to do it
+  in an interactive `claude` session where preview works. Full approach written to
+  `.claude/plan.md`. No files changed for this task.
+
+## 2026-07-10 — SubServices last-card pin-at-top + ProcessSection overlap — IMPLEMENTED (/task proceed)
+- Executed .claude/plan.md (user said proceed; best-effort, visual tuning left to
+  user's :3000). Two files:
+  - `brand-strategy/SubServices.tsx`: now takes `children`, rendered INSIDE the
+    sticky-cards `<div ref={container}>` after the 4 cards, wrapped
+    `relative z-40 w-full` (z-40 > cards' inline z 0–3; ProcessSection bg-black is
+    opaque → covers the pinned card). Old `h-[100vh]` runway kept only as the
+    no-children fallback. Also: last card special-cased to pin at the TOP —
+    `top: calc(5vh + ${(isLast ? 0 : i)*190}px)` (via new `isLast` prop) so it
+    rises over the peek stack and holds at 5vh; the overlap slides up over it.
+  - `app/brand-strategy/page.tsx`: `<SubServices/><ProcessSection/>` →
+    `<SubServices><ProcessSection/></SubServices>` (ProcessSection no longer a
+    standalone sibling; now lives in the sticky context — required for a sibling
+    to overlap a still-pinned sticky card).
+- Verified: tsc + biome clean; `next build` ✓ /brand-strategy; SSR shows
+  ProcessSection nested in the `relative z-40` slot inside the container, runway
+  gone, no duplicate ProcessSection, and last card top = `5vh+0px`. spec-verifier
+  APPROVED the overlap mechanism (z-order/opacity/pin-survival/no stacking trap);
+  its P2 "last card not at top" is now addressed by the isLast change.
+- TUNING KNOBS for the user (scroll-only, can't verify here): last card `mb-[22vh]`
+  = overlap lead gap; last card `top` 5vh; z-40. Note: ConnectButton CTA now
+  renders AFTER ProcessSection (it's still after `container`).
+
+## 2026-07-10 — brand-strategy: taller last card + ProcessSection top padding (/task)
+- `brand-strategy/SubServices.tsx` Card: height classes made conditional on the
+  existing `isLast` prop — last card `min-h-[70vh] md:h-[780px]`, others keep
+  `min-h-[50vh] md:h-[600px]`. (Complements the pin-at-top/overlap work — taller
+  last card = more presence before ProcessSection overlaps it.)
+- `brand-strategy/ProcessSection.tsx` root: added `pt-20 md:pt-32` (had only
+  `md:pb-35`) — top breathing room now that it slides up as the overlap.
+- Verified: tsc + biome clean; SSR /brand-strategy shows last card
+  `min-h-[70vh] md:h-[780px]` (1×), other cards `min-h-[50vh] md:h-[600px]` (3×),
+  and ProcessSection `pt-20 md:pt-32` (1×). 2-line diff, 2 files, no deps.
+
+## 2026-07-10 — brand-strategy: remove orphan "Connect With Us" CTA block (/task)
+- Removed the SubServices `{/* CTA / NEXT SECTION */}` block (min-h-[70vh] black
+  centered ConnectButton + `border-b border-white/10`) — the plain-black
+  Connect-With-Us band the user screenshotted (it had become an orphan after the
+  ProcessSection-overlap restructure, rendering awkwardly after Process). Also
+  dropped the now-unused `ConnectButton` import from SubServices.
+- Left CtaSection untouched — its "Connect With Us" is a different, designed CTA
+  ("Let's build something" headline + image-grid card) near the page bottom.
+- Verified: tsc + biome clean (unused-import check passes); no ConnectButton refs
+  left in SubServices; `next build` ✓ /brand-strategy; the only remaining
+  "Connect With Us" in SSR is CtaSection's. 1 file, no deps.

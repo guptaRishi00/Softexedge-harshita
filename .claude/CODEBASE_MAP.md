@@ -49,10 +49,15 @@ behind `typeof window !== "undefined"` guards.
 - `src/lib/utils.ts` — `cn()` (clsx + tailwind-merge)
 - `public/assets/` — images, `hero.mp4`, logos; `public/fonts/` — Satoshi
 
-Notable shared `ui/` components (added recently): `TracingBorder` (the
-comet border that traces once on hover — used by blog + work cards),
-`TechLogoCarousel` (tech-stack logo marquee shown under `ExperimentalTestimonials`
-on every page), `DomeGallery` (has an opt-in `autoRotate`/`autoRotateSpeed`).
+Notable shared `ui/` components (added recently): `TracingBorder` (comet
+border that traces on hover then settles into TR/BL corner glows — blog +
+work cards; optional `color` prop renders it as a solid color instead of the
+gradient — work passes `#2E5BFF`, blog keeps the gradient), `TechLogoCarousel`
+(tech-stack logo marquee under `ExperimentalTestimonials` on every page),
+`DomeGallery` (opt-in `autoRotate`/`autoRotateSpeed`; image-only tiles in
+deterministic varied sizes — square 2×2 / portrait 1.5×2 / landscape 2×1.3,
+uniform 0.5-slot centering + 4px inset for consistent gaps; sizes must never
+exceed 2 per axis or tiles overlap on the sphere).
 
 ## Surfaces
 All routes are public (static marketing pages, no auth anywhere).
@@ -114,7 +119,40 @@ None wired. No SDK keys, no analytics, no form backend (contact form is UI-only)
   - `work/WorkHeader.tsx` — now ORPHANED (work page uses the shared `page/Header` with `onDark`); safe to delete.
   - Three `shared/ConnectButton*.tsx` variants exist
 - **No Header in `layout.tsx`** — each hero section imports its own Header. There is no shared/global nav.
-- **SmoothScroll (Lenis) only on `/home`** — inner pages scroll natively; inconsistent feel.
+- **SmoothScroll (Lenis) only on `/home`, and only at ≥768px** — inner pages and
+  mobile scroll natively.
+- **Homepage animations are desktop-only by design** (all via
+  `gsap.matchMedia("(min-width: 768px)")`): the about pin+scale and service
+  scale/rotate scrubs (`app/home/page.tsx`), and the ENTIRE `PortfolioSection`
+  GSAP (pinned 500vw horizontal scroll, custom cursor, text reveals). On mobile
+  the portfolio is a plain vertical stack (`h-[70svh]` panels; track `flex-col`
+  base, `md:w-max md:flex-row` — md:w-max × md:w-screen panels reproduce the old
+  inline 500vw width, so don't reintroduce an inline width). The "View Project"
+  cursor pill is `hidden md:flex`.
+- **Herosection height gotcha:** all its children are absolutely positioned, so
+  the root NEEDS a min-height at every breakpoint (`min-h-[100svh]
+  lg:min-h-[96.5vh]`) — removing the base value makes the hero 0px below lg.
+- **Responsive convention (this codebase):** mobile fixes are additive — smaller
+  base/sm: values with the old value re-asserted at md:/lg: so desktop stays
+  pixel-identical. Follow it when touching homepage styles. `max-md:*` (max-width
+  <768) is the idiom used to override a base utility on mobile only; it reliably
+  wins over the unprefixed class here.
+- **Mobile gotcha — `w-full` + `mx-*` overflows.** A box with `w-full`
+  (width:100%) AND horizontal margins has a margin-box wider than its parent by
+  2×margin → horizontal overflow (clipped by an ancestor's `overflow-hidden`,
+  reads as "card is cut off"). Fix: `max-md:w-auto` so auto width fills parent
+  minus margins (see `home/StatsSection.tsx` `.stat-inner`). Bit us once.
+- **Mobile gotcha — custom-cursor pills leak into the hero.** `ServiceSection`
+  ("View Services") and `PortfolioSection` ("View Project") each render a
+  `fixed`-positioned follower `<div>` whose ONLY initial hide is
+  `gsap.set(cursor,{scale:0})` — and that lives inside a `min-width:768px`
+  matchMedia gate, so on touch it never runs and the pill sits over the hero.
+  Both pills now carry `hidden md:flex`; keep that guard on any new hover cursor.
+- **Mobile gotcha — hover-only reveals are invisible on touch.** Several homepage
+  bits reveal on `group-hover` (e.g. `ServiceSection` thumbnails are `w-0
+  opacity-0` → `group-hover:w-[80px] opacity-100`). Add a `max-md:*` override to
+  show them by default on mobile (thumbnails now use `max-md:w-[80px]
+  max-md:opacity-100`).
 - **Default boilerplate metadata** in `layout.tsx` (`title: "Create Next App"`); no per-page metadata or OG tags — SEO gap for a marketing site.
 - **Loose types:** empty `type Props = {}` in pages; `ContactPage({}: any)`.
 - **No tests, no CI.**

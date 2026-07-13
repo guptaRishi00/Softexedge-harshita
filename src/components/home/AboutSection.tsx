@@ -150,7 +150,7 @@ export default function AboutSection() {
       whileInView={isDesktop ? "visible" : undefined}
       exit={isDesktop ? "exit" : undefined}
       viewport={{ once: false, amount: 0.2 }}
-      className="relative overflow-hidden bg-white px-6 py-10 text-zinc-900 before:absolute before:inset-0 md:px-12 lg:px-10 lg:mb-20"
+      className="relative overflow-hidden bg-white px-6 py-10 text-zinc-900 before:absolute before:inset-0 md:px-8 lg:px-8 lg:mb-20"
     >
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-multiply" />
 
@@ -167,7 +167,7 @@ export default function AboutSection() {
 
             <motion.h1
               variants={wordContainer}
-              className="flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 text-5xl font-bold leading-[0.9em] tracking-[-0.04em] md:text-7xl lg:text-[4rem]"
+              className="flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 text-4xl font-bold leading-[0.9em] tracking-[-0.04em] md:text-6xl lg:text-[3.5rem]"
             >
               <motion.span variants={wordAnimation} className="block">
                 Building

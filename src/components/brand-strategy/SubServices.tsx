@@ -2,8 +2,7 @@
 
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { ReactLenis } from "lenis/react";
-import { useRef, useState } from "react";
-import ConnectButton from "../shared/ConnectButton";
+import { type ReactNode, useRef, useState } from "react";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
@@ -69,7 +68,7 @@ const services = [
   },
 ];
 
-export default function SubServices() {
+export default function SubServices({ children }: { children?: ReactNode }) {
   const container = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -96,7 +95,7 @@ export default function SubServices() {
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
         {/* HEADER SECTION */}
-        <div className="mx-auto flex w-full flex-col items-start justify-between gap-6 px-6 py-20 md:flex-row md:items-end">
+        <div className="mx-auto flex w-full flex-col items-start justify-between gap-6 px-6 pt-20 pb-32 md:flex-row md:items-end">
           <div className="flex flex-col gap-5">
             <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               What We Offer
@@ -115,11 +114,12 @@ export default function SubServices() {
         </div>
 
         {/* STACKING CARDS WRAPPER */}
-        <div ref={container} className="relative w-full">
+        <div ref={container} className="group/cards relative w-full">
           {services.map((service, i) => (
             <Card
               key={i}
               i={i}
+              isLast={i === services.length - 1}
               imageHidden={activeIndex > i}
               registerRef={(el: HTMLDivElement | null) => {
                 cardRefs.current[i] = el;
@@ -128,14 +128,16 @@ export default function SubServices() {
             />
           ))}
 
-          {/* MAGIC TRICK: The Runway */}
-          <div className="pointer-events-none h-[100vh] w-full" />
-        </div>
-
-        {/* CTA / NEXT SECTION */}
-        <div className="relative z-50 flex min-h-[70vh] w-full flex-col items-center justify-center gap-16 bg-black px-6">
-          <ConnectButton className="scale-110 md:scale-125" />
-          <div className="mt-16 w-full border-b border-white/10" />
+          {/* OVERLAP SLOT — the next section (ProcessSection, passed as
+              children) lives INSIDE the sticky container and scrolls up over the
+              still-pinned last card. z-40 sits above the cards' z (0–3) and its
+              opaque bg covers the pinned card during the overlap. Falls back to
+              the old runway spacer when no children are provided. */}
+          {children ? (
+            <div className="relative z-40 w-full">{children}</div>
+          ) : (
+            <div className="pointer-events-none h-[100vh] w-full" />
+          )}
         </div>
       </section>
     </ReactLenis>
@@ -145,6 +147,7 @@ export default function SubServices() {
 // --- ISOLATED CARD COMPONENT ---
 function Card({
   i,
+  isLast,
   imageHidden,
   registerRef,
   title1,
@@ -160,14 +163,16 @@ function Card({
       ref={registerRef}
       className="sticky w-full mb-[22vh]"
       style={{
-        // Pins the card exactly spaced by 190px to leave the previous titles showing
-        top: `calc(5vh + ${i * 190}px)`,
+        // Each card pins 190px lower than the last so previous titles peek —
+        // EXCEPT the last card, which pins at the top (5vh) and holds there so
+        // the ProcessSection overlap slides up over it.
+        top: `calc(5vh + ${(isLast ? 0 : i) * 190}px)`,
         // Later cards stack on top; fixed desktop height keeps earlier cards from poking through
         zIndex: i,
       }}
     >
       <div
-        className={`relative grid min-h-[50vh] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-6 pb-24 pt-12 md:h-[600px] md:min-h-0 md:grid-cols-2 md:gap-16`}
+        className={`relative grid ${isLast ? "min-h-[70vh] md:h-[780px]" : "min-h-[50vh] md:h-[600px]"} w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-6 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
       >
         {/* LEFT COLUMN: Title, Description & Tags */}
         <motion.div
@@ -182,7 +187,7 @@ function Card({
             href={link}
             className="group inline-block"
           >
-            <h3 className="text-5xl font-medium tracking-tight text-white transition-colors group-hover:text-zinc-400 md:text-6xl lg:text-7xl">
+            <h3 className="text-5xl font-medium tracking-tight text-white transition-colors group-has-[a:hover]/cards:text-white/40 group-hover:!text-white md:text-6xl lg:text-7xl">
               {title1}
               {title1 === "E" ? "-" : " "}
               {title2}

@@ -23,8 +23,8 @@ const CustomLogo = () => (
       alt="Grovio Logo"
       width={85}
       height={30}
-      style={{ width: "90px", height: "auto" }}
-      className="object-contain"
+      style={{ height: "auto" }}
+      className="w-[64px] object-contain md:w-[90px]"
     />
   </Link>
 );
@@ -148,7 +148,7 @@ export default function Header() {
         </NavBody>
 
         <MobileNav>
-          <MobileNavHeader className="transition-all duration-300">
+          <MobileNavHeader className="px-8 py-8 transition-all duration-300">
             <CustomLogo />
             <MobileNavToggle
               isOpen={isMobileMenuOpen}

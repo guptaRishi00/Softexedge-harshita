@@ -139,6 +139,7 @@ export default function ServiceSection() {
                   className={cn(
                     "relative h-[50px] shrink-0 overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
                     "w-0 group-hover:mr-4 group-hover:w-[80px] group-hover:opacity-100 md:group-hover:mr-8 md:group-hover:w-[150px]",
+                    "max-md:mr-4 max-md:w-[80px] max-md:opacity-100",
                   )}
                 >
                   <img
@@ -179,7 +180,7 @@ export default function ServiceSection() {
             <div
               ref={cursorRef}
               className={cn(
-                "pointer-events-none fixed left-0 top-0 z-[9999] flex h-10 w-40 items-center justify-center rounded-lg bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white",
+                "pointer-events-none fixed left-0 top-0 z-[9999] hidden h-10 w-40 items-center justify-center rounded-lg bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white md:flex",
                 "will-change-transform",
               )}
             >

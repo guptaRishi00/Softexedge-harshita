@@ -18,8 +18,9 @@ export default function BrandStrategyPage({}: Props) {
     <div>
       <div className="overflow-x-clip w-full">
         <StrategyHeroSection />
-        <SubServices />
-        <ProcessSection />
+        <SubServices>
+          <ProcessSection />
+        </SubServices>
         <OurTechStack />
         <ProjectShowcase />
         <ExperimentalTestimonials />
