@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
-// Tracing border: a comet orbits the card twice, then dissolves — its energy
+// Tracing border: a comet orbits the card once, then dissolves — its energy
 // gathers into two glowing corners (bottom-left cyan, top-right blue) while
 // the connecting edges softly fade in.
 export default function TracingBorder({
@@ -74,10 +74,10 @@ export default function TracingBorder({
   // the TR/BL corner weight reaches further along the adjacent edges.
   const glowR = Math.min(w, h) * 1.125;
 
-  // Timing: the comet completes its 2 laps, then dissolves right as the
+  // Timing: the comet completes its lap, then dissolves right as the
   // corner glows bloom and the edges fade in — one continuous handoff
   // instead of a hard cut between "comet" and "static" states.
-  const LAP_DURATION = 5;
+  const LAP_DURATION = 2.5;
   const HANDOFF = LAP_DURATION - 0.15;
 
   return (
@@ -201,61 +201,65 @@ export default function TracingBorder({
                 />
               </mask>
 
-              {/* Soft outer glow filter */}
-              <filter
-                id={`glow-${gradientId}`}
-                x="-10%"
-                y="-10%"
-                width="120%"
-                height="120%"
-              >
-                <feGaussianBlur
-                  in="SourceGraphic"
-                  stdDeviation="2"
-                  result="blur"
-                />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
             </defs>
 
-            {/* ═══ Layer 1: Revolving comet — 2 laps, then dissolves ═══ */}
-            <motion.path
-              d={d}
-              pathLength={1}
-              stroke={color ?? `url(#comet-${gradientId})`}
-              strokeWidth={2.5}
-              strokeLinecap="round"
-              strokeDasharray={`${TAIL} ${GAP}`}
-              initial={{ strokeDashoffset: 2.0, opacity: 1 }}
-              animate={{ strokeDashoffset: [2, 1, 0], opacity: 0 }}
+            {/* ═══ Layer 1: Revolving comet — one lap, then dissolves.
+                 Glow = a wide soft halo stroke under the crisp core stroke
+                 (layered strokes animate cheaply; an feGaussianBlur filter
+                 would re-rasterize every frame and stutter). ═══ */}
+            <motion.g
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0 }}
               transition={{
-                strokeDashoffset: {
-                  duration: LAP_DURATION,
-                  times: [0, 0.45, 1],
-                  ease: ["easeIn", "easeOut"],
-                },
-                opacity: {
-                  duration: 0.45,
-                  delay: LAP_DURATION - 0.45,
-                  ease: "easeOut",
-                },
+                duration: 0.45,
+                delay: LAP_DURATION - 0.45,
+                ease: "easeOut",
               }}
-              style={{ filter: `url(#glow-${gradientId})` }}
-            />
+            >
+              {/* Halo */}
+              <motion.path
+                d={d}
+                pathLength={1}
+                stroke={color ?? `url(#comet-${gradientId})`}
+                strokeWidth={6}
+                strokeOpacity={0.28}
+                strokeLinecap="round"
+                strokeDasharray={`${TAIL} ${GAP}`}
+                initial={{ strokeDashoffset: 1.0 }}
+                animate={{ strokeDashoffset: 0 }}
+                transition={{ duration: LAP_DURATION, ease: "easeInOut" }}
+              />
+              {/* Core */}
+              <motion.path
+                d={d}
+                pathLength={1}
+                stroke={color ?? `url(#comet-${gradientId})`}
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeDasharray={`${TAIL} ${GAP}`}
+                initial={{ strokeDashoffset: 1.0 }}
+                animate={{ strokeDashoffset: 0 }}
+                transition={{ duration: LAP_DURATION, ease: "easeInOut" }}
+              />
+            </motion.g>
 
             {/* ═══ Layer 2: Corner-weighted static border, revealed entirely
-                 by the animated mask above ═══ */}
-            <path
-              d={d}
-              stroke={color ?? `url(#border-color-${gradientId})`}
-              strokeWidth={2.25}
-              strokeLinecap="round"
-              mask={`url(#corner-mask-${gradientId})`}
-              style={{ filter: `url(#glow-${gradientId})` }}
-            />
+                 by the animated mask above — same layered-stroke glow ═══ */}
+            <g mask={`url(#corner-mask-${gradientId})`}>
+              <path
+                d={d}
+                stroke={color ?? `url(#border-color-${gradientId})`}
+                strokeWidth={5.5}
+                strokeOpacity={0.25}
+                strokeLinecap="round"
+              />
+              <path
+                d={d}
+                stroke={color ?? `url(#border-color-${gradientId})`}
+                strokeWidth={2.25}
+                strokeLinecap="round"
+              />
+            </g>
           </motion.svg>
         )}
       </AnimatePresence>

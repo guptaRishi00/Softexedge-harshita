@@ -45,7 +45,7 @@ const navItems: NavItem[] = [
       {
         name: "Web Development",
         count: "/1 services",
-        link: "/services",
+        link: "/web-development",
         image:
           "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop",
       },
@@ -104,6 +104,10 @@ const navItems: NavItem[] = [
   {
     name: "Work",
     link: "/work",
+  },
+  {
+    name: "Blog",
+    link: "/blog",
   },
 ];
 

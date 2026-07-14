@@ -3,10 +3,10 @@
 import AutoScroll from "embla-carousel-auto-scroll";
 import {
   motion,
+  useReducedMotion,
   useScroll,
   useSpring,
   useTransform,
-  useVelocity,
 } from "framer-motion";
 import { useCallback, useRef, useState } from "react";
 
@@ -66,23 +66,26 @@ const teamMembers: TeamMember[] = [
 
 export default function OurTeamSection() {
   const [api, setApi] = useState<CarouselApi>();
+  const reduce = useReducedMotion();
+  const sectionRef = useRef<HTMLElement>(null);
 
-  // Scroll-velocity shift: the card row lurches horizontally in the scroll
-  // direction (and springs back to rest), echoing the scroll like a parallax.
-  const { scrollY } = useScroll();
-  const scrollVelocity = useVelocity(scrollY);
-  const smoothVelocity = useSpring(scrollVelocity, {
-    damping: 30,
-    stiffness: 120,
-    mass: 0.7,
+  // Position-linked parallax: the card row's horizontal offset tracks the
+  // section's scroll progress directly (not scroll *velocity*), so it moves in
+  // lockstep with the scroll — scrolling down drifts the cards one way,
+  // scrolling up reverses — with no laggy velocity spring settling back to rest.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
   });
-  // Looser spring + wider travel so the row glides horizontally with scroll
-  // instead of snapping back (felt "stuck"). Over-width wrapper has a 7% edge
-  // buffer, so keep the ±6% shift under it. Narrower input range = reaches full
-  // travel at lower scroll speed (more responsive).
-  const x = useTransform(smoothVelocity, [-1500, 1500], ["6%", "-6%"], {
-    clamp: true,
+  // Over-width wrapper has a 7% edge buffer, so keep the ±6% travel under it.
+  const xRaw = useTransform(scrollYProgress, [0, 1], ["6%", "-6%"]);
+  // Gentle spring smooths the pixel steps without the velocity-model lag.
+  const xSmooth = useSpring(xRaw, {
+    stiffness: 90,
+    damping: 22,
+    mass: 0.4,
   });
+  const x = reduce ? "0%" : xSmooth;
 
   const autoScroll = useRef(
     AutoScroll({
@@ -110,6 +113,7 @@ export default function OurTeamSection() {
 
   return (
     <section
+      ref={sectionRef}
       id="team"
       className="w-full bg-white py-12 text-zinc-900 md:py-20 overflow-hidden"
     >

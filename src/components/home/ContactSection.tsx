@@ -189,7 +189,7 @@ export default function ContactSection() {
       id="contact"
       className="relative w-full overflow-hidden bg-black py-24 md:py-32"
     >
-      <div className="relative z-10 mx-auto w-full px-6 md:px-10">
+      <div className="relative z-10 mx-auto w-full px-6">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-12">
           <motion.div
             initial={isDesktop ? { opacity: 0, y: 40 } : false}

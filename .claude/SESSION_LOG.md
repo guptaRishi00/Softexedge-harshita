@@ -2327,3 +2327,298 @@
   matching the image) — no working menu/filtering (that lives in BlogListSection;
   wiring it is a separate feature). (2) User live-edited the section bg
   `bg-[#EEEDEB]` → `bg-white` — kept as-is.
+
+## 2026-07-10 — OurValuesSection: light taste-skill polish (/task)
+- `about/OurValuesSection.tsx`: eyebrow "Our Culture" muted `text-white/60` →
+  brand-blue `text-[#2E5BFF]` tracking-[0.25em] (matches the site's other
+  eyebrows + pops on the dark bg); quote card gained a subtle `border
+  border-white/[0.06]` so it reads as a card against the near-identical black bg
+  (#100f0f ≈ bg-black). User reverted a max-w-[1400px] container change (prefers
+  full-bleed) — not re-added.
+- Verified: tsc + biome clean; `next build` ✓ /about; SSR shows brand-blue
+  eyebrow + card border. Kept conservative given the visual-verification gap.
+
+## 2026-07-10 — (toolkit maint, not project) universal-kit update #3
+- `git pull` in ~/.claude/universal-kit: blocked by local change to generated
+  AGENT_INDEX.md → stashed it → fast-forward to 296ef50 (new skills baseline-ui /
+  fixing-accessibility / fixing-motion-performance, updated bootstrap/commands/
+  regen-index, source repos gsap/threejs/chrome-web/motion-dev/minimax cloned).
+- `./bootstrap.sh` FAILED at step 2/4: it uses Unix `ln -s` symlinks, which don't
+  work on Windows Git Bash — `~/.claude/skills/api-design` is a real dir (with
+  nested cruft from prior failed runs), so `ln` can't replace it. Skills were
+  already installed as real dirs (functional). Completed the intent Windows-safely:
+  step 3 (cp commands → 7 updated: /task,/genesis,/worker etc.), copied the 3 new
+  kit skills into ~/.claude/skills, step 4 (regen-index.sh → 209 resources,
+  machine paths corrected). New skills confirmed loadable.
+- OPEN: bootstrap.sh symlink approach is incompatible with Windows; future kit
+  pulls need the same cp workaround (or WSL/Mac, or a Windows-aware bootstrap).
+
+## 2026-07-10 — CtaSection: hover-mask → auto "disco" glow (/task)
+- Replaced the mouse-follow spotlight MASK + per-cell hover glow (hoveredIndex /
+  getIntensity / handleMouseMove / mouseX-mouseY / useMotionValue — all removed)
+  with an auto-animated "disco" effect: a dark grid floor (80 cells, #141414) lit
+  by 3 colored glow blobs (#2E5BFF / #149CCB / #8B5CF6) that DRIFT ON THEIR OWN via
+  framer `animate` loops (distinct x/y keyframe paths + 15/19/23s durations),
+  `mix-blend-screen` + blur-[70px] so they read as moving lights. Motion is
+  transform-only (GPU); `useReducedMotion` freezes the blobs. Card `onMouseMove`/
+  `onMouseLeave` removed. (CtaSection is shared — the disco shows everywhere it's
+  used: brand-strategy/about/contact/home/blog CTAs.)
+- Verified: tsc + biome clean (fixed a readonly-tuple type error by dropping
+  `as const` on DISCO_BLOBS); `next build` ✓ /brand-strategy; grep confirms 0
+  hover refs + disco elements present. Visual look needs the user's eyes (:3000);
+  blob colors/positions/durations/blur are single tunable values.
+
+## 2026-07-14 — Revert CtaSection disco → mask-hover
+Reverted the disco-effect change in `src/components/brand-strategy/CtaSection.tsx` back to the original mouse-follow mask spotlight + per-cell proximity glow. Clean `git restore` from HEAD (disco was uncommitted, HEAD held the original). Verified: working tree clean for this file, mask-hover logic (getIntensity/handleMouseMove/useMotionValue) present, 0 DISCO_BLOBS refs, tsc + biome clean. Shared component — affects all pages using CtaSection. Not committed.
+
+## 2026-07-14 — CtaSection: auto-moving spotlight
+Made the mask-hover spotlight self-animate instead of following the mouse. Removed onMouseMove/onMouseEnter/onMouseLeave + hoveredIndex; added a requestAnimationFrame loop (ResizeObserver-tracked container) that drives mouseX/mouseY (px, for the reveal mask) and a fractional focus cell (for the per-cell blue glow) along a slow out-of-phase Lissajous path, so lit cells stay under the revealed spotlight. Reduced-motion guarded (loop skipped → static dark grid). Same visual, no mouse. Verified: 0 mouse-handler refs, tsc + biome clean, next build ✓ /brand-strategy. Shared component (all CtaSection pages). Not committed.
+
+## 2026-07-14 — CtaSection: speed up auto spotlight
+Raised the Lissajous sine frequencies (0.34→0.55, 0.26→0.42) so the auto-moving spotlight drifts ~1.6x faster. Literal-only change; biome clean. Not committed.
+
+## 2026-07-14 — BlogHeroSection redesign + SpotlightGrid extraction
+Extracted the auto-moving spotlight pattern from CtaSection into a reusable `src/components/ui/SpotlightGrid.tsx` (self-measuring via its own ref, reduced-motion guarded, pointer-events-none absolute bg; same 0.55/0.42 Lissajous, 80-cell grid, #2E5BFF→#149CCB glow). CtaSection now renders `<SpotlightGrid />` (behaviorally identical; dropped all now-unused hook imports). Redesigned `src/components/blog/BlogHeroSection.tsx` into a black rounded container (min-h-70vh, bg-black, border-zinc-800/50) with SpotlightGrid behind and the existing "News, [img] views / and everything else" title recolored white; post-count + By Category/By Author pills restyled for dark. Verified: tsc + biome clean (3 files), next build ✓ /blog + /blog/[slug] + /brand-strategy, spec-verifier APPROVED (no P0/P1). Not committed.
+
+## 2026-07-14 — BlogHeroSection: split title animation
+Mirrored the brand-strategy StrategyHeroSection title animation onto the blog hero. Title h1 is now a motion.h1 stagger container (containerVariants: staggerChildren 0.25 / delayChildren 0.2) with words (News, / views / and everything else) as wordVariants children (y:40→0, 0.8s premiumEase). onAnimationComplete flips isExpanded → the inline image between "News," and "views" splits open (w-0/opacity-0 → w-[1.02em]/opacity-100 over a 1200ms cubic-bezier), pushing the words apart — same mechanic as the brand page. Reduced-motion: initial=false + isExpanded||reduce shows words + expanded image instantly. fadeUp retained for the count/filter row. Verified: tsc + biome clean, next build ✓ /blog + /blog/[slug]. Single file. Not committed.
+
+## 2026-07-14 — BlogFeaturedSection redesign (dark immersive cover)
+Redesigned from a plain white two-column split into a dark immersive cover card (user-chosen direction). Full-bleed article image backdrop with bottom-up black scrim + top fade + brand-color glow blobs; overlaid content — "Featured" + gradient category pills (top), oversized title, line-clamped excerpt, author/date/readTime meta, and a white wipe-fill "Read Article" affordance driven by the card's group-hover. Whole card is a single stretched Link (z-20 over pointer-events-none content) → valid HTML, no nested anchors. Rounded-[20px] dark card on the light #FAFAFA surround, mirroring the hero card and bridging into the dark #0a0a0a list. Reduced-motion guarded entrance. Decorative backdrop alt="" (h2 announces title). Verified: tsc + biome clean, next build ✓ /blog + /blog/[slug], spec-verifier APPROVED (no P0/P1; both P3 nits applied). Single file. Not committed.
+
+## 2026-07-14 — Blog: uniform x-axis gutter (px-6, matching ExperimentalTestimonials)
+Normalized every blog content section's horizontal gutter to a constant px-6 (ExperimentalTestimonials' inner container is mx-auto w-full px-6). BlogHeroSection + BlogFeaturedSection sections px-4/md:px-6 → px-6; blog page CtaSection wrapper px-3 → px-6. BlogListSection already used constant px-6 (unchanged). Left the Footer wrapper at px-3 (footer, not a content section). Class-only change; verified tsc + biome clean, next build ✓ /blog. Not committed.
+
+## 2026-07-14 — Blog: tighten hero→featured gap
+Removed BlogHeroSection's section bottom padding (`pb-14 md:pb-20` → none) so the gap
+between the hero card and the featured card is just BlogFeaturedSection's `pt-6` —
+24px at all breakpoints (was 80px mobile / 104px desktop), matching the `px-6` side
+gutters so the stacked dark cards read as one grid. Single class-string edit in
+`src/components/blog/BlogHeroSection.tsx:46`. Verified live via dev server (:3000, HMR):
+computed hero paddingBottom 0px, featured paddingTop 24px, hero section bottom flush
+with card bottom; featured card's steady-state gap = 24px (the extra 30px seen in the
+headless probe is its un-fired whileInView y:30 entrance offset — browser pane has no
+viewport here, visual check is manual per convention). Biome clean on the edited file
+(project-wide `bun run lint` fails on pre-existing debt in other files). Not committed.
+
+## 2026-07-14 — Blog: hero→featured gap +16px
+Nudged the gap back up per user: BlogFeaturedSection `pt-6` → `pt-10`
+(`src/components/blog/BlogFeaturedSection.tsx:23`), so hero card → featured card gap is
+now 40px at all breakpoints (was 24px after the earlier tighten; originally 80/104px).
+Verified via HMR on the user's :3000 dev server: computed featured paddingTop 40px, hero
+paddingBottom 0px. Biome clean on the file. Not committed.
+
+## 2026-07-14 — Blog hero: 2x spotlight speed via SpotlightGrid prop
+Added an optional `speed` multiplier prop to `src/components/ui/SpotlightGrid.tsx`
+(default 1 — time is scaled `t * speed` in the rAF Lissajous loop; added to the effect
+deps) and passed `speed={2}` from `src/components/blog/BlogHeroSection.tsx:54`. Blog
+hero spotlight now wanders 2x faster; CtaSection instances (all pages) keep the default
+pace untouched. Verified: tsc clean; biome clean on the diff (one PRE-EXISTING
+noArrayIndexKey error at SpotlightGrid.tsx:113 — static 80-cell grid, benign, not
+introduced here despite the 07-14 extraction entry claiming biome-clean). Live motion
+can't be observed in the headless pane (rAF never fires, innerWidth 0) — visual check
+manual per convention; console clean after reload (the 4 buffered "dep array changed
+size" errors were a one-time HMR artifact from the dep-array growing 3→4 mid-session).
+Note: user manually set BlogFeaturedSection pt-20 (gap 80px) after the pt-10 change —
+kept. Not committed.
+
+## 2026-07-14 — BlogListSection pills match WorkProjectShowcase
+Changed the active category-filter pill background in BlogListSection from the brand gradient (bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]) to WorkProjectShowcase's style: border border-white/10 bg-[#100f0f]. Text colors already matched (active white / inactive white/50). One-line class change; tsc + biome clean. Not committed.
+
+## 2026-07-14 — BlogListSection moving border → solid #2E5BFF
+Passed color="#2E5BFF" to the TracingBorder on the blog list cards (same as the work-page cards), so the moving comet + rested border render solid blue instead of the default cyan→blue gradient. One-line change; tsc + biome clean. Not committed.
+
+## 2026-07-14 — TracingBorder: one lap, then corner-glow finale
+Changed the shared `src/components/ui/TracingBorder.tsx` comet from two laps to one:
+`strokeDashoffset` initial 2.0 → 1.0, keyframes [2,1,0] → 1→0 (pathLength=1, so one
+offset unit = one full orbit), dropped the two-segment times/ease for a single
+"easeInOut", LAP_DURATION 5 → 2.5s (same per-lap pace). HANDOFF and the comet's opacity
+fade derive from LAP_DURATION, so the corner-glow/edge-fade finale now blooms at ~2.35s
+as the comet dissolves — same continuous handoff, one rotation earlier. Affects all
+three usages (BlogListSection, WorkProjectShowcase, brand-strategy ProjectShowcase).
+Verified: tsc clean, biome clean on the file, /blog compiles on the live server with no
+new console errors (hover animation itself needs manual eyes — headless pane doesn't
+paint). Not committed.
+
+## 2026-07-14 — Add "Blog" nav item to header
+Added a { name: "Blog", link: "/blog" } entry after "Work" in BOTH header nav definitions: page/Header.tsx (used by about/work/brand-strategy/career/contact/blog heroes) and layout/Header.tsx (used by the home page). Both needed it for the option to appear site-wide. Simple link (no dropdown), matching the existing About/Careers/Work pattern; the resizable-navbar renders desktop + mobile automatically. Verified: /blog route exists (app/blog/page.tsx), tsc + biome clean, next build ✓. Not committed.
+
+## 2026-07-14 — CtaSection: solid #2E5BFF spotlight glow
+Added optional `glowColor` prop to `src/components/ui/SpotlightGrid.tsx` — when set,
+lit cells render that solid color (inline backgroundColor) instead of the default
+blue→cyan `from-[#2E5BFF] via-[#149CCB] to-[#2E5BFF]` gradient. CtaSection passes
+`glowColor="#2E5BFF"` (`src/components/brand-strategy/CtaSection.tsx:27`); blog hero
+keeps the gradient default. Verified live on /blog DOM: CTA grid cell glow =
+rgb(46,91,255) inline with no gradient classes; hero grid unchanged. tsc clean; biome
+findings on CtaSection are pre-existing (noImgElement/noSvgWithoutTitle/index-key +
+CRLF format churn — untouched). Not committed.
+
+## 2026-07-14 — CtaSection: tone-on-tone blue glow gradient
+Follow-up to the solid #2E5BFF change: added optional `glowVia` prop to
+`src/components/ui/SpotlightGrid.tsx` — with `glowColor` it builds an inline vertical
+`glowColor → glowVia → glowColor` gradient (same shape as the default), alone glowColor
+stays solid. CtaSection now passes `glowColor="#2E5BFF" glowVia="#5B7CFF"` (a lighter
+neighbor blue — keeps the blue identity, no cyan). Verified live on /blog DOM: CTA cell
+glow = linear-gradient(rgb(46,91,255), rgb(91,124,255), rgb(46,91,255)); blog hero grid
+still on the default blue→cyan classes. tsc clean; only biome finding on SpotlightGrid
+is the pre-existing index-key. Not committed.
+
+## 2026-07-14 — Work hero: stronger radial scrim, drop "Selected Work" tag
+`src/components/work/WorkHeroSection.tsx`: (1) A radial black overlay behind the title
+ALREADY existed (committed) — user asked to "create" one, so it evidently read too weak
+over the dome gallery; deepened it: ellipse 58%x44% → 62%x48%, center 0.8 → 0.95, mid
+0.42 → 0.6 @48%, fade-out 78% → 80%. (2) Removed the "Selected Work" gradient tag
+(motion.div above the h1) — note the live text was "Selected Work", not "selected
+works" (that string only exists in dead garbage/ components). Verified live on /work:
+tag absent from DOM, h1 = "Our Creative Portfolio", scrim computes to
+radial-gradient(62% 48%, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 48%, transparent 80%).
+tsc clean; biome: only pre-existing unused `premiumEase` warning. Not committed.
+
+## 2026-07-14 — Contact hero redesign (dark spotlight)
+Redesigned ContactHeroSectionTwo from the light copy+mail-PNG split into a dark spotlight hero (user-chosen direction), matching the blog hero / CtaSection language. Black rounded container (min-h-82vh, bg-black, border-zinc-800/50) on the white surround with <SpotlightGrid /> behind; left-to-right black scrim + a brand glow blob for legibility over the pattern. Kept the staggered "Let's Build / Something / Great Together." headline (gradient last line), gradient "Contact Us" eyebrow, subtitle (white/60), and both CTAs — but converted CtaStyleButton to the white wipe-fill dark variant (border-white/20, before:bg-white, text-white→group-hover:text-black). Dropped contact2.png (removed next/image + MdKeyboardArrowDown imports). Reduced-motion guarded. Verified: no PNG/unused imports, tsc + biome clean, next build ✓ /contact, spec-verifier APPROVED (no P0/P1); confirmed #contact target exists (ContactSection id="contact"). Single file. Not committed.
+
+## 2026-07-14 — Contact hero redesign v2 (light, elevated)
+User re-issued the task; via AskUserQuestion chose "Go light instead" over the dark spotlight I'd just built. Rebuilt ContactHeroSectionTwo as a polished LIGHT hero: bigger editorial headline (lg:text-[6rem], leading-[0.9], tighter tracking), refined eyebrow (gradient rule + gradient text), roomier vertical rhythm, restored the black wipe-fill CtaStyleButton + the contact2.png mail art (now with a soft brand-gradient glow behind it for depth), plus two faint ambient brand washes and a quiet "Prefer email? hello@softexedge.com" secondary affordance. Used the real site email (hello@softexedge.com, confirmed from ContactSection/Footer — first wrote .in, corrected). Reduced-motion guarded. Verified: tsc + biome clean, next build ✓ /contact. Single file. Not committed.
+
+## 2026-07-14 — DomeGallery: 3D dome → flat 2D masonry wall
+Rewrote `src/components/ui/DomeGallery.tsx` (1054 → ~200 lines): removed the sphere,
+drag/inertia gestures (@use-gesture no longer imported here), and the enlarge-on-click
+viewer. New layout: 18 absolute-positioned columns, UNEVEN px widths (WIDTH_PATTERN
+300/180/250/205/290/225) and UNEVEN card heights (HEIGHT_PATTERN fractions of container
+height, coprime phase-shift per column + per-column top offsets so seams never align);
+ONE constant `gap` (16px) everywhere including the marquee loop seam (strip pitch ends
+with a trailing gap). autoRotate/autoRotateSpeed now drive a seamless rAF translate3d
+marquee (reduced-motion → static). Dropped dome-only props; updated the sole consumer
+`WorkHeroSection.tsx` accordingly. Map's DomeGallery paragraph rewritten to match.
+Verified live on /work DOM: 162 tiles, no 3D transforms in hero, widths/heights uneven
+per pattern, ALL h-gaps and v-gaps = exactly 16px. tsc clean; biome findings are
+parity-only (raw <img> as before; pre-existing premiumEase warning). Marquee motion
+itself needs eyes (pane doesn't paint). Old dome recoverable via git (file was clean at
+HEAD). Not committed.
+
+## 2026-07-14 — Contact hero redesign v3 (centered, conversation-first)
+Per the user's chosen concept (after dark + light versions), rebuilt ContactHeroSectionTwo as a centered, conversation-first hero: big centered headline "Let's build something great together." (gradient "great together."), a live-dot trust line "We usually reply within a few hours", a prominent email-capture pill (controlled type=email input + gradient Send → button that opens a prefilled mailto to hello@softexedge.com — visitor email encodeURIComponent'd to prevent mailto-header injection), and a quiet contact-details row (email · phone +1 800 123 4567 · LinkedIn/Instagram/Facebook icons). No split, no mail PNG. Real site email/phone/socials reused (from Footer/ContactSection). A11y: labeled input, aria-labeled socials, submit button; reduced-motion guards + ping gated on !reduce. Fixed placeholder href="#" socials to not open target=_blank. Verified: tsc + biome clean, next build ✓ /contact, spec-verifier APPROVED (security check passed, no P0/P1). Single file. Not committed.
+
+## 2026-07-14 — Work hero: blog-hero framing (white bg + black rounded card)
+Restructured `src/components/work/WorkHeroSection.tsx` to mirror BlogHeroSection's
+wrapper: main is now white `px-6 pt-24 md:pt-28 pb-6` with light `<Header />` (was
+full-screen black + `onDark`); the gallery wall, radial scrim, and centered title moved
+inside a black rounded card (`min-h-[70vh] rounded-[20px] border-zinc-800/50 bg-black
+overflow-hidden`). DomeGallery now fills the card (`absolute inset-0`, dropped the old
+`top-[-20vh] h-[140vh]` band); content div lost `min-h-screen`, gained `py-16`. pb-6
+gives the card 24px white breathing room above the black WorkProjectShowcase. Verified
+live on /work: main bg rgb(255,255,255), padding 112/24/24/24, card bg black,
+radius 20px, zinc-800/50 border, min-height 504px (=70vh), 156 gallery tiles + scrim
+inside the card, h1 intact. biome format applied; tsc clean. Not committed.
+
+## 2026-07-14 — Revert: work hero back to full-screen black (undo blog-hero framing)
+Reverted the blog-hero framing on `src/components/work/WorkHeroSection.tsx` by editing
+the structure back (NOT `git restore` — that would also have wiped the wanted uncommitted
+changes: deeper radial scrim, removed "Selected Work" tag, simplified DomeGallery props).
+Restored: full-screen black `<main min-h-screen>`, `<Header onDark />`, gallery band at
+`top-[-20vh] h-[140vh]`, content `min-h-screen` centered; removed the white wrapper +
+rounded card. Kept: 0.95/0.6 scrim, no tag, flat 2D DomeGallery. Verified live on /work:
+main bg rgb(0,0,0) @720px min-height, no card in DOM, scrim present, tag absent, 164
+tiles rendering. biome format applied; tsc clean. Not committed.
+
+## 2026-07-14 — Contact hero → back to dark spotlight (restore)
+User locked the dark spotlight direction; restored ContactHeroSectionTwo to that exact version (verbatim rewrite of the earlier spec-verifier-APPROVED build): white surround section, black rounded container (min-h-82vh) with <SpotlightGrid /> behind, left-to-right black scrim + brand glow blob, staggered "Let's Build / Something / Great Together." headline (gradient last line), gradient "Contact Us" eyebrow, white/60 subtitle, and two dark white-wipe-fill CtaStyleButtons (Start a Conversation → #contact, View Our Work → /work). No mail PNG, no email form. Reduced-motion guarded. Verified: no PNG/form refs, tsc + biome clean, next build ✓ /contact (a transient concurrent-edit "main tag" error cleared on re-run). Single file. Not committed.
+
+## 2026-07-14 — ContactSection: match testimonials' x padding
+`src/components/home/ContactSection.tsx:192` inner container `px-6 md:px-10` → `px-6`,
+matching ExperimentalTestimonials' container (`px-6` at all breakpoints,
+ExperimentalTestimonials.tsx:78). Affects ContactSection everywhere it's used
+(home/contact). Verified live on /home: contact container computes 24px/24px, same as
+the testimonials container (24px/24px). Biome clean on the file. Not committed.
+
+## 2026-07-14 — Contact hero spotlight glow matches CtaSection
+The contact hero used a default <SpotlightGrid /> (blue→cyan→blue glow). Passed glowColor="#2E5BFF" glowVia="#5B7CFF" to match CtaSection's SpotlightGrid gradient exactly. One-line prop change; tsc + biome clean. Not committed.
+
+## 2026-07-14 — Logo carousel: subtle white edge fades
+Added two pointer-events-none overlay divs inside `src/components/ui/LogoCarousel.tsx`
+(the marquee under ExperimentalTestimonials via TechLogoCarousel — its only consumer,
+always on white sections): left `bg-gradient-to-r from-white to-transparent` and right
+mirrored, `w-16 md:w-24`, z-10 over the scrolling track. Verified live on /home DOM:
+both fades render at 96px with white→transparent linear-gradients on the correct sides.
+Biome clean. Not committed.
+
+## 2026-07-14 — Contact hero: center-align text
+Centered the dark spotlight contact hero content: black container gained items-center; content wrapper items-start → items-center text-center; buttons row + subtitle centered (justify-center / mx-auto). Swapped the left-side legibility scrim for a centered radial (ellipse at center) and recentered the brand glow to bottom-center so contrast tracks the now-centered copy. Class-only change; tsc + biome clean. Not committed.
+
+## 2026-07-14 — New /web-development page (independent mirror of /brand-strategy)
+Copied all 8 `src/components/brand-strategy/` files verbatim to
+`src/components/web-development/` (same directory depth → relative `../ui` and
+`./AgencyStats` imports work unchanged) and created `src/app/web-development/page.tsx`
+mirroring the brand-strategy page with imports pointed at the new folder. Dropped the
+original's `type Props = {}` / `({}: Props)` lint-error pattern from the new page (biome
+noBannedTypes/noEmptyPattern — didn't copy known-bad code). Other pages (about, blog,
+work, contact) still import brand-strategy's CtaSection/FaqSection — untouched. Future
+web-development-specific edits go in components/web-development/. Verified: tsc clean,
+biome clean on the new page, live /web-development renders 11 sections with the same h1
+as /brand-strategy (11 sections, structural match). Map updated (new surface row).
+Header nav does NOT yet link the new page. Not committed.
+
+## 2026-07-14 — Header Services dropdown: link Web Development → /web-development
+Both headers already had a "Web Development" dropdown item pointing at the nonexistent
+`/services` route; changed `link: "/services"` → `"/web-development"` in BOTH
+`src/components/page/Header.tsx` (~line 54, inner pages) and
+`src/components/layout/Header.tsx` (~line 48, home) — the known duplicate-nav trap.
+Verified live by programmatically mounting the hover dropdown: /work (page/Header) and
+/home (layout/Header) each show one a[href="/web-development"] labeled "Web
+Development". Biome clean. NOTE: the other dropdown items (Brand Identity, eCommerce,
+UX…) still point at /services which 404s — pre-existing, untouched. Not committed.
+
+## 2026-07-14 — /web-development: center section headers
+Centered tag + title + description in the four web-development section copies (first
+divergence from brand-strategy — the reason the copies exist): SubServices,
+ProcessSection, OurTechStack, ProjectShowcase. Per file: header row lost
+`items-start justify-between md:flex-row md:items-start|end`, gained
+`items-center text-center`; tag+title column gained `items-center`; description lost
+`md:text-left`/`text-left` (+`ml-[3px]` optical-left offset dropped from tags), gained
+`text-center`. Verified live: all four headers on /web-development compute
+align-items:center + text-align:center (row, column, and <p>), while /brand-strategy
+still computes flex-start/flex-end + start — isolation intact. tsc clean; the 8 biome
+findings on these files are inherited verbatim from the brand-strategy originals (none
+on edited lines). Not committed.
+
+## 2026-07-14 — TracingBorder: smooth animation (drop per-frame SVG filter)
+Smoothed the moving-border animation everywhere it's used (BlogListSection, WorkProjectShowcase, brand-strategy + web-development ProjectShowcase) by fixing the shared ui/TracingBorder.tsx. Root cause of stutter: both the comet (animating strokeDashoffset every frame) and the masked static border ran through an feGaussianBlur SVG filter, forcing CPU re-rasterization of the blur each frame. Removed the filter entirely and replaced the glow with layered strokes — a wide low-opacity halo stroke (w6/0.28 comet, w5.5/0.25 static) under the crisp core stroke — visually equivalent glow, pure cheap geometry. Comet opacity fade moved to a wrapping motion.g so halo+core dissolve together. Timings/easing/mask handoff unchanged. Verified: no real filter refs remain (only a comment mentions it), tsc + biome clean, next build ✓. Single shared file. Not committed.
+
+## 2026-07-14 — PerksSection redesign (dark cards, reference image)
+Rewrote `src/components/career/PerksSection.tsx` from the white mixed-tone bento to the
+user's reference layout, adapted to brand: section bg-black; centered header — gradient
+bullet dot + "Benefits" tag (white) + "A snippet of our perks" (white, up to text-6xl);
+uniform 1/2/3-col grid of six cards (rounded-[20px] border-white/5 bg-zinc-900/50
+backdrop-blur, hover lift + bg-zinc-900) each with a 48px rounded-xl icon square in the
+brand gradient (#2E5BFF→#149CCB, white lucide icon) inline with the title, description
+(zinc-400) below. Dropped the wide/tone bento fields; kept perk copy, premiumEase
+whileInView stagger, reduced-motion guards. Verified live on /career DOM: section
+rgb(0,0,0), header centered, 6 cards @20px radius, icon boxes 48px with
+linear-gradient(rgb(46,91,255)→rgb(20,156,203)), titles inline. tsc clean; biome clean
+after auto import-sort fix. Not committed.
+
+## 2026-07-14 — OurTeamSection: fix laggy parallax (velocity → position-linked)
+The team card row's horizontal parallax felt laggy because it was driven by scroll VELOCITY (useVelocity(scrollY) → spring → x), which is noisy and springs back to rest — it only lurched while scrolling then settled. Reworked to POSITION-linked: useScroll({ target: sectionRef, offset: ["start end","end start"] }) → useTransform(scrollYProgress,[0,1],["6%","-6%"]) → gentle useSpring. Now the row's x tracks scroll position directly, so scrolling down drifts cards one way and scrolling up reverses (as requested), smoothly. Added sectionRef on the <section>, reduced-motion guard (x = "0%" when reduce), removed useVelocity import. Kept the ±6% travel under the 7% over-width buffer. Verified: no velocity refs remain, tsc + biome clean, next build ✓. Single file. Not committed.
+
+## 2026-07-14 — PerksSection header: match OpenPositions style
+Restyled the PerksSection tag + title to mirror OpenPositions exactly
+(`src/components/career/PerksSection.tsx`): tag → `mb-8 inline-flex text-xs
+font-semibold uppercase tracking-[0.25em] text-white/60` (gradient bullet dot removed);
+title → `text-4xl font-bold leading-[1.05em] tracking-tighter text-white md:text-5xl
+lg:text-[6.5rem]` (dropped max-w-3xl). Centered layout kept. Verified live on /career:
+computed styles of both headers are IDENTICAL — tags 12px/600/uppercase/3px
+letter-spacing/white@60%, titles 104px/700/−5.2px/white. Biome clean. Not committed.
+
+## 2026-07-14 — OurValuesSection: remove bg effect + narrow description
+Removed the interactive DotGrid background pattern (the whole absolute DotGrid block + its bg-black/40 overlay) and the now-unused DotGrid import — section is now flat bg-black. Narrowed the culture description paragraph from max-w-3xl to max-w-lg. Class/markup-only; tsc + biome clean. Not committed.
+
+## 2026-07-14 — SubServices: remove card-title hover effects
+Removed the hover choreography from the service-card h3 titles (`transition-colors
+group-has-[a:hover]/cards:text-white/40 group-hover:!text-white` → plain white) in BOTH
+copies — `src/components/brand-strategy/SubServices.tsx:190` and
+`src/components/web-development/SubServices.tsx` — since the request didn't scope a
+page (previously the dim-all/highlight-hovered effect fired when hovering any card
+link). Titles now stay solid white. Verified: grep 0 hover classes in both files; live
+/web-development DOM shows all 4 card titles with no hover classes
+(`text-5xl font-medium tracking-tight text-white md:text-6xl lg:text-7xl`). Not
+committed.

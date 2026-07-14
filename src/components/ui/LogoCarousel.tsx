@@ -37,6 +37,9 @@ export default function LogoCarousel({
       aria-label={ariaLabel}
       className={cn("relative w-full overflow-hidden", className)}
     >
+      {/* Subtle white edge fades so the marquee dissolves at the sides */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent md:w-24" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white to-transparent md:w-24" />
       <motion.div
         className="flex w-max items-center gap-3 py-2"
         animate={{ x: ["-50%", "0%"] }}

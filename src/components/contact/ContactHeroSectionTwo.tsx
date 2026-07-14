@@ -1,10 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
-import Image from "next/image";
+import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { MdArrowOutward, MdKeyboardArrowDown } from "react-icons/md";
+import { MdArrowOutward } from "react-icons/md";
 import Header from "../page/Header";
+import SpotlightGrid from "../ui/SpotlightGrid";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -34,8 +34,8 @@ const fadeUp = {
   }),
 } as const;
 
-// Button styled like the CtaSection "Connect With Us" button (white wipe-fill +
-// arrow-flip), color-inverted here for the light hero background.
+// Button styled like the CtaSection "Connect With Us" button — white wipe-fill
+// + arrow-flip, for the dark hero background.
 function CtaStyleButton({
   label,
   href,
@@ -46,15 +46,15 @@ function CtaStyleButton({
   gradId: string;
 }) {
   const className =
-    "group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl border border-zinc-300 pl-5 pr-2 transition-all duration-300 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-black before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100";
+    "group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl border border-white/20 pl-5 pr-2 transition-all duration-300 hover:border-white hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100";
 
   const inner = (
     <>
-      <span className="relative z-10 text-base font-bold tracking-tight text-black transition-colors duration-300 group-hover:text-white">
+      <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
         {label}
       </span>
 
-      <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-black text-white transition-colors duration-300 group-hover:bg-white group-hover:text-black">
+      <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
         <svg width="0" height="0" className="absolute">
           <title>Arrow gradient</title>
           <defs>
@@ -86,33 +86,45 @@ function CtaStyleButton({
 }
 
 export default function ContactHeroSectionTwo() {
+  const reduce = useReducedMotion();
+
   return (
-    <section className="relative flex min-h-[100svh] w-full flex-col overflow-hidden bg-white font-sans">
+    <section className="relative w-full bg-white px-3 pt-24 pb-0 font-sans selection:bg-[#2E5BFF]/20 md:pt-30">
       {/* Header — shared inner-page header */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
-      {/* Main content */}
-      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-1 flex-col items-center gap-10 px-6 pb-24 pt-32 md:flex-row md:gap-6 md:px-10 md:pb-16 md:pt-28 lg:gap-12">
-        {/* ─── Left: copy ─── */}
-        <div className="flex w-full flex-col items-start md:w-[44%]">
+      {/* Black hero container with auto-moving spotlight pattern */}
+      <div className="relative mx-auto flex min-h-[82vh] w-full flex-col items-center justify-center overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-6 py-16 md:px-12 md:py-20 lg:px-16">
+        <SpotlightGrid glowColor="#2E5BFF" glowVia="#5B7CFF" />
+
+        {/* Centered scrim so the copy stays legible over the pattern */}
+        <div className="pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(ellipse_65%_60%_at_center,rgba(0,0,0,0.72),transparent_75%)]" />
+
+        {/* Brand glow */}
+        <div className="pointer-events-none absolute -bottom-24 left-1/2 z-[5] h-80 w-80 -translate-x-1/2 rounded-full bg-[#2E5BFF]/25 blur-[120px]" />
+
+        {/* Content */}
+        <div className="relative z-10 flex w-full max-w-2xl flex-col items-center text-center">
           {/* Eyebrow */}
           <motion.span
-            initial={{ opacity: 0, y: 16 }}
+            initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: premiumEase }}
-            className="mb-6 text-xs font-bold uppercase tracking-[0.28em] text-[#2E5BFF]"
+            className="mb-6 text-xs font-bold uppercase tracking-[0.28em]"
           >
-            Contact Us
+            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              Contact Us
+            </span>
           </motion.span>
 
           {/* Headline */}
           <motion.h1
             variants={headlineContainer}
-            initial="hidden"
+            initial={reduce ? false : "hidden"}
             animate="visible"
-            className="flex flex-col text-[3.25rem] font-bold leading-[0.95] tracking-tight text-black sm:text-[4rem] lg:text-[5.25rem]"
+            className="flex flex-col text-[3.25rem] font-bold leading-[0.95] tracking-tight text-white sm:text-[4rem] lg:text-[5.25rem]"
           >
             <motion.span variants={line}>Let&apos;s Build</motion.span>
             <motion.span variants={line}>Something</motion.span>
@@ -127,9 +139,9 @@ export default function ContactHeroSectionTwo() {
           <motion.p
             custom={0.9}
             variants={fadeUp}
-            initial="hidden"
+            initial={reduce ? false : "hidden"}
             animate="visible"
-            className="mt-8 max-w-md text-base font-medium leading-relaxed text-zinc-500 md:text-lg"
+            className="mt-8 max-w-md text-base font-medium leading-relaxed text-white/60 md:text-lg mx-auto"
           >
             Have a project in mind or just want to say hello?
             <br />
@@ -140,9 +152,9 @@ export default function ContactHeroSectionTwo() {
           <motion.div
             custom={1.1}
             variants={fadeUp}
-            initial="hidden"
+            initial={reduce ? false : "hidden"}
             animate="visible"
-            className="mt-10 flex flex-wrap items-center gap-3"
+            className="mt-10 flex flex-wrap items-center justify-center gap-3"
           >
             <CtaStyleButton
               label="Start a Conversation"
@@ -156,26 +168,7 @@ export default function ContactHeroSectionTwo() {
             />
           </motion.div>
         </div>
-
-        {/* ─── Right: illustration (effects baked into the PNG) ─── */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1, ease: premiumEase, delay: 0.2 }}
-          className="relative h-[380px] w-full md:h-[560px] md:w-[56%] lg:h-[650px]"
-        >
-          <Image
-            src="/assets/contact2.png"
-            alt="3D mail illustration"
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, 55vw"
-            className="object-contain"
-          />
-        </motion.div>
       </div>
-
-      {/* Scroll indicator */}
     </section>
   );
 }

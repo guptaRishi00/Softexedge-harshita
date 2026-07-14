@@ -187,7 +187,7 @@ function Card({
             href={link}
             className="group inline-block"
           >
-            <h3 className="text-5xl font-medium tracking-tight text-white transition-colors group-has-[a:hover]/cards:text-white/40 group-hover:!text-white md:text-6xl lg:text-7xl">
+            <h3 className="text-5xl font-medium tracking-tight text-white md:text-6xl lg:text-7xl">
               {title1}
               {title1 === "E" ? "-" : " "}
               {title2}

@@ -4,31 +4,14 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { MdArrowOutward } from "react-icons/md";
-import DotGrid from "../ui/DotGrid";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
 export default function OurValuesSection() {
   return (
     <section className="relative flex w-full flex-col overflow-hidden bg-black font-sans py-20 md:py-32">
-      {/* Background DotGrid Pattern */}
-      <div className="absolute inset-0 flex items-center w-full justify-center gap-1 opacity-50">
-        <DotGrid
-          dotSize={3}
-          gap={30}
-          baseColor="#27272a"
-          activeColor="#2E5BFF"
-          proximity={150}
-          shockRadius={250}
-          shockStrength={1}
-          resistance={2000}
-          returnDuration={4.4}
-        />
-      </div>
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-black/40" />
-
       {/* Content Container */}
-      <div className="relative z-10 mx-auto w-full  px-6 lg:px-10">
+      <div className="relative z-10 mx-auto w-full px-6 lg:px-10">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-stretch">
           {/* Left Column: Image */}
           <motion.div
@@ -66,8 +49,8 @@ export default function OurValuesSection() {
             className="w-full lg:w-7/12 flex flex-col justify-center py-6 lg:py-12"
           >
             {/* Eyebrow */}
-            <div className="mb-8 inline-flex items-center justify-start rounded-full">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">
+            <div className="mb-8">
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2E5BFF]">
                 Our Culture
               </span>
             </div>
@@ -81,7 +64,7 @@ export default function OurValuesSection() {
             </h2>
 
             {/* Paragraph */}
-            <p className="max-w-3xl text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
+            <p className="max-w-2xl text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
               We produce good work for good people, and with the idea that staff
               and the client will be happy throughout the full process. This in
               return will bring more work our way, whether that's via
@@ -89,7 +72,7 @@ export default function OurValuesSection() {
             </p>
 
             {/* Quote Card (Project Colors: Dark Theme) */}
-            <div className="mt-12 relative flex flex-col gap-8 rounded-3xl bg-[#100f0f] p-8 md:p-10">
+            <div className="mt-12 relative flex flex-col gap-8 rounded-3xl border border-white/[0.06] bg-[#100f0f] p-8 md:p-10">
               <p className="text-xl md:text-2xl font-medium leading-[1.2em] tracking-tight text-white">
                 My vision has always been to look after the clients we work
                 with, but to also look after the staff just as much. That will

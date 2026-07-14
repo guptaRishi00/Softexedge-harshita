@@ -95,7 +95,7 @@ export default function BlogListSection() {
               {activeCategory === category && (
                 <motion.div
                   layoutId="blogCategory"
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+                  className="absolute inset-0 rounded-full border border-white/10 bg-[#100f0f]"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
@@ -190,6 +190,7 @@ function BlogCard({
         <TracingBorder
           active={isHovered}
           radius={20}
+          color="#2E5BFF"
           gradientId={`blog-trace-${post.id}`}
         />
 

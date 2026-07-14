@@ -1,10 +1,9 @@
 // src/components/home/CtaSection.tsx
 "use client";
 
-import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
-import type React from "react";
-import { useState } from "react";
+import { motion } from "framer-motion";
 import { MdArrowOutward } from "react-icons/md";
+import SpotlightGrid from "../ui/SpotlightGrid";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
@@ -19,96 +18,13 @@ const avatars = [
 ];
 
 export default function CtaSection() {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
-  // Set up motion values to track the mouse position for the spotlight
-  const mouseX = useMotionValue(-1000); // Start far off-screen
-  const mouseY = useMotionValue(-1000);
-
-  const totalItems = 80;
-  const columns = 10;
-
-  const getIntensity = (index: number) => {
-    if (hoveredIndex === null) return 0;
-
-    const row = Math.floor(index / columns);
-    const col = index % columns;
-
-    const hoverRow = Math.floor(hoveredIndex / columns);
-    const hoverCol = hoveredIndex % columns;
-
-    const distance = Math.sqrt((row - hoverRow) ** 2 + (col - hoverCol) ** 2);
-
-    if (distance > 3.5) return 0;
-    return Math.max(0, 1 - distance / 1.79);
-  };
-
-  // Update motion values as the mouse moves over the section
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const { left, top } = e.currentTarget.getBoundingClientRect();
-    mouseX.set(e.clientX - left);
-    mouseY.set(e.clientY - top);
-  };
-
   return (
     <section className="relative w-full bg-white px-0 md:px-0 md:pt-0">
       <div className="mx-auto w-full">
         {/* Main CTA Container - Reduced height to 45vh */}
-        <div
-          className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setHoveredIndex(null)}
-        >
-          {/* Interactive Proximity Background Grid */}
-          <motion.div
-            className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden transition-opacity duration-500"
-            style={{
-              // This mask cuts a hole to reveal the pattern where the mouse is
-              WebkitMaskImage: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
-              maskImage: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
-            }}
-          >
-            <div
-              className="grid w-[120%] -ml-[5%] gap-3"
-              style={{
-                gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-              }}
-            >
-              {Array.from({ length: totalItems }).map((_, index) => {
-                const intensity = getIntensity(index);
-                const colorVal = Math.round(15 * (1 - intensity));
-                const bgColor = `rgb(${colorVal}, ${colorVal}, ${colorVal})`;
-
-                return (
-                  <div
-                    key={index}
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    className="relative aspect-square w-full overflow-hidden rounded-2xl p-[2px] transition-all duration-300 ease-out"
-                    style={{
-                      backgroundColor:
-                        intensity > 0 ? "transparent" : "#121212",
-                    }}
-                  >
-                    {/* The colored glow that appears on hover */}
-                    <div
-                      className="absolute inset-0 bg-gradient-to-b from-[#2E5BFF] via-[#149CCB] to-[#2E5BFF]"
-                      style={{ opacity: intensity * 0.8 }}
-                    />
-
-                    {/* The inner dark cell */}
-                    <div
-                      className="relative z-10 h-full w-full rounded-2xl transition-colors duration-300"
-                      style={{ backgroundColor: bgColor }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* General Overlays to ensure pattern blends nicely */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-black/5 to-black/30" />
-            <div className="pointer-events-none absolute inset-0 opacity-25 bg-[radial-gradient(circle_at_center,transparent_0%,#000_100%)]" />
-          </motion.div>
+        <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black">
+          {/* Auto-moving spotlight pattern background */}
+          <SpotlightGrid glowColor="#2E5BFF" glowVia="#5B7CFF" />
 
           {/* TEXT BLOCK-OUT LAYERS (Z-5) */}
           {/* These permanent black gradients sit ABOVE the spotlight grid but BELOW the text, ensuring the spotlight never reveals the grid behind typography. */}

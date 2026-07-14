@@ -63,12 +63,6 @@ export default function WorkHeroSection() {
       <div className="absolute left-0 top-[-20vh] z-0 h-[140vh] w-full">
         <DomeGallery
           images={GALLERY_MEDIA}
-          fit={1}
-          fitBasis="max"
-          minRadius={600}
-          maxVerticalRotationDeg={0}
-          segments={34}
-          dragDampening={2}
           autoRotate
           autoRotateSpeed={1}
           grayscale={false}
@@ -76,19 +70,10 @@ export default function WorkHeroSection() {
       </div>
 
       {/* Black scrim confined to an ellipse behind the centered title, so the
-          rest of the dome stays visible (no full-screen darkening). */}
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_58%_44%_at_50%_50%,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.42)_46%,transparent_78%)]" />
+          rest of the wall stays visible (no full-screen darkening). */}
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_62%_48%_at_50%_50%,rgba(0,0,0,0.95)_0%,rgba(0,0,0,0.6)_48%,transparent_80%)]" />
 
       <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 text-center md:px-10 pointer-events-none">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mb-15 ml-[3px] inline-flex items-center text-md font-semibold uppercase tracking-widest bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
-        >
-          Selected Work
-        </motion.div>
-
         <motion.h1
           variants={containerVariants}
           initial="hidden"

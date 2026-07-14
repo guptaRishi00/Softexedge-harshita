@@ -54,17 +54,19 @@ border that traces on hover then settles into TR/BL corner glows — blog +
 work cards; optional `color` prop renders it as a solid color instead of the
 gradient — work passes `#2E5BFF`, blog keeps the gradient), `TechLogoCarousel`
 (tech-stack logo marquee under `ExperimentalTestimonials` on every page),
-`DomeGallery` (opt-in `autoRotate`/`autoRotateSpeed`; image-only tiles).
-**Layout = masonry** (`buildItems`): columns have UNEVEN widths (normalized
-`widthPattern`) positioned CUMULATIVELY with a constant `GAP` (each column's
-pitch = its width + GAP), so a narrow column no longer leaves a bigger gap.
-Card height is constant (`CARD_H = 2 - GAP`) and rows stay on the 2-unit grid,
-so vertical gap == horizontal GAP == every gap (proven equal). Widths are
-normalized so `sum(colWidths) + seg*GAP = seg*2` → the columns wrap the full
-360° seamlessly. Item `x = columnCenter - 0.5` (the CSS transform +
-`computeItemBaseRotation` still add `+0.5`, so don't reintroduce a slot-index
-`x`). With cumulative positioning + GAP>0 cards never overlap, so widths MAY
-exceed 2 now (the old "≤2 per axis" rule is obsolete). 4px inset per tile.
+`DomeGallery` (2026-07-14: REWRITTEN as a flat 2D masonry wall — the 3D
+sphere, drag gestures, and enlarge-on-click viewer are GONE, along with the
+dome-era props fit/fitBasis/minRadius/maxVerticalRotationDeg/segments/
+dragDampening; it no longer imports @use-gesture/react). Now: 18 columns with
+UNEVEN px widths (`WIDTH_PATTERN`) and UNEVEN card heights (`HEIGHT_PATTERN`
+fractions of container height, phase-shifted per column via coprime index
+stepping so horizontal seams never align), and ONE constant `gap` prop
+(default 16px) everywhere — between columns, between cards, and at the loop
+seam (strip pitch includes a trailing gap). `autoRotate`/`autoRotateSpeed`
+now mean a seamless horizontal marquee (rAF translate3d over one strip
+pitch; strip tiled ceil(w/pitch)+1 times); reduced-motion → static wall.
+Renders pointer-events-none as an ambient background (raw `<img>` tiles).
+Only consumer: `WorkHeroSection`.
 
 ## Surfaces
 All routes are public (static marketing pages, no auth anywhere).
@@ -75,6 +77,7 @@ All routes are public (static marketing pages, no auth anywhere).
 | HomePage | Route | `src/app/home/page.tsx:32` | public | Main landing: hero, Trusted-By logo loop, about, portfolio, stats, services, testimonials (+`TechLogoCarousel`), contact, blog |
 | AboutPage | Route | `src/app/about/page.tsx:14` | public | About: hero, traditional, culture (OurValuesSection), team, testimonials + `TechLogoCarousel`, FAQ, CTA |
 | BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:16` | public | Service page: hero, sub-services, process, tech stack, showcase, testimonials + `TechLogoCarousel`, CTA, FAQ, blog |
+| WebDevelopmentPage | Route | `src/app/web-development/page.tsx:15` | public | 2026-07-14: exact mirror of /brand-strategy, but ALL 8 section components are independent copies in `src/components/web-development/` (incl. its own CtaSection/FaqSection) so this page can diverge — edit those, not the brand-strategy ones. Other pages still import the brand-strategy CtaSection/FaqSection. Not yet linked from the Header nav. |
 | ContactPage | Route | `src/app/contact/page.tsx:12` | public | Contact: hero, `ContactSection` form, testimonials + `TechLogoCarousel`, FAQ, CTA |
 | CareerPage | Route | `src/app/career/page.tsx:11` | public | Careers: `CareerHeroSection` → `WhyJoinUs` → `OpenPositions` (accordion job board) → `PerksSection` (benefit cards) → `OurTeamSection` → `ApplicationJourney` (sticky-deck) → Footer. (`CareerValues` present but commented out.) |
 | WorkPage | Route | `src/app/work/page.tsx:10` | public | Work index: `WorkHeroSection` (rotating colour `DomeGallery` bg + black overlay + `<Header onDark/>`, stat counters) + `WorkProjectShowcase` (cards → `/work/<slug>`, `TracingBorder` hover) |
