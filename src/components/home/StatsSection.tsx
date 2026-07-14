@@ -6,7 +6,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRef } from "react";
 import { cn } from "@/lib/utils";
-import DotGrid from "../ui/DotGrid";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -86,22 +85,8 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-white py-20 text-black md:py-2"
+      className="relative w-full overflow-hidden bg-linear-to-br from-white to-[#efefef] py-28 text-black md:py-24"
     >
-      <div className="absolute inset-0 flex items-center w-full justify-center gap-1">
-        <DotGrid
-          dotSize={3}
-          gap={25}
-          baseColor="#E5E7EB"
-          activeColor="#2E5BFF"
-          proximity={150}
-          shockRadius={250}
-          shockStrength={1}
-          resistance={2000}
-          returnDuration={4.4}
-        />
-      </div>
-
       <div className="relative z-10 flex w-full flex-col">
         {stats.map((stat, index) => (
           <div

@@ -49,9 +49,9 @@ export default function HomePage() {
   const aboutInnerRef = useRef<HTMLDivElement>(null);
   const portfolioRef = useRef<HTMLDivElement>(null);
 
-  // === NEW REFS FOR SERVICE SECTION ANIMATION ===
+  // Stats pins once its scroll completes; ServiceSection slides up over it.
+  const statsContainerRef = useRef<HTMLDivElement>(null);
   const serviceContainerRef = useRef<HTMLDivElement>(null);
-  const serviceInnerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
     const mm = gsap.matchMedia();
@@ -87,29 +87,20 @@ export default function HomePage() {
         });
       }
 
-      // 2. SERVICE SECTION SCALE UP & UN-ROTATE
-      if (serviceContainerRef.current && serviceInnerRef.current) {
-        gsap.fromTo(
-          serviceInnerRef.current,
-          {
-            scale: 0.65, // Starts small
-            rotation: 20, // Rotated 20 degrees
-            borderRadius: "40px", // Giving it rounded edges while it acts as a card
-            overflow: "hidden",
-          },
-          {
-            scale: 1, // Ends at full size
-            rotation: 0,
-            borderRadius: "0px",
-            ease: "none",
-            scrollTrigger: {
-              trigger: serviceContainerRef.current,
-              start: "top bottom",
-              end: "top top",
-              scrub: 1,
-            },
-          },
-        );
+      // 2. STATS → SERVICES OVERLAP: once StatsSection has fully scrolled
+      // through (its bottom reaches the viewport bottom — pinning earlier
+      // would freeze its row animations with the lower rows still hidden),
+      // pin it and let ServiceSection slide up over it (same pattern as
+      // About → Portfolio above).
+      if (statsContainerRef.current && serviceContainerRef.current) {
+        ScrollTrigger.create({
+          trigger: statsContainerRef.current,
+          start: "bottom bottom",
+          endTrigger: serviceContainerRef.current,
+          end: "top top",
+          pin: true,
+          pinSpacing: false,
+        });
       }
     });
 
@@ -164,18 +155,15 @@ export default function HomePage() {
           </div>
 
           <div className="relative z-10 bg-white">
-            <StatsSection />
+            <div ref={statsContainerRef} className="relative z-0">
+              <StatsSection />
+            </div>
 
             <div
               ref={serviceContainerRef}
-              className="relative w-full bg-white overflow-hidden py-10"
+              className="relative z-10 w-full shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
             >
-              <div
-                ref={serviceInnerRef}
-                className="w-full origin-center will-change-transform"
-              >
-                <ServiceSection />
-              </div>
+              <ServiceSection />
             </div>
 
             <ExperimentalTestimonials />

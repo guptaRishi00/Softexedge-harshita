@@ -2622,3 +2622,28 @@ link). Titles now stay solid white. Verified: grep 0 hover classes in both files
 /web-development DOM shows all 4 card titles with no hover classes
 (`text-5xl font-medium tracking-tight text-white md:text-6xl lg:text-7xl`). Not
 committed.
+
+## 2026-07-14 — StatsSection: drop DotGrid, more y-padding, testimonial-card gradient bg
+`src/components/home/StatsSection.tsx`: (1) removed the interactive DotGrid background
+(absolute wrapper + import) — `ui/DotGrid.tsx` now has NO consumers outside garbage/
+(orphaned, left in place); (2) section padding `py-20 md:py-2` → `py-28 md:py-24`,
+stat rows' internal spacing untouched (stat-inner still py-10); (3) section bg
+`bg-white` → `bg-linear-to-br from-white to-[#efefef]` — the exact gradient from the
+ExperimentalTestimonials cards (line 185). Verified live on /home: no canvas in #stats,
+bg computes linear-gradient(to right bottom, #fff → #efefef), section padding 96px/96px
+(md), stat-inner still 40px/40px, 4 rows. tsc clean; biome findings pre-existing
+(index key + CRLF format churn). Not committed.
+
+## 2026-07-14 — Home: Stats pins, Services overlaps; rotate entrance removed
+`src/app/home/page.tsx`: replaced ServiceSection's scale-0.65/rotate-20°/border-radius
+scrub entrance (gsap.fromTo on serviceInnerRef) with the About→Portfolio overlap
+pattern: StatsSection wrapped in `div.relative.z-0` (statsContainerRef) pinned via
+ScrollTrigger from `start: "bottom bottom"` (NOT top top — Stats is taller than the
+viewport; pinning earlier would freeze its row scrubs with lower rows unseen) to
+`end: serviceContainer "top top"`, `pinSpacing: false`; ServiceSection wrapper is now
+`relative z-10 shadow-[0_-50px_80px_rgba(0,0,0,0.5)]` (dropped the bg-white py-10
+card frame + origin-center inner div; serviceInnerRef removed). Services now slides up
+over the pinned stats after stats finishes scrolling. Verified live on /home: GSAP
+pin-spacer wraps the stats container (pin registered), service wrapper z-10 with
+transform:none (no rotation/scale anywhere), black section inside, shadow applied;
+tsc + biome clean. Scroll feel needs eyes. Not committed.
