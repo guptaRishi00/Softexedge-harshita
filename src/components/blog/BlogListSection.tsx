@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import {
   type BlogPost,
@@ -23,18 +23,41 @@ const smoothSpring = {
 
 export default function BlogListSection() {
   const [activeCategory, setActiveCategory] = useState<Category>("All");
+  const [activeAuthor, setActiveAuthor] = useState<string>("All");
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+
+  // The hero's "By Category" / "By Author" dropdowns drive this list via a
+  // window event (the two components are siblings with no shared parent state).
+  useEffect(() => {
+    const onFilter = (e: Event) => {
+      const { type, value } = (e as CustomEvent<{ type: string; value: string }>)
+        .detail;
+      if (type === "category") {
+        setActiveCategory(value as Category);
+        setActiveAuthor("All");
+      } else if (type === "author") {
+        setActiveAuthor(value);
+        setActiveCategory("All");
+      }
+    };
+    window.addEventListener("blog:filter", onFilter);
+    return () => window.removeEventListener("blog:filter", onFilter);
+  }, []);
 
   // The featured post opens the page (BlogFeaturedSection), so keep it out of
   // the list to avoid showing it twice.
   const listPosts = blogPosts.filter((p) => !p.featured);
-  const filteredPosts =
-    activeCategory === "All"
-      ? listPosts
-      : listPosts.filter((p) => p.category === activeCategory);
+  const filteredPosts = listPosts.filter(
+    (p) =>
+      (activeCategory === "All" || p.category === activeCategory) &&
+      (activeAuthor === "All" || p.author === activeAuthor),
+  );
 
   return (
-    <section className="relative overflow-hidden bg-[#0a0a0a] py-24 font-sans text-white md:py-32">
+    <section
+      id="blog-list"
+      className="relative overflow-hidden bg-[#0a0a0a] py-24 font-sans text-white md:py-32"
+    >
       {/* Subtle noise overlay */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 
@@ -88,7 +111,10 @@ export default function BlogListSection() {
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() => setActiveCategory(category)}
+              onClick={() => {
+                setActiveCategory(category);
+                setActiveAuthor("All");
+              }}
               className="relative rounded-full px-5 py-2.5 text-sm font-medium transition-colors duration-300"
             >
               {/* Active pill background with layoutId animation */}
@@ -117,13 +143,18 @@ export default function BlogListSection() {
       <div className="relative mx-auto w-full px-6">
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeCategory}
+            key={`${activeCategory}-${activeAuthor}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5, ease: premiumEase }}
             className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 md:gap-8"
           >
+            {filteredPosts.length === 0 && (
+              <p className="col-span-full py-16 text-center text-white/50">
+                No posts found for this filter.
+              </p>
+            )}
             {filteredPosts.map((post, index) => (
               <motion.div
                 key={post.id}

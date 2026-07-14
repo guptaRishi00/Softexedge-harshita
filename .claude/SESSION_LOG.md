@@ -2647,3 +2647,200 @@ over the pinned stats after stats finishes scrolling. Verified live on /home: GS
 pin-spacer wraps the stats container (pin registered), service wrapper z-10 with
 transform:none (no rotation/scale anywhere), black section inside, shadow applied;
 tsc + biome clean. Scroll feel needs eyes. Not committed.
+
+## 2026-07-14 — Fix Safari leak of floating cursor pills (ServiceSection + PortfolioSection)
+The fixed "View Services"/"View Project" cursor-follower pills leaked (visible at full scale) in Safari because their ONLY hidden state was a JS inline transform (gsap.set scale:0) — CSS-wise they were md:flex visible at left-0 top-0, so any moment Safari painted before/without the inline style (post-hydration delay, BFCache restore, matchMedia revert) they showed. Fix in both files: pill is now CSS-hidden by default (invisible opacity-0 classes) and all three GSAP calls (initial set, enter, leave) also drive autoAlpha (inline opacity+visibility overrides the class when revealing). Fail-safe in every ordering: no-JS/pre-JS → hidden; hover → visible; revert → falls back to hidden CSS. Verified: tsc + biome clean, next build ✓. 2 files. Not committed.
+
+## 2026-07-15 — Blog hero: remove image, faster/visible bg, working dropdowns, drop count
+Four fixes per plan.md. (1) BlogHeroSection: removed the inline title image + isExpanded/split machinery (title now plain staggered "News, views / and everything else"). (2) Bg animation: SpotlightGrid speed 2→4 AND flipped the shared Lissajous y-phase (+1.3→-1.3) so the spotlight STARTS near the top — previously it started under the hero's 2/3 bottom scrim, which is why it seemed invisible on first view (safe for CtaSection/contact consumers; their scrims are also bottom/center-heavy). (3) Dropdowns now functional: By Category (all categories) / By Author (All + authors from NON-featured posts), toggle + outside-click + Escape close, aria-haspopup/expanded, menus open UPWARD (buttons sit at the bottom of the overflow-hidden box — downward would clip; caught by spec-verifier P1). Selecting dispatches CustomEvent "blog:filter" and smooth-scrolls to #blog-list. (4) Removed "Showing 1-6 of 6 posts."; pills stay right via md:justify-end. BlogListSection: id="blog-list", listens for blog:filter, new activeAuthor state (category+author filtering, mutual reset, pills reset author), AnimatePresence keyed on category+author, empty state "No posts found for this filter." Verified: tsc + biome clean, next build ✓ /blog, spec-verifier round 1 → P1/P2/P3 all fixed. 3 files + plan.md. Not committed.
+
+## 2026-07-14 — Standardize ALL brand gradients → PortfolioSection button gradient (worker mode)
+Standard = horizontal #2E5BFF→#149CCB, 2 stops (PortfolioSection floating "View Work"
+button, PortfolioSection.tsx:289). Full grep sweep found ~60 usages already matching;
+fixed 8 deviant files. Worker mode (driver = Fable, 5 sonnet workers, 0 opus, 0
+reroutes):
+- PerksSection.tsx icon boxes: `bg-gradient-to-br` → `to-r`.
+- ui/SpotlightGrid.tsx default cell glow: vertical 3-stop `to-b …via… ` → `to-r` 2-stop.
+  glowColor/glowVia props kept (now dead API, harmless).
+- brand-strategy/CtaSection, web-development/CtaSection, contact/ContactHeroSectionTwo:
+  dropped `glowColor="#2E5BFF" glowVia="#5B7CFF"` → `<SpotlightGrid />` (falls back to the
+  now-standard default). This SUPERSEDES the earlier same-day solid-#2E5BFF then #5B7CFF
+  CTA-glow requests, per explicit "replace every gradient" instruction.
+- ui/TracingBorder.tsx: comet def diagonal 3-stop → horizontal 2-stop; static border def
+  reversed-diagonal `#149CCB→#2E5BFF` → horizontal `#2E5BFF→#149CCB` (corner emphasis
+  flips L-blue→R-cyan; comments updated).
+- (S7, added after verifier round-1 P1 — my inventory grep missed MULTI-LINE svg defs)
+  4 diagonal icon defs → horizontal: career/CareerValues `values-icon-grad` y2 100→0;
+  brand-strategy/FaqSection, contact/ContactFaqSection, web-development/FaqSection
+  `icon-gradient` y2 24→0.
+Excluded (not brand / already standard): scrims·fades·masks·vignettes, resizable-navbar
+zinc-crossfade (hover target already standard), BorderGlow (HSL box-shadow),
+DynamicButton (defaults already standard), garbage/ (hard rule).
+Verified: tsc exit 0; project-wide sweep → 0 non-horizontal brand gradients (excl.
+garbage); live DOM /career + /contact show `linear-gradient(to right, rgb(46,91,255),
+rgb(20,156,203))`. spec-verifier APPROVED round 2 (round 1 caught the 4 multi-line defs;
+fixed + re-verified). Pre-existing biome/CRLF findings in touched files left untouched
+per constraint. Not committed.
+
+## 2026-07-15 — Contact hero redesign (left-aligned split + right image, no buttons/desc)
+Reworked ContactHeroSectionTwo from the centered dark spotlight into a two-column split inside the same black spotlight box. Removed both CtaStyleButtons (+ the CtaStyleButton helper) and the subtitle/description; removed now-unused imports (Link, MdArrowOutward) and the fadeUp variant. Left column: eyebrow + staggered "Let's Build / Something / Great Together." headline, now left-aligned (items-start text-left, md:w-1/2). Right column: /assets/contact2.png (object-contain, fade-in from x:40, md:w-1/2). Swapped the centered radial scrim back to a left-side gradient scrim + moved the brand glow to bottom-left so the left copy stays legible. Kept the spotlight (glowColor #2E5BFF / glowVia #5B7CFF), eyebrow, headline + animations as-is. Reduced-motion guarded. Verified: no button/desc/unused-import refs, tsc + biome clean, next build ✓ /contact. Single file. Not committed.
+
+## 2026-07-15 — Contact hero: swap image contact2.png → contact.png
+Changed the right-side image in ContactHeroSectionTwo from /assets/contact2.png to its sibling /assets/contact.png (the obvious "change the image" candidate; confirmed the file exists). Alt made generic ("Contact illustration") since the new asset's subject differs. One-line src/alt change; tsc + biome clean. Not committed.
+
+## 2026-07-15 — Contact hero: swap image to a non-"contact" asset
+Per request (different image, NOT contact-named), inspected candidate assets visually and swapped the right-side image from /assets/contact.png to /assets/milad-fakurian-2gzQL38nWAM-unsplash.jpg — a dark abstract glass render that blends with the black spotlight box and suits the dark-tech look. Since it's a full-bleed photo (not a transparent PNG), changed fit object-contain → object-cover and framed the container (overflow-hidden rounded-[20px] border border-white/10). Alt → "Abstract glass artwork". Verified: asset exists locally, no contact.png/contact2.png refs remain, tsc + biome clean, next build ✓ /contact. Single file. Not committed.
+
+## 2026-07-15 — Contact hero: remove bottom-left blue glow + lighten black scrim
+Removed the blue brand-glow blob (absolute -bottom-24 -left-12 bg-[#2E5BFF]/25 blur-[120px]) from the contact hero, and reduced the left black scrim opacity from from-black/via-black/85 to from-black/60/via-black/30 (to-transparent unchanged). Class/markup-only; tsc + biome clean. Not committed.
+
+## 2026-07-15 — Contact hero: further reduce black overlay on pattern
+Reduced the contact hero's left scrim (the contact-specific black overlay dimming the spotlight pattern) further: from-black/60 via-black/30 → from-black/40 via-black/15 (to-transparent unchanged). Left SpotlightGrid's shared internal overlays untouched (they affect all consumers). Class-only; tsc + biome clean. Not committed.
+
+## 2026-07-15 — Header services dropdown: localized black overlay (not on whole image)
+In both navbar components (page/resizable-navbar + ui/resizable-navbar) the Services dropdown cards previously darkened the ENTIRE hover image with a full-cover gradient (absolute inset-0 bg-gradient-to-t from-black/80 to-black/50). Removed that; the image now shows undarkened on hover. Instead added a SIMPLE hover-only black backing behind the title text only (bg-black/70 rounded pill, opacity-0 → group-hover:opacity-100, wrapped around the gradient-clip title span) and behind the arrow icon only (bg-black/70 rounded backing on the arrow wrapper, which already fades in on hover) — so text/icon stay legible over the bright image. Both files, presentational only. Verified: no from-black/80 overlay remains, tsc + biome clean, next build ✓. Not committed.
+
+## 2026-07-14 — Services dropdown: new 8-item service list
+Replaced the dropdownItems array in BOTH headers (`page/Header.tsx` inner pages,
+`layout/Header.tsx` home — duplicate-nav trap) with the user's list: Digital Marketing,
+AI & Marketing Automation, Web Development (→ /web-development), App Development,
+Software Development, Brand Strategy and Identity (→ /brand-strategy; fixed "indetity"
+typo), UI/UX Design, Video Production. Unbuilt pages keep the existing `/services`
+placeholder link (still 404s — pre-existing convention); images reused semantically
+from the old pool (code→WebDev, camera→Video, identity→Brand, phone→App, etc.); count
+"/1 services" kept. Verified live by mounting both hover dropdowns: /work and /home each
+render exactly the 8 names in order with correct hrefs. tsc exit 0; biome unchanged.
+Not committed.
+
+## 2026-07-15 — Header services dropdown: black box → shadow
+Replaced the localized black-box backings (bg-black/70 pills behind the title/icon, added earlier) with shadows in both navbar components. Title: single gradient-clip span again + group-hover:[text-shadow:0_2px_12px_rgba(0,0,0,0.85)] (renders a dark halo behind the gradient glyphs on hover). Arrow: restored to plain svg + drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)] (visible only on hover since the arrow is opacity-0 at rest). Image still undarkened. Both files, presentational. Verified: no bg-black/70 remains, 2 shadow utils per file, tsc + biome clean, next build ✓. Not committed.
+
+## 2026-07-15 — Revert: header dropdown shadow → back to black box
+Reverted the prior shadow task. Restored the localized black-box backings (bg-black/70 rounded pills behind the title text and arrow icon, hover-only) in both navbar components, removing the group-hover text-shadow on the title and the drop-shadow on the arrow. Done manually (git couldn't isolate it — the underlying black-box change is also uncommitted). Image stays undarkened. Verified: no text-shadow/drop-shadow utils remain, 2 bg-black/70 backings per file, tsc + biome clean, next build ✓. Not committed.
+
+## 2026-07-14 — Contact hero: reduce height
+`src/components/contact/ContactHeroSectionTwo.tsx` card (line 38): min-h 82vh→62vh,
+py-16→py-12, md:py-20→md:py-16. But content (the side image) was the binding constraint,
+not min-h, so also trimmed the image (line 80): h 320/460/540 → 280/380/440. Live /contact:
+card height 670px→570px (~15% shorter), image 540→440, min-h now 446px (non-binding).
+tsc exit 0, biome clean. NOTE (not acted on): line 39 SpotlightGrid still has
+glowColor="#2E5BFF" glowVia="#5B7CFF" — the gradient-standardization removed this earlier;
+it has reappeared (recent user edits to this file). Flagged to user, left as-is. Not committed.
+
+## 2026-07-14 — Contact hero: pattern more visible + prominent motion
+Two contact-only levers on `src/components/contact/ContactHeroSectionTwo.tsx` (no shared
+SpotlightGrid internals touched, so blog/CTA unaffected): (1) left legibility scrim
+`from-black/40 via-black/15` → `from-black/20 via-black/5` (line 42) — pattern shows
+through where the copy sits; (2) SpotlightGrid `speed` default(1) → `speed={3}` (line 39)
+so the spotlight visibly drifts (root cause of "looks like no effect" — it was barely
+moving; blog hero uses speed={4}). glowColor/glowVia kept as the user set them. Verified:
+biome clean; live /contact DOM confirms scrim now from-black/20 via-black/5. Motion
+prominence can't be observed in the headless pane (rAF doesn't advance, mask X stays at
+the -1000 idle value) — needs user's eyes. Not committed.
+
+## 2026-07-15 — Header "Get in Touch": instant hover (no duration)
+The header CTA is the shared DynamicButton, whose hover durations live inside the component (bg reveal duration-500, shine duration-1000, per-letter transitionDelay stagger, icon duration-300, root transition-all). Added an opt-in `instantHover` prop that swaps every duration-* to duration-0 and zeroes the letter transitionDelay, so the hover effect happens instantly. Passed instantHover from BOTH headers' Get in Touch buttons (layout/Header + page/Header). Scoped via prop so all other DynamicButton CTAs keep their animated durations. Verified: both headers pass the prop, 7 duration-0 refs in DynamicButton, tsc + biome clean, next build ✓. 3 files. Not committed.
+
+## 2026-07-15 — Header "Get in Touch": increase width
+Widened the header CTA (shared DynamicButton, w-fit) by bumping its horizontal padding px-4 → px-8 in both headers (layout/Header + page/Header). Padding-only, so height/design unchanged; other DynamicButton CTAs unaffected. tsc + biome clean. Not committed.
+
+## 2026-07-14 — Home hero: inline title pill radius matches main card
+`src/components/home/Herosection.tsx:78` — the inline image pill between the title words:
+`rounded-full` → `rounded-[20px]`, matching the hero's main container (`rounded-[20px]`,
+line 50). Verified live on /home: main card and pill both compute border-radius 20px
+(match); no rounded-full pill remaining. Biome clean. Not committed.
+
+## 2026-07-14 — Home AboutSection: swap CTA for the ExperimentalTestimonials CTA
+`src/components/home/AboutSection.tsx`: replaced the `<DynamicButton text="Start Project"
+href="#contact">` with the ExperimentalTestimonials "Connect With Us" CTA verbatim (white
+h-16 pill, expands on hover, black icon chip with the dual MdArrowOutward gradient-swap).
+Import swapped DynamicButton (now unused) → `{ MdArrowOutward } from "react-icons/md"`;
+biome auto import-sort applied. Gave the SVG linearGradient a UNIQUE id
+`about-connect-icon-grad` (both sections render on /home; reusing `testimonial-icon-grad`
+would collide). NOTE: like the source CTA it's a plain <button> with no href, so the old
+`#contact` navigation is dropped — faithful to "the cta used in experimental testimonials";
+flag if a link is wanted. Verified live /home: old "Start Project" gone, new CTA present
+(label "Connect With Us", 64px, white, rounded, 3 svgs), both gradient ids unique (count
+1 each). tsc exit 0; residual biome = pre-existing (noImgElement×2, noArrayIndexKey).
+Not committed.
+
+## 2026-07-15 — Home AboutSection: buttery card-change animation
+The stacked card carousel changed with a single 3s tween using premiumEase (hard ease-out [0.22,1,0.36,1]) for enter + exit + reposition, plus `layout` on absolute inset-0 cards (layout projection fighting transforms) — reading as janky/frozen. Reworked: reposition/enter now use a gentle overdamped spring (stiffness 60, damping 20, mass 1 → ratio ~1.29, smooth, a little slow, no harsh stop); the exit card flies off on its own clean tween (duration 1.1, exitEase); removed the redundant `layout`; added will-change-transform for GPU. (User also applied the same spring to the RotatingWord flip so it syncs with the image change.) Verified: no `layout` on the card, spring+exit-tween+will-change present, premiumEase still used elsewhere, tsc + biome clean, next build ✓. Single file. Not committed.
+
+## 2026-07-14 — Home AboutSection: sync word-flip with image-change animation
+Root cause: the RotatingWord flip and the card-stack image change are both driven by the
+same `frontIndex` (so they START together) but had mismatched durations — word was a 0.5s
+`premiumEase` tween while the card uses an overdamped spring (stiffness 60/damping 20/mass 1,
+~1.5s settle), so the word snapped in while the card was still gliding = looked out of sync.
+Fix: `src/components/home/AboutSection.tsx` RotatingWord motion.span transition 0.5s tween →
+the card's exact spring. Both now share identical physics + trigger → in sync (kept the card's
+intentional slow "butter" feel, brought the word to it). premiumEase still used elsewhere (5×).
+Verified: word & card spring params identical via grep; tsc exit 0; no new biome. Desktop-only
+motion — headless pane can't play it, sync confirmed by matching config. Not committed.
+
+## 2026-07-15 — Home AboutSection: word flip horizontal
+Changed the RotatingWord flip (brands./startups./founders./creators.) from vertical to horizontal: the sliding keyframes went y:100%→0%→-100% to x:100%→0%→-100% (words now enter from the right and exit left). Container already has overflow-hidden + popLayout, so clipping/sizing still work; kept the shared spring. tsc + biome clean. Not committed.
+
+## 2026-07-14 — Home AboutSection: baseline-align the title words
+Investigated "tag/title/description on the same line vertically, left aligned": measured
+live at desktop AND mobile — the three blocks were ALREADY vertically stacked and
+left-aligned (all at the same left edge, text-align:start). The real quirk: within the
+h1, `items-center` vertically-centered word-chips of differing heights, so the taller
+gradient word "cinematic" (py-1) floated ~4px above the plain words instead of sitting on
+the same line. Fix: h1 `items-center` → `items-baseline` (`AboutSection.tsx` title h1) so
+all title words share a text baseline. Verified live /home: alignItems baseline, plain
+words now share bottom (6px), gradient word aligned on baseline, tag+h1 left edge still 45px
+(unchanged left alignment). tsc exit 0. Not committed.
+
+## 2026-07-14 — Home: remove black overlay on About during pin-overlap
+Root cause: the pinned About wrapper `aboutContainerRef` was `bg-black`; its inner white
+AboutSection scrubs to `opacity:0` as the next section pins over it (start top top →
+Portfolio top top), so the black backdrop showed through = "black overlay on About."
+Fix: `src/app/home/page.tsx:141` aboutContainer `bg-black` → `bg-white`, so the About
+recedes into white (matches page + section bg) — clean, no black flash. Kept the
+scale/opacity/y recede animation intact. Verified live /home: container computes
+rgb(255,255,255) (revealsBlack:false); only remaining bg-black is an unrelated
+Trusted-By divider. tsc + biome clean. Mid-scroll appearance needs user's eyes (pin/scrub
+needs real desktop scroll). Not committed.
+
+## 2026-07-14 — Home: stop fading About opacity during pin (keep fully visible)
+Follow-up to the black-overlay fix: removed `opacity: 0` from the About pin scrub
+(`src/app/home/page.tsx` gsap.to on aboutInnerRef) per user — the About now stays at
+full opacity as the next section pins over it. Kept scale:0.85 + y:40 recede. The
+container is bg-white from the prior task (now moot since the opaque About never reveals
+it — left as-is, harmless). Verified: opacity ref gone from the anim block; tsc + biome
+clean. Scroll feel needs user's eyes. Not committed.
+
+## 2026-07-14 — Home: Stats overlaps Portfolio (mirror of Portfolio→About)
+Added a Portfolio→Stats pin-overlap to `src/app/home/page.tsx`, mirroring the existing
+About→Portfolio: new ScrollTrigger pins `portfolioRef` from start "top top" → endTrigger
+`statsContainerRef` "top top", pinSpacing:false (Portfolio is md:h-screen so it pins
+cleanly with no below-fold freeze). Stats now rides up over the pinned Portfolio.
+Z-layering to make Stats paint over Portfolio: Stats/Service wrapper z-10 → z-20 (Portfolio
+is z-10); statsContainer gained `bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)]` (upward
+shadow = same overlap cue Portfolio uses over About). Existing Stats→Service overlap
+renumbered to step 3, untouched. Verified live /home: Stats wrapper computes z-index 20 >
+Portfolio 10, statsContainer boxShadow = rgba(0,0,0,0.5) 0px -50px 80px, bg white; tsc +
+biome clean. Pin/scroll feel needs user's eyes (desktop scrub, headless pane can't drive).
+Not committed.
+
+## 2026-07-14 — Portfolio→Stats overlap REDONE correctly (nested-pin fix)
+The earlier attempt (wrapper ScrollTrigger pin around portfolioRef) was structurally
+broken: PortfolioSection already pins itself internally for its horizontal scrub, and
+GSAP does not support nested pins. Removed that wrapper trigger from
+`src/app/home/page.tsx`. Correct mechanism, two parts:
+(1) `PortfolioSection.tsx`: converted the x-scrub tween to a timeline on the SAME
+internal pin — x to -totalWidth over `duration: totalWidth`, then a dummy hold tween
+`duration: holdPx = window.innerHeight`; trigger end `+=${totalWidth + holdPx}`. Active
+index math adjusted: `progress / xPhase` clamped (xPhase = totalWidth/(totalWidth+hold))
+so the counter still completes during the x-phase. scrollTween stays the
+containerAnimation for the text reveals (linear throughout).
+(2) `page.tsx`: stats/service wrapper gains `md:-mt-[100vh]` (z-20 + statsContainer
+white bg + upward shadow kept from previous attempt) — Stats' doc position is one
+viewport earlier, so during the hold it slides OVER the pinned Portfolio; its top
+reaches viewport top exactly at unpin.
+Verified live at 1280×800: portfolio inside real .pin-spacer; spacer 6720 = 800 section
++ 5120 travel (exactly 4×1280 for 5 panels) + 800 hold; statsWrap margin-top -800px
+(=-100vh), z 20. Below md (715px probe): no pin, margin-top 0 — mobile unaffected.
+tsc exit 0; biome findings pre-existing (activeIndex/isDesktop unread at HEAD too).
+Scroll feel needs user's eyes. Not committed.

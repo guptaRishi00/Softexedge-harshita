@@ -105,7 +105,7 @@ export default function PerksSection() {
                 className="group relative flex flex-col rounded-[20px] border border-white/5 bg-zinc-900/50 p-8 backdrop-blur-sm transition-all duration-300 will-change-transform hover:-translate-y-1.5 hover:bg-zinc-900"
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#2E5BFF] to-[#149CCB] text-white">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white">
                     <Icon className="h-5 w-5" strokeWidth={2} />
                   </div>
                   <h3 className="text-xl font-bold tracking-tight text-white md:text-2xl">

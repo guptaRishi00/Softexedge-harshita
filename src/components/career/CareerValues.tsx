@@ -79,7 +79,7 @@ export default function CareerValues() {
             x1="0%"
             y1="0%"
             x2="100%"
-            y2="100%"
+            y2="0%"
           >
             <stop stopColor="#2E5BFF" offset="0%" />
             <stop stopColor="#149CCB" offset="100%" />

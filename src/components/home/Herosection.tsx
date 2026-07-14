@@ -75,7 +75,7 @@ export default function Herosection({}: any) {
                 Digital
               </p>
 
-              <div className="w-16 h-8 sm:w-24 sm:h-12 md:w-[150px] md:h-[68px] lg:w-[200px] lg:h-[90px] xl:w-[220px] xl:h-[100px] overflow-hidden rounded-full shrink-0 flex items-center justify-center border border-white/20 shadow-xl">
+              <div className="w-16 h-8 sm:w-24 sm:h-12 md:w-[150px] md:h-[68px] lg:w-[200px] lg:h-[90px] xl:w-[220px] xl:h-[100px] overflow-hidden rounded-[20px] shrink-0 flex items-center justify-center border border-white/20 shadow-xl">
                 <canvas
                   ref={canvasRef}
                   className="w-full h-full object-cover"

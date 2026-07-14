@@ -64,7 +64,9 @@ export default function SpotlightGrid({
       const midCol = (COLUMNS - 1) / 2;
       const midRow = (ROWS - 1) / 2;
       const fCol = midCol + midCol * 0.9 * Math.sin(t * 0.55);
-      const fRow = midRow + midRow * 0.9 * Math.sin(t * 0.42 + 1.3);
+      // Phase -1.3 starts the spotlight near the TOP of the box, so it's
+      // visible on first view (consumers scrim the bottom of the container).
+      const fRow = midRow + midRow * 0.9 * Math.sin(t * 0.42 - 1.3);
 
       // Grid renders at 120% width, shifted -5% left, vertically centered.
       const cell = (1.2 * dims.w) / COLUMNS;
@@ -132,7 +134,7 @@ export default function SpotlightGrid({
                   className={
                     glowColor
                       ? "absolute inset-0"
-                      : "absolute inset-0 bg-gradient-to-b from-[#2E5BFF] via-[#149CCB] to-[#2E5BFF]"
+                      : "absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
                   }
                   style={{
                     opacity: intensity * 0.8,

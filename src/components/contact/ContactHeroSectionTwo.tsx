@@ -1,8 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import Link from "next/link";
-import { MdArrowOutward } from "react-icons/md";
+import Image from "next/image";
 import Header from "../page/Header";
 import SpotlightGrid from "../ui/SpotlightGrid";
 
@@ -25,66 +24,6 @@ const line = {
   },
 } as const;
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (delay: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, delay, ease: premiumEase },
-  }),
-} as const;
-
-// Button styled like the CtaSection "Connect With Us" button — white wipe-fill
-// + arrow-flip, for the dark hero background.
-function CtaStyleButton({
-  label,
-  href,
-  gradId,
-}: {
-  label: string;
-  href: string;
-  gradId: string;
-}) {
-  const className =
-    "group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl border border-white/20 pl-5 pr-2 transition-all duration-300 hover:border-white hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100";
-
-  const inner = (
-    <>
-      <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
-        {label}
-      </span>
-
-      <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
-        <svg width="0" height="0" className="absolute">
-          <title>Arrow gradient</title>
-          <defs>
-            <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop stopColor="#2E5BFF" offset="0%" />
-              <stop stopColor="#149CCB" offset="100%" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-        <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
-        <MdArrowOutward
-          className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
-          style={{ fill: `url(#${gradId})` }}
-        />
-      </div>
-    </>
-  );
-
-  return href.startsWith("/") ? (
-    <Link href={href} className={className}>
-      {inner}
-    </Link>
-  ) : (
-    <a href={href} className={className}>
-      {inner}
-    </a>
-  );
-}
-
 export default function ContactHeroSectionTwo() {
   const reduce = useReducedMotion();
 
@@ -96,17 +35,14 @@ export default function ContactHeroSectionTwo() {
       </div>
 
       {/* Black hero container with auto-moving spotlight pattern */}
-      <div className="relative mx-auto flex min-h-[82vh] w-full flex-col items-center justify-center overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-6 py-16 md:px-12 md:py-20 lg:px-16">
-        <SpotlightGrid glowColor="#2E5BFF" glowVia="#5B7CFF" />
+      <div className="relative mx-auto flex min-h-[62vh] w-full flex-col items-center gap-10 overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-6 py-12 md:flex-row md:justify-between md:gap-6 md:px-12 md:py-16 lg:gap-12 lg:px-16">
+        <SpotlightGrid glowColor="#2E5BFF" glowVia="#5B7CFF" speed={3} />
 
-        {/* Centered scrim so the copy stays legible over the pattern */}
-        <div className="pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(ellipse_65%_60%_at_center,rgba(0,0,0,0.72),transparent_75%)]" />
+        {/* Left-side scrim so the copy stays legible over the pattern */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black/20 via-black/5 to-transparent" />
 
-        {/* Brand glow */}
-        <div className="pointer-events-none absolute -bottom-24 left-1/2 z-[5] h-80 w-80 -translate-x-1/2 rounded-full bg-[#2E5BFF]/25 blur-[120px]" />
-
-        {/* Content */}
-        <div className="relative z-10 flex w-full max-w-2xl flex-col items-center text-center">
+        {/* Left: content */}
+        <div className="relative z-10 flex w-full flex-col items-start text-left md:w-1/2">
           {/* Eyebrow */}
           <motion.span
             initial={reduce ? false : { opacity: 0, y: 16 }}
@@ -134,40 +70,24 @@ export default function ContactHeroSectionTwo() {
               </span>
             </motion.span>
           </motion.h1>
-
-          {/* Subtitle */}
-          <motion.p
-            custom={0.9}
-            variants={fadeUp}
-            initial={reduce ? false : "hidden"}
-            animate="visible"
-            className="mt-8 max-w-md text-base font-medium leading-relaxed text-white/60 md:text-lg mx-auto"
-          >
-            Have a project in mind or just want to say hello?
-            <br />
-            We&apos;d love to hear from you.
-          </motion.p>
-
-          {/* CTAs */}
-          <motion.div
-            custom={1.1}
-            variants={fadeUp}
-            initial={reduce ? false : "hidden"}
-            animate="visible"
-            className="mt-10 flex flex-wrap items-center justify-center gap-3"
-          >
-            <CtaStyleButton
-              label="Start a Conversation"
-              href="#contact"
-              gradId="c2-start-grad"
-            />
-            <CtaStyleButton
-              label="View Our Work"
-              href="/work"
-              gradId="c2-work-grad"
-            />
-          </motion.div>
         </div>
+
+        {/* Right: abstract artwork */}
+        <motion.div
+          initial={reduce ? false : { opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1, ease: premiumEase, delay: 0.2 }}
+          className="relative z-10 h-[280px] w-full overflow-hidden rounded-[20px] border border-white/10 md:h-[380px] md:w-1/2 lg:h-[440px]"
+        >
+          <Image
+            src="/assets/kanhaiya-sharma-EiAqej-cGks-unsplash.jpg"
+            alt="Abstract glass artwork"
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 45vw"
+            className="object-cover"
+          />
+        </motion.div>
       </div>
     </section>
   );

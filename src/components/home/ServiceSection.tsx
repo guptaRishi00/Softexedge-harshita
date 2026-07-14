@@ -55,33 +55,38 @@ export default function ServiceSection() {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 768px)", () => {
-      // 1. CUSTOM CURSOR TRACKING
-      const cursor = cursorRef.current;
-      if (cursor) {
-        gsap.set(cursor, { scale: 0, xPercent: -50, yPercent: -50 });
+        // 1. CUSTOM CURSOR TRACKING
+        const cursor = cursorRef.current;
+        if (cursor) {
+          gsap.set(cursor, {
+            scale: 0,
+            autoAlpha: 0,
+            xPercent: -50,
+            yPercent: -50,
+          });
 
-        const xTo = gsap.quickTo(cursor, "x", {
-          duration: 0.15,
-          ease: "power3",
-          force3D: true,
-        });
-        const yTo = gsap.quickTo(cursor, "y", {
-          duration: 0.15,
-          ease: "power3",
-          force3D: true,
-        });
+          const xTo = gsap.quickTo(cursor, "x", {
+            duration: 0.15,
+            ease: "power3",
+            force3D: true,
+          });
+          const yTo = gsap.quickTo(cursor, "y", {
+            duration: 0.15,
+            ease: "power3",
+            force3D: true,
+          });
 
-        const moveCursor = (e: MouseEvent) => {
-          xTo(e.clientX);
-          yTo(e.clientY);
-        };
+          const moveCursor = (e: MouseEvent) => {
+            xTo(e.clientX);
+            yTo(e.clientY);
+          };
 
-        window.addEventListener("mousemove", moveCursor);
+          window.addEventListener("mousemove", moveCursor);
 
-        return () => {
-          window.removeEventListener("mousemove", moveCursor);
-        };
-      }
+          return () => {
+            window.removeEventListener("mousemove", moveCursor);
+          };
+        }
       });
 
       return () => mm.revert();
@@ -92,6 +97,7 @@ export default function ServiceSection() {
   const handleMouseEnter = contextSafe(() => {
     gsap.to(cursorRef.current, {
       scale: 1,
+      autoAlpha: 1,
       duration: 0.4,
       ease: "back.out(1.5)",
     });
@@ -100,6 +106,7 @@ export default function ServiceSection() {
   const handleMouseLeave = contextSafe(() => {
     gsap.to(cursorRef.current, {
       scale: 0,
+      autoAlpha: 0,
       duration: 0.3,
       ease: "power3.inOut",
     });
@@ -113,7 +120,7 @@ export default function ServiceSection() {
     >
       <div className="w-full px-4 md:px-10">
         {/* HEADER SECTION */}
-        <div className="mb-20 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-end">
+        <div className="mb-10 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-end">
           <h2 className="text-5xl font-bold tracking-tight text-white md:text-8xl">
             Our Services
           </h2>
@@ -181,6 +188,9 @@ export default function ServiceSection() {
               ref={cursorRef}
               className={cn(
                 "pointer-events-none fixed left-0 top-0 z-[9999] hidden h-10 w-40 items-center justify-center rounded-lg bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white md:flex",
+                // CSS-hidden by default so Safari never paints it before GSAP
+                // applies the inline transform/opacity (autoAlpha overrides this).
+                "invisible opacity-0",
                 "will-change-transform",
               )}
             >

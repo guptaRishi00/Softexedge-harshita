@@ -36,9 +36,16 @@ const navItems: NavItem[] = [
     link: "/",
     dropdownItems: [
       {
-        name: "Brand Strategy",
+        name: "Digital Marketing",
         count: "/1 services",
-        link: "/brand-strategy",
+        link: "/services",
+        image:
+          "https://images.unsplash.com/photo-1592503254549-d83d24a4dfab?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZSUyMGNvbW1lcmNlfGVufDB8fDB8fHww",
+      },
+      {
+        name: "AI & Marketing Automation",
+        count: "/1 services",
+        link: "/services",
         image:
           "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=800&auto=format&fit=crop",
       },
@@ -50,46 +57,39 @@ const navItems: NavItem[] = [
           "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop",
       },
       {
-        name: "Brand Identity",
-        count: "/1 services",
-        link: "/services",
-        image:
-          "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?q=80&w=800&auto=format&fit=crop",
-      },
-      {
-        name: "eCommerce",
-        count: "/1 services",
-        link: "/services",
-        image:
-          "https://images.unsplash.com/photo-1592503254549-d83d24a4dfab?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8ZSUyMGNvbW1lcmNlfGVufDB8fDB8fHww",
-      },
-      {
-        name: "User Experience Design",
-        count: "/1 services",
-        link: "/services",
-        image:
-          "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop",
-      },
-      {
-        name: "Web & Mobile Applications",
+        name: "App Development",
         count: "/1 services",
         link: "/services",
         image:
           "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=800&auto=format&fit=crop",
       },
       {
-        name: "Visual Content",
+        name: "Software Development",
         count: "/1 services",
         link: "/services",
         image:
-          "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=800&auto=format&fit=crop",
+          "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop",
       },
       {
-        name: "UI Design",
+        name: "Brand Strategy and Identity",
+        count: "/1 services",
+        link: "/brand-strategy",
+        image:
+          "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?q=80&w=800&auto=format&fit=crop",
+      },
+      {
+        name: "UI/UX Design",
         count: "/1 services",
         link: "/services",
         image:
           "https://images.unsplash.com/photo-1545235617-9465d2a55698?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8dWl1eHxlbnwwfHwwfHx8MA%3D%3D",
+      },
+      {
+        name: "Video Production",
+        count: "/1 services",
+        link: "/services",
+        image:
+          "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=800&auto=format&fit=crop",
       },
     ],
   },
@@ -146,8 +146,9 @@ export default function Header() {
           <DynamicButton
             text="Get in Touch"
             href="/contact"
-            className="relative px-4 py-3 rounded-lg"
+            className="relative px-8 py-3 rounded-lg"
             showIcon={false}
+            instantHover
           />
         </NavBody>
 

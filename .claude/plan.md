@@ -1,42 +1,36 @@
-# Plan: SubServices last-card pin + ProcessSection overlap (brand-strategy)
+# Plan: TracingBorder — seamless comet → corner-glow handoff (no blank gap)
 
-## Current mechanism (grounded, from the code)
-- `SubServices` = `<ReactLenis root>` → `<section relative bg-black>` containing:
-  - HEADER, then **STACKING CARDS WRAPPER** `<div ref={container} class="group/cards relative">`.
-  - Inside `container`: 4 `Card`s, each `position: sticky; top: calc(5vh + i*190px); zIndex: i; mb-[22vh]` → each pins 190px lower than the last so previous titles peek; later cards stack over earlier (increasing z).
-  - Then a **"Runway"** spacer `h-[100vh]` (keeps the last card pinned while you scroll 100vh).
-  - Then a **"CTA / NEXT SECTION"** `<div relative z-50 bg-black min-h-[70vh]>` (ConnectButton) — this scrolls up after the container.
-- `ProcessSection` is a **separate sibling** in `app/brand-strategy/page.tsx` (line 22), AFTER `<SubServices />`, its own `<section bg-black>`.
+## Diagnosis (driver, grounded in src/components/ui/TracingBorder.tsx)
+LAP_DURATION=2.5, HANDOFF=2.35. Comet group fades `delay: LAP_DURATION-0.45,
+duration: 0.45` → opacity hits 0 at exactly t=2.5, the same instant the
+rotation completes; the reveal (rect 1.1s, circles 0.9s from t=2.35) is barely
+visible until ~2.7s. Result: ~0.4s where the card border shows nothing.
+The path starts/ends at the TR corner and the TR mask circle blooms first, so
+spatial continuity is already correct — this is purely a timing fix.
 
-## The core blocker
-`position: sticky` only pins within its **containing block**. The cards' container
-(`div ref={container}`) ends before the CTA div, and SubServices' `<section>` ends
-before `ProcessSection`. So the last card **un-pins** the moment SubServices ends —
-a sibling `ProcessSection` cannot scroll *over* a still-pinned last card. True
-"next section overlaps the stuck card" requires the next section to live **inside
-the same sticky scroll context** as the card.
+## Fix (exact values, decided by driver)
+1. Comet group fade: `delay: LAP_DURATION, duration: 0.35` — the comet stays
+   fully visible through its entire lap and dissolves OVER the already-lit
+   border, never before it.
+2. `HANDOFF = LAP_DURATION - 0.3` (was −0.15) — the TR corner glow ignites
+   under the comet's final approach, so at lap-end the corner is already lit
+   (~65% bloomed) exactly where the comet stops.
+3. Mask rect duration `1.1 → 0.8` — edges fade in sooner.
+4. Update the "Timing:" comment (lines ~77-79) to describe the new overlap.
+Unchanged: circle durations/stagger, LAP path animation, all gradients/masks.
 
-## Proposed approach (structural — spans 2 files)
-1. Move `<ProcessSection />` OUT of `page.tsx` and render it **inside** SubServices'
-   `container`, right after the 4 cards (replacing/absorbing the Runway + CTA
-   role), as a `relative z-50 bg-black` block. Because it's inside `container`,
-   the last card stays sticky-pinned while ProcessSection scrolls up over it →
-   the overlap effect.
-2. Adjust the **last card**'s sticky `top` so it "touches the top" and holds
-   (e.g. the final card pins at a smaller top / top:5vh) — needs tuning so the
-   last card is the one on screen when ProcessSection begins to overlap.
-3. Keep the existing CTA (ConnectButton) — either fold into ProcessSection's lead
-   or drop it — TBD by the desired end state.
-4. `page.tsx`: remove the standalone `<ProcessSection />` (now owned by SubServices).
+## Steps & routing
+| Step | Files (allowlist) | route | Acceptance check |
+|---|---|---|---|
+| T1 | src/components/ui/TracingBorder.tsx | sonnet | grep shows `HANDOFF = LAP_DURATION - 0.3`, comet transition `delay: LAP_DURATION` + `duration: 0.35`, rect `duration: 0.8`; no other timing values changed; `bunx tsc --noEmit` exit 0; biome: nothing new |
+| T2 | — verification — | driver | re-grep constants; confirm no other diff hunks in the file |
+| T3 | — done gate — | spec-verifier | plan vs file state; P0/P1 fixed, max 3 rounds |
 
-Files: `components/brand-strategy/SubServices.tsx`, `app/brand-strategy/page.tsx`
-(and possibly a small ProcessSection wrapper). Risk: **high** — this reworks a
-working scroll effect; the exact `top`/`z`/`margin` values need on-screen tuning.
+Routing: 1 sonnet, 0 opus, driver = analysis/verification only (<20%).
 
-## Verification problem (why I'm pausing)
-This is a scroll/pin/overlap effect — it can ONLY be confirmed by scrolling it in
-a browser. In this session the preview harness cannot hold a dev server for this
-workspace, and the one connected browser is a remote macOS instance that can't
-reach this machine's :3000. So I cannot see the result or tune the values — a
-blind edit to scroll choreography would very likely land wrong and risk breaking
-the current stacking effect.
+## Constraints (echoed into brief)
+- Minimal diff: ONLY the three timing values + the Timing comment.
+- No changes to gradients, masks, path math, stroke widths, easings other
+  than named; no reformatting; keep line endings.
+- Animation feel is verified by the user's eyes (headless pane can't play it);
+  static evidence = constants + typecheck.

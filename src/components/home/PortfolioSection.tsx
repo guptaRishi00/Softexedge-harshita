@@ -98,7 +98,12 @@ export default function PortfolioSection() {
         const cursor = cursorRef.current;
 
         if (cursor) {
-          gsap.set(cursor, { scale: 0, xPercent: -50, yPercent: -50 });
+          gsap.set(cursor, {
+            scale: 0,
+            autoAlpha: 0,
+            xPercent: -50,
+            yPercent: -50,
+          });
 
           const xTo = gsap.quickTo(cursor, "x", {
             duration: 0.15,
@@ -123,26 +128,38 @@ export default function PortfolioSection() {
         const track = trackRef.current;
         if (track) {
           const totalWidth = track.scrollWidth - window.innerWidth;
-          const scrollTween = gsap.to(track, {
-            x: () => -totalWidth,
-            ease: "none",
-            force3D: true,
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: "top top",
-              end: () => `+=${totalWidth}`,
-              pin: true,
-              scrub: 1,
-              anticipatePin: 1,
-              invalidateOnRefresh: true,
-              onUpdate: (self) => {
-                const newIndex = Math.round(
-                  self.progress * (projects.length - 1),
-                );
-                setActiveIndex(newIndex);
+          // The pin holds one extra viewport AFTER the panels finish so the
+          // next section (Stats, pulled up md:-mt-[100vh] on the page) can
+          // slide over the still-pinned section — a wrapper pin would be an
+          // unsupported nested pin. Fraction of the trigger spent moving:
+          const holdPx = window.innerHeight;
+          const xPhase = totalWidth / (totalWidth + holdPx);
+          const scrollTween = gsap
+            .timeline({
+              scrollTrigger: {
+                trigger: containerRef.current,
+                start: "top top",
+                end: () => `+=${totalWidth + holdPx}`,
+                pin: true,
+                scrub: 1,
+                anticipatePin: 1,
+                invalidateOnRefresh: true,
+                onUpdate: (self) => {
+                  const newIndex = Math.round(
+                    Math.min(1, self.progress / xPhase) *
+                      (projects.length - 1),
+                  );
+                  setActiveIndex(newIndex);
+                },
               },
-            },
-          });
+            })
+            .to(track, {
+              x: () => -totalWidth,
+              ease: "none",
+              force3D: true,
+              duration: totalWidth,
+            })
+            .to({}, { duration: holdPx });
 
           // 3. TEXT REVEALS ON SCROLL
           gsap.utils
@@ -183,6 +200,7 @@ export default function PortfolioSection() {
   const handleMouseEnter = contextSafe(() => {
     gsap.to(cursorRef.current, {
       scale: 1,
+      autoAlpha: 1,
       duration: 0.4,
       ease: "back.out(1.5)",
     });
@@ -191,6 +209,7 @@ export default function PortfolioSection() {
   const handleMouseLeave = contextSafe(() => {
     gsap.to(cursorRef.current, {
       scale: 0,
+      autoAlpha: 0,
       duration: 0.3,
       ease: "power3.inOut",
     });
@@ -280,6 +299,9 @@ export default function PortfolioSection() {
         ref={cursorRef}
         className={cn(
           "pointer-events-none fixed left-0 top-0 z-9999 hidden h-10 w-33 items-center justify-center rounded-lg bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-white md:flex",
+          // CSS-hidden by default so Safari never paints it before GSAP
+          // applies the inline transform/opacity (autoAlpha overrides this).
+          "invisible opacity-0",
           "will-change-transform",
         )}
       >

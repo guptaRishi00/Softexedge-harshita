@@ -2,8 +2,8 @@
 
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { useEffect, useState } from "react";
+import { MdArrowOutward } from "react-icons/md";
 import { useIsDesktop } from "@/lib/useIsDesktop";
-import DynamicButton from "../ui/DynamicButton";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 const exitEase = [0.32, 0, 0.67, 0] as const;
@@ -35,20 +35,23 @@ function RotatingWord({
         <motion.span
           key={index}
           initial={{
-            // Start completely below the visible area
-            y: "100%",
-            // Removed opacity: 0 and filter: blur
+            // Start completely to the right of the visible area
+            x: "100%",
           }}
           animate={{
-            y: "0%",
+            x: "0%",
           }}
           exit={{
-            // Slide completely above the visible area
-            y: "-100%",
+            // Slide completely to the left of the visible area
+            x: "-100%",
           }}
+          // Same spring as the card stack so the word flip and the image
+          // change move in sync (both driven by frontIndex).
           transition={{
-            duration: 0.5,
-            ease: premiumEase,
+            type: "spring",
+            stiffness: 60,
+            damping: 20,
+            mass: 1,
           }}
           className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text px-2 py-2 text-transparent"
         >
@@ -160,14 +163,14 @@ export default function AboutSection() {
           <div className="relative mt-20 max-md:mt-0 max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
             <motion.p
               variants={textReveal}
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
             >
               About The Studio
             </motion.p>
 
             <motion.h1
               variants={wordContainer}
-              className="flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 text-4xl font-bold leading-[0.9em] tracking-[-0.04em] md:text-6xl lg:text-[3.5rem]"
+              className="flex max-w-5xl flex-wrap items-baseline gap-x-4 gap-y-2 text-4xl font-bold leading-[0.9em] tracking-[-0.04em] md:text-6xl lg:text-[3.5rem]"
             >
               <motion.span variants={wordAnimation} className="block">
                 Building
@@ -205,17 +208,44 @@ export default function AboutSection() {
               variants={textReveal}
               className="mt-10 max-w-2xl space-y-6"
             >
-              <p className="text-base leading-relaxed text-zinc-600">
+              <p className="text-base leading-[1.2em] text-zinc-600 font-medium">
                 We design immersive identities, motion-rich interfaces, and
                 scalable digital systems that feel sharp, intentional, and
                 unforgettable.
               </p>
               <div className="flex flex-wrap gap-4 pt-3">
-                <DynamicButton
-                  text="Start Project"
-                  href="#contact"
-                  className="border border-black/20 rounded-2xl py-5 text-xl hover:border-transparent"
-                />
+                <button
+                  type="button"
+                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
+                >
+                  <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
+                    Connect With Us
+                  </span>
+
+                  <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
+                    <svg width="0" height="0" className="absolute">
+                      <title>Connect arrow gradient</title>
+                      <defs>
+                        <linearGradient
+                          id="about-connect-icon-grad"
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="0%"
+                        >
+                          <stop stopColor="#2E5BFF" offset="0%" />
+                          <stop stopColor="#149CCB" offset="100%" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+
+                    <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                    <MdArrowOutward
+                      className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                      style={{ fill: "url(#about-connect-icon-grad)" }}
+                    />
+                  </div>
+                </button>
               </div>
             </motion.div>
           </div>
@@ -248,7 +278,6 @@ export default function AboutSection() {
                     {visibleCards.map((card) => (
                       <motion.div
                         key={card.uniqueId}
-                        layout
                         initial={{
                           y: -30,
                           scale: 0.85,
@@ -269,12 +298,19 @@ export default function AboutSection() {
                           opacity: 1,
                           scale: 1,
                           zIndex: 50,
+                          // The leaving card glides off on its own clean tween.
+                          transition: { duration: 1.1, ease: exitEase },
                         }}
+                        // Gentle overdamped spring — the stacked cards reposition
+                        // and the new card settles in smoothly (a little slow, no
+                        // harsh ease-out stop), so the change flows like butter.
                         transition={{
-                          duration: 3,
-                          ease: premiumEase,
+                          type: "spring",
+                          stiffness: 60,
+                          damping: 20,
+                          mass: 1,
                         }}
-                        className="absolute inset-0 origin-bottom-right overflow-hidden rounded-[28px] bg-zinc-200 "
+                        className="absolute inset-0 origin-bottom-right overflow-hidden rounded-[28px] bg-zinc-200 will-change-transform"
                       >
                         <img
                           src={card.url}

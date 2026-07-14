@@ -13,6 +13,8 @@ interface DynamicButtonProps {
   textClassName?: string;
   iconClassName?: string;
   showIcon?: boolean;
+  // When true, the hover effect happens instantly (no transition duration).
+  instantHover?: boolean;
 
   glowColors?: {
     from: string;
@@ -30,6 +32,7 @@ export default function DynamicButton({
   textClassName = "",
   iconClassName = "",
   showIcon = true,
+  instantHover = false,
 
   glowColors = {
     from: "#2E5BFF",
@@ -47,11 +50,17 @@ export default function DynamicButton({
       onClick={onClick}
       className={cn(
         "group relative flex w-fit cursor-pointer hover:border-transparent items-center gap-3 overflow-hidden rounded-xl bg-white px-6 py-4 text-sm font-medium text-black transition-all",
+        instantHover && "duration-0",
         className,
       )}
     >
       {/* Animated Gradient Background */}
-      <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+      <div
+        className={cn(
+          "absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100",
+          instantHover ? "duration-0" : "duration-500",
+        )}
+      >
         <div
           className="absolute inset-0"
           style={{
@@ -70,7 +79,12 @@ export default function DynamicButton({
 
       {/* Shine Sweep */}
       <div className="absolute inset-0 overflow-hidden rounded-lg">
-        <div className="absolute left-[-120%] top-0 h-full w-[60%] rotate-12 bg-white/40 blur-xl transition-all duration-1000 group-hover:left-[140%]" />
+        <div
+          className={cn(
+            "absolute left-[-120%] top-0 h-full w-[60%] rotate-12 bg-white/40 blur-xl transition-all group-hover:left-[140%]",
+            instantHover ? "duration-0" : "duration-1000",
+          )}
+        />
       </div>
 
       {/* TYPEWRITER TEXT ANIMATION */}
@@ -81,7 +95,12 @@ export default function DynamicButton({
         )}
       >
         {/* Default Text (disappears quickly on hover) */}
-        <span className="opacity-100 transition-opacity group-hover:opacity-0">
+        <span
+          className={cn(
+            "opacity-100 transition-opacity group-hover:opacity-0",
+            instantHover && "duration-0",
+          )}
+        >
           {text}
         </span>
 
@@ -93,8 +112,13 @@ export default function DynamicButton({
           {text.split("").map((char, index) => (
             <span
               key={index}
-              className="opacity-0 transition-opacity group-hover:opacity-100"
-              style={{ transitionDelay: `${index * 0.03}s` }}
+              className={cn(
+                "opacity-0 transition-opacity group-hover:opacity-100",
+                instantHover && "duration-0",
+              )}
+              style={{
+                transitionDelay: instantHover ? "0s" : `${index * 0.03}s`,
+              }}
             >
               {char === " " ? "\u00A0" : char}
             </span>
@@ -113,13 +137,19 @@ export default function DynamicButton({
           {/* Outgoing Arrow */}
           <MdKeyboardArrowRight
             size={24}
-            className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]"
+            className={cn(
+              "absolute left-0 top-0 h-full w-full transition-transform ease-in-out group-hover:translate-x-[150%]",
+              instantHover ? "duration-0" : "duration-300",
+            )}
           />
 
           {/* Incoming Arrow */}
           <MdKeyboardArrowRight
             size={24}
-            className="absolute left-0 top-0 h-full w-full translate-x-[-150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0"
+            className={cn(
+              "absolute left-0 top-0 h-full w-full translate-x-[-150%] transition-transform ease-in-out group-hover:translate-x-0",
+              instantHover ? "duration-0" : "duration-300",
+            )}
           />
         </span>
       )}

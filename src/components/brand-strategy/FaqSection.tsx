@@ -55,7 +55,7 @@ export default function FaqSection() {
             x1="0"
             y1="0"
             x2="24"
-            y2="24"
+            y2="0"
             gradientUnits="userSpaceOnUse"
           >
             <stop stopColor="#2E5BFF" offset="0%" />

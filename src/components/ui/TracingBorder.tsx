@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 // Tracing border: a comet orbits the card once, then dissolves — its energy
-// gathers into two glowing corners (bottom-left cyan, top-right blue) while
+// gathers into two glowing corners (left blue, right cyan) while
 // the connecting edges softly fade in.
 export default function TracingBorder({
   active,
@@ -106,23 +106,22 @@ export default function TracingBorder({
                 x1="0%"
                 y1="0%"
                 x2="100%"
-                y2="100%"
+                y2="0%"
               >
                 <stop stopColor="#2E5BFF" offset="0%" />
-                <stop stopColor="#149CCB" offset="50%" />
-                <stop stopColor="#2E5BFF" offset="100%" />
+                <stop stopColor="#149CCB" offset="100%" />
               </linearGradient>
 
-              {/* ── Static border color (cyan at BL → blue at TR) ── */}
+              {/* ── Static border color (blue left → cyan right) ── */}
               <linearGradient
                 id={`border-color-${gradientId}`}
                 x1="0%"
-                y1="100%"
+                y1="0%"
                 x2="100%"
                 y2="0%"
               >
-                <stop stopColor="#149CCB" offset="0%" />
-                <stop stopColor="#2E5BFF" offset="100%" />
+                <stop stopColor="#2E5BFF" offset="0%" />
+                <stop stopColor="#149CCB" offset="100%" />
               </linearGradient>
 
               {/* ── Corner mask gradients (white = visible, black = hidden) ── */}

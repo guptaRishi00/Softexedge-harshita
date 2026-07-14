@@ -278,33 +278,40 @@ export const NavItems = ({
                                 alt={sub.name}
                                 className="h-full w-full object-cover  scale-105 transition-transform duration-700 ease-out group-hover:scale-100"
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/50" />
                             </div>
                           )}
 
                           {/* Content Layer */}
                           <div className="relative z-10 flex h-full flex-col justify-between text-zinc-900 transition-colors duration-400 group-hover:text-white">
                             <div className="flex justify-between items-start w-full">
-                              <span className="text-xl lg:text-2xl font-bold tracking-tight max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1 bg-gradient-to-r from-zinc-900 to-zinc-900 group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
-                                {sub.name}
+                              <span className="relative inline-block max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1">
+                                {/* Simple black overlay behind the text only */}
+                                <span className="pointer-events-none absolute -inset-x-2 -inset-y-1 rounded-lg bg-black/70 opacity-0 transition-opacity duration-400 group-hover:opacity-100" />
+                                <span className="relative text-xl lg:text-2xl font-bold tracking-tight bg-gradient-to-r from-zinc-900 to-zinc-900 group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
+                                  {sub.name}
+                                </span>
                               </span>
                             </div>
 
                             {/* Hover Arrow Indicator */}
-                            <div className="flex justify-start group-hover:text-[#149CCB] transition-colors duration-400">
-                              <svg
-                                className="w-6 h-6 opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                                />
-                              </svg>
+                            <div className="flex justify-start">
+                              <span className="relative inline-flex opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-[#149CCB]">
+                                {/* Simple black overlay behind the icon only */}
+                                <span className="pointer-events-none absolute -inset-1.5 rounded-lg bg-black/70" />
+                                <svg
+                                  className="relative w-6 h-6"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                  />
+                                </svg>
+                              </span>
                             </div>
                           </div>
                         </Link>

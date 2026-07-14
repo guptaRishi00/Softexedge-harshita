@@ -74,7 +74,6 @@ export default function HomePage() {
 
         gsap.to(aboutInnerRef.current, {
           scale: 0.85,
-          opacity: 0,
           y: 40,
           ease: "none",
           scrollTrigger: {
@@ -86,6 +85,11 @@ export default function HomePage() {
           },
         });
       }
+
+      // (The Portfolio → Stats overlap lives inside PortfolioSection: its
+      // horizontal-scroll pin holds one extra viewport, and the Stats block
+      // below is pulled up md:-mt-[100vh] so it slides over the held pin —
+      // a second pin on the wrapper here would be an unsupported nested pin.)
 
       // 2. STATS → SERVICES OVERLAP: once StatsSection has fully scrolled
       // through (its bottom reaches the viewport bottom — pinning earlier
@@ -138,7 +142,7 @@ export default function HomePage() {
         </section>
 
         <div className="relative">
-          <div ref={aboutContainerRef} className="relative z-0 bg-black">
+          <div ref={aboutContainerRef} className="relative z-0 bg-white">
             <div
               ref={aboutInnerRef}
               className="origin-top will-change-transform bg-white pb-[15vh] md:pb-[25vh] lg:pb-[30vh]"
@@ -154,8 +158,11 @@ export default function HomePage() {
             <PortfolioSection />
           </div>
 
-          <div className="relative z-10 bg-white">
-            <div ref={statsContainerRef} className="relative z-0">
+          <div className="relative z-20 bg-white md:-mt-[100vh]">
+            <div
+              ref={statsContainerRef}
+              className="relative z-0 bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
+            >
               <StatsSection />
             </div>
 
