@@ -154,7 +154,7 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
           <DynamicButton
             text="Get in Touch"
             href="/contact"
-            className="relative px-8 py-3 rounded-lg border border-gray-300 hover:border-none"
+            className="relative px-8 py-3 rounded-lg"
             showIcon={false}
             instantHover
           />

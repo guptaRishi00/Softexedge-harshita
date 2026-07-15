@@ -34,16 +34,21 @@ function RotatingWord({
       <AnimatePresence mode="popLayout">
         <motion.span
           key={index}
+          // Slide + cross-fade, matching the card's fade-in so the word swap
+          // reads as smooth and in sync with the image change.
           initial={{
-            // Start completely to the right of the visible area
-            x: "100%",
+            // Enter from the left of the visible area
+            x: "-100%",
+            opacity: 0,
           }}
           animate={{
             x: "0%",
+            opacity: 1,
           }}
           exit={{
-            // Slide completely to the left of the visible area
-            x: "-100%",
+            // Leave to the right of the visible area
+            x: "100%",
+            opacity: 0,
           }}
           // Same spring as the card stack so the word flip and the image
           // change move in sync (both driven by frontIndex).
@@ -153,7 +158,7 @@ export default function AboutSection() {
       whileInView={isDesktop ? "visible" : undefined}
       exit={isDesktop ? "exit" : undefined}
       viewport={{ once: false, amount: 0.2 }}
-      className="relative overflow-hidden bg-white px-6 py-10 text-zinc-900 before:absolute before:inset-0 md:px-8 lg:px-8 lg:mb-20"
+      className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 md:px-10 lg:mb-20"
     >
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-multiply" />
 
@@ -163,7 +168,7 @@ export default function AboutSection() {
           <div className="relative mt-20 max-md:mt-0 max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
             <motion.p
               variants={textReveal}
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium pl-[5px]"
             >
               About The Studio
             </motion.p>
@@ -197,7 +202,7 @@ export default function AboutSection() {
 
               <motion.span variants={wordAnimation} className="block">
                 <RotatingWord
-                  words={["brands.", "startups.", "founders.", "creators."]}
+                  words={["brands", "startups", "founders", "creators"]}
                   activeIndex={frontIndex}
                   isDesktop={isDesktop}
                 />
@@ -208,7 +213,7 @@ export default function AboutSection() {
               variants={textReveal}
               className="mt-10 max-w-2xl space-y-6"
             >
-              <p className="text-base leading-[1.2em] text-zinc-600 font-medium">
+              <p className="text-base leading-[1.25em] text-zinc-600 font-light">
                 We design immersive identities, motion-rich interfaces, and
                 scalable digital systems that feel sharp, intentional, and
                 unforgettable.

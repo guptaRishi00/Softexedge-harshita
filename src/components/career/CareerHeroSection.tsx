@@ -128,7 +128,7 @@ export default function CareerHeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-center text-zinc-600 font-medium text-lg md:text-xl max-w-xl mx-auto leading-[1.2em] mb-16"
+            className="text-center text-zinc-600 font-light text-lg md:text-xl max-w-xl mx-auto leading-[1.25em] mb-16"
           >
             We’re creating impactful digital solutions.
             <br />

@@ -83,7 +83,7 @@ export default function ProjectHero({ project }: { project: Project }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4, ease: premiumEase }}
-            className="max-w-2xl text-lg font-light leading-[1.2em] text-white/70 md:text-xl"
+            className="max-w-2xl text-lg font-light leading-[1.25em] text-white md:text-xl"
           >
             {project.subtitle}
           </motion.p>

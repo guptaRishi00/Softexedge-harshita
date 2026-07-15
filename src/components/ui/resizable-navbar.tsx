@@ -267,13 +267,15 @@ export const NavItems = ({
                             </div>
                           )}
 
-                          {/* Content Layer */}
+                          {/* Subtle top gradient scrim — replaces the hard
+                              black boxes; keeps the hover title and arrow
+                              legible over the image without covering it. */}
+                          <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/55 via-transparent to-black/30 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
+
                           {/* Content Layer */}
                           <div className="relative z-10 flex h-full flex-col justify-between text-zinc-900 transition-colors duration-400 group-hover:text-white">
                             <div className="flex justify-between items-start w-full">
-                              {/* Simple black overlay behind the text only */}
                               <span className="relative inline-block max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1">
-                                <span className="pointer-events-none absolute -inset-x-2 -inset-y-1 rounded-lg bg-black/70 opacity-0 transition-opacity duration-400 group-hover:opacity-100" />
                                 <span className="relative text-xl lg:text-2xl font-bold tracking-tight bg-gradient-to-r from-zinc-900 to-zinc-900 group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
                                   {sub.name}
                                 </span>
@@ -284,8 +286,6 @@ export const NavItems = ({
                             {/* 2. OPTIONAL: I also matched the arrow color to your gradient! */}
                             <div className="flex justify-start">
                               <span className="relative inline-flex opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-[#149CCB]">
-                                {/* Simple black overlay behind the icon only */}
-                                <span className="pointer-events-none absolute -inset-1.5 rounded-lg bg-black/70" />
                                 <svg
                                   className="relative w-6 h-6"
                                   fill="none"

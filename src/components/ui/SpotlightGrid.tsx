@@ -26,10 +26,17 @@ export default function SpotlightGrid({
   speed = 1,
   glowColor,
   glowVia,
+  // Mask circle radius in px (bigger = larger revealed area).
+  maskRadius = 600,
+  // Lissajous swing amplitude as a fraction of the half-grid (1 = reaches the
+  // edges; lower keeps the spotlight nearer the center).
+  travel = 0.9,
 }: {
   speed?: number;
   glowColor?: string;
   glowVia?: string;
+  maskRadius?: number;
+  travel?: number;
 }) {
   const reduce = useReducedMotion();
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -63,10 +70,10 @@ export default function SpotlightGrid({
       // Continuous cell coordinates tracing two out-of-phase sines.
       const midCol = (COLUMNS - 1) / 2;
       const midRow = (ROWS - 1) / 2;
-      const fCol = midCol + midCol * 0.9 * Math.sin(t * 0.55);
+      const fCol = midCol + midCol * travel * Math.sin(t * 0.55);
       // Phase -1.3 starts the spotlight near the TOP of the box, so it's
       // visible on first view (consumers scrim the bottom of the container).
-      const fRow = midRow + midRow * 0.9 * Math.sin(t * 0.42 - 1.3);
+      const fRow = midRow + midRow * travel * Math.sin(t * 0.42 - 1.3);
 
       // Grid renders at 120% width, shifted -5% left, vertically centered.
       const cell = (1.2 * dims.w) / COLUMNS;
@@ -83,7 +90,7 @@ export default function SpotlightGrid({
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [reduce, mouseX, mouseY, speed]);
+  }, [reduce, mouseX, mouseY, speed, travel]);
 
   const getIntensity = (index: number) => {
     if (!focus) return 0;
@@ -106,8 +113,8 @@ export default function SpotlightGrid({
         className="absolute inset-0 flex items-center justify-center overflow-hidden transition-opacity duration-500"
         style={{
           // This mask cuts a hole to reveal the pattern where the spotlight is
-          WebkitMaskImage: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
-          maskImage: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
+          WebkitMaskImage: useMotionTemplate`radial-gradient(${maskRadius}px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
+          maskImage: useMotionTemplate`radial-gradient(${maskRadius}px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
         }}
       >
         <div

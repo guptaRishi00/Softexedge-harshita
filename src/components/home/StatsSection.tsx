@@ -13,8 +13,8 @@ if (typeof window !== "undefined") {
 
 const stats = [
   { number: "85", text: "Brands Directed" },
-  { number: "18", text: "Different Sectors\nServed" },
-  { number: "500", text: "Creative\nDeployments" },
+  { number: "18", text: "Different Sectors" },
+  { number: "500", text: "Creative Deployments" },
   { number: "16", text: "Years of Vision" },
 ];
 
@@ -25,55 +25,55 @@ export default function StatsSection() {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 768px)", () => {
-      const rows = gsap.utils.toArray<HTMLElement>(".stat-row");
+        const rows = gsap.utils.toArray<HTMLElement>(".stat-row");
 
-      rows.forEach((row, index) => {
-        const isMobile = window.innerWidth < 768;
+        rows.forEach((row, index) => {
+          const isMobile = window.innerWidth < 768;
 
-        const shiftAmount = isMobile ? 35 : 120;
-        const direction = index % 2 === 0 ? 1 : -1;
+          const shiftAmount = isMobile ? 35 : 120;
+          const direction = index % 2 === 0 ? 1 : -1;
 
-        const inner = row.querySelector(".stat-inner");
+          const inner = row.querySelector(".stat-inner");
 
-        if (!inner) return;
+          if (!inner) return;
 
-        gsap.fromTo(
-          inner,
-          {
-            x: shiftAmount * direction,
-          },
-          {
-            x: -shiftAmount * direction,
-            ease: "none",
-
-            scrollTrigger: {
-              trigger: row,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 1.2,
+          gsap.fromTo(
+            inner,
+            {
+              x: shiftAmount * direction,
             },
-          },
-        );
+            {
+              x: -shiftAmount * direction,
+              ease: "none",
 
-        gsap.fromTo(
-          inner,
-          {
-            opacity: 0,
-            y: 80,
-          },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1.2,
-            ease: "power3.out",
-
-            scrollTrigger: {
-              trigger: row,
-              start: "top 85%",
+              scrollTrigger: {
+                trigger: row,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1.2,
+              },
             },
-          },
-        );
-      });
+          );
+
+          gsap.fromTo(
+            inner,
+            {
+              opacity: 0,
+              y: 80,
+            },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 1.2,
+              ease: "power3.out",
+
+              scrollTrigger: {
+                trigger: row,
+                start: "top 85%",
+              },
+            },
+          );
+        });
       });
 
       return () => mm.revert();
@@ -85,7 +85,7 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-linear-to-br from-white to-[#efefef] py-28 text-black md:py-24"
+      className="relative w-full overflow-hidden bg-linear-to-r from-white to-[#efefef] py-28 text-black md:py-24"
     >
       <div className="relative z-10 flex w-full flex-col">
         {stats.map((stat, index) => (
@@ -100,7 +100,7 @@ export default function StatsSection() {
             )}
           >
             {index !== stats.length - 1 && (
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-black/10 max-md:hidden" />
+              <div className="absolute bottom-0 left-10 right-10 h-px bg-black/10 max-md:hidden" />
             )}
 
             <div

@@ -153,7 +153,7 @@ export default function HomePage() {
 
           <div
             ref={portfolioRef}
-            className="relative z-10 bg-[#0a0a0a] shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
+            className="relative z-10 bg-[#0a0a0a]"
           >
             <PortfolioSection />
           </div>
@@ -168,7 +168,7 @@ export default function HomePage() {
 
             <div
               ref={serviceContainerRef}
-              className="relative z-10 w-full shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
+              className="relative z-10 w-full"
             >
               <ServiceSection />
             </div>
@@ -176,7 +176,7 @@ export default function HomePage() {
             <ExperimentalTestimonials />
             <TechLogoCarousel />
             <ContactSection />
-            <div className="[&>section]:pt-16 md:[&>section]:pt-24">
+            <div className="[&>section]:pt-16 md:[&>section]:pt-32">
               <BlogSection />
             </div>
           </div>

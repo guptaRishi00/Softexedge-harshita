@@ -30,7 +30,7 @@ export default function AboutCinematic() {
             </span>
           </h2>
 
-          <p className="max-w-3xl text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
+          <p className="max-w-3xl text-lg font-light leading-[1.25em] text-white md:text-xl">
             Founded on the belief that technology and creativity should
             seamlessly intersect. We operate globally, partnering with visionary
             businesses to transform their digital presence. Founded on the

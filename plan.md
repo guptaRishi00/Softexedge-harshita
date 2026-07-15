@@ -1,38 +1,45 @@
-# Plan: Blog hero fixes (image, bg speed/visibility, working dropdowns, count removal)
+# Plan: Unify section-intro description style site-wide
 
-## Spec (from task)
-1. Remove the inline image from the blog hero title.
-2. Background animation is very slow / not visible on first view → make it fast and visible immediately.
-3. The "By Category" / "By Author" dropdowns don't work → make them functional.
-4. Remove "Showing 1-6 of 6 posts." but keep the dropdowns where they are (right side).
+## Source of truth
+brand-strategy SubServices header description (SubServices.tsx:110):
+`text-2xl font-light leading-[1.25em] text-white` (on a black section).
+Take its LEADING, FONT-WEIGHT, and COLOR — normalize every section-intro
+description paragraph to match (color matched per background).
 
-## Diagnosis
-- Image: the split-image span between "News," and "views" (+ isExpanded/onAnimationComplete machinery).
-- Slow/invisible bg: SpotlightGrid at speed={2}; its Lissajous y-phase (+1.3) starts the
-  spotlight near the BOTTOM of the box, which in the blog hero is covered by the 2/3-height
-  black bottom fade → on first view the spotlight is behind the scrim. Fix: flip phase to
-  -1.3 (starts near top, visible in all three consumers — blog/CTA/contact all have bottom
-  scrims) + raise speed to 4.
-- Dropdowns: pure visual buttons; filtering state lives in BlogListSection (category only).
-- Count: remove the <p>; container justify-between → md:justify-end so pills stay right.
+## Canonical target (apply to each section-intro description <p>)
+- font-weight → `font-light`  (remove any font-normal/medium/semibold/bold)
+- leading     → `leading-[1.25em]`  (remove leading-relaxed / leading-none / leading-[..] / leading-*)
+- color:
+    - DARK-background section  → `text-white`
+    - LIGHT-background section → `text-zinc-600`
+  (remove the old text-<color>, including opacity variants like text-white/60,
+   text-zinc-500, text-zinc-400, etc.)
 
-## Changes
-1. **BlogHeroSection.tsx**
-   - Delete image span + Image import + isExpanded state + onAnimationComplete.
-   - speed={2} → speed={4} on SpotlightGrid.
-   - Remove the "Showing…" p; keep pills right (md:justify-end).
-   - Implement real dropdowns: open/close menus (By Category → categories; By Author →
-     unique authors from blogPosts), outside-click + Escape close, aria-expanded/haspopup.
-     On select: dispatch CustomEvent("blog:filter", {type, value}) + smooth-scroll to #blog-list.
-2. **BlogListSection.tsx**
-   - id="blog-list" on the section.
-   - Listen for "blog:filter": category → setActiveCategory (reset author), author →
-     setActiveAuthor (reset category to All).
-   - Add activeAuthor state; filteredPosts honors category AND author. Pills reset author.
-3. **SpotlightGrid.tsx**
-   - fRow phase +1.3 → -1.3 (spotlight starts top → visible on first view everywhere).
+## Keep unchanged (do NOT touch)
+font-size (text-lg / text-xl / text-2xl / responsive md:text-*), max-w-*,
+margins (mt-*/mb-*), text-align, animation props, and any gradient <span>
+inside. Only the three properties above change.
 
-## Verification
-- tsc, biome (3 files), next build (/blog + pages using SpotlightGrid).
-- grep: no Image/isExpanded refs in hero; no "Showing" string; event listener present.
-- spec-verifier pass (multi-file, interactive behavior).
+## What counts (scope = "section intro paragraphs" only)
+The lede/description paragraph inside a section's heading block — the <p> that
+sits beside/under the section's h1/h2 title, usually max-w-constrained.
+ONE per section. EXCLUDE: card/item descriptions, list items, eyebrows/labels,
+form helper text, testimonial quotes, footer copy, nav text, blog post
+excerpts, buttons.
+
+## Background classification (per section root / nearest wrapper)
+DARK  → bg-black, bg-[#0a0a0a], bg-[#100f0f], bg-[#141414], any dark → text-white
+LIGHT → bg-white, bg-[#FAFAFA], bg-[#EEEDEB], light → text-zinc-600
+(If the description sits inside a dark card on a light section, treat by the
+card it's on.)
+
+## Execute
+Sweep src/components (and src/app if any section is inline). For each matching
+section-intro <p>, edit only the 3 properties. Report every file + line +
+before/after className. Then tsc + biome + next build.
+
+## Verify
+- tsc, biome, next build all green.
+- spec-verifier: confirm only section-intro descriptions changed (no card copy /
+  labels / gradient spans touched), font-light + leading-[1.25em] applied, and
+  color correct for each section's background (nothing invisible).

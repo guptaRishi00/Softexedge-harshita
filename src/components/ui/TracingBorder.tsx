@@ -74,11 +74,13 @@ export default function TracingBorder({
   // the TR/BL corner weight reaches further along the adjacent edges.
   const glowR = Math.min(w, h) * 1.125;
 
-  // Timing: the comet completes its lap, then dissolves right as the
-  // corner glows bloom and the edges fade in — one continuous handoff
-  // instead of a hard cut between "comet" and "static" states.
+  // Timing: the comet stays bright through its full lap and lands crisply at
+  // the top-right corner (its start/end point) at t = LAP_DURATION. The instant
+  // it lands, the corner glows bloom and the edges fade in (HANDOFF), while the
+  // comet dissolves into that corner energy — a clean stop-then-handoff rather
+  // than a fade that dims the comet before it arrives.
   const LAP_DURATION = 2.5;
-  const HANDOFF = LAP_DURATION - 0.15;
+  const HANDOFF = LAP_DURATION;
 
   return (
     <div ref={ref} className="pointer-events-none absolute inset-0 z-30">
@@ -199,10 +201,11 @@ export default function TracingBorder({
                   }}
                 />
               </mask>
-
             </defs>
 
-            {/* ═══ Layer 1: Revolving comet — one lap, then dissolves.
+            {/* ═══ Layer 1: Revolving comet — one full-brightness lap, then a
+                 quick dissolve that fires only once it lands at the top-right
+                 corner (delay = LAP_DURATION) so the handoff is instant.
                  Glow = a wide soft halo stroke under the crisp core stroke
                  (layered strokes animate cheaply; an feGaussianBlur filter
                  would re-rasterize every frame and stutter). ═══ */}
@@ -210,8 +213,8 @@ export default function TracingBorder({
               initial={{ opacity: 1 }}
               animate={{ opacity: 0 }}
               transition={{
-                duration: 0.45,
-                delay: LAP_DURATION - 0.45,
+                duration: 0.3,
+                delay: LAP_DURATION,
                 ease: "easeOut",
               }}
             >

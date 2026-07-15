@@ -53,7 +53,7 @@ export default function CtaSection() {
               </h2>
 
               {/* Subtext describing the offer/value */}
-              <p className="mt-6 max-w-2xl text-lg leading-relaxed text-zinc-400 md:text-xl">
+              <p className="mt-6 max-w-2xl text-lg font-light leading-[1.25em] text-white md:text-xl">
                 Join the waitlist and be the first one to experience
                 photorealism at scale. Get additional 50% discount on the first
                 100 people.

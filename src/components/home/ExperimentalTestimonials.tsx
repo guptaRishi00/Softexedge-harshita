@@ -74,8 +74,8 @@ export default function ExperimentalTestimonials() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white pt-16 pb-6 text-zinc-900 md:pt-20 md:pb-10">
-      <div className="mx-auto flex w-full flex-col gap-10 px-6 lg:flex-row lg:items-stretch lg:gap-10">
+    <section className="relative overflow-hidden bg-white py-16 text-zinc-900 md:py-32">
+      <div className="mx-auto flex w-full flex-col gap-10 px-4 md:px-10 lg:flex-row lg:items-stretch lg:gap-10">
         {/* LEFT COLUMN: title + description + CTA on top, arrows pinned to the bottom */}
         <motion.div
           initial={isDesktop ? { opacity: 0, x: -30 } : false}
@@ -110,7 +110,7 @@ export default function ExperimentalTestimonials() {
               </span>
             </h2>
 
-            <p className="mt-5 max-w-sm text-lg  leading-[1.2em] text-zinc-600">
+            <p className="mt-5 max-w-sm text-lg font-light leading-[1.25em] text-zinc-600">
               Don't just take our word for it. Hear from the visionaries
               building our future every day.
             </p>

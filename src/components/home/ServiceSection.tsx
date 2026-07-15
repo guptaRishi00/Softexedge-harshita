@@ -8,36 +8,56 @@ import { createPortal } from "react-dom";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { cn } from "@/lib/utils";
 
+// Mirrors the Header "Services" dropdown (page/Header.tsx) — same names, links,
+// and imagery.
 const services = [
   {
-    title: "Branding",
+    title: "Digital Marketing",
     image:
-      "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1000&auto=format&fit=crop",
-    href: "#",
+      "https://images.unsplash.com/photo-1557838923-2985c318be48?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZGlnaXRhbCUyMG1hcmtldGluZ3xlbnwwfHwwfHx8MA%3D%3D",
+    href: "/services",
+  },
+  {
+    title: "AI & Marketing Automation",
+    image:
+      "https://plus.unsplash.com/premium_photo-1683120966127-14162cdd0935?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fHNvZnR3YXJlfGVufDB8fDB8fHww",
+    href: "/services",
   },
   {
     title: "Web Development",
     image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1000&auto=format&fit=crop",
-    href: "#",
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop",
+    href: "/web-development",
+  },
+  {
+    title: "App Development",
+    image:
+      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=800&auto=format&fit=crop",
+    href: "/services",
+  },
+  {
+    title: "Software Development",
+    image:
+      "https://plus.unsplash.com/premium_photo-1685086785636-2a1a0e5b591f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c29mdHdhcmV8ZW58MHx8MHx8fDA%3D",
+    href: "/services",
+  },
+  {
+    title: "Brand Strategy and Identity",
+    image:
+      "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?q=80&w=800&auto=format&fit=crop",
+    href: "/brand-strategy",
   },
   {
     title: "UI/UX Design",
     image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1000&auto=format&fit=crop",
-    href: "#",
+      "https://images.unsplash.com/photo-1545235617-9465d2a55698?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8dWl1eHxlbnwwfHwwfHx8MA%3D%3D",
+    href: "/services",
   },
   {
-    title: "Visual Content",
+    title: "Video Production",
     image:
-      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop",
-    href: "#",
-  },
-  {
-    title: "eCommerce",
-    image:
-      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1000&auto=format&fit=crop",
-    href: "#",
+      "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=800&auto=format&fit=crop",
+    href: "/services",
   },
 ];
 
@@ -124,7 +144,7 @@ export default function ServiceSection() {
           <h2 className="text-5xl font-bold tracking-tight text-white md:text-8xl">
             Our Services
           </h2>
-          <p className="max-w-xl text-sm font-medium leading-relaxed text-white/60 md:text-lg">
+          <p className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:text-left">
             We merge strategic thinking with bold creative execution to deliver
             scalable digital experiences that elevate your brand.
           </p>

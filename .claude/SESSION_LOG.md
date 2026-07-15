@@ -2844,3 +2844,181 @@ Verified live at 1280×800: portfolio inside real .pin-spacer; spacer 6720 = 800
 (=-100vh), z 20. Below md (715px probe): no pin, margin-top 0 — mobile unaffected.
 tsc exit 0; biome findings pre-existing (activeIndex/isDesktop unread at HEAD too).
 Scroll feel needs user's eyes. Not committed.
+
+## 2026-07-15 — Header "Get in Touch": remove border
+Removed the border from the inner-page header CTA (page/Header) — dropped "border border-gray-300 hover:border-none" from the DynamicButton className. layout/Header's button already had no border. tsc + biome clean. Not committed.
+
+## 2026-07-14 — Home: remove Portfolio's drop shadow over About
+User: "drop shadow when the service section overlaps AboutSection" — the section that
+actually overlaps About is Portfolio (dark, right after About); its wrapper carried
+`shadow-[0_-50px_80px_rgba(0,0,0,0.5)]` casting up onto About during the pin-overlap.
+Removed that class from portfolioRef (`src/app/home/page.tsx:156`). The other two overlap
+shadows (statsContainer over Portfolio :164, serviceContainer over Stats :171) are
+untouched. Verified live /home: Portfolio wrapper boxShadow now `none`, stats shadow still
+present. biome clean. Not committed.
+
+## 2026-07-14 — Home AboutSection: drop title full-stop, reverse word-slide direction
+`src/components/home/AboutSection.tsx`: (1) rotating words `["brands.","startups.",
+"founders.","creators."]` → periods removed (`["brands","startups","founders","creators"]`)
+so the title no longer ends in a full stop (mobile branch shows words[0] too — now clean).
+(2) RotatingWord slide reversed L→R: initial x "100%"→"-100%" (enters from left), exit
+x "-100%"→"100%" (exits right); comments updated. Verified live /home: title endsWithPeriod
+false, visible rotating word "creators" no period. Slide direction is framer-driven —
+source flipped, on-screen motion needs user's eyes. biome clean. Not committed.
+
+## 2026-07-14 — Home AboutSection: smooth word swap + character-sync with image
+The word already shared the card's spring (60/20/1) and trigger (frontIndex) → timing was
+in sync, but the card FADES in (opacity 0→1) while the word only slid, so the swap read as
+harder/less smooth. Added a matching opacity cross-fade to RotatingWord (initial opacity 0,
+animate 1, exit 0) on the SAME spring — the word now slides + fades exactly like the card,
+smoothing the swap seam/width-reflow and matching the image's character, not just its timing.
+Kept the reversed L→R direction and the shared spring. Verified: word transition still
+stiffness 60 (matches card line 314); opacity in all 3 states; biome exit 0. Motion feel
+needs user's eyes (framer, headless pane can't play). Not committed.
+
+## 2026-07-14 — Home StatsSection: bg gradient diagonal → left-to-right
+`src/components/home/StatsSection.tsx:88` section bg `bg-linear-to-br` → `bg-linear-to-r`
+(white → #efefef). Verified live /home: computed backgroundImage now
+`linear-gradient(to right, rgb(255,255,255), rgb(239,239,239))`. biome clean. Not committed.
+
+## 2026-07-14 — Home: remove ServiceSection top drop shadow
+Removed the upward overlap shadow `shadow-[0_-50px_80px_rgba(0,0,0,0.5)]` from the
+ServiceSection wrapper (`src/app/home/page.tsx:171` serviceContainerRef). Left the
+Stats-over-Portfolio shadow (:164) and ServiceSection's mobile card `max-md:shadow-sm`
+intact. Verified live /home: service wrapper boxShadow now `none`, stats shadow still
+present. biome clean. Not committed.
+
+## 2026-07-14 — Home StatsSection: narrow the row divider (border-bottom)
+`src/components/home/StatsSection.tsx:103` between-row divider `left-0 right-0` →
+`left-10 right-10` (inset 40px each side, aligning with the section's md:px-10 content
+padding) so it's no longer full-bleed. Verified live /home: divider 1185px vs row 1265px
+(40px inset each side). biome clean. Not committed.
+
+## 2026-07-14 — DynamicButton: fix hover text clipping the final glyph
+"Get in Touch" lost the trailing "h" on hover. Root cause (measured): the hover text is
+rendered per-letter (`text.split("")`, nbsp spaces, no kerning) so it's ~1.6px wider than
+the kerned single-string default text that sizes the wrap — and the text wrap's
+`overflow-hidden` clipped that 1.6px. NOTE: increasing tracking does NOT fix this — equal
+letter-spacing widens both default and hover text by the same amount, so the ~1.6px
+kerning overflow persists. Real fix: removed `overflow-hidden` from the text wrap in
+`src/components/ui/DynamicButton.tsx` (the reveal is opacity-only, so the clip served no
+purpose). Shared component — applies to both Headers + any other DynamicButton usage, all
+beneficial. Verified live /home: wrap overflow now `visible`, hover text (83.6px) sits
+within the button's 32px right padding (~30px clearance, not clipped). biome clean. Other
+overflow-hidden (button top-level :52, shine :81, icon :131) kept. Not committed.
+
+## 2026-07-15 — Home: match x-gutter to ServiceSection (px-4 md:px-10)
+ServiceSection's content wrapper uses px-4 md:px-10 (full-width). Aligned three sections to that: ExperimentalTestimonials inner container px-6 → px-4 md:px-10; ContactSection content wrapper px-6 → px-4 md:px-10; BlogSection HEADER ROW ONLY px-6/md:px-6 → px-4 md:px-10 (blog cards/grid left untouched per "only the header part"). Class-only; tsc + biome clean, next build ✓. 3 files. Not committed.
+
+## 2026-07-15 — BlogSection: testimonials-CTA, tighter header gap, no card hover, no hover-pause, draggable
+Per plan.md (5 changes). (1) Replaced the DynamicButton header CTA with the ExperimentalTestimonials-style CTA — a Link to /blog, "Explore all articles", bg-white pill (border-transparent→hover:border-black, pl-0→pl-6 expand) + black arrow-flip chip (unique gradId blog-cta-grad). (2) Header→carousel gap reduced mb-16/md:mb-35 → mb-12/md:mb-24. (3) Removed card hover: dropped `group`, image group-hover:scale-105 + transition, the hover overlay div, and title group-hover:text-[#2E5BFF]. (4) Removed stop-on-hover (isPaused + onMouseEnter/Leave + keyframe animate). (5) Made carousel draggable: replaced the keyframe x-marquee with a motion-value system — useMotionValue x + useTransform wrap → xWrapped (seamless both directions), useAnimationFrame auto-scrolls left at loopWidth/22 px·s when !dragging, manual pointer-drag (onPointerDown/Move/Up + capture) adds delta to x and pauses the frame. Desktop only; mobile still stacks vertically. spec-verifier round 1 flagged P2 (scrollWidth/2 omitted half the inter-track gap → ~6px hiccup/loop); fixed by measuring loopWidth = first CardTrack offsetWidth + computed column-gap. Verified: all 5 present, tsc + biome clean, next build ✓. 1 file + plan.md. Not committed.
+
+## 2026-07-14 — Home AboutSection: match ServiceSection x-axis padding
+`src/components/home/AboutSection.tsx:161` horizontal padding `px-6 md:px-8 lg:px-8` →
+`px-4 md:px-10` to match ServiceSection's content padding (`px-4 md:px-10`, its inner div
+ServiceSection.tsx:121). Non-x classes (py-10, before:*, lg:mb-20) untouched. Verified live
+/home at 1265px: AboutSection computes 40px/40px = ServiceSection inner 40px/40px (match).
+biome clean. Not committed.
+
+## 2026-07-15 — BlogHeroSection: bigger, centered spotlight mask
+Added two props to the shared SpotlightGrid (defaults preserve current behavior for CtaSection/ContactHero): maskRadius (default 600 → the radial mask circle size) and travel (default 0.9 → Lissajous swing amplitude as a fraction of the half-grid). The mask template and the fCol/fRow amplitude now use these. BlogHeroSection passes maskRadius={950} (larger revealed area) and travel={0.35} (spotlight stays in the central region instead of wandering to the edges). travel added to the rAF effect deps. Verified: no hardcoded 600px/0.9 remain, other consumers still default, tsc + biome clean, next build ✓. 2 files. Not committed.
+
+## 2026-07-15 — TracingBorder: crisp stop-at-top-right, instant handoff
+Task: the moving border (comet) in BlogListSection should stop at the top-right
+corner and instantly the next effect takes place. Root cause: in
+`src/components/ui/TracingBorder.tsx` the comet began fading at t=2.05s
+(`delay: LAP_DURATION - 0.45`) — dimming during its final travel — and the
+corner-glow handoff fired early at t=2.35s (`HANDOFF = LAP_DURATION - 0.15`),
+both BEFORE the comet lands at the top-right corner (its path start/end) at
+t=2.5s. Fix (2 hunks, timing-only): `HANDOFF = LAP_DURATION` (next effect fires
+exactly on landing) and comet Layer 1 fade `delay: LAP_DURATION - 0.45 → LAP_DURATION`,
+`duration: 0.45 → 0.3` (full-brightness lap, then quick dissolve into the corner
+energy). Shared component — same crisper handoff now applies to all 4 consumers
+(blog/BlogListSection + work/ & brand-strategy/ & web-development/ ProjectShowcase),
+identical beneficial polish (cf. DynamicButton precedent). Also removed one
+pre-existing trailing-whitespace blank line so biome is clean. tsc + biome clean,
+next build ✓. Motion timing verified by construction; live hover verified by user.
+Not committed.
+
+## 2026-07-15 — Contact hero: drop eyebrow, 2-line title, narrower image, about-style image anim, blog bg
+Five changes to ContactHeroSectionTwo: (1) removed the "Contact Us" eyebrow tag above the title; (2) title now two lines — "Let's Build Something" / "Great Together." (gradient) instead of three; (3) reduced the right image width md:w-1/2 → md:w-2/5 (left column widened md:w-1/2 → md:w-3/5); (4) image entrance now matches the homepage AboutSection card images — initial {opacity:0, scale:0.95, y:40} → whileInView {opacity:1, scale:1, y:0}, duration 1.2, premiumEase (was a mount x:40 slide); (5) background effect matched to the updated BlogHeroSection — SpotlightGrid speed={4} maskRadius={950} travel={0.35}, dropped the custom glowColor/glowVia (default blue→cyan glow like blog). Verified: eyebrow gone, 2-line title, w-2/5 image, about-anim values, blog SpotlightGrid props (no glowColor), tsc + biome clean, next build ✓ /contact. Single file. Not committed.
+
+## 2026-07-15 — Contact hero: 2-line title rephrase + AboutSection stacking cards on right
+(1) Rephrased the title into two clean lines: "Let's build" / "something great." (gradient), replacing the longer 3-word first line. (2) Replaced the single right-side image with the homepage AboutSection stacking-card animation: ported frontIndex + 4.5s interval (guarded to isDesktop && !reduce), visibleCards [0,1,2] window, AnimatePresence 3-card stack with the exact offset-based stack values, exit fly-off (x:1000/y:400/rotateZ:90, 1.1s exitEase), and the buttery spring (stiffness60/damping20/mass1). Adapted for the dark container (rings border-white/*, card bg-zinc-800), added exitEase, decorative counter-rotating rings, and a static first-card fallback for mobile/reduced-motion. CARDS = the current local abstract + AboutSection's 2 unsplash URLs (plain <img>, so no remotePatterns needed); dropped next/image. Kept right column md:w-2/5. Verified: tsc + biome clean, next build ✓ /contact, spec-verifier APPROVED (values match AboutSection, no P0/P1/P2). Single file. Not committed.
+
+## 2026-07-14 — Home ServiceSection: description styles match brand-strategy SubServices
+`src/components/home/ServiceSection.tsx:127` description `max-w-xl text-sm font-medium
+leading-relaxed text-white/60 md:text-lg` → `max-w-2xl text-2xl font-light leading-[1.25em]
+text-white md:text-left` (copied verbatim from brand-strategy/SubServices.tsx:110). Copy text
+unchanged. Verified live /home: computes 24px / weight 300 / lh 30px / white / max-w 672px /
+left — identical to SubServices. biome clean. Not committed.
+
+## 2026-07-15 — Header dropdown: swap hard black boxes for a subtle top gradient scrim
+Task: in the header, remove the black div behind the hover text and instead use a
+subtle/smooth top black gradient so the text stays readable but not overwhelming.
+Location: the Services mega-menu dropdown cards in BOTH resizable-navbars
+(`src/components/page/resizable-navbar.tsx` inner-page header + `src/components/ui/
+resizable-navbar.tsx` home header — near-duplicates per map). Each hover card fades in
+a background image + turns its title white; legibility came from two hard
+`bg-black/70` rounded boxes (one behind the title, one behind the arrow). Replaced both
+with a SINGLE gradient scrim `<div>` per card: `absolute inset-0 z-[5]
+bg-gradient-to-b from-black/55 via-transparent to-black/30`, `opacity-0 →
+group-hover:opacity-100`, `transition-opacity duration-500 ease-out`, pointer-events-none
+— sits above the image (z-0) and below the content (z-10), clipped by the card's
+overflow-hidden/rounded. Top-weighted (black/55) for the title, middle transparent so the
+image reads clearly, light bottom fade (black/30) so the arrow stays legible. Judgment
+call: also removed the arrow's twin black box (not just the text's) since keeping one hard
+box would contradict "subtle and smooth"; the bottom fade backs it instead. Applied to
+both headers for site consistency. 2 files. tsc + biome-format clean, next build ✓.
+Pre-existing biome lint debt in these files (noImgElement/noArrayIndexKey/etc.) left
+untouched (out of scope). Live hover verification pending user. Not committed.
+
+## 2026-07-14 — Home ServiceSection: sync services list with Header dropdown
+Replaced ServiceSection's 5-item `services` array (Branding/Web Dev/UI-UX/Visual Content/
+eCommerce) with the 8 from the Header "Services" dropdown (page/Header.tsx), same order,
+names, images, and links: Digital Marketing, AI & Marketing Automation, Web Development
+(/web-development), App Development, Software Development, Brand Strategy and Identity
+(/brand-strategy), UI/UX Design, Video Production. hrefs now real (/web-development,
+/brand-strategy, else /services) instead of "#". Verified live /home: 8 rows exactly
+matching the dropdown names/order, links correct. tsc exit 0, biome clean. (Note: the six
+"/services" links 404 — that route doesn't exist yet, mirroring the dropdown's own pending
+links; pre-existing gap, not introduced by names.) Not committed.
+
+## 2026-07-14 — Footer: unframe the giant Softexedge wordmark
+Removed the two lines bracketing the giant "Softexedge" brand name in
+`src/components/layout/Footer.tsx`: the wordmark div's own `border-b border-white/10`
+(bottom line, line 136) and the `border-b border-white/10` on the section above it (top
+line, line 62). Kept all padding (pb-16/pt/pb) for spacing. Verified live /home footer:
+both the wordmark div and the section-above compute borderBottomWidth 0px. biome clean.
+Not committed.
+
+## 2026-07-15 — Home: uniform inter-section spacing (ServiceSection py as standard)
+Task: make each section's padding-top equal the previous section's padding-bottom for
+consistent vertical rhythm, using ServiceSection (`py-16 md:py-32`) as the standard;
+EXCLUDE Hero/About/Portfolio/Stats, apply to the rest. Standard = 16 (mobile) / 32 (md),
+symmetric. Set the four post-Service sections to `py-16 md:py-32`:
+(1) `home/ExperimentalTestimonials.tsx` `pt-16 pb-6 md:pt-20 md:pb-10` → `py-16 md:py-32`;
+(2) `ui/TechLogoCarousel.tsx` `pt-6 pb-16 md:pt-10 md:pb-24` → `py-16 md:py-32`;
+(3) `home/ContactSection.tsx` `py-24 md:py-32` → `py-16 md:py-32` (mobile 24→16);
+(4) `home/BlogSection.tsx` section `md:pt-0 pb-20 md:pb-40` → `pb-16 md:pb-32` (dropped dead
+`md:pt-0`), and its top padding wrapper in `app/home/page.tsx:179`
+`md:[&>section]:pt-24` → `md:[&>section]:pt-32` (wrapper's `.wrapper>section` wins by
+specificity; mobile pt-16 already standard). Result: every adjacent boundary among
+{Service, Testimonials, TechLogoCarousel, Contact, Blog} now has pt(next)=pb(prev) at both
+breakpoints (~64px md gap each). Left the "Trusted By" LogoLoop band alone (bracketed by
+excluded Hero/About). 5 files. tsc clean, next build ✓; my edited lines are biome-format
+clean (pre-existing CRLF-era format drift in page.tsx lines 154-172 and
+ExperimentalTestimonials 182-225 is from prior uncommitted work, NOT my lines — left
+untouched, out of scope). spec-verifier APPROVED round 1 (no P0/P1). Live visual pending
+user. Not committed.
+
+## 2026-07-14 — Footer: center the partition between the two link lists
+The two nav lists sat in a `md:grid-cols-3` grid but there are only 2 lists, so they
+filled tracks 1–2 with an empty 3rd track — pushing the vertical `border-l` divider to the
+~1/3 mark. Changed `src/components/layout/Footer.tsx:63` to drop the `md:grid-cols-3`
+override so the base `grid-cols-2` governs all breakpoints — two equal columns, divider at
+their shared boundary = center. Verified live /home @1280: grid 314.5px×2, divider x=391 =
+link-area center (391), dividerAtCenter true. biome clean. Not committed.
+
+## 2026-07-15 — Site-wide: unify section-intro description style (leading/weight/color)
+Took the brand-strategy SubServices header description style (font-light, leading-[1.25em], color) and normalized every SECTION-INTRO lede paragraph site-wide. Color matched per background (user choice): text-white on dark sections, text-zinc-600 on light. Only leading + font-weight + color changed — font-size, max-w, margins, alignment, animation, and gradient spans left intact. Scope = section-intro ledes only (card/item/body/label/quote/nav/footer/blog-excerpt copy and dead code excluded). 13 paragraphs across 13 files changed via a frontend-developer subagent: AboutTraditional, OurValuesSection, brand & web-dev CtaSection, ExperimentalTestimonials, home ContactSection, home AboutSection, ProjectHero, BlogListSection, ApplicationJourney, CareerHeroSection, WhyJoinUs, WorkProjectShowcase. 8 sections were already compliant (SubServices ×2 [reference], ServiceSection, ProjectShowcase ×2, ProcessSection ×2, OurTechStack ×2). Verified: tsc + biome + next build all green; spec-verifier APPROVED (each color correct for its bg, no over-reach, no missed ledes). Specialists: frontend-developer (sweep) + spec-verifier (done gate). ~13 files + plan.md. Not committed.

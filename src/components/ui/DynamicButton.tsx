@@ -87,13 +87,11 @@ export default function DynamicButton({
         />
       </div>
 
-      {/* TYPEWRITER TEXT ANIMATION */}
-      <span
-        className={cn(
-          "relative z-10 flex overflow-hidden font-bold",
-          textClassName,
-        )}
-      >
+      {/* TYPEWRITER TEXT ANIMATION.
+          No overflow-hidden here: the per-letter hover text (no kerning,
+          nbsp spaces) renders a hair wider than the kerned default string,
+          and clipping would cut the last glyph's tail on hover. */}
+      <span className={cn("relative z-10 flex font-bold", textClassName)}>
         {/* Default Text (disappears quickly on hover) */}
         <span
           className={cn(

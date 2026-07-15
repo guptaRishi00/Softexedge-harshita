@@ -59,8 +59,8 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay" />
 
       <div className="relative z-10 mx-auto w-full flex flex-col px-6 md:px-10 lg:px-16">
-        <div className="grid grid-cols-1 gap-12 border-b border-white/10 pb-16 lg:grid-cols-12 md:pb-20">
-          <div className="grid grid-cols-2 gap-10 lg:col-span-7 lg:gap-0 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-12 pb-16 lg:grid-cols-12 md:pb-20">
+          <div className="grid grid-cols-2 gap-10 lg:col-span-7 lg:gap-0">
             <div className="flex flex-col gap-4">
               {footerLinksCol1.map((link) => (
                 <Link
@@ -133,7 +133,7 @@ export default function Footer() {
         </div>
 
         {/* MIDDLE SECTION: Giant Brand Name */}
-        <div className="relative flex w-full justify-center border-b border-white/10 pt-8 pb-16 md:pt-10 md:pb-20 overflow-hidden">
+        <div className="relative flex w-full justify-center pt-8 pb-16 md:pt-10 md:pb-20 overflow-hidden">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

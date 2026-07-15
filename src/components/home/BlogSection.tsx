@@ -1,10 +1,27 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useAnimationFrame,
+  useMotionValue,
+  useTransform,
+} from "framer-motion";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { MdArrowOutward } from "react-icons/md";
 import { useIsDesktop } from "@/lib/useIsDesktop";
-import DynamicButton from "../ui/DynamicButton";
+
+// Seconds for the auto-scroll to travel one track width (matches the old pace).
+const SCROLL_SECONDS = 22;
+
+// Wrap a value into the half-open range [min, max) — keeps the marquee seamless
+// in both directions (auto-scroll and drag).
+const wrap = (min: number, max: number, v: number) => {
+  const range = max - min;
+  return ((((v - min) % range) + range) % range) + min;
+};
 
 const blogPosts = [
   {
@@ -54,7 +71,14 @@ const rotatingWords = ["Perspectives.", "Insights.", "Ideas.", "Stories."];
 export default function BlogSection() {
   const isDesktop = useIsDesktop();
   const [index, setIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+
+  // Draggable auto-scroll marquee (motion-value driven so drag + auto-scroll
+  // can share the same x without the framer keyframe/drag transform conflict).
+  const x = useMotionValue(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [loopWidth, setLoopWidth] = useState(0);
+  const dragging = useRef(false);
+  const lastPointerX = useRef(0);
 
   // Cycle through the typography words every 4.5 seconds
   useEffect(() => {
@@ -64,38 +88,82 @@ export default function BlogSection() {
     return () => clearInterval(interval);
   }, []);
 
+  // Seamless loop width = one CardTrack's width + the gap before the next copy.
+  // (scrollWidth/2 would omit half that gap and hiccup once per loop.)
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const measure = () => {
+      const first = el.firstElementChild as HTMLElement | null;
+      if (!first) return;
+      const styles = getComputedStyle(el);
+      const gap = Number.parseFloat(styles.columnGap || styles.gap || "0") || 0;
+      setLoopWidth(first.offsetWidth + gap);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isDesktop]);
+
+  const xWrapped = useTransform(x, (v) =>
+    loopWidth ? wrap(-loopWidth, 0, v) : v,
+  );
+
+  useAnimationFrame((_, delta) => {
+    if (!isDesktop || dragging.current || !loopWidth) return;
+    const step = (loopWidth / SCROLL_SECONDS) * (delta / 1000);
+    x.set(wrap(-loopWidth, 0, x.get() - step));
+  });
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDesktop) return;
+    dragging.current = true;
+    lastPointerX.current = e.clientX;
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragging.current) return;
+    const dx = e.clientX - lastPointerX.current;
+    lastPointerX.current = e.clientX;
+    x.set(x.get() + dx);
+  };
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+  };
+
   // Card list component to render identical tracks
   const CardTrack = () => (
     <div className="flex shrink-0 gap-4 md:gap-3 max-md:w-full max-md:flex-col">
       {blogPosts.map((post) => (
         <div
           key={post.id}
-          // INCREASED WIDTHS slightly (+5vw across breakpoints)
           className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw] max-md:w-full"
         >
-          <article className="group flex h-full cursor-pointer flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
-            {/* IMAGE CONTAINER - Kept aspect-square */}
+          <article className="flex h-full flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
+            {/* IMAGE CONTAINER */}
             <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-[1.25rem] bg-zinc-100">
               <Image
                 src={post.image}
                 alt={post.title}
                 fill
                 sizes="(max-width: 768px) 55vw, 25vw"
-                className="object-cover transition-transform duration-700 ease-[0.16,1,0.3,1] group-hover:scale-105"
+                className="object-cover"
+                draggable={false}
               />
-              <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
             </div>
 
             {/* CARD CONTENT */}
             <div className="flex flex-1 flex-col px-2">
-              {/* Moved Author and Read Time above the title */}
               <div className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500">
                 <span className="text-zinc-800">{post.author}</span>
                 <span className="h-1 w-1 rounded-full bg-zinc-300" />
                 <span>{post.readTime}</span>
               </div>
 
-              <h3 className="text-lg font-bold leading-[1.2em] tracking-tight text-zinc-900 transition-colors duration-300 group-hover:text-[#2E5BFF] lg:text-xl">
+              <h3 className="text-lg font-bold leading-[1.2em] tracking-tight text-zinc-900 lg:text-xl">
                 {post.title}
               </h3>
             </div>
@@ -106,10 +174,10 @@ export default function BlogSection() {
   );
 
   return (
-    <section className="w-full overflow-hidden bg-white text-black md:pt-0 pb-20 md:pb-40">
+    <section className="w-full overflow-hidden bg-white text-black pb-16 md:pb-32">
       <div className="mx-auto w-full ">
         {/* HEADER LAYER */}
-        <div className="mb-16 flex w-full flex-col items-start justify-between gap-8 px-6 md:mb-35 md:flex-row md:items-end md:px-6">
+        <div className="mb-12 flex w-full flex-col items-start justify-between gap-8 px-4 md:mb-24 md:flex-row md:items-end md:px-10">
           <motion.div
             initial={isDesktop ? { opacity: 0, x: -20 } : false}
             whileInView={isDesktop ? { opacity: 1, x: 0 } : undefined}
@@ -142,40 +210,54 @@ export default function BlogSection() {
             </h2>
           </motion.div>
 
-          {/* Controls & CTA Container */}
+          {/* CTA — same style as the ExperimentalTestimonials CTA */}
           <div className="flex w-full items-center justify-end md:w-auto">
-            <DynamicButton
+            <Link
               href="/blog"
-              text="Explore all articles"
-              className="rounded-2xl border border-black/20 py-5 text-sm"
-            />
+              className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
+            >
+              <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
+                Explore all articles
+              </span>
+
+              <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
+                <svg width="0" height="0" className="absolute">
+                  <title>Explore arrow gradient</title>
+                  <defs>
+                    <linearGradient
+                      id="blog-cta-grad"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="0%"
+                    >
+                      <stop stopColor="#2E5BFF" offset="0%" />
+                      <stop stopColor="#149CCB" offset="100%" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                <MdArrowOutward
+                  className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                  style={{ fill: "url(#blog-cta-grad)" }}
+                />
+              </div>
+            </Link>
           </div>
         </div>
 
         {/* CONTAINER */}
         <div className="relative w-full overflow-hidden">
-          {/* Main animated element container holding two identical tracks */}
+          {/* Draggable, auto-scrolling track (two identical copies on desktop) */}
           <motion.div
-            className="flex w-max flex-nowrap gap-4 md:gap-3 max-md:w-full max-md:flex-col"
-            animate={
-              isDesktop
-                ? isPaused
-                  ? "paused"
-                  : {
-                      x: ["0%", "-50%"],
-                    }
-                : undefined
-            }
-            transition={{
-              x: {
-                repeat: Infinity,
-                repeatType: "loop",
-                duration: 22,
-                ease: "linear",
-              },
-            }}
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
+            ref={trackRef}
+            className="flex w-max flex-nowrap gap-4 md:gap-3 max-md:w-full max-md:flex-col md:cursor-grab md:select-none md:active:cursor-grabbing"
+            style={isDesktop ? { x: xWrapped } : undefined}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
           >
             {isDesktop ? (
               <>

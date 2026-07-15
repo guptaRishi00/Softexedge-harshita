@@ -95,7 +95,7 @@ export default function BlogHeroSection() {
 
       {/* Black hero container with auto-moving spotlight pattern */}
       <div className="relative mx-auto flex min-h-[70vh] w-full flex-col justify-end overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-6 py-12 md:px-12 md:py-16 lg:px-16 lg:py-20">
-        <SpotlightGrid speed={4} />
+        <SpotlightGrid speed={4} maskRadius={950} travel={0.35} />
 
         {/* Bottom fade so the text sits cleanly over the pattern */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-2/3 bg-gradient-to-t from-black via-black/80 to-transparent" />

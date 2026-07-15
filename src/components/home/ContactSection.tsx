@@ -187,9 +187,9 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="relative w-full overflow-hidden bg-black py-24 md:py-32"
+      className="relative w-full overflow-hidden bg-black py-16 md:py-32"
     >
-      <div className="relative z-10 mx-auto w-full px-6">
+      <div className="relative z-10 mx-auto w-full px-4 md:px-10">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-12">
           <motion.div
             initial={isDesktop ? { opacity: 0, y: 40 } : false}
@@ -226,7 +226,7 @@ export default function ContactSection() {
               </span>
             </h2>
 
-            <p className="mt-6 text-lg font-medium leading-[1.2em] text-zinc-400">
+            <p className="mt-6 text-lg font-light leading-[1.25em] text-white">
               Ready to redefine the standard? Whether you have a specific
               project in mind or just want to explore possibilities, our team is
               ready to collaborate.
