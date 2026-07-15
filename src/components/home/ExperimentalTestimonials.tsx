@@ -74,7 +74,7 @@ export default function ExperimentalTestimonials() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white py-16 text-zinc-900 md:py-32">
+    <section className="relative overflow-hidden bg-white py-16 text-zinc-900 md:pt-32">
       <div className="mx-auto flex w-full flex-col gap-10 px-4 md:px-10 lg:flex-row lg:items-stretch lg:gap-10">
         {/* LEFT COLUMN: title + description + CTA on top, arrows pinned to the bottom */}
         <motion.div
@@ -90,13 +90,20 @@ export default function ExperimentalTestimonials() {
               Voices of the <br />
               <span className="inline-grid overflow-hidden py-2">
                 {isDesktop ? (
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence mode="popLayout">
                     <motion.span
                       key={wordIndex}
-                      initial={{ x: 40, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: -40, opacity: 0 }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      // Slide + cross-fade on the same overdamped spring as the
+                      // AboutSection rotating word, for a smooth glide swap.
+                      initial={{ x: "-100%", opacity: 0 }}
+                      animate={{ x: "0%", opacity: 1 }}
+                      exit={{ x: "100%", opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 60,
+                        damping: 20,
+                        mass: 1,
+                      }}
                       className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
                     >
                       {rotatingWords[wordIndex]}
@@ -179,50 +186,52 @@ export default function ExperimentalTestimonials() {
             transition={{ duration: 0.6, ease: premiumEase }}
             className="flex w-max flex-row gap-4 px-4 md:gap-3 max-md:w-full max-md:flex-col max-md:px-0"
           >
-            {(isDesktop ? duplicatedTestimonials : testimonials).map((item, i) => (
-              <div
-                key={`${item.name}-${i}`}
-                className="group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors hover:border-zinc-300 hover:bg-linear-to-br hover:from-white hover:to-zinc-200 sm:w-[360px] md:min-h-[440px] md:w-[440px] md:py-10"
-              >
-                {/* Outlined Quote Icon (Top Right) */}
-                <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
-                  <svg
-                    width="48"
-                    height="48"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <title>Quote</title>
-                    <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" />
-                    <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
-                  </svg>
-                </div>
-
-                {/* Quote Text */}
-                <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.5em] tracking-tight text-zinc-900 md:mt-14 md:text-xl lg:text-2xl">
-                  "{item.quote}"
-                </p>
-
-                {/* Bottom Profile */}
-                <div className="mt-8 flex items-center gap-4 md:mt-10">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-black/10 bg-black text-sm font-bold text-white md:h-14 md:w-14 md:text-base">
-                    {item.initials}
+            {(isDesktop ? duplicatedTestimonials : testimonials).map(
+              (item, i) => (
+                <div
+                  key={`${item.name}-${i}`}
+                  className="group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors hover:border-zinc-300 hover:bg-linear-to-br hover:from-white hover:to-zinc-200 sm:w-[360px] md:min-h-[440px] md:w-[440px] md:py-10"
+                >
+                  {/* Outlined Quote Icon (Top Right) */}
+                  <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
+                    <svg
+                      width="48"
+                      height="48"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <title>Quote</title>
+                      <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" />
+                      <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
+                    </svg>
                   </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-zinc-900">
-                      {item.name}
-                    </h4>
-                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-500 md:text-sm">
-                      {item.role}
-                    </p>
+
+                  {/* Quote Text */}
+                  <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.5em] tracking-tight text-zinc-900 md:mt-14 md:text-xl lg:text-2xl">
+                    "{item.quote}"
+                  </p>
+
+                  {/* Bottom Profile */}
+                  <div className="mt-8 flex items-center gap-4 md:mt-10">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-black/10 bg-black text-sm font-bold text-white md:h-14 md:w-14 md:text-base">
+                      {item.initials}
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-zinc-900">
+                        {item.name}
+                      </h4>
+                      <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-500 md:text-sm">
+                        {item.role}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
           </motion.div>
         </div>
       </div>

@@ -177,7 +177,7 @@ export default function BlogSection() {
     <section className="w-full overflow-hidden bg-white text-black pb-16 md:pb-32">
       <div className="mx-auto w-full ">
         {/* HEADER LAYER */}
-        <div className="mb-12 flex w-full flex-col items-start justify-between gap-8 px-4 md:mb-24 md:flex-row md:items-end md:px-10">
+        <div className="mb-12 flex w-full flex-col items-start justify-between gap-8 px-4 md:mb-24 md:flex-row md:items-center md:px-10">
           <motion.div
             initial={isDesktop ? { opacity: 0, x: -20 } : false}
             whileInView={isDesktop ? { opacity: 1, x: 0 } : undefined}

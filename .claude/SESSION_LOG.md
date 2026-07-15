@@ -3022,3 +3022,140 @@ link-area center (391), dividerAtCenter true. biome clean. Not committed.
 
 ## 2026-07-15 — Site-wide: unify section-intro description style (leading/weight/color)
 Took the brand-strategy SubServices header description style (font-light, leading-[1.25em], color) and normalized every SECTION-INTRO lede paragraph site-wide. Color matched per background (user choice): text-white on dark sections, text-zinc-600 on light. Only leading + font-weight + color changed — font-size, max-w, margins, alignment, animation, and gradient spans left intact. Scope = section-intro ledes only (card/item/body/label/quote/nav/footer/blog-excerpt copy and dead code excluded). 13 paragraphs across 13 files changed via a frontend-developer subagent: AboutTraditional, OurValuesSection, brand & web-dev CtaSection, ExperimentalTestimonials, home ContactSection, home AboutSection, ProjectHero, BlogListSection, ApplicationJourney, CareerHeroSection, WhyJoinUs, WorkProjectShowcase. 8 sections were already compliant (SubServices ×2 [reference], ServiceSection, ProjectShowcase ×2, ProcessSection ×2, OurTechStack ×2). Verified: tsc + biome + next build all green; spec-verifier APPROVED (each color correct for its bg, no over-reach, no missed ledes). Specialists: frontend-developer (sweep) + spec-verifier (done gate). ~13 files + plan.md. Not committed.
+
+## 2026-07-14 — Home StatsSection: widen the row divider (still inset)
+`src/components/home/StatsSection.tsx:103` divider `left-10 right-10` → `left-4 right-4`
+(inset 40px→16px each side): wider but not edge-to-edge. Verified live /home: divider now
+1233px vs row 1265px (16px inset each side, fullBleed false; was 1185px). biome clean.
+Not committed.
+
+## 2026-07-14 — Home: add subtle top shadow to PortfolioSection (shadow-xs, flipped)
+Added a top-directed shadow-xs to the Portfolio wrapper (`src/app/home/page.tsx:156`
+portfolioRef): `shadow-[0_-1px_2px_0_rgb(0_0_0_/_0.05)]`. Note: Tailwind `shadow-xs` is a
+DOWNWARD shadow (0 1px 2px rgb(0 0 0/.05)); used its exact values with -1px y-offset to put
+it on top per the request. Verified live /home: wrapper boxShadow computes rgba(0,0,0,0.05)
+0px -1px 2px 0px (top). biome clean. Very subtle by design (5% black, 2px) — bump if wanted.
+Not committed.
+
+## 2026-07-14 — Home: Portfolio top shadow xs → md
+Bumped the Portfolio wrapper top shadow (`src/app/home/page.tsx:156` portfolioRef) from the
+flipped shadow-xs to flipped shadow-md: `shadow-[0_-4px_6px_-1px_rgb(0_0_0_/_0.1),0_-2px_4px_-2px_rgb(0_0_0_/_0.1)]`
+(Tailwind shadow-md's two layers with negative y-offsets for a top shadow). Verified live
+/home: wrapper boxShadow computes rgba(0,0,0,0.1) 0px -4px 6px -1px + rgba(0,0,0,0.1) 0px
+-2px 4px -2px (top, both layers). biome clean. Not committed.
+
+## 2026-07-14 — Home StatsSection: bg gradient gray→white (L→R)
+`src/components/home/StatsSection.tsx:88` bg `from-white to-[#efefef]` → `from-[#efefef]
+to-white` (kept bg-linear-to-r). Now gray (left) → white (right). Verified live /home:
+computed backgroundImage linear-gradient(to right, rgb(239,239,239) 0%, rgb(255,255,255)
+100%). biome clean. Not committed.
+
+## 2026-07-14 — Home: reduce BlogSection top spacing
+`src/app/home/page.tsx:179` BlogSection wrapper `[&>section]:pt-16 md:[&>section]:pt-32`
+→ `[&>section]:pt-6 md:[&>section]:pt-12` (top padding 64/128px → 24/48px). Verified live
+/home @1280: section paddingTop now 48px (was 128px). biome clean. Not committed.
+
+## 2026-07-14 — Home: nudge BlogSection top spacing back up a little
+Follow-up: `src/app/home/page.tsx:179` BlogSection wrapper `pt-6 md:pt-12` →
+`pt-8 md:pt-16` (top padding 24/48px → 32/64px). Verified live /home @1280: section
+paddingTop 64px (was 48px). biome clean. Not committed.
+
+## 2026-07-14 — Home: BlogSection top spacing a little more
+Follow-up: `src/app/home/page.tsx:179` BlogSection wrapper `pt-8 md:pt-16` →
+`pt-10 md:pt-20` (top padding 32/64px → 40/80px). Verified live /home @1280: section
+paddingTop 80px (was 64px). biome clean. Not committed.
+
+## 2026-07-14 — Footer: pack the two link lists closer + drop the divider
+The wide gap came from the `grid-cols-2` (50/50) split and the line from col2's `border-l`.
+`src/components/layout/Footer.tsx`: parent (line 63) `lg:gap-0` → `lg:flex lg:justify-start
+lg:gap-16` so at lg the two lists become auto-width flex items packed left with a 64px gap
+(base stays grid-cols-2 gap-10 for mobile). Col2 (line 78) dropped `lg:border-l
+lg:border-white/10 lg:pl-10` (removes the line + its padding). Verified live /home @1280:
+parent display flex, gap between lists 64px (was ~half-width), col2 borderLeft 0. biome
+clean. Not committed.
+
+## 2026-07-14 — Footer: nudge list gap up a little
+Follow-up: `src/components/layout/Footer.tsx:63` `lg:gap-16` → `lg:gap-20` (64px → 80px
+between the two link lists). Verified live /home @1280: gap 80px. biome clean. Not committed.
+
+## 2026-07-14 — Footer: bottom legal lines + bigger wordmark
+`src/components/layout/Footer.tsx`: (1) replaced the bottom legal row content with the
+three requested lines — left `© Made By Softexedge`, right group `All Rights Reserved` +
+`Privacy Policy (you really care?)` (anchor href="#"). Used "Softexedge" (site spelling)
+for the prompt's "Sotexedge" typo. Dropped the old `© {year} Softexedge Ltd...` link +
+`Made by Softexedge`. (2) Giant wordmark `text-[16.5vw]` → `text-[17vw]` (user tuned to 17
+mid-task; kept). Verified live /home @1280: wordmark 217.6px, width 1111px within its 1113px
+div (not clipped), no page h-scroll; all three legal lines present with exact text, privacy
+href="#". tsc 0, biome clean. Not committed.
+
+## 2026-07-14 — Footer: newsletter button uses the ExperimentalTestimonials arrow
+Replaced the footer newsletter subscribe button's horizontal MdKeyboardArrowRight
+double-slide with the ExperimentalTestimonials "Connect With Us" arrow: two MdArrowOutward
+doing the diagonal swap (out top-right / in from bottom-left) with a brand-gradient fill on
+the incoming one. `src/components/layout/Footer.tsx`: added MdArrowOutward to the
+react-icons/md import; unique SVG gradient id `footer-arrow-grad` (both Footer + testimonials
+render on /home, avoid collision). Social-link arrows left as-is (still MdKeyboardArrowRight).
+Verified live /home: subscribe button has 2 diagonal arrows + gradient def, footer-arrow-grad
+id count 1 (unique), testimonial-icon-grad still 1. tsc 0, biome clean. Hover motion needs
+eyes. Not committed.
+
+## 2026-07-14 — Footer: social icons also use the testimonial arrow
+Applied the same diagonal MdArrowOutward swap (out top-right / gradient in from
+bottom-left) to the 3 social-link chips (`src/components/layout/Footer.tsx`), replacing
+their MdKeyboardArrowRight double-slide. Arrows reference the single shared
+`footer-arrow-grad` gradient def (defined in the subscribe button above — no duplicate
+id across the 3 socials). MdKeyboardArrowRight now unused → removed from the import.
+Verified live /home: 3 socials, each with 2 diagonal arrows; footer-arrow-grad def count 1;
+0 MdKeyboardArrowRight refs; tsc 0, biome clean. Hover motion needs eyes. Not committed.
+
+## 2026-07-15 — Header services dropdown: use ServiceSection images
+Mid-task the user restructured home ServiceSection to 8 items mirroring the Services dropdown 1:1 (same names/links). So the header dropdown images (page/Header + layout/Header) were set to ServiceSection's exact 8 images by name: Digital Marketing (1611926653458), AI & Marketing Automation (1683120966127), Web Development (1498050108023), App Development (1512941937669), Software Development (1685086785636), Brand Strategy and Identity (1611532736597), UI/UX Design (1545235617), Video Production (1542038784456). (First replaced page/Header with a stale 5-image ServiceSection set, then corrected both headers to the new 8 once the user's ServiceSection change surfaced.) Verified: all 8 IDs present once in each header, no stray images, tsc + biome clean, next build ✓. 2 files. Not committed. NOTE: header dropdown and ServiceSection now duplicate the same 8-item list — a shared data module would remove the sync burden (flagged, not done per minimal-diff).
+
+## 2026-07-14 — Home: ContactSection overlaps Testimonials+Carousel group on scroll
+Added a 3rd pin-overlap to `src/app/home/page.tsx`, mirroring About→Portfolio and
+Stats→Service. New refs testimonialsGroupRef + contactContainerRef. JSX: wrapped
+`<ExperimentalTestimonials/><TechLogoCarousel/>` in `<div ref={testimonialsGroupRef}
+className="relative z-10 bg-white">` and `<ContactSection/>` in `<div ref={contactContainerRef}
+className="relative z-30">`. GSAP: pin testimonialsGroupRef from start "bottom bottom" (pair
+is taller than viewport → pin only after fully scrolled through) → endTrigger
+contactContainerRef "top top", pinSpacing:false. Contact (z-30, bg-black) slides up over the
+pinned white group (z-10); dark-over-light edge reads the overlap without a shadow (matches
+recent de-shadowing). Verified live /home @1280: GSAP pin-spacer wraps the group, group z-10
+holds 2 sections, contact wrapper z-30 > group (contactAboveGroup true); tsc 0, biome clean.
+Desktop-only (md+ matchMedia); scroll feel needs user's eyes. Not committed.
+
+## 2026-07-16 — ExperimentalTestimonials: rotating word smooth like AboutSection
+The testimonials "Voices of the [word]" swap used a snappy 0.4s easeOut tween, small px
+slide (x:40/-40) and mode="wait" (sequential, with a gap). Matched it to the AboutSection
+rotating word: `src/components/home/ExperimentalTestimonials.tsx` — mode "wait" → "popLayout"
+(overlapping enter/exit), initial/animate/exit x 40/-40 → "-100%"/"0%"/"100%" (full-width
+slide, enter-left/exit-right like About), + opacity cross-fade, transition → the same
+overdamped spring (stiffness 60/damping 20/mass 1). Kept the grid stack + gradient text.
+Verified: tsc 0, biome clean; word spring now matches About (stiffness 60). Framer motion —
+smoothness needs user's eyes. premiumEase still used elsewhere. Not committed.
+
+## 2026-07-16 — Footer: round the email input so its focus ring matches
+The footer email input carried `focus:ring-4 focus:ring-[#2E5BFF]/20` (user-added, from
+ContactSection) but had no border-radius, so the focus ring (a box-shadow, which follows
+the element's border-radius) rendered with square corners against the rounded form/button.
+Added `rounded-lg` to the input (`src/components/layout/Footer.tsx:102`) → matches the
+sibling subscribe button (both 10px). Verified live /home: input border-radius 10px =
+button 10px (form is 14px/rounded-xl); ring now follows rounded corners. biome clean.
+Not committed.
+
+## 2026-07-15 — Home: shrink testimonials group as ContactSection overlaps it
+On the home page, the Testimonials+LogoCarousel group (behind ContactSection) previously only pinned as Contact slid over it — no shrink, unlike the About→Portfolio overlap. Added the same scale-down: wrapped the group's content in a new testimonialsInnerRef div (origin-top will-change-transform) and added a scrubbed gsap.to(scale:0.85, y:40, ease none) over the pin range (testimonialsGroup bottom bottom → contactContainer top top). Desktop-only (inside the existing matchMedia min-width:768px). Now the sections behind ContactSection shrink like the About section does behind Portfolio. Verified: tsc + biome clean, next build ✓. Single file (src/app/home/page.tsx). Not committed.
+
+## 2026-07-16 — Footer input: focus effect now matches ContactSection
+Made the footer email input's focus effect identical to ContactSection's inputs.
+`src/components/layout/Footer.tsx`: input gained `border border-transparent transition-all
+focus:border-[#2E5BFF]/50 focus:bg-white/10` (kept rounded-lg + the existing focus:ring-4
+focus:ring-[#2E5BFF]/20 focus:outline-none) — transparent base border stays clean in the
+dark pill, glows blue on focus with bg lighten + ring, all smooth. Removed the form pill's
+competing `focus-within:ring-1 focus-within:ring-white/20` so only the input's unified
+effect shows (like ContactSection). Verified: the 5 effect classes (transition-all,
+focus:border-[#2E5BFF]/50, focus:bg-white/10, focus:ring-4, focus:ring-[#2E5BFF]/20) are
+byte-identical to ContactSection's inputClass; form focus-within ring gone; resting state
+transparent border/bg; biome clean. NOTE: the browser pane doesn't apply :focus (activeElement
+true but input.matches(':focus') false), so the focus visual can't be auto-observed — matches
+ContactSection by construction, user's eyes confirm. Not committed.

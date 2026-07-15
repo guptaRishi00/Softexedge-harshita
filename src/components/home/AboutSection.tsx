@@ -213,7 +213,7 @@ export default function AboutSection() {
               variants={textReveal}
               className="mt-10 max-w-2xl space-y-6"
             >
-              <p className="text-base leading-[1.25em] text-zinc-600 font-light">
+              <p className="text-xl leading-[1.25em] text-zinc-600 font-regular">
                 We design immersive identities, motion-rich interfaces, and
                 scalable digital systems that feel sharp, intentional, and
                 unforgettable.

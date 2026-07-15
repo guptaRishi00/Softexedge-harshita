@@ -53,6 +53,11 @@ export default function HomePage() {
   const statsContainerRef = useRef<HTMLDivElement>(null);
   const serviceContainerRef = useRef<HTMLDivElement>(null);
 
+  // Testimonials + logo carousel pin as one group; ContactSection slides over.
+  const testimonialsGroupRef = useRef<HTMLDivElement>(null);
+  const testimonialsInnerRef = useRef<HTMLDivElement>(null);
+  const contactContainerRef = useRef<HTMLDivElement>(null);
+
   useGSAP(() => {
     const mm = gsap.matchMedia();
 
@@ -106,6 +111,38 @@ export default function HomePage() {
           pinSpacing: false,
         });
       }
+
+      // 3. TESTIMONIALS+CAROUSEL → CONTACT OVERLAP: pin the testimonials/logo
+      // group once it has fully scrolled through (bottom bottom, since the
+      // pair is taller than the viewport) and let ContactSection slide up
+      // over it — same mechanism as the two overlaps above.
+      if (testimonialsGroupRef.current && contactContainerRef.current) {
+        ScrollTrigger.create({
+          trigger: testimonialsGroupRef.current,
+          start: "bottom bottom",
+          endTrigger: contactContainerRef.current,
+          end: "top top",
+          pin: true,
+          pinSpacing: false,
+        });
+
+        // Shrink the pinned group as ContactSection slides over it — same
+        // scale-down as the About → Portfolio overlap above.
+        if (testimonialsInnerRef.current) {
+          gsap.to(testimonialsInnerRef.current, {
+            scale: 0.85,
+            y: 40,
+            ease: "none",
+            scrollTrigger: {
+              trigger: testimonialsGroupRef.current,
+              start: "bottom bottom",
+              endTrigger: contactContainerRef.current,
+              end: "top top",
+              scrub: true,
+            },
+          });
+        }
+      }
     });
 
     return () => mm.revert();
@@ -153,7 +190,7 @@ export default function HomePage() {
 
           <div
             ref={portfolioRef}
-            className="relative z-10 bg-[#0a0a0a]"
+            className="relative z-10 bg-[#0a0a0a] shadow-[0_-4px_6px_-1px_rgb(0_0_0_/_0.1),0_-2px_4px_-2px_rgb(0_0_0_/_0.1)]"
           >
             <PortfolioSection />
           </div>
@@ -173,10 +210,21 @@ export default function HomePage() {
               <ServiceSection />
             </div>
 
-            <ExperimentalTestimonials />
-            <TechLogoCarousel />
-            <ContactSection />
-            <div className="[&>section]:pt-16 md:[&>section]:pt-32">
+            <div ref={testimonialsGroupRef} className="relative z-10 bg-white">
+              <div
+                ref={testimonialsInnerRef}
+                className="origin-top will-change-transform"
+              >
+                <ExperimentalTestimonials />
+                <TechLogoCarousel />
+              </div>
+            </div>
+
+            <div ref={contactContainerRef} className="relative z-30">
+              <ContactSection />
+            </div>
+
+            <div className="[&>section]:pt-10 md:[&>section]:pt-20">
               <BlogSection />
             </div>
           </div>

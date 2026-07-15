@@ -14,7 +14,7 @@ const services = [
   {
     title: "Digital Marketing",
     image:
-      "https://images.unsplash.com/photo-1557838923-2985c318be48?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZGlnaXRhbCUyMG1hcmtldGluZ3xlbnwwfHwwfHx8MA%3D%3D",
+      "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGRpZ2l0YWwlMjBtYXJrZXRpbmd8ZW58MHx8MHx8fDA%3D",
     href: "/services",
   },
   {
@@ -136,7 +136,7 @@ export default function ServiceSection() {
     <section
       ref={containerRef}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full overflow-hidden bg-black py-16 md:py-32 text-white"
+      className="relative w-full overflow-hidden bg-black py-16 md:pt-32 md:pb-24 text-white"
     >
       <div className="w-full px-4 md:px-10">
         {/* HEADER SECTION */}
@@ -144,7 +144,7 @@ export default function ServiceSection() {
           <h2 className="text-5xl font-bold tracking-tight text-white md:text-8xl">
             Our Services
           </h2>
-          <p className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:text-left">
+          <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
             We merge strategic thinking with bold creative execution to deliver
             scalable digital experiences that elevate your brand.
           </p>

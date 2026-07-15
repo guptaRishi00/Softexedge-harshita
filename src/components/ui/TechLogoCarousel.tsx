@@ -39,7 +39,7 @@ const techLogos = [
 // (matching the about page). Same markup + spacing everywhere it's used.
 export default function TechLogoCarousel() {
   return (
-    <section className="w-full overflow-hidden bg-white py-16 md:py-32">
+    <section className="w-full overflow-hidden bg-white py-16 md:pb-32">
       <LogoCarousel logos={techLogos} ariaLabel="Technology partners" />
     </section>
   );

@@ -39,7 +39,7 @@ const channels = [
 ];
 
 const inputClass =
-  "w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-base text-white transition-all placeholder:text-zinc-500 hover:bg-white/10 focus:border-[#2E5BFF]/50 focus:bg-white/10 focus:outline-none focus:ring-4 focus:ring-[#2E5BFF]/20";
+  "w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-base text-white transition-all placeholder:text-zinc-500  focus:border-[#2E5BFF]/50 focus:bg-white/10 focus:outline-none focus:ring-4 focus:ring-[#2E5BFF]/20";
 
 const GRID_COLUMNS = 8;
 const boxyCellIds = Array.from({ length: 80 }, (_, i) => `box-${i}`);
@@ -187,7 +187,7 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="relative w-full overflow-hidden bg-black py-16 md:py-32"
+      className="relative w-full overflow-hidden bg-black py-16 md:pt-32 md:pb-30"
     >
       <div className="relative z-10 mx-auto w-full px-4 md:px-10">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-12">

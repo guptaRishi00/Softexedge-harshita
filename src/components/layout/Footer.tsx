@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
-import { MdKeyboardArrowRight } from "react-icons/md";
+import { MdArrowOutward } from "react-icons/md";
 import { RiInstagramLine } from "react-icons/ri";
 import Particles from "@/components/ui/Particles";
 
@@ -60,7 +60,7 @@ export default function Footer() {
 
       <div className="relative z-10 mx-auto w-full flex flex-col px-6 md:px-10 lg:px-16">
         <div className="grid grid-cols-1 gap-12 pb-16 lg:grid-cols-12 md:pb-20">
-          <div className="grid grid-cols-2 gap-10 lg:col-span-7 lg:gap-0">
+          <div className="grid grid-cols-2 gap-10 lg:col-span-7 lg:flex lg:justify-start lg:gap-20">
             <div className="flex flex-col gap-4">
               {footerLinksCol1.map((link) => (
                 <Link
@@ -75,7 +75,7 @@ export default function Footer() {
               ))}
             </div>
 
-            <div className="flex flex-col gap-4 lg:border-l lg:border-white/10 lg:pl-10">
+            <div className="flex flex-col gap-4">
               {footerLinksCol2.map((link) => (
                 <Link
                   key={link.name}
@@ -95,11 +95,11 @@ export default function Footer() {
               Stay updated with Softexedge news
             </h3>
 
-            <form className="relative flex w-full max-w-[420px] items-center rounded-xl bg-[#222222] p-1.5 transition-all duration-300 focus-within:ring-1 focus-within:ring-white/20">
+            <form className="relative flex w-full max-w-[420px] items-center rounded-xl bg-[#222222] p-1.5 transition-all duration-300">
               <input
                 type="email"
                 placeholder="Your Email Address"
-                className="w-full bg-transparent px-5 py-3.5 text-base font-medium text-white placeholder:text-white/40 focus:outline-none"
+                className="w-full rounded-lg border border-transparent bg-transparent px-5 py-3.5 text-base font-medium text-white transition-all placeholder:text-white/40 focus:border-[#2E5BFF]/50 focus:bg-white/10 focus:outline-none focus:ring-4 focus:ring-[#2E5BFF]/20"
                 required
               />
               <button
@@ -108,8 +108,27 @@ export default function Footer() {
                 className="group flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white text-black transition-transform hover:scale-105"
               >
                 <div className="relative flex h-6 w-6 items-center justify-center overflow-hidden">
-                  <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]" />
-                  <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
+                  {/* Same diagonal-swap arrow as the ExperimentalTestimonials CTA */}
+                  <svg width="0" height="0" className="absolute">
+                    <title>Subscribe arrow gradient</title>
+                    <defs>
+                      <linearGradient
+                        id="footer-arrow-grad"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop stopColor="#2E5BFF" offset="0%" />
+                        <stop stopColor="#149CCB" offset="100%" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                  <MdArrowOutward
+                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    style={{ fill: "url(#footer-arrow-grad)" }}
+                  />
                 </div>
               </button>
             </form>
@@ -123,8 +142,13 @@ export default function Footer() {
                 >
                   {social.icon}
                   <div className="relative flex h-4 w-4 items-center justify-center overflow-hidden">
-                    <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full transition-transform duration-300 ease-in-out group-hover:translate-x-[150%]" />
-                    <MdKeyboardArrowRight className="absolute left-0 top-0 h-full w-full -translate-x-[150%] transition-transform duration-300 ease-in-out group-hover:translate-x-0" />
+                    {/* Same diagonal-swap arrow as the ExperimentalTestimonials CTA
+                        (reuses the footer-arrow-grad gradient defined above). */}
+                    <MdArrowOutward className="absolute z-10 h-full w-full transition-transform duration-300 group-hover:-translate-y-6 group-hover:translate-x-6" />
+                    <MdArrowOutward
+                      className="absolute z-10 h-full w-full -translate-x-6 translate-y-6 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                      style={{ fill: "url(#footer-arrow-grad)" }}
+                    />
                   </div>
                 </a>
               ))}
@@ -139,7 +163,7 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-10 flex select-none text-[16.5vw] font-medium leading-[0.85] tracking-normal text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
+            className="relative z-10 flex select-none text-[17vw] font-medium leading-[0.85] tracking-normal text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
           >
             Softexedge
           </motion.h1>
@@ -197,19 +221,15 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="flex flex-col items-start justify-between gap-6 text-sm font-medium text-white/40 md:flex-row md:items-end">
-            <div className="flex items-center gap-6">
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-white"
-              >
-                © {new Date().getFullYear()} Softexedge Ltd. All rights reserved
+          <div className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 md:flex-row md:items-end">
+            <p className="tracking-wide">© Made By Softexedge</p>
+
+            <div className="flex flex-wrap items-center gap-6">
+              <p className="tracking-wide">All Rights Reserved</p>
+              <a href="#" className="transition-colors hover:text-white">
+                Privacy Policy (you really care?)
               </a>
             </div>
-
-            <p className="tracking-wide">Made by Softexedge</p>
           </div>
         </div>
       </div>
