@@ -31,11 +31,11 @@ function RotatingWord({
 
   return (
     <span className="relative flex items-center justify-center overflow-hidden px-2 -mx-2 py-2 -my-2">
-      <AnimatePresence mode="popLayout">
+      {/* mode="wait": the current word finishes sliding out (right) and
+          disappears BEFORE the next word enters — sequential, not overlapping. */}
+      <AnimatePresence mode="wait">
         <motion.span
           key={index}
-          // Slide + cross-fade, matching the card's fade-in so the word swap
-          // reads as smooth and in sync with the image change.
           initial={{
             // Enter from the left of the visible area
             x: "-100%",
@@ -46,9 +46,11 @@ function RotatingWord({
             opacity: 1,
           }}
           exit={{
-            // Leave to the right of the visible area
+            // Slide out to the right and vanish there — a quick tween so it's
+            // gone promptly, then the next word slides in.
             x: "100%",
             opacity: 0,
+            transition: { duration: 0.35, ease: "easeIn" },
           }}
           // Same spring as the card stack so the word flip and the image
           // change move in sync (both driven by frontIndex).

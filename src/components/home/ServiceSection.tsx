@@ -99,6 +99,19 @@ export default function ServiceSection() {
           const moveCursor = (e: MouseEvent) => {
             xTo(e.clientX);
             yTo(e.clientY);
+            // Scrolling never fires mouseleave, so the follower can stay
+            // "active" after the section scrolls away and then trail over
+            // other sections on the next move (worst on Safari). Force-hide
+            // it whenever the pointer isn't actually over this section.
+            if (!containerRef.current?.contains(e.target as Node)) {
+              gsap.to(cursor, {
+                scale: 0,
+                autoAlpha: 0,
+                duration: 0.2,
+                ease: "power3.inOut",
+                overwrite: "auto",
+              });
+            }
           };
 
           window.addEventListener("mousemove", moveCursor);
@@ -140,11 +153,16 @@ export default function ServiceSection() {
     >
       <div className="w-full px-4 md:px-10">
         {/* HEADER SECTION */}
-        <div className="mb-10 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-end">
-          <h2 className="text-5xl font-bold tracking-tight text-white md:text-8xl">
-            Our Services
-          </h2>
-          <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
+        <div className="mb-10 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-center">
+          <div>
+            <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
+              What We Offer
+            </p>
+            <h2 className="text-5xl font-bold tracking-tight text-white md:text-[80px]">
+              Our Services
+            </h2>
+          </div>
+          <p className="max-w-lg text-xl font-light leading-[1.25em] text-white md:text-left">
             We merge strategic thinking with bold creative execution to deliver
             scalable digital experiences that elevate your brand.
           </p>
@@ -179,7 +197,7 @@ export default function ServiceSection() {
                 {/* TITLE */}
                 <h3
                   className={cn(
-                    "text-4xl font-medium leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-6xl md:text-[clamp(3rem,6vw,7rem)]",
+                    "text-3xl font-medium leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-5xl md:text-[clamp(2.5rem,5vw,5rem)]",
                     "text-white group-hover/list:text-white/20 group-hover:!text-white",
                   )}
                 >

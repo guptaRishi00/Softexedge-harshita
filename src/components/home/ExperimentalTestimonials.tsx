@@ -53,9 +53,12 @@ export default function ExperimentalTestimonials() {
 
   // Cycle through the headline words every 2.5 seconds
   useEffect(() => {
+    // 4.5s (was 2.5s): with the 0.35s exit + ~2s spring settle, a 2.5s cycle
+    // kept the word perpetually mid-animation — too fast and reading as lag.
+    // Matching the AboutSection cadence gives it time to settle and rest.
     const id = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % rotatingWords.length);
-    }, 2500);
+    }, 4500);
     return () => clearInterval(id);
   }, []);
 
@@ -74,7 +77,7 @@ export default function ExperimentalTestimonials() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white py-16 text-zinc-900 md:pt-32">
+    <section className="relative overflow-hidden bg-white pt-16 pb-8 text-zinc-900 md:pt-32">
       <div className="mx-auto flex w-full flex-col gap-10 px-4 md:px-10 lg:flex-row lg:items-stretch lg:gap-10">
         {/* LEFT COLUMN: title + description + CTA on top, arrows pinned to the bottom */}
         <motion.div
@@ -86,25 +89,32 @@ export default function ExperimentalTestimonials() {
         >
           {/* TOP */}
           <div>
+            <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
+              Testimonials
+            </p>
             <h2 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl lg:leading-[0.95em]">
               Voices of the <br />
               <span className="inline-grid overflow-hidden py-2">
                 {isDesktop ? (
-                  <AnimatePresence mode="popLayout">
+                  // mode="wait": the current word finishes sliding out (right)
+                  // and disappears BEFORE the next word enters — sequential,
+                  // matching the AboutSection rotating word.
+                  <AnimatePresence mode="wait">
                     <motion.span
                       key={wordIndex}
-                      // Slide + cross-fade on the same overdamped spring as the
-                      // AboutSection rotating word, for a smooth glide swap.
                       initial={{ x: "-100%", opacity: 0 }}
                       animate={{ x: "0%", opacity: 1 }}
-                      exit={{ x: "100%", opacity: 0 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 60,
-                        damping: 20,
-                        mass: 1,
+                      exit={{
+                        // Slide out right and vanish there, then the next
+                        // word slides in.
+                        x: "100%",
+                        opacity: 0,
+                        transition: { duration: 0.5, ease: [0.32, 0, 0.67, 0] },
                       }}
-                      className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent"
+                      // Slower deterministic tween on the site ease — the old
+                      // spring launched fast then crawled, reading as laggy.
+                      transition={{ duration: 0.9, ease: premiumEase }}
+                      className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent will-change-transform"
                     >
                       {rotatingWords[wordIndex]}
                     </motion.span>
@@ -117,7 +127,7 @@ export default function ExperimentalTestimonials() {
               </span>
             </h2>
 
-            <p className="mt-5 max-w-sm text-lg font-light leading-[1.25em] text-zinc-600">
+            <p className="mt-5 max-w-sm text-lg leading-[1.25em] text-zinc-600 font-regular">
               Don't just take our word for it. Hear from the visionaries
               building our future every day.
             </p>

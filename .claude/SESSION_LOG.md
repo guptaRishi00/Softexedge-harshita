@@ -3159,3 +3159,140 @@ byte-identical to ContactSection's inputClass; form focus-within ring gone; rest
 transparent border/bg; biome clean. NOTE: the browser pane doesn't apply :focus (activeElement
 true but input.matches(':focus') false), so the focus visual can't be auto-observed — matches
 ContactSection by construction, user's eyes confirm. Not committed.
+
+## 2026-07-15 — Homepage: standardized eyebrow tag above every section title
+Added the AboutSection eyebrow style (mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium) as a "tag" above each homepage section heading. ADDED to ServiceSection ("What We Offer"), ExperimentalTestimonials ("Testimonials"), BlogSection ("Latest Insights"); UNIFIED ContactSection's existing eyebrow (kept "Get in touch", restyled from text-white/60 to the standard). AboutSection = reference (untouched). Placed inside each section's heading motion wrapper (where present) so it animates with the title; text-zinc-500 kept on both light + dark sections per "same everywhere". SKIPPED PortfolioSection + StatsSection (their only h2 is a per-panel project title / per-card stat number — no section-level heading), and Hero + logo strips (bespoke/untitled). Specialists: frontend-developer (execute across sections) + spec-verifier (done gate, APPROVED — identical class string in all 4, correct placement, skips verified). Verified: tsc + biome + next build ✓. 4 files + plan.md. Not committed.
+
+## 2026-07-16 — ServiceSection: stop the floating "View Services" follower leaking
+Root cause: the custom cursor follower (portaled to body, position:fixed, z-9999) is
+shown/hidden via GSAP on link/section hover, but SCROLLING never fires mouseleave — so
+after hovering the section then scrolling away, it stays "active" and trails over other
+sections on the next pointer move (worst on Safari). Fix (`src/components/home/ServiceSection.tsx`
+moveCursor): on every window mousemove, if `!containerRef.current.contains(e.target)`,
+force-hide the follower (gsap.to scale:0/autoAlpha:0, overwrite:"auto"). Since the follower
+only visibly leaks while tracking a moving pointer, and every such move now runs the gate,
+it can't trail onto other sections — covers the scroll-away case by construction. Verified:
+tsc 0, biome clean (0 real findings). NOTE: could not runtime-verify in the pane — dispatched
+synthetic MouseEvents don't trigger React onMouseEnter or a real e.target and the window
+mousemove listener doesn't fire for them; Safari is Chromium-unavailable here. Logic is sound;
+needs user's real cursor + Safari to confirm. Not committed.
+
+## 2026-07-15 — PortfolioSection: add section tag
+PortfolioSection has no section-level heading (full-screen horizontal-scroll showcase; its h2s are per-panel project titles). Added the standardized tag as a persistent corner label — absolutely positioned top-left on the <section> (left-8/top-8 → md:16 → lg:20/12, z-30, pointer-events-none) so it stays put while the track scrolls beneath it. Text "Selected Work"; standard tag style (text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium) plus a [text-shadow:0_1px_10px_rgba(0,0,0,0.7)] for legibility over the full-bleed imagery. Verified: tag present with standard classes, tsc + biome clean, next build ✓. Single file. Not committed.
+
+## 2026-07-15 — PortfolioSection: per-card tag above each title
+Added a tag above the title in EVERY project card (panel), using the AboutSection standard style. Content = the project's existing `category` field (E-COMMERCE, ENTERPRISE, BRANDING, CAMPAIGN, AUTOMOTIVE) — previously unused. Classes: reveal-item text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 (same on every card; sits over the panel's bottom black gradient for contrast; parent flex gap-4/md:gap-5 handles spacing). Added `reveal-item` so it staggers in with the title/description via the existing GSAP panel reveal. (Note: the earlier top-left "Selected Work" section tag was removed by the user; this per-card tag is the current requirement.) Verified: category tag present in the map with standard classes, tsc + biome clean, next build ✓. Single file. Not committed.
+
+## 2026-07-15 — ServiceSection: smaller "Our Services" title
+Reduced the section heading "Our Services" from text-5xl/md:text-8xl to text-4xl/md:text-6xl. Class-only; tsc + biome clean. (Interpreted "title of services" as the section heading, not the large per-item service names.) Not committed.
+
+## 2026-07-15 — Revert ServiceSection title size
+Reverted the "Our Services" heading back to its original size (text-4xl/md:text-6xl → text-5xl/md:text-8xl). Class-only; tsc + biome clean. Not committed.
+
+## 2026-07-15 — ServiceSection: smaller per-item service titles
+Reduced the {service.title} h3 size (the big service names) from text-4xl/sm:text-6xl/md:text-[clamp(3rem,6vw,7rem)] to text-3xl/sm:text-5xl/md:text-[clamp(2.5rem,5vw,5.5rem)]. Class-only; tsc + biome clean. Not committed.
+
+## 2026-07-16 — BlogSection: hover grows image + slides info inside the card
+Restructured the blog card `<article>` (`src/components/home/BlogSection.tsx`) so desktop
+hover (md:group-hover:, gated so mobile stays static) grows the image and tucks the info
+over it: image container `aspect-square` → `md:group-hover:aspect-[3/4]` with
+transition-[aspect-ratio] (image also scale-105); a bottom→top black scrim fades in on
+hover for legibility; the info block (now z-10, mt-4) pulls up `md:group-hover:-mt-24` so it
+overlaps the taller image, with author/title text switching to white on hover
+(transition-colors). `group` added to article. Verified live /home @1280 by applying the
+hover states inline: rest = info below image; hover = image 320px→427px (grew), info
+overlaps image by 96px at z-10 over the scrim. tsc 0, biome clean. Final visual polish
+(scrim depth, overlap amount) needs user's eyes. Not committed.
+
+## 2026-07-15 — AboutSection rotating word: sequential slide (exit then enter)
+Changed the RotatingWord swap from overlapping (AnimatePresence mode="popLayout", exit+enter cross-fade) to SEQUENTIAL (mode="wait"): the current word slides out to the right and disappears first, then the next word slides in from the left. Gave the exit its own quick tween (duration 0.35, easeIn) so it vanishes promptly instead of a lingering spring; enter keeps the smooth spring. Class/prop-only; tsc + biome clean. Not committed.
+
+## 2026-07-16 — BlogSection hover: move the info up a little more
+Follow-up: `src/components/home/BlogSection.tsx` info block `md:group-hover:-mt-24` →
+`md:group-hover:-mt-28` (−6rem → −7rem). Verified live /home @1280 (hover states applied
+inline): info now overlaps the grown image by 112px (was 96px). biome clean. Not committed.
+
+## 2026-07-16 — BlogSection hover: info up another step
+Re-submitted follow-up: info block `md:group-hover:-mt-28` → `md:group-hover:-mt-32`
+(`src/components/home/BlogSection.tsx:161`). Verified live /home @1280 (hover states
+inline): info now overlaps the grown image by 128px (was 112px). biome clean. Not committed.
+
+## 2026-07-16 — BlogSection: fix hover card cut at the bottom
+User screenshot showed the hovered card clipped at the bottom mid-hover (image grown,
+info not yet pulled up — that transient state makes the card ~107px taller; browsers that
+don't animate aspect-ratio apply the growth instantly, so the state is clearly visible).
+Root cause: the marquee container (`div.relative.w-full.overflow-hidden`, BlogSection)
+clipped VERTICALLY too, though it only needs horizontal clipping for the infinite track.
+Fix: `overflow-hidden` → `overflow-x-clip` (y stays visible). Verified live /home @1280 in
+the worst-case mid-hover state applied inline: container computes overflow clip/visible;
+card bottom 13893 vs section bottom 14021 (md:pb-32 buffer absorbs it) → noBottomCut true.
+tsc 0, biome clean. (Also: /home was failing to compile from a stale dev-server error in
+ExperimentalTestimonials — file on disk was already valid; recompile cleared it.)
+Not committed.
+
+## 2026-07-15 — PortfolioSection: stronger top shadow
+Increased the top shadow on the Portfolio wrapper in src/app/home/page.tsx a little: shadow-[0_-4px_6px_-1px_rgb(0_0_0_/_0.1),0_-2px_4px_-2px_rgb(0_0_0_/_0.1)] → shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)] (larger offset/blur + slightly higher opacity). Class-only; tsc + biome clean. Not committed.
+
+## 2026-07-16 — BlogSection: cards clickable AND draggable
+Cards were plain <article>s with no link. (1) Added real hrefs to the home blogPosts —
+card 1 → /blog/google-io-2026, cards 2-4 → /blog/rise-at-seven-expansion (matched by title
+to data/blog.ts slugs) — and wrapped each card in <Link href draggable={false} class="block
+h-full">. (2) Drag-vs-click: reworked the marquee handlers — pointer capture is now
+DEFERRED until movement passes a 6px threshold (was captured on press, which would eat
+clicks); a clean press+release reaches the Link as a normal click; a real drag captures,
+pans, and suppresses the trailing click via onClickCapture on the track (isPanning ref
+reset there). Mobile untouched (handlers early-return; Links native). Verified live /home:
+8 card anchors (4×2 copies) with the two real slugs; clicking card 1 navigated to
+/blog/google-io-2026 (article page rendered). Drag pan + click-suppression logic verified
+by construction (synthetic pointer events can't drive it in the pane) — user's mouse
+confirms. biome format applied; tsc 0. Not committed.
+
+## 2026-07-15 — ExperimentalTestimonials rotating word: slower + smoother
+The headline word cycled every 2.5s while the exit tween (0.35s) + spring entrance (~2s settle) meant it was perpetually mid-animation — reading as "too fast" and laggy. Slowed the cycle 2500 → 4500ms (matches AboutSection cadence, gives the spring time to settle and rest between swaps) and added will-change-transform to the sliding span for GPU compositing. tsc + biome clean. Not committed.
+
+## 2026-07-15 — ExperimentalTestimonials rotating word: slower + smoother v2
+The 4.5s cycle alone wasn't enough — the slide itself still read fast/laggy because the entrance spring (stiffness 60) launches fast then crawls. Replaced both legs with deterministic tweens: entrance duration 0.9 on premiumEase [0.16,1,0.3,1], exit duration 0.5 on exitEase [0.32,0,0.67,0]. Sequential mode="wait" + will-change-transform kept. tsc + biome clean. Not committed.
+
+## 2026-07-16 — Reduce gap: ExperimentalTestimonials → TechLogoCarousel
+`src/components/home/ExperimentalTestimonials.tsx:80` section `py-16` → `pt-16 pb-8`
+(bottom 64px → 32px; top + md:pt-32 unchanged). Gap to TechLogoCarousel (its pt-16=64px,
+user-set) now 96px total, was 128px. Applies on every page that stacks the pair.
+Verified live /home @1280: testimonials pb 32px + carousel pt 64px = 96. biome clean.
+Not committed.
+
+## 2026-07-15 — Footer: staggered letter reveal on the giant "Softexedge"
+Task: add animation on the "Softexedge" text in the footer — the giant brand name
+(`src/components/layout/Footer.tsx`, the 17vw h1), not the newsletter heading or
+copyright line. Replaced the whole-block fade+rise (opacity/y-20) with a per-letter
+clip reveal: module-level `brandLetters` (pre-keyed `{char,id}` array — avoids the
+noArrayIndexKey lint), `brandContainer`/`brandLetter` Variants (staggerChildren 0.045;
+letters rise y:110%→0 over 0.9s with the h1's existing [0.22,1,0.36,1] ease). Each
+letter sits in an `overflow-hidden` span with `pb-[0.12em] -mb-[0.12em]` so descenders
+(f/g) aren't clipped while the tight leading-[0.85] metrics stay unchanged. Kept
+viewport `{once:true, amount:0.5}`, drop-shadow, aria-label on h1 + aria-hidden letters
+(screen readers read one word, not 10 fragments). `type Variants` import added for the
+ease tuple. 1 file. tsc clean, next build ✓; biome findings in file are pre-existing
+(unused Particles import, catch var, href="#", socialLinks index key) — untouched.
+Live motion pending user. Not committed.
+
+## 2026-07-15 — Footer brand "g" descender clipped — deepen letter-clip allowance
+User screenshot: both g descenders in the giant "Softexedge" sheared at the bottom. Cause:
+yesterday's per-letter reveal wraps each letter in an overflow-hidden span; with
+leading-[0.85] the 185px line box (at 217.6px font) is far shallower than the glyphs, and
+the g overflows 42.5px below the content box — the 0.12em (26.1px) pb allowance left
+~16px clipped. Fix: `pb-[0.12em] -mb-[0.12em]` → `pb-[0.3em] -mb-[0.3em]` in
+`src/components/layout/Footer.tsx`. Verified GEOMETRICALLY on the live dev server
+(localhost:3000, user's own instance; browser screenshot times out in this env per memory):
+canvas TextMetrics for Satoshi 500 @217.6px → fontAscent 220 / descent 52 / g actual
+descent 51; overflow below content box 42.5px vs new 65.3px padding = +22.8px clearance.
+Em-based, so scales to all viewports; ascenders sit ≥11px inside the box (no top clip).
+biome format clean. Not committed.
+
+## 2026-07-15 — Home ServiceSection: cap service.title below 90px
+Task: reduce {service.title} size, keep under 90px. `src/components/home/ServiceSection.tsx:200`
+h3 `md:text-[clamp(2.5rem,5vw,5.5rem)]` → `md:text-[clamp(2.5rem,5vw,5rem)]` — cap 88px → 80px
+(reached at ≥1600px viewport; below that 5vw governs, e.g. 64px @1280, unchanged; mobile
+text-3xl/sm:text-5xl untouched). Note: old cap 5.5rem=88px was technically <90 already at the
+16px root (verified live, no root font-size override) — took intent as "comfortably below 90".
+Verified live on user's dev server via HMR: computed 80px @1920px viewport (was 88). Class-only
+change. Not committed.

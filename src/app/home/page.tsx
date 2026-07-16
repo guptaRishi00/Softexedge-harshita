@@ -190,7 +190,7 @@ export default function HomePage() {
 
           <div
             ref={portfolioRef}
-            className="relative z-10 bg-[#0a0a0a] shadow-[0_-4px_6px_-1px_rgb(0_0_0_/_0.1),0_-2px_4px_-2px_rgb(0_0_0_/_0.1)]"
+            className="relative z-10 bg-[#0a0a0a] shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]"
           >
             <PortfolioSection />
           </div>
@@ -203,10 +203,7 @@ export default function HomePage() {
               <StatsSection />
             </div>
 
-            <div
-              ref={serviceContainerRef}
-              className="relative z-10 w-full"
-            >
+            <div ref={serviceContainerRef} className="relative z-10 w-full">
               <ServiceSection />
             </div>
 
@@ -224,7 +221,7 @@ export default function HomePage() {
               <ContactSection />
             </div>
 
-            <div className="[&>section]:pt-10 md:[&>section]:pt-20">
+            <div className="[&>section]:pt-10 md:[&>section]:pt-30">
               <BlogSection />
             </div>
           </div>

@@ -187,7 +187,7 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="relative w-full overflow-hidden bg-black py-16 md:pt-32 md:pb-30"
+      className="relative w-full overflow-hidden bg-black py-16 md:pt-32 md:pb-32"
     >
       <div className="relative z-10 mx-auto w-full px-4 md:px-10">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-12">
@@ -198,7 +198,7 @@ export default function ContactSection() {
             transition={{ duration: 0.8, ease: premiumEase }}
             className="flex flex-col lg:col-span-5 lg:pr-8"
           >
-            <div className="mb-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/60">
+            <div className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
               Get in touch
             </div>
 

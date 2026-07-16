@@ -33,6 +33,7 @@ const blogPosts = [
     tag: "Resources",
     image:
       "https://images.unsplash.com/photo-1780006015851-2d1b3bcadbfd?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDI1fHFQWXNEenZKT1ljfHxlbnwwfHx8fHw%3D",
+    href: "/blog/google-io-2026",
   },
   {
     id: 2,
@@ -43,6 +44,7 @@ const blogPosts = [
     tag: "Company News",
     image:
       "https://plus.unsplash.com/premium_photo-1776661561367-93c4100618d6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDIwM3xxUFlzRHp2Sk9ZY3x8ZW58MHx8fHx8",
+    href: "/blog/rise-at-seven-expansion",
   },
   {
     id: 3,
@@ -53,6 +55,7 @@ const blogPosts = [
     tag: "Company News",
     image:
       "https://images.unsplash.com/photo-1773332611613-dbdc64f09807?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwyMnx8fGVufDB8fHx8fA%3D%3D",
+    href: "/blog/rise-at-seven-expansion",
   },
   {
     id: 4,
@@ -63,6 +66,7 @@ const blogPosts = [
     tag: "Company News",
     image:
       "https://images.unsplash.com/photo-1654875185977-4a97176ef3f9?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDl8fHxlbnwwfHx8fHw%3D",
+    href: "/blog/rise-at-seven-expansion",
   },
 ];
 
@@ -116,22 +120,43 @@ export default function BlogSection() {
     x.set(wrap(-loopWidth, 0, x.get() - step));
   });
 
+  // Drag vs click: don't capture the pointer on press — only once movement
+  // passes a small threshold. A clean press+release then reaches the card's
+  // <Link> as a normal click; a real drag captures the pointer, pans the
+  // track, and suppresses the trailing click via onClickCapture below.
+  const isPanning = useRef(false);
+  const startPointerX = useRef(0);
+
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDesktop) return;
     dragging.current = true;
+    isPanning.current = false;
+    startPointerX.current = e.clientX;
     lastPointerX.current = e.clientX;
-    e.currentTarget.setPointerCapture(e.pointerId);
   };
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragging.current) return;
     const dx = e.clientX - lastPointerX.current;
     lastPointerX.current = e.clientX;
+    if (!isPanning.current) {
+      if (Math.abs(e.clientX - startPointerX.current) <= 6) return;
+      isPanning.current = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
     x.set(x.get() + dx);
   };
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragging.current) return;
     dragging.current = false;
-    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    if (isPanning.current) e.currentTarget.releasePointerCapture?.(e.pointerId);
+    // isPanning stays true until the trailing click is suppressed below.
+  };
+  const handleClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isPanning.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      isPanning.current = false;
+    }
   };
 
   // Card list component to render identical tracks
@@ -142,32 +167,38 @@ export default function BlogSection() {
           key={post.id}
           className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw] max-md:w-full"
         >
-          <article className="flex h-full flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
-            {/* IMAGE CONTAINER */}
-            <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-[1.25rem] bg-zinc-100">
-              <Image
-                src={post.image}
-                alt={post.title}
-                fill
-                sizes="(max-width: 768px) 55vw, 25vw"
-                className="object-cover"
-                draggable={false}
-              />
-            </div>
-
-            {/* CARD CONTENT */}
-            <div className="flex flex-1 flex-col px-2">
-              <div className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500">
-                <span className="text-zinc-800">{post.author}</span>
-                <span className="h-1 w-1 rounded-full bg-zinc-300" />
-                <span>{post.readTime}</span>
+          <Link href={post.href} draggable={false} className="block h-full">
+            <article className="group flex h-full flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
+              {/* IMAGE CONTAINER — grows taller on hover (desktop) */}
+              <div className="relative aspect-square w-full overflow-hidden rounded-[1.25rem] bg-zinc-100 transition-[aspect-ratio] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:aspect-[3/4]">
+                <Image
+                  src={post.image}
+                  alt={post.title}
+                  fill
+                  sizes="(max-width: 768px) 55vw, 25vw"
+                  className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:scale-105"
+                  draggable={false}
+                />
+                {/* Scrim so the info stays legible once it slides over the image */}
+                <div className="pointer-events-none absolute inset-0 rounded-[1.25rem] bg-gradient-to-t from-black/75 via-black/15 to-transparent opacity-0 transition-opacity duration-500 md:group-hover:opacity-100" />
               </div>
 
-              <h3 className="text-lg font-bold leading-[1.2em] tracking-tight text-zinc-900 lg:text-xl">
-                {post.title}
-              </h3>
-            </div>
-          </article>
+              {/* CARD CONTENT — slides up inside the card, over the image, on hover */}
+              <div className="relative z-10 mt-4 flex flex-1 flex-col px-2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:-mt-32 md:group-hover:px-4 md:group-hover:pb-4">
+                <div className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 transition-colors duration-500 md:group-hover:text-white/70">
+                  <span className="text-zinc-800 transition-colors duration-500 md:group-hover:text-white">
+                    {post.author}
+                  </span>
+                  <span className="h-1 w-1 rounded-full bg-zinc-300 md:group-hover:bg-white/50" />
+                  <span>{post.readTime}</span>
+                </div>
+
+                <h3 className="text-lg font-bold leading-[1.2em] tracking-tight text-zinc-900 transition-colors duration-500 md:group-hover:text-white lg:text-xl">
+                  {post.title}
+                </h3>
+              </div>
+            </article>
+          </Link>
         </div>
       ))}
     </div>
@@ -177,7 +208,7 @@ export default function BlogSection() {
     <section className="w-full overflow-hidden bg-white text-black pb-16 md:pb-32">
       <div className="mx-auto w-full ">
         {/* HEADER LAYER */}
-        <div className="mb-12 flex w-full flex-col items-start justify-between gap-8 px-4 md:mb-24 md:flex-row md:items-center md:px-10">
+        <div className="mb-12 flex w-full flex-col items-start justify-between gap-8 px-4 md:mb-20 md:flex-row md:items-center md:px-10">
           <motion.div
             initial={isDesktop ? { opacity: 0, x: -20 } : false}
             whileInView={isDesktop ? { opacity: 1, x: 0 } : undefined}
@@ -185,6 +216,9 @@ export default function BlogSection() {
             viewport={{ once: true, margin: "-50px" }}
             className="flex flex-col items-start"
           >
+            <p className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
+              Latest Insights
+            </p>
             <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
               Thoughts & {/* Rotating Gradient Text */}
               <span className="inline-grid overflow-hidden py-1">
@@ -247,8 +281,10 @@ export default function BlogSection() {
           </div>
         </div>
 
-        {/* CONTAINER */}
-        <div className="relative w-full overflow-hidden">
+        {/* CONTAINER — clip only horizontally (the marquee track); vertical
+            must stay visible or the card's hover growth gets cut at the
+            bottom mid-transition. */}
+        <div className="relative w-full overflow-x-clip">
           {/* Draggable, auto-scrolling track (two identical copies on desktop) */}
           <motion.div
             ref={trackRef}
@@ -258,6 +294,7 @@ export default function BlogSection() {
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
+            onClickCapture={handleClickCapture}
           >
             {isDesktop ? (
               <>

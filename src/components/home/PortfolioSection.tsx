@@ -146,8 +146,7 @@ export default function PortfolioSection() {
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
                   const newIndex = Math.round(
-                    Math.min(1, self.progress / xPhase) *
-                      (projects.length - 1),
+                    Math.min(1, self.progress / xPhase) * (projects.length - 1),
                   );
                   setActiveIndex(newIndex);
                 },
@@ -267,6 +266,11 @@ export default function PortfolioSection() {
             {/* CONTENT */}
             <div className="pointer-events-none relative z-10 flex w-full items-end justify-between">
               <div className="flex w-full flex-col items-start gap-4 md:gap-5 lg:w-[80%]">
+                {/* Tag (category) — AboutSection eyebrow style, same on every card */}
+                <p className="reveal-item text-sm font-medium uppercase tracking-[0.3em] text-white">
+                  {project.category}
+                </p>
+
                 {/* Title */}
                 <h2 className="reveal-item text-5xl font-bold leading-[0.9] tracking-[-0.05em] md:text-7xl lg:text-[7rem]">
                   {project.title}
