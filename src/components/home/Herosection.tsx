@@ -66,23 +66,23 @@ export default function Herosection({}: any) {
 
         <div className="w-full flex items-center justify-center text-center">
           <div className="flex flex-col items-center justify-center gap-2">
-            <h1 className="text-4xl md:text-5xl lg:text-9xl font-medium text-white">
+            <h1 className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
               We Engineer
             </h1>
 
             <div className="flex items-center justify-center gap-2 md:gap-5">
-              <p className="text-4xl md:text-5xl lg:text-9xl font-medium text-white">
+              <p className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
                 Digital
               </p>
 
-              <div className="w-16 h-8 sm:w-24 sm:h-12 md:w-[150px] md:h-[68px] lg:w-[200px] lg:h-[90px] xl:w-[220px] xl:h-[100px] overflow-hidden rounded-[20px] shrink-0 flex items-center justify-center border border-white/20 shadow-xl">
+              <div className="w-16 h-10 sm:w-24 sm:h-14 md:w-[150px] md:h-[80px] lg:w-[200px] lg:h-[106px] xl:w-[220px] xl:h-[118px] overflow-hidden rounded-[20px] shrink-0 flex items-center justify-center border border-white/20 shadow-xl">
                 <canvas
                   ref={canvasRef}
                   className="w-full h-full object-cover"
                 />
               </div>
 
-              <p className="text-4xl md:text-5xl lg:text-9xl font-medium text-white">
+              <p className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
                 Solutions
               </p>
             </div>

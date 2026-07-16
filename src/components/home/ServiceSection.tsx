@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 // and imagery.
 const services = [
   {
-    title: "Digital Marketing",
+    title: "Digital Marketing & Growth",
     image:
       "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGRpZ2l0YWwlMjBtYXJrZXRpbmd8ZW58MHx8MHx8fDA%3D",
     href: "/services",
@@ -36,13 +36,13 @@ const services = [
     href: "/services",
   },
   {
-    title: "Software Development",
+    title: "Custom Software & SaaS",
     image:
       "https://plus.unsplash.com/premium_photo-1685086785636-2a1a0e5b591f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c29mdHdhcmV8ZW58MHx8MHx8fDA%3D",
     href: "/services",
   },
   {
-    title: "Brand Strategy and Identity",
+    title: "Brand Strategy & Identity",
     image:
       "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?q=80&w=800&auto=format&fit=crop",
     href: "/brand-strategy",
@@ -184,16 +184,19 @@ export default function ServiceSection() {
     >
       <div className="w-full px-4 md:px-10">
         {/* HEADER SECTION */}
-        <div className="mb-10 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-center">
+        <div className="mb-10 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-end">
           <div>
             <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
               What We Offer
             </p>
             <h2 className="text-5xl font-bold tracking-tight text-white md:text-[80px]">
-              Our Services
+              Our{" "}
+              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+                Services
+              </span>
             </h2>
           </div>
-          <p className="max-w-lg text-xl font-light leading-[1.25em] text-white md:text-left">
+          <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
             We merge strategic thinking with bold creative execution to deliver
             scalable digital experiences that elevate your brand
           </p>

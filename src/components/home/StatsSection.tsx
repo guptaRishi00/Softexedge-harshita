@@ -85,7 +85,7 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-linear-to-r from-[#efefef] to-white py-28 text-black md:py-24"
+      className="relative w-full overflow-hidden bg-linear-to-r from-white to-[#a2a2a2] py-28 text-black md:py-24"
     >
       <div className="relative z-10 flex w-full flex-col">
         {stats.map((stat, index) => (

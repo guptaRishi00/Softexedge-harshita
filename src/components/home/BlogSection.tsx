@@ -226,10 +226,21 @@ export default function BlogSection() {
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={index}
-                      initial={{ y: 30, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: -30, opacity: 0 }}
-                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      // Exactly the AboutSection rotating-word config: enter
+                      // from the left on the spring, exit right on a quick tween.
+                      initial={{ x: "-100%", opacity: 0 }}
+                      animate={{ x: "0%", opacity: 1 }}
+                      exit={{
+                        x: "100%",
+                        opacity: 0,
+                        transition: { duration: 0.55, ease: "easeIn" },
+                      }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 30,
+                        damping: 20,
+                        mass: 1,
+                      }}
                       className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent"
                     >
                       {rotatingWords[index]}

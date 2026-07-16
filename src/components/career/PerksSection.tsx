@@ -1,6 +1,11 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useReducedMotion,
+} from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
   Clock,
@@ -10,6 +15,7 @@ import {
   Palmtree,
   Smartphone,
 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -58,6 +64,132 @@ const perks: Perk[] = [
   },
 ];
 
+// Boxy-grid card background — same pattern/colors as ContactSection's
+// ChannelCard (masked cell grid revealed by a mouse-following radial mask,
+// parked at the right when idle).
+const GRID_COLUMNS = 4;
+const boxyCellIds = Array.from({ length: 80 }, (_, i) => `perk-box-${i}`);
+
+function PerkCard({ icon: Icon, title, description }: Perk) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const hoveringRef = useRef(false);
+  const mouseX = useMotionValue(-1000);
+  const mouseY = useMotionValue(-1000);
+
+  const parkMaskRight = useCallback(() => {
+    const el = cardRef.current;
+    if (!el || el.offsetWidth === 0) return;
+    mouseX.set(el.offsetWidth * 0.85);
+    mouseY.set(el.offsetHeight / 2);
+  }, [mouseX, mouseY]);
+
+  const setCardRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      cardRef.current = node;
+      if (node && !hoveringRef.current) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (cardRef.current && !hoveringRef.current) {
+              mouseX.set(cardRef.current.offsetWidth * 0.85);
+              mouseY.set(cardRef.current.offsetHeight / 2);
+            }
+          });
+        });
+      }
+    },
+    [mouseX, mouseY],
+  );
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      if (!hoveringRef.current) parkMaskRight();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [parkMaskRight]);
+
+  const getIntensity = (i: number) => {
+    if (hoveredIndex === null) return 0;
+    const row = Math.floor(i / GRID_COLUMNS);
+    const col = i % GRID_COLUMNS;
+    const hoverRow = Math.floor(hoveredIndex / GRID_COLUMNS);
+    const hoverCol = hoveredIndex % GRID_COLUMNS;
+    const distance = Math.sqrt((row - hoverRow) ** 2 + (col - hoverCol) ** 2);
+    return distance > 3.5 ? 0 : 1 - distance / 1.79;
+  };
+
+  const mask = useMotionTemplate`radial-gradient(280px circle at ${mouseX}px ${mouseY}px, black 0%, rgba(0,0,0,0.15) 100%)`;
+
+  return (
+    <div
+      ref={setCardRef}
+      onMouseMove={(e) => {
+        hoveringRef.current = true;
+        const { left, top } = e.currentTarget.getBoundingClientRect();
+        mouseX.set(e.clientX - left);
+        mouseY.set(e.clientY - top);
+      }}
+      onMouseLeave={() => {
+        hoveringRef.current = false;
+        setHoveredIndex(null);
+        parkMaskRight();
+      }}
+      className="group relative block min-h-[280px] overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/20 transition-transform duration-300 md:min-h-[320px]"
+    >
+      <motion.div
+        className="absolute inset-0 z-0 overflow-hidden"
+        style={{ WebkitMaskImage: mask, maskImage: mask }}
+      >
+        <div
+          className="grid gap-2 relative w-[110%] -left-[5%] -translate-y-6"
+          style={{
+            gridTemplateColumns: `repeat(${GRID_COLUMNS}, minmax(0, 1fr))`,
+          }}
+        >
+          {boxyCellIds.map((id, i) => {
+            const intensity = getIntensity(i);
+            const colorVal = Math.round(22 + 14 * intensity);
+            return (
+              <div
+                key={id}
+                onMouseEnter={() => setHoveredIndex(i)}
+                className="relative aspect-square w-full overflow-hidden rounded-md p-[0.8px]"
+                style={{
+                  backgroundColor: intensity > 0 ? "transparent" : "#161616",
+                }}
+              >
+                <div
+                  className="relative z-10 h-full w-full rounded-md"
+                  style={{
+                    backgroundColor: `rgb(${colorVal}, ${colorVal}, ${colorVal})`,
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between gap-6 p-6 sm:p-8">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 text-zinc-400 transition-colors duration-300 group-hover:text-white">
+          <Icon className="h-5 w-5" strokeWidth={2} />
+        </span>
+        <span className="flex flex-col gap-1">
+          <span className="text-xl font-bold text-white sm:text-2xl">
+            {title}
+          </span>
+          <span className="text-lg font-medium leading-[1em] text-zinc-500 mt-6">
+            {description}
+          </span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function PerksSection() {
   const reduce = useReducedMotion();
 
@@ -87,38 +219,23 @@ export default function PerksSection() {
           </motion.h2>
         </div>
 
-        {/* Perk cards — uniform 3-col grid */}
+        {/* Perk cards — ChannelCard-style boxy-grid cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-5">
-          {perks.map((perk, idx) => {
-            const Icon = perk.icon;
-            return (
-              <motion.div
-                key={perk.title}
-                initial={reduce ? false : { opacity: 0, y: 22 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{
-                  duration: 0.6,
-                  delay: Math.min(idx * 0.08, 0.4),
-                  ease: premiumEase,
-                }}
-                className="group relative flex flex-col rounded-[20px] border border-white/5 bg-zinc-900/50 p-8 backdrop-blur-sm transition-all duration-300 will-change-transform hover:-translate-y-1.5 hover:bg-zinc-900"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white">
-                    <Icon className="h-5 w-5" strokeWidth={2} />
-                  </div>
-                  <h3 className="text-xl font-bold tracking-tight text-white md:text-2xl">
-                    {perk.title}
-                  </h3>
-                </div>
-
-                <p className="mt-5 text-base leading-relaxed text-zinc-400">
-                  {perk.description}
-                </p>
-              </motion.div>
-            );
-          })}
+          {perks.map((perk, idx) => (
+            <motion.div
+              key={perk.title}
+              initial={reduce ? false : { opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{
+                duration: 0.6,
+                delay: Math.min(idx * 0.08, 0.4),
+                ease: premiumEase,
+              }}
+            >
+              <PerkCard {...perk} />
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

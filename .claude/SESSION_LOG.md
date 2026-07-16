@@ -3404,3 +3404,91 @@ font-medium`, placed inside the existing whileInView motion.div so it reveals wi
 title. Verified live /brand-strategy: <p>FAQs</p> directly above the h2, computes 14px /
 uppercase / 4.2px spacing / zinc-500 / 24px mb — identical to BlogSection's tag. biome: no
 new findings. Not committed.
+
+## 2026-07-16 — PerksSection cards redesigned on ChannelCard pattern
+Rebuilt the six perk cards (`src/components/career/PerksSection.tsx`) as replicas of
+ContactSection's ChannelCard, colors/pattern verbatim: card `rounded-[2rem] border-white/10
+bg-zinc-950/20` (min-h 280/320px); masked boxy-grid background — 80 cells #161616, gap-2,
+w-[110%] -left-[5%] -translate-y-6, cells brighten near the hovered cell (22+14*intensity),
+revealed by the mouse-following 280px radial mask (rgba floor 0.15), parked at 85% width
+when idle (double-rAF + ResizeObserver, same code as ChannelCard); content layer
+pointer-events-none justify-between: zinc-900 icon chip (text-zinc-400 →
+group-hover:text-white) top, white bold title + zinc-500 description bottom. GRID_COLUMNS=4
+(cell size ≈ contact's for perk-card width). Kept: header, perks data, whileInView stagger
+entrances, reduced-motion guards. Dropped: gradient icon chips + hover-lift card style.
+Verified live /career @1280: 6 cards, radius 32px, zinc-950/20 bg, white/10 border, 80
+cells, zinc-900 chip, white/zinc-500 text, 280px mask template present (parked pos needs
+real rAF — pane limitation, same as original ChannelCard). tsc 0, biome clean. Mouse
+reveal/glow needs user's eyes. Not committed.
+
+## 2026-07-16 — Home hero: taller canvas pill between the title words
+`src/components/home/Herosection.tsx:78` — the canvas container between "Digital" and
+"Solutions": heights bumped one step per breakpoint, widths unchanged — h-8→h-10,
+sm:h-12→sm:h-14, md:68→80px, lg:90→106px, xl:100→118px. Verified live /home @xl: pill
+computes 220×118 (was 220×100); canvas fills the content box (116px inside the 1px
+border). biome clean. Not committed.
+
+## 2026-07-16 — Content: Services dropdown refreshed from the 8-service taxonomy
+User supplied the full 8-service + sub-services taxonomy. Updated BOTH headers'
+dropdownItems (page/Header.tsx + layout/Header.tsx) and the mirroring home
+ServiceSection titles: "Digital Marketing" → "Digital Marketing & Growth",
+"Software Development" → "Custom Software & SaaS" (matches ERP/internal-tools/SaaS
+sub-scope), "Brand Strategy and Identity" → "Brand Strategy & Identity"; other 5 names
+kept (already tight). All counts "/1 services" → "/4 services" (accurate; note: count is
+declared in NavItem but NOT rendered by either resizable-navbar — data-correct for when
+the design shows it). Sub-services can't display in the current dropdown (name+image
+only) — they belong on the future per-service pages. Verified live /home: mounted
+dropdown lists the 8 new names; ServiceSection rows identical. tsc 0, biome clean.
+Not committed.
+
+## 2026-07-16 — PortfolioSection: optically align title with tag/description
+User screenshot: panel titles ("Lumina Festival") looked indented ~8px right of the tag/
+description. All blocks were structurally left-aligned — the offset is the huge glyphs'
+LEFT SIDE BEARING (canvas-measured: L/F/N ≈ 8px at 112px; tag = 0). Fix: em-based optical
+nudge on the title h2 (`src/components/home/PortfolioSection.tsx`): `-ml-[0.05em]` —
+scales with font size across breakpoints (−5.6px at 7rem, ~−2.4px at text-5xl). Verified
+live @1280: title marginLeft −5.6px; title ink ≈ x82 vs tag/desc x80 (≤2px, was 8px).
+Tradeoff: low-bearing first letters (A in "Aura") may sit ~3-4px left of the tag —
+far less visible than the original offset; dial is the 0.05em value. biome: no new
+findings. Not committed.
+
+## 2026-07-16 — Home StatsSection: bg gradient white → gray
+User read the previous `from-[#efefef] to-white` bg as plain white (too subtle) and asked
+for white→gray. `src/components/home/StatsSection.tsx:88`: → `bg-linear-to-r from-white
+to-[#e5e5e5]` (flipped stops + slightly deeper gray so the ramp is visible). Verified live
+/home: computed linear-gradient(to right, rgb(255,255,255) 0%, rgb(229,229,229) 100%).
+biome clean. Not committed.
+
+## 2026-07-16 — Home StatsSection: darker gradient gray
+Follow-up: gradient end `to-[#e5e5e5]` → `to-[#d4d4d4]` (neutral-300)
+(`src/components/home/StatsSection.tsx:88`). Verified live /home: computed
+linear-gradient(to right, rgb(255,255,255) 0%, rgb(212,212,212) 100%). biome clean.
+Not committed.
+
+## 2026-07-16 — Home ServiceSection: gradient on the word "Services"
+Wrapped "Services" in the heading (`src/components/home/ServiceSection.tsx:192`) in the
+standard brand gradient span (`bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text
+text-transparent`) — same pattern as every other gradient headline word on the site.
+Verified live /home: span computes linear-gradient(to right, rgb(46,91,255),
+rgb(20,156,203)), clip text, transparent color. biome: no new findings. Not committed.
+
+## 2026-07-16 — Rotating words: Testimonials/Contact/Blog exactly match AboutSection
+Per explicit request, replicated AboutSection's rotating-word mechanics verbatim into the
+other three homepage rotators: mode="wait"; enter from left `x:"-100%"→"0%"` + fade on the
+overdamped spring (stiffness 60/damping 20/mass 1); exit right `x:"100%"` + fade on a quick
+0.35s easeIn tween. Files: home/ExperimentalTestimonials.tsx (NOTE: this supersedes the
+user's recent 0.9s premiumEase tween tuning there — "exactly like AboutSection" is the
+newer instruction), home/ContactSection.tsx (was x:±40 0.4s easeOut), home/BlogSection.tsx
+(was y:±30 0.6s easeOut → now horizontal like About). Each section keeps its own gradient
+text classes. Verified: all four files grep-identical on spring 60 + 0.35 easeIn exit +
+mode="wait"; tsc 0; the one biome finding (unused GRID_COLUMNS in ContactSection) is
+pre-existing. Motion can't play in the pane — identical configs = identical animation by
+construction; user's eyes confirm. Not committed.
+
+## 2026-07-16 — Slow the rotating words in Testimonials/Contact/Blog
+Follow-up to the exact-About sync: slowed the three (About itself untouched at 60/0.35).
+Enter spring stiffness 60 → 30 (~1.4x slower glide, same overdamped character; damping 20
+mass 1 kept) and exit tween 0.35s → 0.55s easeIn, identical across
+home/ExperimentalTestimonials.tsx, home/ContactSection.tsx, home/BlogSection.tsx.
+Verified: grep — About 60/0.35, the three 30/0.55; tsc 0; diffs line-scoped (no CRLF
+churn); biome no new findings. Feel needs eyes. Not committed.

@@ -272,7 +272,9 @@ export default function PortfolioSection() {
                 </p>
 
                 {/* Title */}
-                <h2 className="reveal-item text-5xl font-bold leading-[0.9] tracking-[-0.05em] md:text-7xl lg:text-[7rem]">
+                {/* -ml compensates the huge glyphs' left side bearing so the
+                    title's INK lines up with the tag/description above/below */}
+                <h2 className="reveal-item -ml-[0.05em] text-5xl font-bold leading-[0.9] tracking-[-0.05em] md:text-7xl lg:text-[7rem]">
                   {project.title}
                 </h2>
 

@@ -209,10 +209,21 @@ export default function ContactSection() {
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={index}
-                      initial={{ x: 40, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: -40, opacity: 0 }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      // Exactly the AboutSection rotating-word config: enter
+                      // from the left on the spring, exit right on a quick tween.
+                      initial={{ x: "-100%", opacity: 0 }}
+                      animate={{ x: "0%", opacity: 1 }}
+                      exit={{
+                        x: "100%",
+                        opacity: 0,
+                        transition: { duration: 0.55, ease: "easeIn" },
+                      }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 30,
+                        damping: 20,
+                        mass: 1,
+                      }}
                       className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r pb-3 from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent"
                     >
                       {rotatingWords[index]}

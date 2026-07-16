@@ -109,11 +109,15 @@ export default function ExperimentalTestimonials() {
                         // word slides in.
                         x: "100%",
                         opacity: 0,
-                        transition: { duration: 0.5, ease: [0.32, 0, 0.67, 0] },
+                        transition: { duration: 0.55, ease: "easeIn" },
                       }}
-                      // Slower deterministic tween on the site ease — the old
-                      // spring launched fast then crawled, reading as laggy.
-                      transition={{ duration: 0.9, ease: premiumEase }}
+                      // Exactly the AboutSection rotating-word config.
+                      transition={{
+                        type: "spring",
+                        stiffness: 30,
+                        damping: 20,
+                        mass: 1,
+                      }}
                       className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent will-change-transform"
                     >
                       {rotatingWords[wordIndex]}
