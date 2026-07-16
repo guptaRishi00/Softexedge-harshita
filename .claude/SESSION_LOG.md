@@ -3394,3 +3394,13 @@ same shared component); ApplicationJourney ← Blog slot (py-16 md:py-24). Foote
 180/96, 96/140, 64/96, 120/96, 96/96 — all matching about's wrapper values. tsc 0, biome
 0 new findings. Sections' internal paddings are now overridden by wrappers (same
 mechanism as about). Not committed.
+
+## 2026-07-16 — FaqSection: tag above the title (BlogSection style)
+Added a "FAQs" tag above the "Let's Clear Things Up" title in BOTH FaqSection copies
+(`src/components/brand-strategy/FaqSection.tsx` + `src/components/web-development/FaqSection.tsx`,
+per the SubServices precedent for unqualified component names), copied verbatim from the
+BlogSection "Latest Insights" tag: `mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500
+font-medium`, placed inside the existing whileInView motion.div so it reveals with the
+title. Verified live /brand-strategy: <p>FAQs</p> directly above the h2, computes 14px /
+uppercase / 4.2px spacing / zinc-500 / 24px mb — identical to BlogSection's tag. biome: no
+new findings. Not committed.
