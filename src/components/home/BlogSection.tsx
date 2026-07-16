@@ -70,7 +70,7 @@ const blogPosts = [
   },
 ];
 
-const rotatingWords = ["Perspectives.", "Insights.", "Ideas.", "Stories."];
+const rotatingWords = ["Perspectives", "Insights", "Ideas", "Stories"];
 
 export default function BlogSection() {
   const isDesktop = useIsDesktop();

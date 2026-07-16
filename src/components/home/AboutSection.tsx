@@ -218,7 +218,7 @@ export default function AboutSection() {
               <p className="text-xl leading-[1.25em] text-zinc-600 font-regular">
                 We design immersive identities, motion-rich interfaces, and
                 scalable digital systems that feel sharp, intentional, and
-                unforgettable.
+                unforgettable
               </p>
               <div className="flex flex-wrap gap-4 pt-3">
                 <button

@@ -12,7 +12,7 @@ import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
-const rotatingWords = ["the future.", "your vision.", "next gen.", "together."];
+const rotatingWords = ["the future", "your vision", "next gen", "together"];
 
 const channels = [
   {
@@ -229,7 +229,7 @@ export default function ContactSection() {
             <p className="mt-6 text-lg font-light leading-[1.25em] text-white">
               Ready to redefine the standard? Whether you have a specific
               project in mind or just want to explore possibilities, our team is
-              ready to collaborate.
+              ready to collaborate
             </p>
 
             <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -360,7 +360,7 @@ export default function ContactSection() {
                 <div className="pt-4">
                   <button
                     type="submit"
-                    className="group relative inline-flex w-full overflow-hidden items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors focus:outline-none focus:ring-4 focus:ring-white/20 hover:text-white"
+                    className="group relative cursor-pointer inline-flex w-full overflow-hidden items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors focus:outline-none focus:ring-4 focus:ring-white/20 hover:text-white"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <span className="relative z-10 transition-colors duration-300">

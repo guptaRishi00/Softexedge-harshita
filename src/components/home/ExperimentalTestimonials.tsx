@@ -129,7 +129,7 @@ export default function ExperimentalTestimonials() {
 
             <p className="mt-5 max-w-sm text-lg leading-[1.25em] text-zinc-600 font-regular">
               Don't just take our word for it. Hear from the visionaries
-              building our future every day.
+              building our future every day
             </p>
 
             <div className="mt-8 flex items-start">

@@ -19,7 +19,7 @@ const projects = [
     title: "Aura Skincare",
     subtitle: "E-Commerce Experience",
     description:
-      "Redefining digital beauty retail. We crafted a highly conversion-optimized, visually stunning headless e-commerce platform that elevated Aura's brand positioning and increased online sales by 140% in Q1.",
+      "Redefining digital beauty retail. We crafted a highly conversion-optimized, visually stunning headless e-commerce platform that elevated Aura's brand positioning and increased online sales by 140% in Q1",
     tech: ["SHOPIFY", "NEXT.JS", "TAILWIND"],
     year: "2024",
     image: "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
@@ -32,7 +32,7 @@ const projects = [
     title: "Finova Dashboard",
     subtitle: "Financial SaaS Platform",
     description:
-      "A complete UX/UI overhaul for Finova's enterprise wealth management suite. By simplifying complex data visualizations and streamlining workflows, we reduced user onboarding time by over 60%.",
+      "A complete UX/UI overhaul for Finova's enterprise wealth management suite. By simplifying complex data visualizations and streamlining workflows, we reduced user onboarding time by over 60%",
     tech: ["REACT", "D3.JS", "NODE.JS", "TYPESCRIPT"],
     year: "2024",
     image: "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
@@ -45,7 +45,7 @@ const projects = [
     title: "Lumina Festival",
     subtitle: "Event Branding & Web",
     description:
-      "An immersive digital portal for Europe's premier light and sound festival. The site features dynamic WebGL interactions that mirror the festival's physical installations, driving record-breaking ticket sales.",
+      "An immersive digital portal for Europe's premier light and sound festival. The site features dynamic WebGL interactions that mirror the festival's physical installations, driving record-breaking ticket sales",
     tech: ["THREE.JS", "GSAP", "NEXT.JS", "CONTENTFUL"],
     year: "2023",
     image: "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
@@ -58,7 +58,7 @@ const projects = [
     title: "Nova Workspace",
     subtitle: "Product Launch Campaign",
     description:
-      "A high-impact promotional micro-site and cinematic video campaign introducing Nova's next-generation modular office pods to the North American market.",
+      "A high-impact promotional micro-site and cinematic video campaign introducing Nova's next-generation modular office pods to the North American market",
     tech: ["NEXT.JS", "FRAMER MOTION", "TAILWIND"],
     year: "2024",
     video: "/assets/video3.mp4",
@@ -71,7 +71,7 @@ const projects = [
     title: "Zephyr Mobility",
     subtitle: "EV Automotive Marketing",
     description:
-      "Launching the future of urban transit. We designed a sleek, high-performance marketing site for Zephyr's flagship electric scooter, focusing on 3D product storytelling and seamless pre-order flows.",
+      "Launching the future of urban transit. We designed a sleek, high-performance marketing site for Zephyr's flagship electric scooter, focusing on 3D product storytelling and seamless pre-order flows",
     tech: ["WEBGL", "REACT", "NODE.JS", "STRIPE"],
     year: "2023",
     image: "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",

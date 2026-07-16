@@ -164,7 +164,7 @@ export default function ServiceSection() {
           </div>
           <p className="max-w-lg text-xl font-light leading-[1.25em] text-white md:text-left">
             We merge strategic thinking with bold creative execution to deliver
-            scalable digital experiences that elevate your brand.
+            scalable digital experiences that elevate your brand
           </p>
         </div>
 
