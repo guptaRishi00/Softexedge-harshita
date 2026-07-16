@@ -73,7 +73,7 @@ export default function FaqSection() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
           >
-            <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-zinc-900 md:text-6xl lg:text-[5rem]">
+            <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-zinc-900 md:text-6xl lg:text-6xl">
               Let's{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Clear
@@ -154,7 +154,7 @@ export default function FaqSection() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.5, ease: premiumEase }}
                     >
-                      <p className="max-w-3xl px-6 pb-8 pt-0 text-base font-medium leading-relaxed text-zinc-600 md:px-10 md:pb-10 md:text-lg">
+                      <p className="max-w-3xl px-6 pb-8 pt-0 text-base font-medium leading-[1.25em] text-zinc-600 md:px-10 md:pb-10 md:text-lg">
                         {faq.answer}
                       </p>
                     </motion.div>

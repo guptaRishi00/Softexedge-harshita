@@ -104,14 +104,14 @@ function EdgeToEdgeCarousel({ images }: { images: string[] }) {
 
 export default function AboutHeroSection() {
   return (
-    <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#FAFAFA] pb-16 font-sans selection:bg-[#2E5BFF]/20 md:pb-24">
+    <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#FAFAFA] pb-16 font-sans selection:bg-[#2E5BFF]/20 md:pb-25">
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
       {/* Changed py-32 to pt-48 pb-32 md:pt-56 to add extra space between the header and the content */}
       <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 pt-48 pb-32 md:pt-50 text-center md:px-10">
-        <h1 className="text-[3rem] font-bold leading-[1.05] tracking-tight text-zinc-900 sm:text-6xl md:text-7xl lg:text-[6rem]">
+        <h1 className="text-[2.75rem] font-bold leading-[1.05] tracking-tight text-zinc-900 sm:text-6xl md:text-7xl lg:text-[6rem]">
           {LINE_ONE.map((word, i) => (
             <motion.span
               key={word}
@@ -165,7 +165,7 @@ export default function AboutHeroSection() {
               delay: APPEAR_DELAY + LINE_ONE.length * WORD_STAGGER,
               ease: premiumEase,
             }}
-            className="text-[3rem] font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-[6rem]"
+            className="text-[2.75rem] font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-[6rem]"
           >
             <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pb-5 text-transparent">
               digital excellence.
@@ -208,7 +208,7 @@ export default function AboutHeroSection() {
             <h4 className="mb-5 text-6xl font-bold tracking-tighter text-zinc-900 md:text-7xl lg:text-9xl">
               <Counter value={stat.value} suffix={stat.suffix} />
             </h4>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-500 md:text-base">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500 md:text-base">
               {stat.label}
             </p>
           </div>

@@ -203,7 +203,10 @@ export default function HomePage() {
               <StatsSection />
             </div>
 
-            <div ref={serviceContainerRef} className="relative z-10 w-full">
+            <div
+              ref={serviceContainerRef}
+              className="relative z-10 w-full shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]"
+            >
               <ServiceSection />
             </div>
 
@@ -217,7 +220,10 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div ref={contactContainerRef} className="relative z-30">
+            <div
+              ref={contactContainerRef}
+              className="relative z-30 shadow-[0_-12px_24px_-2px_rgb(0_0_0_/_0.24),0_-6px_12px_-4px_rgb(0_0_0_/_0.2)]"
+            >
               <ContactSection />
             </div>
 

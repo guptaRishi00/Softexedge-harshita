@@ -3296,3 +3296,101 @@ text-3xl/sm:text-5xl untouched). Note: old cap 5.5rem=88px was technically <90 a
 16px root (verified live, no root font-size override) — took intent as "comfortably below 90".
 Verified live on user's dev server via HMR: computed 80px @1920px viewport (was 88). Class-only
 change. Not committed.
+
+## 2026-07-15 — Home: strip trailing full stops from all titles & descriptions
+Task: remove the full stop from every homepage title and description. Removed TRAILING
+periods in 6 files / 11 strings: ContactSection rotatingWords ×4 ("the future." etc) +
+description "…ready to collaborate."; BlogSection rotatingWords ×4 ("Perspectives." etc);
+AboutSection description "…unforgettable."; ServiceSection header description "…elevate
+your brand."; ExperimentalTestimonials description "…every day."; PortfolioSection all 5
+project descriptions. INTERIOR sentence periods in multi-sentence descriptions kept
+(Contact, Testimonials, 3 Portfolio descs — removing them would create run-ons); user can
+ask for full rewording if truly none wanted. Testimonial quotes untouched (quotes, not
+titles/descriptions). Hero/About-h1/Stats/Service-titles/Blog-post-titles had none.
+Verified live on dev server (HMR): DOM sweep of all main h1/h2/h3/p on /home → 0 of 77
+end with ".". biome format clean (0 diffs). String-literal-only change. Not committed.
+
+## 2026-07-15 — Home: give ServiceSection the same top shadow as PortfolioSection
+Task: add PortfolioSection's top shadow to ServiceSection. Portfolio's shadow lives on its
+wrapper in `src/app/home/page.tsx` (portfolioRef div):
+`shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]` — note this
+is the user's NEW subtle shadow (page.tsx was externally edited since 2026-07-14; that older
+entry removed the big 0_-50px_80px/0.5 shadow from the service wrapper — this re-adds a
+DIFFERENT, much subtler one, matching Portfolio). Added the identical classes to the
+serviceContainerRef wrapper div (same overlap pattern: Service slides over pinned Stats as
+Portfolio slides over About). Verified live on dev server via HMR: computed boxShadow of both
+wrappers byte-identical (match:true). Class-only, 1 file. Not committed.
+
+## 2026-07-15 — Home: give ContactSection the same top shadow as PortfolioSection
+Task: add PortfolioSection's top shadow to ContactSection on the homepage. Since the last
+task the user added a contact overlap pin in `src/app/home/page.tsx` (testimonials+carousel
+group pins; ContactSection slides over via `contactContainerRef`, z-30) — exact analog of
+the Portfolio/Service wrappers. Added the identical
+`shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]` to the
+contactContainerRef div. Verified live on dev server via HMR: computed boxShadow of contact
+wrapper === portfolio wrapper (match:true). Class-only, 1 file. Not committed.
+
+## 2026-07-15 — Home: strengthen ContactSection top shadow a bit
+Follow-up to the previous entry: bump the contactContainerRef shadow above Portfolio's
+baseline — `0_-8px_16px_-2px/0.18, 0_-4px_8px_-4px/0.15` →
+`0_-12px_24px_-2px/0.24, 0_-6px_12px_-4px/0.2` (~50% more reach/blur, opacity +0.06/+0.05).
+Contact wrapper only; Portfolio/Service shadows unchanged. Verified live via HMR: computed
+boxShadow shows the new values. Class-only, 1 file (`src/app/home/page.tsx`). Not committed.
+
+## 2026-07-15 — ServiceSection: stop the "View Services" cursor pill leaking outside the section
+Task: the View Services follower pill leaks outside ServiceSection. Mechanism: the pill is a
+`fixed` body-portaled div; showing/hiding is driven by mouseenter/mouseleave + a mousemove
+guard. Scrolling with a STATIONARY mouse fires none of those, so after the section scrolls
+away the pill keeps floating over other sections (primary navigation here is Lenis wheel
+scroll, so this is common). Fix in `src/components/home/ServiceSection.tsx`: track last
+pointer coords in moveCursor; add a `gsap.ticker` guard (`guardTick`) that, ONLY while the
+pill is visible (inline opacity check), tests the pointer against the section's
+getBoundingClientRect and force-hides (shared `hideCursor`, overwrite:auto) when outside.
+Ticker chosen over a window scroll listener deliberately: pinned sections move content via
+transforms without scroll events, and Lenis owns the scroll. Cleanup removes the ticker fn.
+VERIFICATION LIMIT (documented for future sessions): the Browser pane's renderer freezes
+rAF/compositor tasks — GSAP tweens never render a frame, synthetic scroll produces no
+events, screenshots time out — so animation behavior CANNOT be behaviorally verified in
+this environment; the frozen initial gsap.set transform did confirm the new code was live
+and attached. tsc clean, biome format clean (normalized). Awaiting user's manual browser
+check. Not committed.
+
+## 2026-07-16 — About hero title sized like Career hero title
+Both heroes already shared `sm:text-6xl md:text-7xl lg:text-[6rem]`; only the mobile base
+differed (about `text-[3rem]` vs career `text-[2.75rem]`). Changed both about title
+elements (`src/components/about/AboutHeroSection.tsx` h1 + gradient span) to
+`text-[2.75rem]` — size ladders now byte-identical to CareerHeroSection at every
+breakpoint (only text color classes differ). Live check at lg: about title computes 96px
+(=lg:text-[6rem], same as career); sub-sm can't be observed in the pane (viewport resize
+doesn't apply), equality holds by identical classes. biome clean. Not committed.
+
+## 2026-07-16 — About: AboutTraditional top padding mirrors hero's pb-25
+User added `md:pb-25` (+ pb-16 mobile) to AboutHeroSection; wanted the same as
+AboutTraditional's TOP padding. Gotcha: AboutTraditional's own section padding is
+OVERRIDDEN by the about page wrapper (`[&>section]:pt-24 md:[&>section]:pt-32`, higher
+specificity) — editing the component had no effect (computed 128px). Real fix in
+`src/app/about/page.tsx:18`: wrapper `[&>section]:pt-24 → pt-16`, `md:[&>section]:pt-32 →
+md:pt-25` (matching the hero's pb-16/md:pb-25); reverted the no-op component edit
+(AboutTraditional back to `py-12 md:py-20`). Verified live /about @md: hero pb 100px ==
+traditional pt 100px (match true). biome: no new findings. Not committed.
+
+## 2026-07-16 — Revert: AboutTraditional top-padding match
+Reverted the previous task: `src/app/about/page.tsx:18` wrapper restored to
+`[&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-32 md:[&>section]:pb-24`.
+(AboutTraditional.tsx was already back at its original `py-12 md:py-20` — the component
+edit had been reverted during the task itself as a no-op.) The hero's own pb-16/md:pb-25
+(user's change) untouched. Verified live /about: AboutTraditional paddingTop back to
+128px (md:pt-32 original). Not committed.
+
+## 2026-07-16 — Career page: adopt the about page's section y-spacing system
+About's spacing lives in page-level wrapper divs (`[&>section]:pt/pb`, which out-specify
+each section's own padding); career had none (ad-hoc internal paddings). Wrapped all five
+career sections in `src/app/career/page.tsx` with about's rhythm, mapped positionally:
+WhyJoinUs ← AboutTraditional slot (pt-24 pb-16 md:pt-45 md:pb-24); OpenPositions ←
+OurValues slot (py-16 md:pt-24 md:pb-35); PerksSection ← CTA/FAQ generic slot (py-16
+md:pb-24 md:pt-16); OurTeamSection ← its exact about wrapper (py-16 md:pb-24 md:pt-30,
+same shared component); ApplicationJourney ← Blog slot (py-16 md:py-24). Footer wrapper
+`md:pt-2` → about's `md:pt-24`. Verified live /career @1265: computed pt/pb per section =
+180/96, 96/140, 64/96, 120/96, 96/96 — all matching about's wrapper values. tsc 0, biome
+0 new findings. Sections' internal paddings are now overridden by wrappers (same
+mechanism as about). Not committed.

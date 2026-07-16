@@ -153,7 +153,7 @@ export default function CtaSection() {
               transition={{ duration: 0.8, delay: 0.15, ease: premiumEase }}
               className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
             >
-              <span className="text-xs uppercase tracking-wider text-zinc-500">
+              <span className="text-xs uppercase tracking-wider text-zinc-500 font-medium">
                 Drop us a line
               </span>
               <a
@@ -173,7 +173,7 @@ export default function CtaSection() {
               transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
               className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
             >
-              <span className="text-xs uppercase tracking-wider text-zinc-500">
+              <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">
                 Give us a call
               </span>
               <span className="group relative w-fit cursor-pointer text-base font-bold text-white/90 transition-colors duration-300 hover:text-white md:text-lg">

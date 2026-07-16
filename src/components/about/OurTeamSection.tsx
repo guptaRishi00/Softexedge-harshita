@@ -134,7 +134,7 @@ export default function OurTeamSection() {
                 The Minds Behind the Craft
               </p>
 
-              <h2 className="text-5xl font-bold tracking-tight text-zinc-900 md:text-6xl lg:text-[4.5rem] lg:leading-[1.05]">
+              <h2 className="text-5xl font-bold tracking-tight text-zinc-900 md:text-6xl lg:text-6xl lg:leading-[1.05]">
                 Meet Our{" "}
                 <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                   Collective

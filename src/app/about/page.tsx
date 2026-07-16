@@ -15,23 +15,23 @@ export default function AboutPage({}: Props) {
   return (
     <div className="bg-white">
       <AboutHeroSection />
-      <div className="[&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-32 md:[&>section]:pb-24">
+      <div className="[&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-45 md:[&>section]:pb-24">
         <AboutTraditional />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:py-24">
+      <div className="[&>section]:py-16 md:[&>section]:pt-24 md:[&>section]:pb-35">
         <OurValuesSection />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:py-24">
+      <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-30">
         <OurTeamSection />
       </div>
       <div className="[&>section]:pt-16 [&>section]:pb-6 md:[&>section]:pt-24 md:[&>section]:pb-10">
         <ExperimentalTestimonials />
       </div>
       <TechLogoCarousel />
-      <div className="px-3 [&>section]:py-16 md:[&>section]:py-24">
+      <div className="px-3 [&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-16">
         <CtaSection />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:py-24">
+      <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-16">
         <FaqSection />
       </div>
       <div className="[&>section]:py-16 md:[&>section]:py-24">

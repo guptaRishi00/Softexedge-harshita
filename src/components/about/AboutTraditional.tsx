@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 
-export default function AboutCinematic() {
+export default function AboutTraditional() {
   return (
     <section className="relative w-full bg-black py-12 md:py-20 font-sans overflow-hidden text-white">
       {/* Background Noise for texture */}
@@ -25,7 +25,7 @@ export default function AboutCinematic() {
 
           <h2 className="text-5xl md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter leading-[0.9em] mb-8">
             A collective of <br className="hidden md:block" />
-            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               digital innovators.
             </span>
           </h2>

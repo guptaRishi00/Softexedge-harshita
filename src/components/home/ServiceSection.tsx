@@ -96,7 +96,21 @@ export default function ServiceSection() {
             force3D: true,
           });
 
+          const hideCursor = () =>
+            gsap.to(cursor, {
+              scale: 0,
+              autoAlpha: 0,
+              duration: 0.2,
+              ease: "power3.inOut",
+              overwrite: "auto",
+            });
+
+          let lastX = -1;
+          let lastY = -1;
+
           const moveCursor = (e: MouseEvent) => {
+            lastX = e.clientX;
+            lastY = e.clientY;
             xTo(e.clientX);
             yTo(e.clientY);
             // Scrolling never fires mouseleave, so the follower can stay
@@ -104,20 +118,37 @@ export default function ServiceSection() {
             // other sections on the next move (worst on Safari). Force-hide
             // it whenever the pointer isn't actually over this section.
             if (!containerRef.current?.contains(e.target as Node)) {
-              gsap.to(cursor, {
-                scale: 0,
-                autoAlpha: 0,
-                duration: 0.2,
-                ease: "power3.inOut",
-                overwrite: "auto",
-              });
+              hideCursor();
+            }
+          };
+
+          // Scrolling with a stationary mouse fires neither mouseleave nor
+          // mousemove, so the fixed pill would keep floating over whatever
+          // section scrolls under the cursor. Scroll events are unreliable
+          // here (Lenis drives the scroll, and pinned sections move via
+          // transforms without any scroll event), so poll on GSAP's ticker
+          // instead — it only does real work while the pill is visible.
+          const guardTick = () => {
+            const el = containerRef.current;
+            if (!el || lastX < 0) return;
+            if (parseFloat(cursor.style.opacity || "0") < 0.05) return;
+            const r = el.getBoundingClientRect();
+            if (
+              lastX < r.left ||
+              lastX > r.right ||
+              lastY < r.top ||
+              lastY > r.bottom
+            ) {
+              hideCursor();
             }
           };
 
           window.addEventListener("mousemove", moveCursor);
+          gsap.ticker.add(guardTick);
 
           return () => {
             window.removeEventListener("mousemove", moveCursor);
+            gsap.ticker.remove(guardTick);
           };
         }
       });

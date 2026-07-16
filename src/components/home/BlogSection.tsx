@@ -219,7 +219,7 @@ export default function BlogSection() {
             <p className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
               Latest Insights
             </p>
-            <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-[4.5rem] lg:leading-[1.05]">
+            <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-6xl lg:leading-[1.05]">
               Thoughts & {/* Rotating Gradient Text */}
               <span className="inline-grid overflow-hidden py-1">
                 {isDesktop ? (
