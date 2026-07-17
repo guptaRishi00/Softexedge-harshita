@@ -12,7 +12,7 @@ export default function CareerPage() {
     <main className="bg-white min-h-screen">
       <CareerHeroSection />
 
-      <div className="[&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-35 md:[&>section]:pb-24">
+      <div className="[&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-30 md:[&>section]:pb-24">
         <WhyJoinUs />
       </div>
 
