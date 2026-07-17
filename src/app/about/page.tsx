@@ -18,7 +18,7 @@ export default function AboutPage({}: Props) {
       <div className="[&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-45 md:[&>section]:pb-24">
         <AboutTraditional />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:pt-16 md:[&>section]:pb-35">
+      <div className="[&>section]:py-16 md:[&>section]:pt-16 md:[&>section]:pb-36">
         <OurValuesSection />
       </div>
       <div className="[&>section]:py-16 md:[&>section]:pb-10 md:[&>section]:pt-30">

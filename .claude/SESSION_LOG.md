@@ -3662,3 +3662,9 @@ cycle motion ≈ 1.1s exit + ~2s spring settle, so dwell grows from ~1.4s to ~2.
 word now visibly sits for a couple of seconds before the swap. Spring/exit configs
 untouched (still 30/20/1 + 1.1s easeInOut everywhere). tsc 0; grep confirms 6000 in all
 four. Pane can't play framer — pacing needs eyes. Not committed.
+
+## 2026-07-17 — About page x padding matched to ExperimentalTestimonials
+ET's content container uses px-4 md:px-10. Applied to: OurValuesSection content container
+(was px-6 lg:px-10) and AboutTraditional's two padded blocks — typography (was px-6
+md:px-12) and video wrapper (was px-6 md:px-12). Verified live /about @1280px: all three
+compute 40px left/right (md:px-10). tsc 0. Not committed.
