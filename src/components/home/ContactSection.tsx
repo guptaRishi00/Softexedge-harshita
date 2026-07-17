@@ -180,7 +180,7 @@ export default function ContactSection() {
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % rotatingWords.length);
-    }, 2500);
+    }, 6000);
     return () => clearInterval(interval);
   }, []);
 

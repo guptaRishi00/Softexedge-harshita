@@ -58,7 +58,7 @@ export default function ExperimentalTestimonials() {
     // Matching the AboutSection cadence gives it time to settle and rest.
     const id = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % rotatingWords.length);
-    }, 4500);
+    }, 6000);
     return () => clearInterval(id);
   }, []);
 

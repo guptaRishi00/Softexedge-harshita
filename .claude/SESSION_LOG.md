@@ -3638,3 +3638,27 @@ pattern, untouched). Hover tint needs eyes. Not committed.
 
 ## 2026-07-15 — Revert footer "Softexedge" word animation
 Reverted the footer brand-word animation to its original form: variant-based staggered letter rise (brandContainer staggerChildren 0.045 + brandLetter y 110%→0, 0.9s), no ocean wave, no per-letter infinite loops. Restored the Variants import, removed useReducedMotion/reduce and will-change-transform. Exact reconstruction of the pre-task code. Verified: no wave/infinity refs remain, tsc + biome clean, next build ✓. Single file. Not committed.
+
+## 2026-07-17 — ContactSection rotating word slowed to match siblings
+home/ContactSection.tsx:183 — rotation interval 2500ms → 4500ms. ContactSection was the
+lone outlier; AboutSection, ExperimentalTestimonials and BlogSection all rotate at 4500ms
+with the identical spring (30/20/1) + 1.1s exit, so the word now settles fully before
+leaving and all four rotators share one cadence. tsc 0; biome findings on the file are
+pre-existing (unused GRID_COLUMNS, ChannelCard a11y div), untouched. Pane can't play
+framer — pacing needs eyes. Not committed.
+
+## 2026-07-17 — Rotator speed parity check (no-op)
+Task asked to propagate ContactSection's rotating-word speed to
+ExperimentalTestimonials, BlogSection, AboutSection — verified all four already share the
+identical config after the previous task: interval 4500ms, enter spring 30/20/1, exit
+1.1s easeInOut, mode="wait" (ET 61/117/122; Blog 91/238/242; About 140/53/58; Contact
+183/221/225). AboutSection's stiffness-60 spring at line 315 is the image card stack, not
+the word — untouched. Zero diff.
+
+## 2026-07-17 — Rotating words: longer dwell before next word
+All four rotators' intervals 4500ms → 6000ms (Contact 183, ET 61, Blog 91, About 140 —
+About's tick also drives the synced image stack, unchanged by design). Timing math: per
+cycle motion ≈ 1.1s exit + ~2s spring settle, so dwell grows from ~1.4s to ~2.9s — the
+word now visibly sits for a couple of seconds before the swap. Spring/exit configs
+untouched (still 30/20/1 + 1.1s easeInOut everywhere). tsc 0; grep confirms 6000 in all
+four. Pane can't play framer — pacing needs eyes. Not committed.

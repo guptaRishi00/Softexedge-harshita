@@ -119,7 +119,7 @@ export default function ApplicationJourney() {
                 <h3 className="mb-3 text-2xl font-bold tracking-tight text-white md:text-3xl">
                   {step.title}
                 </h3>
-                <p className="text-base leading-relaxed text-white/80">
+                <p className="text-base leading-[1.25em] text-white/80">
                   {step.description}
                 </p>
               </div>

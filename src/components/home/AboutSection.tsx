@@ -137,7 +137,7 @@ export default function AboutSection() {
   useEffect(() => {
     const interval = setInterval(() => {
       setFrontIndex((prev) => prev + 1);
-    }, 4500);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, []);

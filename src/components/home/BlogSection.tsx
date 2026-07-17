@@ -88,7 +88,7 @@ export default function BlogSection() {
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % rotatingWords.length);
-    }, 4500);
+    }, 6000);
     return () => clearInterval(interval);
   }, []);
 
