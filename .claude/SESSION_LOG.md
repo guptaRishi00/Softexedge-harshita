@@ -3635,3 +3635,6 @@ lucide-{plane,smartphone,laptop,calendar-days,headphones,clock} at stroke-width 
 1px border + gradient bg. tsc 0; biome shows only the 2 pre-existing
 noStaticElementInteractions findings on the mouse-grid divs (inherited ChannelCard
 pattern, untouched). Hover tint needs eyes. Not committed.
+
+## 2026-07-15 — Revert footer "Softexedge" word animation
+Reverted the footer brand-word animation to its original form: variant-based staggered letter rise (brandContainer staggerChildren 0.045 + brandLetter y 110%→0, 0.9s), no ocean wave, no per-letter infinite loops. Restored the Variants import, removed useReducedMotion/reduce and will-change-transform. Exact reconstruction of the pre-task code. Verified: no wave/infinity refs remain, tsc + biome clean, next build ✓. Single file. Not committed.

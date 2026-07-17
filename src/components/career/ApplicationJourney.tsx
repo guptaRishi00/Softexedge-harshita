@@ -48,7 +48,7 @@ const steps: Step[] = [
 
 export default function ApplicationJourney() {
   return (
-    <section className="relative w-full bg-zinc-50 px-6 py-24 text-zinc-900 md:py-32">
+    <section className="relative w-full bg-white px-6 py-24 text-zinc-900 md:py-32">
       <div className="mx-auto w-full">
         {/* Title Area */}
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center mb-16 md:mb-24">

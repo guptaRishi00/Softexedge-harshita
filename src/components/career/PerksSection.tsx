@@ -30,37 +30,37 @@ const perks: Perk[] = [
     icon: Plane,
     title: "28 Days Holiday",
     description:
-      "For some rest and relaxation...and that's excluding bank holidays.",
+      "For some rest and relaxation...and that's excluding bank holidays. Need to leave early? Want to work from home? You can work to fit your schedule, no drama. ",
   },
   {
     icon: Smartphone,
     title: "Mobile Phone",
     description:
-      "Get the latest iPhone after 12 months of being with us, for personal use. No catch.",
+      "Get the latest iPhone after 12 months of being with us, for personal use. No catch. Need to leave early? Want to work from home? You can work to fit your schedule, no drama. ",
   },
   {
     icon: Laptop,
     title: "Equipment",
     description:
-      "Your laptop, subscriptions, desk, chair, you name it! If you require tools to work, we've got you!",
+      "Your laptop, subscriptions, desk, chair, you name it! If you require tools to work, we've got you! Need to leave early? Want to work from home? You can work to fit your schedule, no drama. ",
   },
   {
     icon: CalendarDays,
     title: "2 Weeks off @ xmas",
     description:
-      "We close at Christmas for time with family & friends... and that's on top of the 28 days holiday.",
+      "We close at Christmas for time with family & friends... and that's on top of the 28 days holiday. Need to leave early? Want to work from home? You can work to fit your schedule, no drama. ",
   },
   {
     icon: Headphones,
     title: "Spotify",
     description:
-      "Free Spotify subscription to listen to all those bangers whilst you're working away.",
+      "Free Spotify subscription to listen to all those bangers whilst you're working away. Need to leave early? Want to work from home? You can work to fit your schedule, no drama. ",
   },
   {
     icon: Clock,
     title: "Flexible hours",
     description:
-      "Need to leave early? Want to work from home? You can work to fit your schedule, no drama.",
+      "Need to leave early? Want to work from home? You can work to fit your schedule, no drama. Need to leave early? Want to work from home? You can work to fit your schedule, no drama. ",
   },
 ];
 
@@ -174,14 +174,14 @@ function PerkCard({ icon: Icon, title, description }: Perk) {
       </motion.div>
 
       <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between gap-6 p-6 sm:p-8">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-800/80 to-zinc-900/80 text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-300 group-hover:border-[#2E5BFF]/40 group-hover:text-white">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-800/80 to-zinc-900/80 text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-300 group-hover:text-white">
           <Icon className="h-5 w-5" strokeWidth={1.5} />
         </span>
         <span className="flex flex-col gap-1">
           <span className="text-xl font-bold text-white sm:text-2xl">
             {title}
           </span>
-          <span className="text-lg font-medium leading-[1em] text-zinc-500 mt-6">
+          <span className="text-lg font-medium leading-[1.2em] text-zinc-300 mt-6">
             {description}
           </span>
         </span>
