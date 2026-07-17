@@ -21,7 +21,7 @@ function RotatingWord({
 
   if (!isDesktop) {
     return (
-      <span className="relative flex items-center justify-center overflow-hidden px-2 -mx-2 py-2 -my-2">
+      <span className="relative flex items-center justify-center overflow-hidden px-6 -mx-6 py-2 -my-2 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
         <span className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text px-2 py-2 text-transparent">
           {words[0]}
         </span>
@@ -30,7 +30,7 @@ function RotatingWord({
   }
 
   return (
-    <span className="relative flex items-center justify-center overflow-hidden px-2 -mx-2 py-2 -my-2">
+    <span className="relative flex items-center justify-center overflow-hidden px-6 -mx-6 py-2 -my-2 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
       {/* mode="wait": the current word finishes sliding out (right) and
           disappears BEFORE the next word enters — sequential, not overlapping. */}
       <AnimatePresence mode="wait">
@@ -46,17 +46,16 @@ function RotatingWord({
             opacity: 1,
           }}
           exit={{
-            // Slide out to the right and vanish there — a quick tween so it's
-            // gone promptly, then the next word slides in.
+            // Slide out right and glide away — same slow easeInOut exit as
+            // the ExperimentalTestimonials rotating word.
             x: "100%",
             opacity: 0,
-            transition: { duration: 0.35, ease: "easeIn" },
+            transition: { duration: 1.1, ease: "easeInOut" },
           }}
-          // Same spring as the card stack so the word flip and the image
-          // change move in sync (both driven by frontIndex).
+          // Same slow spring as the ExperimentalTestimonials rotating word.
           transition={{
             type: "spring",
-            stiffness: 60,
+            stiffness: 30,
             damping: 20,
             mass: 1,
           }}

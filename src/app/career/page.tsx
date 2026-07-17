@@ -16,13 +16,13 @@ export default function CareerPage() {
       <div className="[&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-45 md:[&>section]:pb-24">
         <WhyJoinUs />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:pt-24 md:[&>section]:pb-35">
+      <div className="[&>section]:py-16 md:[&>section]:pt-24 md:[&>section]:pb-24">
         <OpenPositions />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-16">
+      <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-24">
         <PerksSection />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-30">
+      <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-24">
         <OurTeamSection />
       </div>
       {/* <CareerValues /> */}

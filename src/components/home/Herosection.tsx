@@ -61,11 +61,15 @@ export default function Herosection({}: any) {
 
       <div className="absolute inset-0 z-10 backdrop-blur-xl" />
 
-      <div className="absolute z-20 p-5 w-full flex flex-col items-center justify-center gap-10 h-full">
-        <Header />
+      {/* Header lives OUTSIDE the z-20 overlay: its navbar is fixed z-[100],
+          and nesting it inside a z-indexed positioned ancestor traps it in
+          that stacking context — page.tsx's later z-20/z-30 section wrappers
+          (Stats onward) would paint over it. */}
+      <Header />
 
+      <div className="absolute z-20 p-5 w-full flex flex-col items-center justify-center gap-10 h-full">
         <div className="w-full flex items-center justify-center text-center">
-          <div className="flex flex-col items-center justify-center gap-2">
+          <div className="flex flex-col items-center justify-center gap-4">
             <h1 className="text-4xl md:text-5xl lg:text-9xl font-bold text-white">
               We Engineer
             </h1>

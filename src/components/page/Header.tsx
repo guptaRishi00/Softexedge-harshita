@@ -140,6 +140,12 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
 
   if (pathname.startsWith("/leads")) return null;
 
+  // Light gray border on the CTA for the about + career pages only.
+  const ctaBorder =
+    pathname.startsWith("/about") || pathname.startsWith("/career")
+      ? " border border-gray-300 hover:border-none"
+      : "";
+
   return (
     <div className="relative w-full">
       <AceternityNavbar className="z-[100]">
@@ -154,7 +160,7 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
           <DynamicButton
             text="Get in Touch"
             href="/contact"
-            className="relative px-8 py-3 rounded-lg"
+            className={`relative px-8 py-3 rounded-lg${ctaBorder}`}
             showIcon={false}
             instantHover
           />

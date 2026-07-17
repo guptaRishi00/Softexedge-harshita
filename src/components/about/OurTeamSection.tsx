@@ -130,7 +130,7 @@ export default function OurTeamSection() {
         >
           <div className="mb-12 flex flex-col items-start justify-between gap-6 px-6 md:mb-20 md:flex-row md:items-end">
             <div>
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-zinc-500">
+              <p className="mb-4 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
                 The Minds Behind the Craft
               </p>
 

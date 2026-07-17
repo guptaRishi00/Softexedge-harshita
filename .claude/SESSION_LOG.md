@@ -3492,3 +3492,146 @@ mass 1 kept) and exit tween 0.35s → 0.55s easeIn, identical across
 home/ExperimentalTestimonials.tsx, home/ContactSection.tsx, home/BlogSection.tsx.
 Verified: grep — About 60/0.35, the three 30/0.55; tsc 0; diffs line-scoped (no CRLF
 churn); biome no new findings. Feel needs eyes. Not committed.
+
+## 2026-07-16 — Home hero: more line spacing in the main title
+`src/components/home/Herosection.tsx:68` — title column ("We Engineer" / "Digital
+[canvas] Solutions") `gap-2` → `gap-4` (8px → 16px between lines; the "crafted for
+impact" subtitle keeps its own mt-5). Verified live /home: row gap computes 16px,
+measured visual gap between the two title lines 16px (was 8). biome clean. Not committed.
+
+## 2026-07-16 — Testimonials rotating word: edge fades on enter/exit
+The sliding word was hard-clipped at the container edges. Added a horizontal gradient
+mask to the rotating-word container (`src/components/home/ExperimentalTestimonials.tsx`):
+`px-6 -mx-6` (24px fade band each side, negative margins cancel the layout shift — same
+trick as AboutSection's px-2/-mx-2 wrapper) +
+`[mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]`.
+Entering/exiting text now dissolves at the edges; the resting word sits exactly 24px
+inside each edge → fully opaque (verified live: mask computed, insets 24/24,
+restingWordFullyOpaque true, margins -24 cancel padding). biome clean. Motion feel needs
+eyes. Not committed.
+
+## 2026-07-16 — Testimonials rotating word: slower, smoother exit
+The exit was a 0.55s easeIn tween — accelerating away, reading as a dart next to the slow
+spring entrance. `src/components/home/ExperimentalTestimonials.tsx` exit transition →
+`duration: 1.1, ease: "easeInOut"` (glides out through the new edge fade). Enter spring
+(30/20/1) untouched; testimonials-only (Contact/Blog keep 0.55 easeIn until told
+otherwise). Verified: config in source, page compiles, biome clean. Feel needs eyes.
+Not committed.
+
+## 2026-07-16 — All rotating words match ExperimentalTestimonials (motion + edge fade)
+Testimonials is now the reference; replicated its full rotating-word recipe into
+About/Contact/Blog: enter spring 30/20/1 (+fade, x -100%→0), exit x 100% via
+`duration: 1.1, ease: "easeInOut"` glide, mode="wait", AND the 24px edge-fade mask
+(`px-6 -mx-6` + mask-image gradient, no layout shift). Per-file: ContactSection +
+BlogSection got exit 0.55 easeIn → 1.1 easeInOut + mask on their inline-grid containers;
+AboutSection got spring 60→30 (NOTE: supersedes its word↔card-stack spring sync — the
+cards still run 60; comment updated), exit 0.35→1.1 easeInOut, and the mask on both
+RotatingWord wrapper branches (px-2/-mx-2 → px-6/-mx-6). Verified: grep — all four files
+spring 30 + 1.1 easeInOut + mask present; live /home — exactly 4 masked containers, one
+in each section; tsc 0; biome no new findings. Feel needs eyes. Not committed.
+
+## 2026-07-16 — About page: section tags match ExperimentalTestimonials
+Unified the about page's section eyebrows to the Testimonials tag recipe (`text-sm
+font-medium uppercase tracking-[0.3em] text-zinc-500`): AboutTraditional "Who We Are"
+(was text-xs font-bold white/60 — note: zinc-500 on its black bg, per explicit request),
+OurValuesSection "Our Culture" (was text-xs font-bold #2E5BFF), OurTeamSection "The Minds
+Behind the Craft" (font-semibold → font-medium; size/color already matched). Skipped:
+AboutHeroSection (no eyebrow above its title; the matched selector was a stat label) and
+FAQ/Blog/Testimonials tags (already on the recipe). Verified live /about: all three
+compute 14px/500/uppercase/4.2px/lab(47.88…) — matchesRef true vs the live Testimonials
+tag. biome no new findings. Not committed.
+
+## 2026-07-15 — Home: header invisible from StatsSection onward — stacking-context trap
+Task: the (fixed, scroll-reactive) home header stops appearing after StatsSection. Root
+cause: `layout/Header`'s AceternityNavbar is `fixed z-[100]`, but Herosection nested
+`<Header />` inside its `absolute z-20` content overlay — a positioned+z-indexed ancestor
+creates a stacking context, so the navbar's z-[100] only counted WITHIN that z-20 context.
+page.tsx's post-Stats wrapper (`relative z-20 md:-mt-[100vh]`) is a LATER sibling context
+with equal z → paints over the navbar from Stats onward (About z-0 / Portfolio z-10 lose to
+20, which is why the header worked before Stats). Fix (`src/components/home/Herosection.tsx`):
+moved `<Header />` out of the z-20 overlay to a direct child of the hero root (which has no
+z-index → navbar joins the ROOT stacking context and z-[100] wins site-wide). Side effect:
+hero heading recenters up ~20px (Header h≈0 + gap-10 left the flex group; arguably more
+correct). Verified statically on live dev server: navbar ancestor walk finds NO positioned+
+z-indexed ancestor (was the z-20 overlay), navbar fixed/z-100/visible. Hit-testing
+(elementsFromPoint) returned empty arrays — frozen-renderer artifact (see memory), not a
+fix failure; painting order from here is deterministic CSS. tsc clean, biome format clean.
+User to confirm visually. Not committed.
+
+## 2026-07-16 — CtaSection bg animation matches blog hero
+Blog hero runs `<SpotlightGrid speed={4} maskRadius={950} travel={0.35} />` (user added
+maskRadius/travel props to SpotlightGrid); CtaSection copies ran bare defaults (speed 1,
+600px, travel 0.9). Matched BOTH copies (brand-strategy/CtaSection.tsx:27 +
+web-development/CtaSection.tsx:27) to the blog hero's exact props — affects the CTA on
+every page using it. Verified: tsc 0 (props exist: defaults 600/0.9 at SpotlightGrid.tsx
+30/33); live /brand-strategy CTA mask computes radial-gradient(950px …) vs default 600px.
+Motion pace needs eyes (pane can't play rAF). biome no new findings. Not committed.
+
+## 2026-07-17 — About Quote Card → 3-quote carousel
+OurValuesSection.tsx: static quote card is now a carousel — outer shell (mt-12 rounded-3xl
+border-white/[0.06] bg-[#100f0f] p-8 md:p-10) byte-identical/static; inner content (quote +
+avatar/name/role + Connect CTA) keyed by quoteIndex inside AnimatePresence mode="wait"
+(x 32→0 in, 0→-32 out, 0.5s premiumEase). 3 quotes: Sidhartha Parasramka/CEO (ceo.jpeg),
+Priya Sharma/Creative Director, Arjun Mehta/Head of Engineering (randomuser.me portraits —
+i.pravatar.cc is NOT in next.config remotePatterns, would crash next/image). Auto-advance
+6s; gradient-pill dots (active w-6 brand gradient) click-select and re-arm the timer
+(biome-ignore on useExhaustiveDependencies — intentional). Verified live /about: shell
+classes unchanged, 3 dots render, active dot auto-advanced 0→2 (interval + re-render work);
+content swap is framer-driven so pane can't play it — needs eyes. tsc 0, biome clean. Not committed.
+
+## 2026-07-15 — FaqSection: match x-gutter to ExperimentalTestimonials (px-4 md:px-10)
+Task: make FaqSection's x-axis padding equal ExperimentalTestimonials'. Standard (its
+container, ExperimentalTestimonials.tsx:81): `px-4 md:px-10`. FaqSection exists twice
+(brand-strategy + its web-development mirror), identical `px-6 md:px-6` section gutter —
+changed BOTH to `px-4 md:px-10` (same both-mirrors precedent as the header dropdown task).
+Inner accordion-item padding (px-6 md:px-10 on rows/answers) untouched — that's card-internal,
+not the section gutter. Verified live on /web-development: FAQ section computes 16px (px-4)
+— pane viewport reported innerWidth 0 (degenerate, see memory) so only the sub-md branch was
+measurable; md branch matches by construction (verbatim same classes as the standard).
+Class-only, 2 files. Not committed.
+
+## 2026-07-17 — OurValuesSection left image → plain rounded-xl rectangle
+Removed the asymmetric clip-path (`inset(0 round 5rem 1.5rem 5rem 1.5rem)`) from the CEO
+image wrapper and added `rounded-xl` to its class list; container sizing/overflow untouched.
+Verified live /about: wrapper computes clip-path none, border-radius 14px (rounded-xl under
+this theme). tsc 0, biome clean. Not committed.
+
+## 2026-07-15 — Footer: "Softexedge" word animation (cinematic rise + ocean wave)
+Upgraded the giant footer brand word. Restructured from variant-propagated letters to per-letter explicit animations (avoids variants/infinite-loop conflicts): (1) entrance — each letter rises out of its own clip (y 115%→0, duration 1.1, premium ease, delay i*0.06 stagger, whileInView once); (2) NEW continuous ocean-wave undulation — outer per-letter motion.span loops y [0,-4.5%,0,2%,0] over 3.6s, easeInOut, repeat Infinity, phase delay 1.4+i*0.14 so a smooth wave travels across the word after the entrance settles. Wave wraps the clip span (never clips); transform-only + will-change-transform (GPU); useReducedMotion guards both (static word under reduced motion). Removed now-unused brandContainer/brandLetter variants + Variants import. Verified: tsc + biome clean, next build ✓. Single file. Not committed.
+
+## 2026-07-15 — Career page: align y-axis rhythm with about/home
+Task: analyze about + home y-spacing, apply to career. Analysis: both reference pages share
+(a) mobile backbone py-16, (b) post-hero pt-24 md:pt-45, (c) equalized boundaries
+pb(prev)=pt(next) with 24 as the dominant md unit, (d) footer joins at pt-24. Career already
+matched (a)(b)(d) and most boundaries, but two md boundaries were asymmetric:
+OpenPositions→Perks (pb-35 vs pt-16) and Perks→OurTeam (pb-24 vs pt-30). Fix in
+`src/app/career/page.tsx` (3 md values): OpenPositions pb-35→pb-24, Perks pt-16→pt-24,
+OurTeam pt-30→pt-24. Result: every career md boundary = 24/24 (uniform 192px), mobile 16/16,
+hero pt-45 kept. Verified via SSR HTML (curl /career, entity-encoded class extraction — the
+pane viewport is degenerate, see memory): all 5 wrappers serve the new values. tsc clean.
+Not committed.
+
+## 2026-07-15 — Header CTA: light gray border on about + career pages
+Added a route-scoped light gray border to the "Get in Touch" button in page/Header: when pathname starts with /about or /career, the DynamicButton className gains "border border-gray-300 hover:border-none" (border disappears on hover as the gradient fills, matching the pre-removal style). Other pages using page/Header (work, brand-strategy, contact, blog…) and layout/Header (home) unchanged. Verified: tsc + biome clean, next build ✓. Single file. Not committed.
+
+## 2026-07-15 — Career page: unify eyebrow "tag above title" with home/about standard
+Task: analyze home+about eyebrow tags, apply same font/weight/color/size to every career
+section. Standard (dominant across AboutSection, BlogSection, ContactSection,
+ExperimentalTestimonials, ServiceSection, AboutTraditional — including black sections):
+`text-sm font-medium uppercase tracking-[0.3em] text-zinc-500`. Career had 4 divergent
+eyebrows (`text-xs font-semibold tracking-[0.25em]` + text-white/60 ×3 / text-zinc-400 ×1):
+WhyJoinUs:119, OpenPositions:130, PerksSection:206, ApplicationJourney:60 — all changed to
+the standard (kept mb-*/inline-flex/gap-2 layout). CareerHeroSection has no tag;
+OurTeamSection (shared with about) already standard. Verified via SSR HTML: /career serves
+5 standard eyebrows, 0 old-pattern remnants. tsc clean. Class-only, 4 files. Not committed.
+
+## 2026-07-17 — PerksSection icons → professional set + refined chip
+career/PerksSection.tsx: swapped the playful lucide icons for a corporate set —
+Palmtree→Plane, Monitor→Laptop, Gift→CalendarDays, Music→Headphones (Smartphone, Clock
+kept). Icon chip upgraded: border-white/10, bg-gradient-to-b zinc-800/80→zinc-900/80,
+inset top highlight, hover border tints brand blue (#2E5BFF/40); strokeWidth 2→1.5 for a
+lighter premium line weight. Verified live /career: all 6 chips render
+lucide-{plane,smartphone,laptop,calendar-days,headphones,clock} at stroke-width 1.5 with
+1px border + gradient bg. tsc 0; biome shows only the 2 pre-existing
+noStaticElementInteractions findings on the mouse-grid divs (inherited ChannelCard
+pattern, untouched). Hover tint needs eyes. Not committed.

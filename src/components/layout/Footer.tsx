@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
@@ -32,22 +32,10 @@ const socialLinks = [
 // Pre-keyed letters (avoids array-index keys) for the staggered brand reveal.
 const brandLetters = "Softexedge"
   .split("")
-  .map((char, i) => ({ char, id: `brand-${char}${i}` }));
-
-const brandContainer: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.045 } },
-};
-
-const brandLetter: Variants = {
-  hidden: { y: "110%" },
-  visible: {
-    y: "0%",
-    transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
-  },
-};
+  .map((char, i) => ({ char, id: `brand-${char}${i}`, index: i }));
 
 export default function Footer() {
+  const reduce = useReducedMotion();
   const [mounted, setMounted] = useState(false);
   const [time, setTime] = useState(new Date());
 
@@ -176,31 +164,54 @@ export default function Footer() {
 
         {/* MIDDLE SECTION: Giant Brand Name */}
         <div className="relative flex w-full justify-center pt-8 pb-16 md:pt-10 md:pb-20 overflow-hidden">
-          <motion.h1
-            variants={brandContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.5 }}
+          <h1
             aria-label="Softexedge"
             className="relative z-10 flex select-none text-[17vw] font-medium leading-[0.85] tracking-normal text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
           >
-            {/* Each letter rises out of its own clip, staggered left→right.
-                pb keeps descenders (g) inside the clip — Satoshi's descender
-                reaches ~0.2em below the baseline, and leading-[0.85] shrinks
-                the line box, so the allowance must be generous; -mb cancels
-                the extra height so the tight layout is unchanged. */}
-            {brandLetters.map(({ char, id }) => (
-              <span
+            {/* Two layers per letter:
+                – outer motion.span: continuous ocean-wave undulation across the
+                  word (per-letter phase delay, transform-only, starts after the
+                  entrance settles). It wraps the clip so the wave never clips.
+                – inner motion.span: cinematic staggered rise out of its own
+                  clip, left→right. pb keeps descenders (g) inside the clip —
+                  Satoshi's descender reaches ~0.2em below the baseline, and
+                  leading-[0.85] shrinks the line box, so the allowance must be
+                  generous; -mb cancels the extra height so layout is unchanged. */}
+            {brandLetters.map(({ char, id, index }) => (
+              <motion.span
                 key={id}
                 aria-hidden="true"
-                className="inline-block overflow-hidden pb-[0.3em] -mb-[0.3em]"
+                animate={
+                  reduce
+                    ? undefined
+                    : { y: [0, "-4.5%", 0, "2%", 0] }
+                }
+                transition={{
+                  duration: 3.6,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                  delay: 1.4 + index * 0.14,
+                }}
+                className="inline-block will-change-transform"
               >
-                <motion.span variants={brandLetter} className="inline-block">
-                  {char}
-                </motion.span>
-              </span>
+                <span className="inline-block overflow-hidden pb-[0.3em] -mb-[0.3em]">
+                  <motion.span
+                    initial={reduce ? false : { y: "115%" }}
+                    whileInView={{ y: "0%" }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    transition={{
+                      duration: 1.1,
+                      ease: [0.22, 1, 0.36, 1],
+                      delay: index * 0.06,
+                    }}
+                    className="inline-block"
+                  >
+                    {char}
+                  </motion.span>
+                </span>
+              </motion.span>
             ))}
-          </motion.h1>
+          </h1>
         </div>
 
         {/* BOTTOM SECTION: Timezones & Legal */}

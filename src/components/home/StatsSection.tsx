@@ -85,7 +85,7 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-linear-to-r from-white to-[#a2a2a2] py-28 text-black md:py-24"
+      className="relative w-full overflow-hidden bg-linear-to-r from-[#dedddd] to-[#cac8c8] py-28 text-black md:py-24"
     >
       <div className="relative z-10 flex w-full flex-col">
         {stats.map((stat, index) => (
@@ -100,7 +100,9 @@ export default function StatsSection() {
             )}
           >
             {index !== stats.length - 1 && (
-              <div className="absolute bottom-0 left-4 right-4 h-px bg-black/10 max-md:hidden" />
+              // Inset md:10 (40px) to match the ServiceSection row borders,
+              // which span w-full inside its px-4 md:px-10 wrapper.
+              <div className="absolute bottom-0 left-4 right-4 h-px bg-black/10 max-md:hidden md:left-10 md:right-10" />
             )}
 
             <div

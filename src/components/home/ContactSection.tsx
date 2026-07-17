@@ -204,7 +204,9 @@ export default function ContactSection() {
 
             <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[64px] lg:leading-[0.9em]">
               Let&apos;s build <br />
-              <span className="inline-grid overflow-hidden py-2">
+              {/* px/-mx fade band at each edge (no layout shift) — sliding
+                  words dissolve at the edges, same as ExperimentalTestimonials. */}
+              <span className="inline-grid overflow-hidden py-2 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
                 {isDesktop ? (
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -216,7 +218,7 @@ export default function ContactSection() {
                       exit={{
                         x: "100%",
                         opacity: 0,
-                        transition: { duration: 0.55, ease: "easeIn" },
+                        transition: { duration: 1.1, ease: "easeInOut" },
                       }}
                       transition={{
                         type: "spring",

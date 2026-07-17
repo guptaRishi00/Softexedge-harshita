@@ -94,7 +94,11 @@ export default function ExperimentalTestimonials() {
             </p>
             <h2 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl lg:leading-[0.95em]">
               Voices of the <br />
-              <span className="inline-grid overflow-hidden py-2">
+              {/* px/-mx gives the mask a fade band at each edge without
+                  shifting layout — sliding words dissolve at the edges
+                  instead of hard-clipping; the resting word sits fully in
+                  the opaque zone. */}
+              <span className="inline-grid overflow-hidden py-2 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
                 {isDesktop ? (
                   // mode="wait": the current word finishes sliding out (right)
                   // and disappears BEFORE the next word enters — sequential,
@@ -106,10 +110,11 @@ export default function ExperimentalTestimonials() {
                       animate={{ x: "0%", opacity: 1 }}
                       exit={{
                         // Slide out right and vanish there, then the next
-                        // word slides in.
+                        // word slides in. Long easeInOut so the exit glides
+                        // instead of darting (easeIn accelerated away too fast).
                         x: "100%",
                         opacity: 0,
-                        transition: { duration: 0.55, ease: "easeIn" },
+                        transition: { duration: 1.1, ease: "easeInOut" },
                       }}
                       // Exactly the AboutSection rotating-word config.
                       transition={{

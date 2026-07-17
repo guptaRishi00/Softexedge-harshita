@@ -8,11 +8,11 @@ import {
 } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
+  CalendarDays,
   Clock,
-  Gift,
-  Monitor,
-  Music,
-  Palmtree,
+  Headphones,
+  Laptop,
+  Plane,
   Smartphone,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -27,7 +27,7 @@ interface Perk {
 
 const perks: Perk[] = [
   {
-    icon: Palmtree,
+    icon: Plane,
     title: "28 Days Holiday",
     description:
       "For some rest and relaxation...and that's excluding bank holidays.",
@@ -39,19 +39,19 @@ const perks: Perk[] = [
       "Get the latest iPhone after 12 months of being with us, for personal use. No catch.",
   },
   {
-    icon: Monitor,
+    icon: Laptop,
     title: "Equipment",
     description:
       "Your laptop, subscriptions, desk, chair, you name it! If you require tools to work, we've got you!",
   },
   {
-    icon: Gift,
+    icon: CalendarDays,
     title: "2 Weeks off @ xmas",
     description:
       "We close at Christmas for time with family & friends... and that's on top of the 28 days holiday.",
   },
   {
-    icon: Music,
+    icon: Headphones,
     title: "Spotify",
     description:
       "Free Spotify subscription to listen to all those bangers whilst you're working away.",
@@ -174,8 +174,8 @@ function PerkCard({ icon: Icon, title, description }: Perk) {
       </motion.div>
 
       <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between gap-6 p-6 sm:p-8">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 text-zinc-400 transition-colors duration-300 group-hover:text-white">
-          <Icon className="h-5 w-5" strokeWidth={2} />
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-800/80 to-zinc-900/80 text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-300 group-hover:border-[#2E5BFF]/40 group-hover:text-white">
+          <Icon className="h-5 w-5" strokeWidth={1.5} />
         </span>
         <span className="flex flex-col gap-1">
           <span className="text-xl font-bold text-white sm:text-2xl">
@@ -203,7 +203,7 @@ export default function PerksSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-8 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/60"
+            className="mb-8 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500"
           >
             Benefits
           </motion.span>
