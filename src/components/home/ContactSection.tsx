@@ -218,11 +218,11 @@ export default function ContactSection() {
                       exit={{
                         x: "100%",
                         opacity: 0,
-                        transition: { duration: 1.1, ease: "easeInOut" },
+                        transition: { duration: 1.5, ease: "easeInOut" },
                       }}
                       transition={{
                         type: "spring",
-                        stiffness: 30,
+                        stiffness: 22,
                         damping: 20,
                         mass: 1,
                       }}

@@ -68,6 +68,29 @@ export const projects: Project[] = [
     ],
   },
   {
+    // Sits right after Finova so the two share a row in the "All" grid (the
+    // featured Lumina card below spans both columns — without this card the
+    // slot beside Finova stayed empty).
+    id: 10,
+    title: "Orbit CRM",
+    subtitle: "Sales Automation Platform",
+    description:
+      "A ground-up build of Orbit's customer-relationship platform. Pipeline automation, live team dashboards, and a keyboard-first workflow cut average deal admin time nearly in half.",
+    tech: ["NEXT.JS", "POSTGRES", "TRPC", "TAILWIND"],
+    year: "2023",
+    image:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0",
+    category: "SaaS",
+    type: "image",
+    href: "/work/orbit-crm",
+    gallery: [
+      "/assets/laptop-screen-with-minimalist-ecommerce-dashboard.jpg",
+      "/assets/project-dashboard-displaying-key-metrics-like-progress-budget-deadlines.jpg",
+      "/assets/microsoft-copilot-pqMPnPo4_ZA-unsplash.jpg",
+      "/assets/branding2.png",
+    ],
+  },
+  {
     id: 3,
     title: "Lumina Festival",
     subtitle: "Event Branding & Web",

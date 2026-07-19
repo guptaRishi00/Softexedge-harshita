@@ -34,7 +34,7 @@ export default function OurTechStack() {
   return (
     <section className="relative w-full overflow-hidden bg-black text-white">
       <div className="mx-auto w-full md:pb-25">
-        <div className="mx-auto mb-20 flex flex-col items-center gap-6 px-6 text-center md:px-6">
+        <div className="mx-auto mb-20 flex flex-col items-center gap-6 px-4 text-center md:px-10">
           <div className="flex flex-col items-center gap-5">
             <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               Our Toolkit
@@ -107,7 +107,7 @@ export default function OurTechStack() {
       </div>
 
       {/* Bottom Border */}
-      <div className="mx-auto w-full px-6 md:px-6">
+      <div className="mx-auto w-full px-4 md:px-10">
         <div className="w-full border-b border-white/10" />
       </div>
     </section>

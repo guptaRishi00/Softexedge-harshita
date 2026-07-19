@@ -28,7 +28,7 @@ export default function BrandStrategyPage({}: Props) {
         <div className="p-3">
           <CtaSection />
         </div>
-        <div className="space-y-25">
+        <div className="space-y-10">
           <FaqSection />
           <BlogSection />
         </div>

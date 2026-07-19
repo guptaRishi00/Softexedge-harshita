@@ -15,7 +15,7 @@ export default function AboutTraditional() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center text-center max-w-5xl z-10 px-4 md:px-6"
+          className="flex flex-col items-center text-center max-w-5xl z-10 px-4 md:px-10"
         >
           <div className="mb-8 inline-flex items-center justify-center rounded-full ">
             <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
@@ -39,7 +39,7 @@ export default function AboutTraditional() {
         </motion.div>
 
         {/* --- PART 2: Cinematic Video --- */}
-        <div className="relative z-10 mt-20 w-full max-w-[96rem] px-4 md:mt-28 md:px-6">
+        <div className="relative z-10 mt-20 w-full max-w-[96rem] px-4 md:mt-28 md:px-10">
           <motion.div
             initial={{ opacity: 0, y: 90, scale: 0.93 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}

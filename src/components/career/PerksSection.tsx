@@ -194,7 +194,7 @@ export default function PerksSection() {
   const reduce = useReducedMotion();
 
   return (
-    <section className="w-full bg-black px-6 py-24 font-sans selection:bg-[#2E5BFF]/20 md:pt-20">
+    <section className="w-full bg-black px-4 md:px-10 py-24 font-sans selection:bg-[#2E5BFF]/20 md:pt-20">
       <div className="mx-auto w-full">
         {/* Header */}
         <div className="mb-14 flex flex-col items-center text-center md:mb-40">
@@ -215,7 +215,10 @@ export default function PerksSection() {
             transition={{ duration: 0.8, delay: 0.08, ease: premiumEase }}
             className="text-4xl font-bold leading-[1.05em] tracking-tighter text-white md:text-5xl lg:text-[6.5rem]"
           >
-            A snippet of our perks
+            A snippet of our{" "}
+            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              perks
+            </span>
           </motion.h2>
         </div>
 

@@ -3668,3 +3668,175 @@ ET's content container uses px-4 md:px-10. Applied to: OurValuesSection content 
 (was px-6 lg:px-10) and AboutTraditional's two padded blocks — typography (was px-6
 md:px-12) and video wrapper (was px-6 md:px-12). Verified live /about @1280px: all three
 compute 40px left/right (md:px-10). tsc 0. Not committed.
+
+## 2026-07-17 — Work hero title nudged down
+work/WorkHeroSection.tsx: added mt-16 md:mt-24 to the centered h1 (flex-centered in a
+min-h-screen column, so the visual shift is half the margin net of mb-6 ≈ 36px at md+,
+~20px mobile). Verified live /work @1280px: margin-top 96px computed, title center sits
+36px below viewport center. tsc 0. Not committed.
+
+## 2026-07-17 — brand-strategy hero stats sized down
+brand-strategy/AgencyStats.tsx:85 — stat numbers text-6xl/md:7xl/lg:9xl →
+text-5xl/md:6xl/lg:8xl (desktop 128px→96px, one step down per breakpoint). Labels,
+counters, grid untouched. Scoped to brand-strategy only per task wording — the
+web-development AgencyStats copy is unchanged. Verified live /brand-strategy: h4 class
+list updated, base computes 48px. tsc 0. Not committed.
+
+## 2026-07-15 — Slow the rotating-word swap in all four homepage sections
+AboutSection, ExperimentalTestimonials, ContactSection, BlogSection (all four now share the unified x-slide word swap): exit tween duration 1.1 → 1.5s (easeInOut) and entrance spring stiffness 30 → 22 (damping 20, mass 1 unchanged) — both legs a little slower. Confirmed all four cycle at 6000ms, so the ~4s swap fits with rest time and mode="wait" never interrupts mid-swap. 8 value edits across 4 files; tsc + biome clean, next build ✓. Not committed.
+
+## 2026-07-15 — SubServices/ProcessSection/OurTechStack/ProjectShowcase: x-gutter → ExperimentalTestimonials standard
+Task: match these 4 sections' x-axis padding to ExperimentalTestimonials (`px-4 md:px-10`,
+its container :81). All four exist as web-development + brand-strategy mirrors with
+identical `px-6`/`md:px-6` gutters — changed BOTH copies (12 edits / 8 files; mirror
+precedent): SubServices header container + per-panel grid (template literal), ProcessSection
+container :43, OurTechStack header :37 + grid container :110, ProjectShowcase section :74.
+Inner pill/card paddings untouched. Verified: source grep 0 old-gutter patterns remaining;
+SSR HTML of /web-development AND /brand-strategy each serve 0 `px-6 md:px-6` and 19
+`md:px-10`; tsc clean. Class-only. Not committed.
+
+## 2026-07-17 — brand-strategy hero stats sized down again
+Same task resent → one more step: brand-strategy/AgencyStats.tsx:85 stat numbers
+text-5xl/md:6xl/lg:8xl → text-4xl/md:5xl/lg:7xl (desktop 96px→72px). Verified live
+/brand-strategy: h4 computes the new class list (base 36px). web-development copy still
+untouched. tsc 0. Not committed.
+
+## 2026-07-15 — About components: x-gutter → ExperimentalTestimonials standard
+Task: match OurTeamSection, OurValuesSection, AboutTraditional x-padding to
+ExperimentalTestimonials (`px-4 md:px-10`). 4 spots / 3 files in `src/components/about/`:
+OurTeamSection header :131 (`px-6` → `px-4 md:px-10`; its team grid is full-bleed by design,
+untouched), OurValuesSection container :46 (`md:px-6` → `md:px-10`), AboutTraditional hero
+block :18 + content container :42 (`md:px-6` → `md:px-10`). NOTE: OurTeamSection is shared —
+change also applies on /career (consistent with its new rhythm). Verified via SSR HTML:
+/about serves 4 standard containers, 0 old; /career serves the updated OurTeam header.
+tsc clean. Class-only. Not committed.
+
+## 2026-07-17 — Career page: gradient titles + ET x-padding
+WhyJoinUs, OpenPositions, PerksSection: (1) brand gradient span (bg-gradient-to-r
+#2E5BFF→#149CCB bg-clip-text) added to trailing title words — "Join Us", "Positions",
+"perks"; (2) section x padding normalized to ET's px-4 md:px-10 (was md:px-8 / px-10 /
+px-6 respectively). Verified live /career: all three gradient spans compute
+linear-gradient + background-clip:text; the three sections carry px-4 md:px-10 (base 16px
+computed; md unverifiable in pane, class identity confirmed). tsc 0. Not committed.
+
+## 2026-07-15 — Work hero: drop title scrim, per-card light veil, hover clears card
+WorkHeroSection: removed the elliptical black scrim behind the "Our Creative Portfolio" title. DomeGallery gained an opt-in cardOverlay prop (only work hero consumes it): every card gets a light black veil (bg-black/40, pointer-events-none) — visually a slight dim over the whole wall — and hovering a card fades ITS veil to 0 (group + group-hover:opacity-0, 500ms) so that card shows fully clear. Cards get pointer-events-auto when the prop is on (gallery root stays pointer-events-none; the hero title/content wrapper is already pointer-events-none so hover reaches the tiles). Verified: scrim gone, prop wired both sides, tsc + biome clean, next build ✓ /work. 2 files. Not committed.
+
+## 2026-07-17 — Contact hero de-carded, connected to ContactSection
+ContactHeroSectionTwo: outer section bg-white px-3 → bg-black full-bleed; inner hero div
+dropped rounded-[20px] + border-zinc-800/50 (spotlight/overflow-hidden kept); Header now
+gets onDark (logo/nav light variant over black). contact/page.tsx: removed mt-20 from the
+ContactSection wrapper. Verified live /contact: hero computes bg black, 0 side padding,
+inner radius/border 0px, and 0px gap to #contact (also black) — one continuous black
+surface. tsc 0. Not committed.
+
+## 2026-07-17 — Contact page header strip back to white
+ContactHeroSectionTwo: outer section bg-black → bg-white and Header onDark removed —
+the top strip behind the header is white again (blue logo variant confirmed live). The
+hero block itself stays full-bleed black (verified: bg rgb(0,0,0), radius/border 0, width
+= viewport 1265px) and still meets #contact with a 0px gap. tsc 0. Not committed.
+
+## 2026-07-17 — Contact page: header CTA border like about page
+page/Header.tsx ctaBorder condition: added pathname.startsWith("/contact") alongside
+/about + /career — the "Get in Touch" nav button now gets border border-gray-300
+hover:border-none on /contact. Verified live /contact: button computes 1px gray-300
+border, class present. layout/Header (home) untouched — home wasn't in scope and has no
+ctaBorder gate. tsc 0. Not committed.
+
+## 2026-07-15 — WorkProjectShowcase: x-gutter matches ExperimentalTestimonials
+Changed WorkProjectShowcase's section gutter px-6 → px-4 md:px-10 (ExperimentalTestimonials' inner container uses px-4 md:px-10; Work section carries its gutter on the section root, inner wrappers have none). Class-only; tsc + biome clean. Not committed.
+
+## 2026-07-15 — Header CTA border: add blog page
+Extended the route-scoped "Get in Touch" border in page/Header (border border-gray-300 hover:border-none) to /blog, alongside about/career/contact. One condition added; tsc + biome clean. Not committed.
+
+## 2026-07-17 — ApplicationJourney title gradient
+career/ApplicationJourney.tsx: "Your Application Journey" → gradient span on "Journey"
+(bg-gradient-to-r #2E5BFF→#149CCB bg-clip-text text-transparent), same trailing-word
+convention as the other career section titles. Verified live /career: span computes
+linear-gradient, background-clip:text, transparent text fill. tsc 0. Not committed.
+
+## 2026-07-15 — SpotlightGrid box pattern: blue → slightly-darker-blue gradient
+Task: in BlogHeroSection, ContactHeroSectionTwo and CtaSection's box pattern, use #2E5BFF
+with the gradient partner "a tone lower but not much". The box pattern = shared
+`ui/SpotlightGrid.tsx`; its lit-cell default gradient was brand blue→cyan
+(#2E5BFF→#149CCB). Changed the default (one line + docstring) to
+`from-[#2E5BFF] to-[#274DD9]` — #274DD9 = same hue ~15% darker. Chose the component
+default over per-call-site props because SpotlightGrid's only consumers are exactly these
+sections (BlogHero, ContactHeroTwo, CtaSection brand-strategy + web-development mirror).
+Non-pattern blue→cyan uses (headline text, icons) untouched. Verified via SSR HTML: all 4
+routes serve the new gradient on pattern cells (80/instance), tsc clean. Glow animation
+itself is rAF-driven (unverifiable in pane, see memory) but the gradient is a static class.
+Not committed.
+
+## 2026-07-17 — Hero stats sized to match StrategyHeroSection everywhere
+Audit: components with Counter-style stats = brand-strategy/AgencyStats (reference,
+text-4xl/md:5xl/lg:7xl), web-development/AgencyStats (hero, was 6xl/7xl/9xl),
+about/AboutHeroSection:208 (hero stats, was 6xl/7xl/9xl), about/AboutOverview (mid-page
+cards, NOT a hero — left alone); career hero has no stats. Applied the reference size to
+the two hero blocks. Verified live: /web-development and /about stat h4s compute the new
+class list (base 36px); grep shows all three hero stat blocks identical. tsc 0. Not
+committed.
+
+## 2026-07-15 — BlogHeroSection: brand gradient on the title
+Task: add gradient to BlogHeroSection's title ("News, views / and everything else").
+Followed the site convention (gradient on the emphasized final phrase, cf. home Blog
+"thinking.", Contact "the future", career "Journey"): wrapped "everything else" in
+`bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent`
+(pr-2 protects the clipped edge), "and" stays white; word-stagger animation untouched
+(nested inside the existing motion.span). Verified via SSR HTML: /blog serves the gradient
+span wrapping "everything else". tsc clean. 1 file. Not committed.
+
+## 2026-07-20 — WorkProjectShowcase: fill empty grid slot (new Orbit CRM project)
+The "All" grid had an empty slot beside Finova Dashboard: Aura (featured) spans row 1, Finova sat alone in row 2 because the next project (Lumina, featured) wraps to a full row. Added a new NON-featured project "Orbit CRM" (id 10, SaaS, /work/orbit-crm, full Project fields incl. description/tech/gallery from existing local assets) inserted in src/data/projects.ts right after Finova so the two pair up in row 2. Slug page generates automatically (getProjectBySlug matches href). Verified: all 4 gallery assets exist, tsc + biome clean, next build ✓ (/work + /work/orbit-crm static page). Single data file. Not committed. NOTE: the grid's final row still ends with one single card (pre-existing tail; say the word to add one more project or reorder to close it).
+
+## 2026-07-20 — Home StatsSection bg → white
+home/StatsSection.tsx:88 — section bg swapped from the gray gradient
+(bg-linear-to-r from-[#dedddd] to-[#cac8c8]) to plain bg-white. Inner card gradients and
+max-md:bg-white untouched. Verified live /home: section computes rgb(255,255,255),
+background-image none. tsc 0. Not committed.
+
+## 2026-07-20 — Navbar Services dropdown: top image scrim + fix dead links
+Task: (1) top gradient overlay on the dropdown card images for title legibility; (2) link
+items to correct pages. (1) Reshaped the existing hover scrim in BOTH resizable-navbars
+(page/ + ui/) from `from-black/55 via-transparent to-black/30` to top-weighted
+`from-black/70 via-black/20 to-transparent` — strongest under the title, fading clear.
+(2) 6 of 8 dropdown items linked to `/services` which does NOT exist (404). Remapped in BOTH
+Headers (page/Header.tsx + layout/Header.tsx) by closest existing page: Digital Marketing &
+Growth, AI & Marketing Automation, Video Production → /brand-strategy; App Development,
+Custom Software & SaaS, UI/UX Design → /web-development. Web Development + Brand Strategy
+were already correct. JUDGMENT CALL — only 2 service pages exist; user may want different
+targets or new pages later. Verification: dropdown is client-rendered-on-hover so SSR shows
+none of it (expected); source-level: 0 "/services" left in either header, scrim class in
+both navbars, tsc clean. OUT OF SCOPE but noted: home ServiceSection rows (6×) and footer
+"Services" link still point to dead /services. Not committed.
+
+## 2026-07-20 — OurValuesSection: increase x-axis padding
+Bumped the content container gutter in about OurValuesSection from px-4 md:px-10 to px-6 md:px-16 lg:px-20 (mobile 16→24px, desktop 40→64px, large 80px). Class-only; tsc + biome clean. Not committed.
+
+## 2026-07-20 — Contact hero: replace card-stack animation with a simple video + play button
+Task: in the contact page hero, replace the stack image animation with a simple rectangle
+video with a play button. `src/components/contact/ContactHeroSectionTwo.tsx`: removed the
+rotating decorative rings, the 3-image CARDS deck, its 4.5s cycling effect and
+AnimatePresence stack (+ now-unused imports AnimatePresence/useEffect/useIsDesktop/exitEase).
+In its place, same footprint (max-w-[420px], h-300/420/460, rounded-[28px], border-white/10):
+a <video src="/assets/hero.mp4" preload="metadata" playsInline loop> starting paused, with a
+centered white circular play button (hidden while playing; clicking the video toggles
+play/pause). Kept the whileInView entrance on the column. biome-ignore for useMediaCaption
+(decorative showreel). Verified: hero.mp4 exists, tsc clean, biome check clean, SSR /contact
+serves 1 video + 1 play button + 0 stack remnants. Playback behavior needs user click-check
+(rAF-frozen pane can't). Not committed.
+
+## 2026-07-20 — Contact hero: bigger title on three lines
+Task: make ContactHeroSectionTwo's title bigger and split into three lines. h1 size ramp
+`text-[3.25rem] sm:[4rem] lg:[5.25rem]` → `text-[3.5rem] sm:[4.5rem] lg:[6.5rem]` (~25%
+bigger at lg); lines now "Let's build" / "something" / "great." — each its own stagger
+span (containerVariants unchanged), gradient moved to just "great." with pr-2 clip guard.
+Verified via SSR /contact: new classes + three line spans served. tsc clean. 1 file.
+Not committed.
+
+## 2026-07-20 — ContactFaqSection: x-gutter → ExperimentalTestimonials standard
+Task: match ContactFaqSection's x-axis padding to ExperimentalTestimonials (`px-4 md:px-10`).
+`src/components/contact/ContactFaqSection.tsx:45` section gutter `px-6 md:px-6` →
+`px-4 md:px-10` (inner accordion row/answer padding untouched, same call as the other
+FaqSection variants). Verified via SSR /contact: new gutter served, 0 old. tsc clean.
+Class-only, 1 file. Not committed.

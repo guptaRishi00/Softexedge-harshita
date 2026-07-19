@@ -43,7 +43,7 @@ export default function OurValuesSection() {
   return (
     <section className="relative flex w-full flex-col overflow-hidden bg-black font-sans py-20 md:py-32">
       {/* Content Container */}
-      <div className="relative z-10 mx-auto w-full px-4 md:px-6">
+      <div className="relative z-10 mx-auto w-full px-6 md:px-16 lg:px-20">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-stretch">
           {/* Left Column: Image */}
           <motion.div

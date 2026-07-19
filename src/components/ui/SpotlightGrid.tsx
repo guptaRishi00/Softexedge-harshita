@@ -18,7 +18,7 @@ const ROWS = TOTAL_ITEMS / COLUMNS;
  * the brand gradient. Renders as an absolute, pointer-events-none background;
  * drop it inside any `relative` dark container. Reduced-motion safe.
  * `speed` multiplies the wander rate (1 = the shared CtaSection pace).
- * `glowColor` overrides the default blue→cyan gradient on the lit cells —
+ * `glowColor` overrides the default blue→darker-blue gradient on the lit cells —
  * solid on its own, or a vertical glowColor→glowVia→glowColor gradient when
  * `glowVia` is also set.
  */
@@ -141,7 +141,9 @@ export default function SpotlightGrid({
                   className={
                     glowColor
                       ? "absolute inset-0"
-                      : "absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+                      : // Brand blue fading to a slightly darker tone of itself
+                        // (not the cyan) so the lit cells stay monochrome-blue.
+                        "absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#274DD9]"
                   }
                   style={{
                     opacity: intensity * 0.8,

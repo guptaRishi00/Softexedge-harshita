@@ -69,7 +69,10 @@ export default function ApplicationJourney() {
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
             className="text-4xl font-bold leading-[1.05em] tracking-tighter text-zinc-900 md:text-5xl lg:text-[6.5rem]"
           >
-            Your Application Journey
+            Your Application{" "}
+            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              Journey
+            </span>
           </motion.h2>
 
           <motion.p

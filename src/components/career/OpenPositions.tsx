@@ -118,7 +118,7 @@ export default function OpenPositions() {
   };
 
   return (
-    <section className="w-full bg-black px-10 pt-16 pb-24 md:pt-20 md:pb-32 font-sans selection:bg-[#2E5BFF]/20">
+    <section className="w-full bg-black px-4 md:px-10 pt-16 pb-24 md:pt-20 md:pb-32 font-sans selection:bg-[#2E5BFF]/20">
       <div className="mx-auto w-full">
         {/* Header matching the image */}
         <div className="flex flex-col items-center mb-16 md:mb-24">
@@ -139,7 +139,10 @@ export default function OpenPositions() {
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
             className="text-4xl font-bold leading-[1.05em] tracking-tighter text-white md:text-5xl lg:text-[6.5rem]"
           >
-            Open Positions
+            Open{" "}
+            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              Positions
+            </span>
           </motion.h2>
         </div>
 

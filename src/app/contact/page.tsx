@@ -15,20 +15,20 @@ export default function ContactPage({}: any) {
     // controlled by a `[&>section]` override wrapper so the inter-section gaps match.
     <div className="bg-white">
       <ContactHeroSectionTwo />
-      <div className="[&>section]:py-16 md:[&>section]:py-30 mt-20">
+      <div className="[&>section]:py-16 md:[&>section]:py-30">
         <ContactSection />
       </div>
-      <div className="[&>section]:pt-16 [&>section]:pb-6 md:[&>section]:pt-40 md:[&>section]:pb-20">
+      <div className="[&>section]:pt-16 [&>section]:pb-6 md:[&>section]:pt-26 md:[&>section]:pb-10">
         <ExperimentalTestimonials />
       </div>
       <TechLogoCarousel />
-      <div className="[&>section]:py-16 md:[&>section]:pt-24">
+      <div className="[&>section]:py-16 md:[&>section]:pt-0">
         <ContactFaqSection />
       </div>
-      <div className="px-3 [&>section]:py-16 md:[&>section]:pt-0">
+      <div className="px-3 [&>section]:py-10 md:[&>section]:pt-0">
         <CtaSection />
       </div>
-      <div className="px-3 pt-16 pb-3 md:pt-10">
+      <div className="px-3 pt-16 pb-3 md:pt-8 ">
         <Footer />
       </div>
     </div>

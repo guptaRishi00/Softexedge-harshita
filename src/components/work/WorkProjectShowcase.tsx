@@ -32,7 +32,7 @@ export default function WorkProjectShowcase() {
       : projects.filter((p) => p.category === activeCategory);
 
   return (
-    <section className="relative overflow-hidden bg-black px-6 py-24 font-sans text-white md:py-32">
+    <section className="relative overflow-hidden bg-black px-4 py-24 font-sans text-white md:px-10 md:py-32">
       {/* Subtle noise overlay */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 

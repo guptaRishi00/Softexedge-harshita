@@ -114,12 +114,12 @@ export default function ExperimentalTestimonials() {
                         // instead of darting (easeIn accelerated away too fast).
                         x: "100%",
                         opacity: 0,
-                        transition: { duration: 1.1, ease: "easeInOut" },
+                        transition: { duration: 1.5, ease: "easeInOut" },
                       }}
                       // Exactly the AboutSection rotating-word config.
                       transition={{
                         type: "spring",
-                        stiffness: 30,
+                        stiffness: 22,
                         damping: 20,
                         mass: 1,
                       }}

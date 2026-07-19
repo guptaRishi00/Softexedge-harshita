@@ -16,13 +16,13 @@ export default function WorkPage() {
         <ExperimentalTestimonials />
       </div>
       <TechLogoCarousel />
-      <div className="px-3 [&>section]:py-16 md:[&>section]:py-24">
+      <div className="px-3 [&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-0">
         <CtaSection />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:py-24">
+      <div className="[&>section]:py-16 md:[&>section]:pb-30 md:[&>section]:pt-0">
         <FaqSection />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:py-24">
+      <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-0">
         <BlogSection />
       </div>
       <div className="px-3 pt-16 pb-3 md:pt-24">

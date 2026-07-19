@@ -108,7 +108,7 @@ export default function WhyJoinUs() {
   ];
 
   return (
-    <section className="relative w-full overflow-hidden bg-black px-4 pt-24 pb-16 md:px-8 md:pt-32 md:pb-20 text-white">
+    <section className="relative w-full overflow-hidden bg-black px-4 pt-24 pb-16 md:px-10 md:pt-32 md:pb-20 text-white">
       <div className="w-full">
         <div className="flex flex-col items-center text-center mb-16 md:mb-35">
           <motion.div
@@ -128,7 +128,10 @@ export default function WhyJoinUs() {
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
             className="text-4xl font-bold leading-[1.05em] tracking-tighter text-white md:text-5xl lg:text-[6.5rem]"
           >
-            Why Join Us
+            Why{" "}
+            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              Join Us
+            </span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 30 }}

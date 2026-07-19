@@ -71,7 +71,7 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-black px-6 pt-35 font-sans text-white md:px-6 md:pb-40">
+    <section className="relative overflow-hidden bg-black px-4 pt-35 font-sans text-white md:px-10 md:pb-40">
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
       <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">

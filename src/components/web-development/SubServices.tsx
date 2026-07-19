@@ -95,7 +95,7 @@ export default function SubServices({ children }: { children?: ReactNode }) {
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
         {/* HEADER SECTION */}
-        <div className="mx-auto flex w-full flex-col items-center gap-6 px-6 pt-20 pb-32 text-center">
+        <div className="mx-auto flex w-full flex-col items-center gap-6 px-4 md:px-10 pt-20 pb-32 text-center">
           <div className="flex flex-col items-center gap-5">
             <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               What We Offer
@@ -172,7 +172,7 @@ function Card({
       }}
     >
       <div
-        className={`relative grid ${isLast ? "min-h-[70vh] md:h-[780px]" : "min-h-[50vh] md:h-[600px]"} w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-6 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
+        className={`relative grid ${isLast ? "min-h-[70vh] md:h-[780px]" : "min-h-[50vh] md:h-[600px]"} w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-4 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
       >
         {/* LEFT COLUMN: Title, Description & Tags */}
         <motion.div

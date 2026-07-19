@@ -61,24 +61,24 @@ export default function WorkHeroSection() {
       </div>
 
       <div className="absolute left-0 top-[-20vh] z-0 h-[140vh] w-full">
+        {/* cardOverlay: a light black veil dims every card (whole-wall dim);
+            hovering a card clears its veil so that card shows fully clear.
+            Replaces the old elliptical scrim behind the title. */}
         <DomeGallery
           images={GALLERY_MEDIA}
           autoRotate
           autoRotateSpeed={1}
           grayscale={false}
+          cardOverlay
         />
       </div>
-
-      {/* Black scrim confined to an ellipse behind the centered title, so the
-          rest of the wall stays visible (no full-screen darkening). */}
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_62%_48%_at_50%_50%,rgba(0,0,0,0.95)_0%,rgba(0,0,0,0.6)_48%,transparent_80%)]" />
 
       <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 text-center md:px-10 pointer-events-none">
         <motion.h1
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="mb-6 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-white sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
+          className="mb-6 mt-16 md:mt-24 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-white sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
         >
           <span className="flex items-center justify-center whitespace-nowrap">
             <motion.span variants={wordVariants}>Our</motion.span>

@@ -14,6 +14,9 @@ type DomeGalleryProps = {
   autoRotate?: boolean;
   autoRotateSpeed?: number;
   imageBorderRadius?: string;
+  // Light black veil on every card (a whole-wall dim) that fades away on the
+  // hovered card, leaving it fully clear.
+  cardOverlay?: boolean;
 };
 
 const DEFAULT_IMAGES: ImageItem[] = [
@@ -75,6 +78,7 @@ export default function DomeGallery({
   autoRotate = false,
   autoRotateSpeed = 4,
   imageBorderRadius = "20px",
+  cardOverlay = false,
 }: DomeGalleryProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -176,7 +180,9 @@ export default function DomeGallery({
                 // biome-ignore lint/suspicious/noArrayIndexKey: static layout, never reorders
                 i
               }`}
-              className="absolute overflow-hidden"
+              className={`absolute overflow-hidden${
+                cardOverlay ? " group pointer-events-auto" : ""
+              }`}
               style={{
                 left: card.x + copy * stripPitch,
                 top: card.y,
@@ -193,6 +199,9 @@ export default function DomeGallery({
                 className="h-full w-full object-cover"
                 style={{ filter: grayscale ? "grayscale(1)" : undefined }}
               />
+              {cardOverlay && (
+                <div className="pointer-events-none absolute inset-0 bg-black/40 transition-opacity duration-500 group-hover:opacity-0" />
+              )}
             </div>
           )),
         )}

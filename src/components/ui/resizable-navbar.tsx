@@ -267,10 +267,10 @@ export const NavItems = ({
                             </div>
                           )}
 
-                          {/* Subtle top gradient scrim — replaces the hard
-                              black boxes; keeps the hover title and arrow
-                              legible over the image without covering it. */}
-                          <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/55 via-transparent to-black/30 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
+                          {/* Top gradient scrim over the hover image — strongest
+                              at the top where the title sits, fading to clear so
+                              the image stays visible. */}
+                          <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/70 via-black/20 to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
 
                           {/* Content Layer */}
                           <div className="relative z-10 flex h-full flex-col justify-between text-zinc-900 transition-colors duration-400 group-hover:text-white">
