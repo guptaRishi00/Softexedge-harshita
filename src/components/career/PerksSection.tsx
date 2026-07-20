@@ -181,7 +181,7 @@ function PerkCard({ icon: Icon, title, description }: Perk) {
           <span className="text-xl font-bold text-white sm:text-2xl">
             {title}
           </span>
-          <span className="text-lg font-medium leading-[1.2em] text-zinc-300 mt-6">
+          <span className="text-lg font-light leading-[1.2em] text-zinc-300 mt-6">
             {description}
           </span>
         </span>
@@ -216,7 +216,7 @@ export default function PerksSection() {
             className="text-4xl font-bold leading-[1.05em] tracking-tighter text-white md:text-5xl lg:text-[6.5rem]"
           >
             A snippet of our{" "}
-            <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+            <span className="inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pb-[0.2em] pr-[0.08em] text-transparent">
               perks
             </span>
           </motion.h2>

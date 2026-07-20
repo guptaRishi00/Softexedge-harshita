@@ -58,7 +58,7 @@ export default function OurTechStack() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="max-w-2xl text-center text-2xl font-light leading-[1.25em] text-white md:mb-2"
+            className="max-w-2xl text-center text-xl font-light leading-[1.25em] text-white md:mb-2"
           >
             Powered by modern, reliable, and scalable technologies to bring your
             vision to life.

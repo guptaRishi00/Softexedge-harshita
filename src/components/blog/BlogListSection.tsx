@@ -92,7 +92,7 @@ export default function BlogListSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-          className="max-w-lg text-lg font-light leading-[1.25em] text-white md:text-left"
+          className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
         >
           Dive deep into our latest thoughts on technology, design, and business
           strategy.

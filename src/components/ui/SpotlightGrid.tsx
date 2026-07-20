@@ -28,8 +28,8 @@ export default function SpotlightGrid({
   glowVia,
   // Mask circle radius in px (bigger = larger revealed area).
   maskRadius = 600,
-  // Lissajous swing amplitude as a fraction of the half-grid (1 = reaches the
-  // edges; lower keeps the spotlight nearer the center).
+  // Lissajous swing amplitude as a fraction of the VISIBLE cell band (1 =
+  // reaches the visible edge cells; lower keeps the spotlight nearer center).
   travel = 0.9,
 }: {
   speed?: number;
@@ -61,23 +61,39 @@ export default function SpotlightGrid({
     });
     ro.observe(el);
 
+    const clamp = (v: number, lo: number, hi: number) =>
+      Math.min(hi, Math.max(lo, v));
+
     let raf = 0;
     let start = 0;
     const tick = (now: number) => {
       if (!start) start = now;
       const t = ((now - start) / 1000) * speed;
 
-      // Continuous cell coordinates tracing two out-of-phase sines.
-      const midCol = (COLUMNS - 1) / 2;
-      const midRow = (ROWS - 1) / 2;
-      const fCol = midCol + midCol * travel * Math.sin(t * 0.55);
-      // Phase -1.3 starts the spotlight near the TOP of the box, so it's
-      // visible on first view (consumers scrim the bottom of the container).
-      const fRow = midRow + midRow * travel * Math.sin(t * 0.42 - 1.3);
-
-      // Grid renders at 120% width, shifted -5% left, vertically centered.
+      // Grid renders at 120% width, shifted -5% left, vertically centered, so
+      // its square cells overflow the container (extra columns off the right,
+      // extra rows off the top/bottom). Solve which cell coordinates are
+      // actually VISIBLE — their center lands inside [0,w]×[0,h] — and swing
+      // the spotlight only across that band, so the glow never wanders onto a
+      // clipped, off-screen box.
       const cell = (1.2 * dims.w) / COLUMNS;
       const gridTop = (dims.h - ROWS * cell) / 2;
+
+      const colLo = clamp((0.05 * dims.w) / cell - 0.5, 0, COLUMNS - 1);
+      const colHi = clamp((1.05 * dims.w) / cell - 0.5, 0, COLUMNS - 1);
+      const rowLo = clamp(-gridTop / cell - 0.5, 0, ROWS - 1);
+      const rowHi = clamp((dims.h - gridTop) / cell - 0.5, 0, ROWS - 1);
+
+      const midCol = (colLo + colHi) / 2;
+      const midRow = (rowLo + rowHi) / 2;
+      const ampCol = (colHi - colLo) / 2;
+      const ampRow = (rowHi - rowLo) / 2;
+
+      // Two out-of-phase sines trace a continuous path across the visible band.
+      const fCol = midCol + ampCol * travel * Math.sin(t * 0.55);
+      // Phase -1.3 starts the spotlight near the top of the visible band.
+      const fRow = midRow + ampRow * travel * Math.sin(t * 0.42 - 1.3);
+
       mouseX.set(-0.05 * dims.w + (fCol + 0.5) * cell);
       mouseY.set(gridTop + (fRow + 0.5) * cell);
       setFocus({ row: fRow, col: fCol });

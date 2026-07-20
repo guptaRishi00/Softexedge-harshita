@@ -117,10 +117,7 @@ export default function BlogHeroSection() {
 
             {/* Line 2 */}
             <motion.span variants={wordVariants} className="mt-1 block md:mt-2">
-              and{" "}
-              <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent">
-                everything else
-              </span>
+              and <span className="pr-2 text-white">everything else</span>
             </motion.span>
           </motion.h1>
 

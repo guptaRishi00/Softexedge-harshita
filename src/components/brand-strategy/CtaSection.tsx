@@ -24,7 +24,7 @@ export default function CtaSection() {
         {/* Main CTA Container - Reduced height to 45vh */}
         <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black">
           {/* Auto-moving spotlight pattern background */}
-          <SpotlightGrid speed={4} maskRadius={950} travel={0.35} />
+          <SpotlightGrid speed={4} maskRadius={950} travel={1} />
 
           {/* TEXT BLOCK-OUT LAYERS (Z-5) */}
           {/* These permanent black gradients sit ABOVE the spotlight grid but BELOW the text, ensuring the spotlight never reveals the grid behind typography. */}

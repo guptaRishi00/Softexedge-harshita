@@ -183,9 +183,8 @@ export default function ServiceSection() {
       className="relative w-full overflow-hidden bg-black py-16 md:pt-32 md:pb-24 text-white"
     >
       <div className="w-full px-4 md:px-10">
-        {/* HEADER SECTION — centered: tag + title, then the description
-            centered on the SAME axis as the title (max-w-2xl mx-auto). */}
-        <div className="mb-10 flex w-full flex-col items-center gap-8 pb-10 text-center">
+        {/* HEADER SECTION */}
+        <div className="mb-10 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-end">
           <div>
             <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
               What We Offer
@@ -197,7 +196,7 @@ export default function ServiceSection() {
               </span>
             </h2>
           </div>
-          <p className="mx-auto max-w-2xl text-xl font-light leading-[1.25em] text-white">
+          <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
             We merge strategic thinking with bold creative execution to deliver
             scalable digital experiences that elevate your brand
           </p>

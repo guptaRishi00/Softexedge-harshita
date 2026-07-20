@@ -67,7 +67,7 @@ export default function WorkProjectShowcase() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-          className="max-w-lg text-lg font-light leading-[1.25em] text-white md:text-left"
+          className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
         >
           Delivering scalable, high-performance solutions that elevate brands
           and drive measurable results.
@@ -224,7 +224,7 @@ function ProjectCard({
           <motion.div
             animate={{ opacity: isHovered ? 1 : 0 }}
             transition={{ duration: 0.4, ease: premiumEase }}
-            className="pointer-events-none absolute inset-0 bg-black/55"
+            className="pointer-events-none absolute inset-0 bg-black/35"
           />
 
           {/* Subtle sheen */}
@@ -289,7 +289,7 @@ function ProjectCard({
                       {project.title}
                     </h3>
 
-                    <p className="mt-4 max-w-xl text-sm font-light leading-[1.2em] text-zinc-300 md:text-base">
+                    <p className="mt-4 max-w-xl text-sm font-light leading-[1.5em] text-zinc-300 md:text-base">
                       {project.description}
                     </p>
 

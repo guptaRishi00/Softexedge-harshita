@@ -75,7 +75,7 @@ export default function ProjectShowcase() {
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
       <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">
-        <div className="mb-34 flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-start">
+        <div className="mb-34 flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div className="flex flex-col gap-5">
             <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               Selected Work

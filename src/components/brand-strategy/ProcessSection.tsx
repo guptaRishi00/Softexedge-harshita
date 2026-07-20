@@ -42,7 +42,7 @@ export default function ProcessSection() {
     <section className="w-full bg-black font-sans pt-20 md:pt-32 md:pb-35">
       <div className="mx-auto w-full px-4 md:px-10">
         {/* Header Section */}
-        <div className="mb-16 flex flex-col items-start justify-between gap-6 md:mb-35 md:flex-row md:items-start">
+        <div className="mb-16 flex flex-col items-start justify-between gap-6 md:mb-35 md:flex-row md:items-end">
           <div className="flex flex-col gap-5">
             <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               How We Work
@@ -66,7 +66,7 @@ export default function ProcessSection() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             viewport={{ once: true }}
-            className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:mb-2 md:text-left"
+            className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:mb-2 md:text-left"
           >
             A streamlined approach to turning complex challenges into elegant
             digital solutions, from initial concept to global scale. from
@@ -103,7 +103,7 @@ export default function ProcessSection() {
                   {step.title}
                 </h3>
 
-                <p className="mb-6 text-[15px] font-medium leading-relaxed text-zinc-400">
+                <p className="mb-6 text-[15px] font-light leading-relaxed text-zinc-400">
                   {step.description}
                 </p>
               </div>

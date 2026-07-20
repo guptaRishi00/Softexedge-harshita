@@ -66,7 +66,7 @@ export default function ProcessSection() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             viewport={{ once: true }}
-            className="max-w-2xl text-center text-2xl font-light leading-[1.25em] text-white md:mb-2"
+            className="max-w-2xl text-center text-xl font-light leading-[1.25em] text-white md:mb-2"
           >
             A streamlined approach to turning complex challenges into elegant
             digital solutions, from initial concept to global scale. from

@@ -140,12 +140,13 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
 
   if (pathname.startsWith("/leads")) return null;
 
-  // Light gray border on the CTA for the about/career/contact/blog pages only.
+  // Light gray border on the CTA for about/career/contact/blog/brand-strategy.
   const ctaBorder =
     pathname.startsWith("/about") ||
     pathname.startsWith("/career") ||
     pathname.startsWith("/contact") ||
-    pathname.startsWith("/blog")
+    pathname.startsWith("/blog") ||
+    pathname.startsWith("/brand-strategy")
       ? " border border-gray-300 hover:border-none"
       : "";
 

@@ -34,7 +34,7 @@ export default function OurTechStack() {
   return (
     <section className="relative w-full overflow-hidden bg-black text-white">
       <div className="mx-auto w-full md:pb-25">
-        <div className="mx-auto mb-20 flex flex-col items-start justify-between gap-6 px-4 md:flex-row md:items-start md:px-10">
+        <div className="mx-auto mb-20 flex flex-col items-start justify-between gap-6 px-4 md:flex-row md:items-end md:px-10">
           <div className="flex flex-col gap-5">
             <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
               Our Toolkit
@@ -58,7 +58,7 @@ export default function OurTechStack() {
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:mb-2 md:text-left"
+            className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:mb-2 md:text-left"
           >
             Powered by modern, reliable, and scalable technologies to bring your
             vision to life.

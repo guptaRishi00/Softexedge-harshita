@@ -42,15 +42,15 @@ export default function ContactHeroSectionTwo() {
   };
 
   return (
-    <section className="relative w-full bg-white pt-24 pb-0 font-sans selection:bg-[#2E5BFF]/20 md:pt-30">
+    <section className="relative w-full bg-white px-3 pt-24 pb-16 font-sans selection:bg-[#2E5BFF]/20 md:pb-24 md:pt-30">
       {/* Header — shared inner-page header, on the white top strip */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
-      {/* Full-bleed black hero with auto-moving spotlight pattern — flows
-          straight into the black ContactSection below (no card framing) */}
-      <div className="relative mx-auto flex min-h-[62vh] w-full flex-col items-center gap-10 overflow-hidden bg-black px-6 py-12 md:flex-row md:justify-between md:gap-6 md:px-12 md:py-28 lg:gap-12 lg:px-16">
+      {/* Black hero container (rounded card, same framing as CtaSection) with
+          auto-moving spotlight pattern */}
+      <div className="relative mx-auto flex min-h-[62vh] w-full flex-col items-center gap-10 overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-6 py-12 md:flex-row md:justify-between md:gap-6 md:px-12 md:py-28 lg:gap-12 lg:px-16">
         <SpotlightGrid speed={4} maskRadius={950} travel={0.35} />
 
         {/* Left-side scrim so the copy stays legible over the pattern */}
@@ -68,9 +68,7 @@ export default function ContactHeroSectionTwo() {
             <motion.span variants={line}>Let&apos;s build</motion.span>
             <motion.span variants={line}>something</motion.span>
             <motion.span variants={line}>
-              <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent">
-                great.
-              </span>
+              <span className="pr-2 text-white">great.</span>
             </motion.span>
           </motion.h1>
         </div>

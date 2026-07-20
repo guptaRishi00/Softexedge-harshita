@@ -3959,3 +3959,109 @@ career/CareerHeroSection.tsx: quote card layout justify-between → justify-star
 md:gap-2 — the removed author block had left the text anchored at the card bottom; now the
 quote text sits directly beneath the gradient quote mark. Verified live /career: card
 justify-content flex-start, mark→text gap 8px (was full-height spread). tsc 0. Not committed.
+
+## 2026-07-20 — CareerHeroSection marquee perf: halve DOM + video decodes
+Lag root cause: each InfiniteRow rendered 12 identical copies × 3 slots = 36 cards/row, so
+with the new video slots the page decoded 24 simultaneous <video> elements (12/row) + a
+72-card always-animating composited layer. A seamless loop needs far fewer copies. Cut
+copies 12→6 and translate 8.333333%→16.666667% (=1/6, one copy-width). Result: 36 cards, 12
+videos total. UI identical. Verified live /career: 6 copies/row, 12 videos (was 24), 36
+cards (was 72); track 3960px, translate 660px = exactly one copy, coverAtReset 3300px >>
+viewport 1265px so loop stays seamless (no gap); all videos readyState>=3, no errors. tsc 0.
+Smoothness needs eyes/real device but decode+node load is halved. Not committed.
+
+## 2026-07-20 — Career gradient titles: fix clipped descenders/right edge
+WhyJoinUs "Join Us", OpenPositions "Positions", PerksSection "perks", ApplicationJourney
+"Journey": bg-clip-text text-transparent spans painted the gradient only over the content
+box, so glyph descenders (p/y/J) + last-glyph right bearing fell outside the paint area and
+rendered transparent = "cut". Fix: added `inline-block pb-[0.2em] pr-[0.08em]` to each span
+(em units scale with the lg:text-[6.5rem]=104px titles), matching the codebase precedent
+(CareerHeroSection gradient span uses inline-block+pr-4). Verified live /career: all 4 spans
+inline-block, clip:text intact, pb 20.8px (0.2em) / pr 8.3px, span box 130px vs 104px font
+(paint now extends full descender), h2 overflow visible. tsc 0. Pane can't screenshot the
+video-heavy /career (zoom times out) so final pixel look is user's eyes; mechanism + metrics
+confirm the paint box now covers the glyphs. Not committed.
+
+## 2026-07-20 — Blog hero title: gradient → white
+blog/BlogHeroSection.tsx: "everything else" span dropped the bg-gradient/bg-clip-text/
+text-transparent, now `pr-2 text-white` (h1 already text-white so the rest was unchanged).
+Verified live /blog: span computes color rgb(255,255,255), no background gradient. tsc 0.
+Not committed.
+
+## 2026-07-20 — BlogListSection description matches ServiceSection
+blog/BlogListSection.tsx:95 — description max-w-lg text-lg → max-w-2xl text-xl to match
+ServiceSection's `text-xl font-light leading-[1.25em] text-white` recipe (font-light/
+leading/color already identical). Kept md:text-left (blog header is a 2-col justify-between
+layout, not ServiceSection's centered stack — didn't add mx-auto centering). Verified live
+/blog: description computes 20px / weight 300 / 25px line-height / white / max-width 672px.
+tsc 0. Not committed.
+
+## 2026-07-20 — WorkProjectShowcase ProjectCard hover scrim lighter
+work/WorkProjectShowcase.tsx:227 — the whole-image hover scrim (flat "black overlay")
+bg-black/55 → bg-black/35 (0.55→0.35 alpha). The bottom legibility gradient (line 220,
+from-black/90) left untouched — it's a gradient, not the flat black overlay. Verified live
+/work: all ProjectCard scrims compute oklab alpha 0.35, no bg-black/55 remains. tsc 0. Hover
+reveal itself needs eyes (opacity is framer-animated 0→1). Not committed.
+
+## 2026-07-20 — Contact hero title → white
+contact/ContactHeroSectionTwo.tsx: title's gradient word "great." (bg-gradient/bg-clip-text/
+text-transparent) → `pr-2 text-white`. Rest of the h1 ("Let's build", "something") already
+white. Verified live /contact: "great." span computes color rgb(255,255,255), no gradient.
+tsc 0. Not committed.
+
+## 2026-07-20 — Revert ServiceSection header centering
+Reverted the ServiceSection header back to the original two-column row: container flex-col items-center text-center → flex-col-reverse items-start justify-between md:flex-row md:items-end; description mx-auto → md:text-left (dropped mx-auto). Class-only; tsc + biome clean. Not committed.
+
+## 2026-07-20 — ProcessSection + OurTechStack: description size matches ServiceSection
+The intro descriptions in ProcessSection and OurTechStack (both brand-strategy + web-development copies) already matched ServiceSection's description except size (text-2xl vs ServiceSection's text-xl). Changed text-2xl → text-xl in all 4 so the description typography matches ServiceSection (max-w-2xl text-xl font-light leading-[1.25em] text-white). Kept each section's own alignment (md:text-left on brand-strategy, text-center on web-dev) and md:mb-2. Class-only, 4 files; tsc + biome clean. Not committed.
+
+## 2026-07-20 — Header CTA border: add brand-strategy page
+Extended the route-scoped "Get in Touch" border in page/Header (border border-gray-300 hover:border-none) to /brand-strategy, alongside about/career/contact/blog. One condition added; tsc + biome clean. Not committed.
+
+## 2026-07-20 — WorkProjectShowcase description matches ServiceSection
+work/WorkProjectShowcase.tsx:70 — section-header description max-w-lg text-lg → max-w-2xl
+text-xl to match ServiceSection's `text-xl font-light leading-[1.25em] text-white` (weight/
+leading/color already identical). Kept md:text-left (2-col justify-between header, not
+ServiceSection's centered stack — no mx-auto added), same call as the earlier BlogListSection
+change. Verified live /work: description computes 20px / weight 300 / 25px lh / white /
+max-width 672px. tsc 0. Not committed.
+
+## 2026-07-20 — Contact hero re-carded to match CtaSection framing
+contact/ContactHeroSectionTwo.tsx: reversed the earlier full-bleed de-carding — inner hero
+div regained rounded-[20px] border border-zinc-800/50 (overflow-hidden bg-black kept);
+section gained px-4 md:px-10 gutters + pb-16 md:pb-24 so the black card insets and floats on
+white, same framing as brand-strategy/CtaSection (rounded-[20px] border-zinc-800/50 bg-black).
+Verified live /contact: card computes radius 20px, 1px zinc-800/50 border, bg black, overflow
+hidden, inset 40px L/R, section white with 96px pb. tsc 0. Supersedes the 2026-07-17
+"connected to ContactSection" change per new instruction. Not committed.
+
+## 2026-07-20 — Contact hero gutters → px-3
+contact/ContactHeroSectionTwo.tsx: section x-padding px-4 md:px-10 → px-3 (dropped the md
+override) so the rounded card insets 12px both sides at all breakpoints, matching the
+CtaSection px-3 wrapper on the contact page. pb-16 md:pb-24 / pt kept. Verified live /contact:
+section paddingLeft 12px, card inset 12px L/R. tsc 0. Not committed.
+
+## 2026-07-20 — CtaSection spotlight reaches edge boxes
+Both CtaSection copies (brand-strategy + web-development):27 — SpotlightGrid travel 0.35 → 1.
+travel caps the Lissajous swing as a fraction of the half-grid; at 0.35 the spotlight center
+only wandered cols 2.9–6.1 / rows 2.3–4.7, so edge cells never lit ("doesn't touch the edge
+boxes"). At 1 it reaches cols 0–9 / rows 0–7 = every edge cell. Verified live /brand-strategy
+via the component's own position math against real container geometry (1239x626): old x-swing
+447–916px vs new 12–1351px (spans full width). speed/maskRadius unchanged. Blog hero + contact
+hero SpotlightGrid left at their own travel (task scoped to CtaSection). tsc 0. Actual motion
+needs eyes (rAF). Not committed.
+
+## 2026-07-20 — SpotlightGrid: spotlight confined to VISIBLE cell band
+Follow-up to the travel=1 fix. The grid is w-[120%] -ml-[5%] with square cells taller than
+the container, so cols ~9 and rows 0-1/6-7 overflow off-screen; travel=1 (full-grid swing)
+lit those clipped cells, so the glow spent time off-screen. Reworked SpotlightGrid tick math
+(ui/SpotlightGrid.tsx): each frame solve the visible fractional cell range (centers inside
+[0,w]x[0,h]) — colLo/colHi/rowLo/rowHi via the same center formulas, clamped — and swing the
+Lissajous around the visible mid with amplitude = visible half-band * travel. Now travel=1
+reaches the VISIBLE edge cells only. Updated the travel doc comment. Shared component so all
+consumers (2 CtaSection, blog hero, contact hero) benefit; their travel props unchanged
+(0.35 stays a small central swing within the visible band). Verified live /brand-strategy via
+the component's own math on real geometry (1239x626): spotlight mouseX 12-1239 / mouseY 0-626
+= fully within bounds and touching visible edges (was 12-1351 / -207..833 off-screen).
+biome: only the pre-existing key={index} on the 80-cell grid (untouched). tsc 0. Motion
+needs eyes. Not committed.
