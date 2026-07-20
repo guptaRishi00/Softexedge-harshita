@@ -9,14 +9,13 @@ import {
   useTransform,
 } from "framer-motion";
 import { useCallback, useRef, useState } from "react";
+import { MdArrowBack, MdArrowForward } from "react-icons/md";
 
 import {
   Carousel,
   type CarouselApi,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 
 interface TeamMember {
@@ -142,15 +141,23 @@ export default function OurTeamSection() {
               </h2>
             </div>
 
-            <div className="relative hidden gap-3 md:flex items-center min-w-24 min-h-12">
-              <CarouselPrevious
-                className="static translate-y-0 hover:bg-black hover:text-white hover:border-black transition-colors duration-300"
+            <div className="relative hidden gap-4 md:flex items-center min-w-24 min-h-12">
+              <button
+                type="button"
                 onClick={handlePrev}
-              />
-              <CarouselNext
-                className="static translate-y-0 hover:bg-black hover:text-white hover:border-black transition-colors duration-300"
+                aria-label="Previous team members"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-white"
+              >
+                <MdArrowBack className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
                 onClick={handleNext}
-              />
+                aria-label="Next team members"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-white"
+              >
+                <MdArrowForward className="h-5 w-5" />
+              </button>
             </div>
           </div>
 
@@ -171,7 +178,7 @@ export default function OurTeamSection() {
                         {member.name}
                       </h3>
 
-                      <p className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                      <p className="w-fit bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-xs font-bold uppercase tracking-wider text-transparent">
                         {member.role}
                       </p>
                     </div>

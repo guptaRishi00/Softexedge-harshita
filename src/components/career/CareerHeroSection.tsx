@@ -1,8 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useMemo } from "react";
-import { MdArrowOutward } from "react-icons/md";
 import Header from "../page/Header";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -25,30 +23,83 @@ const wordVariants = {
   },
 } as const;
 
-const col1Images = [
-  "https://plus.unsplash.com/premium_photo-1661771773771-a093c948ba92?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y2FyZWVyfGVufDB8fDB8fHww",
-  "https://images.unsplash.com/photo-1459180129673-eefb56f79b45?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNhcmVlcnxlbnwwfHwwfHx8MA%3D%3D",
-  "https://images.unsplash.com/photo-1506784926709-22f1ec395907?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGNhcmVlcnxlbnwwfHwwfHx8MA%3D%3D",
+// Each carousel slot is one of three things — an image, an autoplaying video,
+// or a quote card — mixed within a row. Card dimensions are unchanged.
+type CarouselItem =
+  | { type: "image"; src: string }
+  | { type: "video"; src: string }
+  | { type: "quote"; text: string; author: string; role: string };
+
+const col1Items: CarouselItem[] = [
+  {
+    type: "image",
+    src: "https://plus.unsplash.com/premium_photo-1661771773771-a093c948ba92?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y2FyZWVyfGVufDB8fDB8fHww",
+  },
+  {
+    type: "quote",
+    text: "The best place I've grown — trusted with real work from day one.",
+    author: "Priya Sharma",
+    role: "Product Designer",
+  },
+  { type: "video", src: "/assets/video1.mp4" },
 ];
 
-const col2Images = [
-  "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzF8fGNhcmVlcnxlbnwwfHwwfHx8MA%3D%3D",
-  "https://images.unsplash.com/photo-1561489422-45de3d015e3e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTB8fGNhcmVlcnxlbnwwfHwwfHx8MA%3D%3D",
-  "https://plus.unsplash.com/premium_photo-1661767467261-4a4bed92a507?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NjF8fGNhcmVlcnxlbnwwfHwwfHx8MA%3D%3D",
+const col2Items: CarouselItem[] = [
+  { type: "video", src: "/assets/video2.mp4" },
+  {
+    type: "image",
+    src: "https://images.unsplash.com/photo-1561489422-45de3d015e3e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTB8fGNhcmVlcnxlbnwwfHwwfHx8MA%3D%3D",
+  },
+  {
+    type: "quote",
+    text: "Great people, real ownership, and room to do the best work of your life.",
+    author: "Arjun Mehta",
+    role: "Engineering Lead",
+  },
 ];
 
-const col3Images = [
-  "https://images.unsplash.com/photo-1557804506-669a67965ba0?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=800&auto=format&fit=crop",
-];
+function CarouselCard({ item }: { item: CarouselItem }) {
+  return (
+    <div className="relative h-[160px] sm:h-[200px] md:h-[260px] aspect-[4/5] rounded-[2rem] overflow-hidden shadow-xs hover:shadow-lg transition-shadow duration-300">
+      {item.type === "image" && (
+        <img
+          src={item.src}
+          alt="Career Collage"
+          className="w-full h-full object-cover transition-transform duration-[10s] ease-out hover:scale-110 pointer-events-none"
+        />
+      )}
+
+      {item.type === "video" && (
+        <video
+          src={item.src}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover pointer-events-none"
+        />
+      )}
+
+      {item.type === "quote" && (
+        <div className="flex h-full w-full flex-col justify-start gap-1 bg-[#0a0a0a] p-5 md:gap-2 md:p-7">
+          <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-5xl font-bold leading-none text-transparent md:text-6xl">
+            “
+          </span>
+          <p className="text-sm font-medium leading-[1.3em] tracking-tight text-white md:text-base">
+            {item.text}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function InfiniteRow({
-  images,
+  items,
   direction,
   speed,
 }: {
-  images: string[];
+  items: CarouselItem[];
   direction: "left" | "right";
   speed: number;
 }) {
@@ -68,15 +119,12 @@ function InfiniteRow({
       >
         {Array.from({ length: 12 }).map((_, loopIndex) => (
           <div key={loopIndex} className="flex shrink-0">
-            {images.map((src, i) => (
-              <div key={i} className="pr-3 shrink-0">
-                <div className="relative h-[160px] sm:h-[200px] md:h-[260px] aspect-[4/5] rounded-[2rem] overflow-hidden shadow-xs hover:shadow-lg transition-shadow duration-300">
-                  <img
-                    src={src}
-                    alt="Career Collage"
-                    className="w-full h-full object-cover transition-transform duration-[10s] ease-out hover:scale-110 pointer-events-none"
-                  />
-                </div>
+            {items.map((item) => (
+              <div
+                key={item.type === "quote" ? item.author : item.src}
+                className="pr-3 shrink-0"
+              >
+                <CarouselCard item={item} />
               </div>
             ))}
           </div>
@@ -143,8 +191,8 @@ export default function CareerHeroSection() {
           transition={{ duration: 1.2, delay: 0.2, ease: premiumEase }}
           className="w-full flex flex-col gap-3"
         >
-          <InfiniteRow images={col1Images} direction="left" speed={40} />
-          <InfiniteRow images={col2Images} direction="right" speed={45} />
+          <InfiniteRow items={col1Items} direction="left" speed={40} />
+          <InfiniteRow items={col2Items} direction="right" speed={45} />
         </motion.div>
       </div>
     </section>

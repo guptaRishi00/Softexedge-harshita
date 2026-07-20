@@ -82,7 +82,7 @@ export default function AgencyStats() {
             (index === 2 || index === 3) && "border-t border-zinc-200",
           )}
         >
-          <h4 className="mb-5 text-4xl font-bold tracking-tighter text-zinc-900 md:text-5xl lg:text-7xl">
+          <h4 className="mb-5 text-5xl font-bold tracking-tighter text-zinc-900 md:text-6xl lg:text-[5rem]">
             <Counter value={stat.value} suffix={stat.suffix} />
           </h4>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-zinc-500 md:text-base">

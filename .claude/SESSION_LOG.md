@@ -3840,3 +3840,122 @@ Task: match ContactFaqSection's x-axis padding to ExperimentalTestimonials (`px-
 `px-4 md:px-10` (inner accordion row/answer padding untouched, same call as the other
 FaqSection variants). Verified via SSR /contact: new gutter served, 0 old. tsc clean.
 Class-only, 1 file. Not committed.
+
+## 2026-07-20 — Rotating word animation: verified already matching (NO CHANGE)
+Task: make the rotating word animation in ExperimentalTestimonials, ContactSection,
+BlogSection match AboutSection (same speed, same timing). Finding: all three ALREADY match
+AboutSection byte-for-byte — cycle interval 6000ms; enter spring stiffness 22 / damping 20 /
+mass 1 from x:-100% opacity:0; exit x:100% opacity:0 over 1.5s easeInOut; AnimatePresence
+mode="wait". This was aligned in a prior session (their inline comments say "Exactly the
+AboutSection rotating-word config"). Verified by extracting interval + spring + exit from all
+four files — identical. NO edits made. Sole non-timing difference: AboutSection's RotatingWord
+uses a flex-centered container while the three targets use inline-grid (col-start-1/row-start-1
++ whitespace-nowrap) — a layout/positioning choice that does NOT affect speed or timing.
+Offered to align the container if the user perceives a visual difference. Not committed (nothing to commit).
+
+## 2026-07-20 — ServiceSection header: center-align title + description
+Changed the ServiceSection header from a two-column row (tag+title left, description right, justify-between) to a centered stacked column: container flex-col-reverse items-start justify-between md:flex-row md:items-end → flex-col items-center text-center. Description dropped md:text-left and gained mx-auto max-w-2xl so it centers on the SAME axis as the title (both text-center on the container center), not offset. Tag/title/description all centered. Class-only; tsc + biome clean. Not committed.
+
+## 2026-07-20 — AboutHeroSection: slightly bigger stat numbers
+Bumped the stat-number h4 (the Counter values: 10+, 250+, 98%, 40+) one modest step per breakpoint: text-4xl/md:text-5xl/lg:text-7xl → text-5xl/md:text-6xl/lg:text-[5rem] (lg 72→80px, not 8xl's 96px — "a little"). Class-only; tsc + biome clean. Not committed.
+
+## 2026-07-20 — About OurValuesSection: x-gutter → ExperimentalTestimonials standard
+Task: match OurValuesSection x-axis padding to ExperimentalTestimonials (`px-4 md:px-10`).
+`src/components/about/OurValuesSection.tsx:46` content container `px-6 md:px-16 lg:px-20`
+→ `px-4 md:px-10` (dropped the lg:px-20 — the standard has no lg override, stays 40px).
+NOTE: file was externally re-edited since my 2026-07-15 pass (had been md:px-10, reverted to
+md:px-16 lg:px-20); now re-aligned. Verified via SSR /about: new gutter served, 0 old.
+tsc clean. Class-only, 1 file. Not committed.
+
+## 2026-07-20 — About OurTeamSection: brand gradient on member.role
+Task: add gradient to {member.role} in the team cards. `src/components/about/OurTeamSection.tsx:174`
+role <p> `text-zinc-300` → `w-fit bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text
+text-transparent` (w-fit so the gradient box hugs the small uppercase text instead of spanning
+the card; kept text-xs/font-bold/uppercase/tracking-wider). Shown on the hover info panel over
+the photo. Shared component → also affects /career team section. Verified via SSR /about: 10
+gradient role elements served, 0 old text-zinc-300 remnants; tsc clean. Class-only, 1 file.
+Not committed.
+
+## 2026-07-20 — OurTeamSection arrows match ExperimentalTestimonials
+about/OurTeamSection.tsx: replaced the shadcn CarouselPrevious/CarouselNext primitives
+(lucide icon, h-8/9 outline button) with two custom buttons identical to ET's nav arrows —
+h-12 w-12 rounded-full border border-zinc-300 text-zinc-900 hover:bg-zinc-900
+hover:text-white, MdArrowBack/MdArrowForward at h-5 w-5. Wired to existing
+handlePrev/handleNext (autoscroll-stop + scrollPrev/Next preserved); removed now-unused
+CarouselNext/CarouselPrevious imports, added react-icons/md. Gap 3→4 to match ET.
+Verified live /about: both buttons compute 48x48, full radius, 1px zinc-300 border, h-5 w-5
+icons — identical to ET. tsc 0; biome only the pre-existing <img> warning (line 186,
+untouched). Not committed.
+
+## 2026-07-20 — CtaSection x-gutter → match ExperimentalTestimonials (px-4 md:px-10)
+CtaSection's section is px-0; its horizontal gutter comes from the per-page wrapper (uniformly px-3 / p-3). Changed that wrapper gutter to px-4 md:px-10 (ExperimentalTestimonials' value) on all 8 CtaSection consumers: about, blog, blog/[slug], contact, work, work/[slug] (px-3 → px-4 md:px-10, vertical [&>section] padding untouched), and brand-strategy + web-development (p-3 → px-4 py-3 md:px-10, keeping the 12px vertical). Now every CtaSection card is inset by the same gutter as the testimonials/other sections. Class-only across 8 page files; tsc + biome clean, next build ✓. Not committed.
+
+## 2026-07-20 — Revert CtaSection x-gutter change
+Reverted all 8 CtaSection wrapper gutters back to their originals: px-4 md:px-10 → px-3 (about, blog, blog/[slug], contact, work, work/[slug]); px-4 py-3 md:px-10 → p-3 (brand-strategy, web-development). CtaSection cards inset by px-3 again. tsc + biome clean. Not committed.
+
+## 2026-07-20 — CtaSection: internal content x-padding → match ExperimentalTestimonials
+Inside the shared brand-strategy/CtaSection, set the two content blocks' HORIZONTAL padding to px-4 md:px-10 (ExperimentalTestimonials value), keeping their vertical padding: top p-8 pt-12 md:p-12 lg:p-16 lg:pb-0 → px-4 py-8 pt-12 md:px-10 md:py-12 lg:py-16 lg:pb-0; bottom p-8 md:p-12 lg:p-16 → px-4 py-8 md:px-10 md:py-12 lg:py-16. The card's inner text now insets 16/40px horizontally (was 32/48/64). Shared component → all CtaSection pages. Single file; tsc + biome clean, next build ✓. Not committed. (Note: web-development/CtaSection is a separate copy, unchanged.)
+
+## 2026-07-20 — Hero stats re-synced to AboutHeroSection (new reference size)
+Audit: hero sections with Counter stats = AboutHeroSection (reference, user had since
+changed it to text-5xl/md:6xl/lg:[5rem]), brand-strategy/AgencyStats + web-development/
+AgencyStats (both hero via StrategyHeroSection, were text-4xl/md:5xl/lg:7xl from prior
+task). AboutOverview has Counter stats but is a mid-page section, not a hero → skipped.
+Set both AgencyStats copies to match the current AboutHeroSection (text-5xl md:text-6xl
+lg:text-[5rem]). Verified live /brand-strategy: h4 computes new class list (base 48px);
+grep shows all three hero stat h4s identical. tsc 0. Not committed.
+
+## 2026-07-20 — CtaSection: rain-fall background (SpotlightGrid rain mode)
+Task: make the CtaSection bg animation "fall like rain". The bg is shared ui/SpotlightGrid
+(wandering spotlight over a dark tile grid). Added an opt-in `rain?: boolean` prop rather than
+forking: rainHash (deterministic sin pseudo-random, SSR-safe), rainIntensity(index,t) — 2
+staggered drops per column falling downward (head + RAIN_TAIL=3.2-row trailing streak above,
+wraps at RAIN_CYCLE=ROWS+4); new rainT state set each rAF frame; tick returns early in rain
+mode; getIntensity branches; reveal mask hoisted to `spotlightMask` const and set to "none"
+in rain mode (whole grid revealed so drops fall full-width). Enabled ONLY in the 2 CtaSection
+mirrors (brand-strategy + web-development): `<SpotlightGrid rain speed={1.2} />` (was speed=4
+maskRadius=950 travel=0.35). Hero consumers (BlogHeroSection, ContactHeroSectionTwo) keep the
+wandering spotlight — verified unchanged. CtaSection's z-[5] block-out gradients still protect
+text legibility. 3 files. tsc clean, biome-format clean (CRLF-only noise; pre-existing lint
+debt untouched), next build ✓. Done-gate spec-verifier died on an API stall mid-run (no
+verdict) — completed its static checks manually instead (hooks order, downward-fall logic,
+SSR-hydration determinism via rainT=0 first paint, no spotlight regression, reduced-motion).
+Live rain motion is rAF-driven → unverifiable in the frozen pane; user to eyeball. speed 1.2
+is tunable. Not committed.
+
+## 2026-07-20 — Revert the CtaSection rain-fall background
+Reverted the earlier "make CtaSection bg fall like rain" change. Removed the rain mode from
+`ui/SpotlightGrid.tsx` (rainHash/RAIN_TAIL/RAIN_CYCLE/rainIntensity helpers, `rain` prop +
+type + docstring line, rainT state, the tick's `if (rain)` branch + `rain` dep, the
+getIntensity rain branch, and the hoisted spotlightMask — restored the two inline
+useMotionTemplate masks). Restored both CtaSection call sites (brand-strategy + web-development)
+to `<SpotlightGrid speed={4} maskRadius={950} travel={0.35} />`. SpotlightGrid is back to its
+pre-rain baseline (keeps the separate blue→#274DD9 glow-gradient task). Did NOT git-checkout
+(files carry other uncommitted work) — reversed edits surgically. Verified: 0 residual "rain"
+refs in the 3 files, tsc clean, biome-format clean, next build ✓. Hero consumers unaffected.
+Not committed.
+
+## 2026-07-20 — CareerHeroSection marquees: image+quote+video mix
+career/CareerHeroSection.tsx: the two InfiniteRow marquees were all-image; now each row is
+a mix of image / autoplay video / quote card. Introduced a CarouselItem discriminated union
+(image|video|quote) + a CarouselCard renderer; card wrapper (h-[160px] sm:200 md:260,
+aspect-[4/5], rounded-[2rem], shadows) is byte-identical so dimensions are unchanged. col1
+= image,quote,video; col2 = video,image,quote. Videos reuse /assets/video1.mp4 & video2.mp4
+(muted/loop/autoPlay/playsInline). Quote card = #0a0a0a bg, brand-gradient quote mark, text
++ author/role. Dropped dead col3Images and unused useMemo/MdArrowOutward imports; inner map
+key now content-based. Verified live /career: both rows render image/quote/video in order,
+all cards 160x128 @ 32px radius, 24 videos readyState 4 no error. tsc 0; biome down to the
+2 pre-existing findings (outer 12-copy index key + <img>, identical to original & the site's
+marquee pattern). Motion needs eyes. Not committed.
+
+## 2026-07-20 — CareerHeroSection quote card: author removed
+career/CareerHeroSection.tsx: removed the author/role block from the quote CarouselCard —
+card now renders just the brand-gradient quote mark + quote text (justify-between). Data
+fields author/role kept (author still serves as the list key). Verified live /career: quote
+card has 2 children, no author/role strings present. tsc 0. Not committed.
+
+## 2026-07-20 — CareerHeroSection quote: text pulled up under the mark
+career/CareerHeroSection.tsx: quote card layout justify-between → justify-start gap-1
+md:gap-2 — the removed author block had left the text anchored at the card bottom; now the
+quote text sits directly beneath the gradient quote mark. Verified live /career: card
+justify-content flex-start, mark→text gap 8px (was full-height spread). tsc 0. Not committed.
