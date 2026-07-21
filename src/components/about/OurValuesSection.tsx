@@ -41,7 +41,10 @@ export default function OurValuesSection() {
     return () => clearInterval(id);
   }, [quoteIndex]);
   return (
-    <section className="relative flex w-full flex-col overflow-hidden bg-black font-sans py-20 md:py-32">
+    <section
+      id="culture"
+      className="relative flex w-full flex-col overflow-hidden bg-black font-sans py-20 md:py-32"
+    >
       {/* Content Container */}
       <div className="relative z-10 mx-auto w-full px-4 md:px-10">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-stretch">

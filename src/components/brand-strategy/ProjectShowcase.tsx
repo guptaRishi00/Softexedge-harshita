@@ -88,7 +88,7 @@ export default function ProjectShowcase() {
               </span>
             </h2>
 
-            <p className="max-w-2xl text-left text-2xl font-light leading-[1.25em] text-white">
+            <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
               Delivering scalable, high-performance solutions that elevate
               brands and drive revenue. Delivering scalable, high-performance
               solutions that elevate brands and drive revenue.

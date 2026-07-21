@@ -42,7 +42,10 @@ export default function FaqSection() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white px-4 md:px-10 md:py-20">
+    <section
+      id="faq"
+      className="relative overflow-hidden bg-white px-4 md:px-10 md:py-20"
+    >
       {/* 
         Hidden SVG to define the custom gradient. 
         ADDED: gradientUnits="userSpaceOnUse" and x1/y1 coordinates to fix the 

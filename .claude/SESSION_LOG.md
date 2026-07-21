@@ -4300,3 +4300,62 @@ tighter values to about/work if they want it site-wide.
 Verified live /contact @1280 with md active: et pt64/pb32, carousel pt64/pb80, faq pt12/pb64,
 cta pt0/pb64. (First measurement attempt reported viewport 0 = base/mobile values; re-measured
 after layout settled.) tsc 0. Not committed.
+
+## 2026-07-20 — Footer: expand the link lists, anchor-link what has no page
+Modelled on the user's reference-footer screenshot. Footer went from 9 links (6 of them broken: 5 dead `#` + `/services` which 404s) to 12, all resolving.
+Col1: Home /, About /about, Culture /about#culture, Meet The Team /about#team, Careers /career, Blog & Resources /blog.
+Col2: Services /home#services, Work /work, Testimonials /home#testimonials, Processes /brand-strategy#process, FAQs /brand-strategy#faq, Contact /contact.
+Per the "if the pages aren't there, link to sections on other pages" instruction, added section anchors to 5 components that had none: home/ServiceSection id="services", home/ExperimentalTestimonials id="testimonials", about/OurValuesSection id="culture", brand-strategy/ProcessSection id="process", brand-strategy/FaqSection id="faq". Reused the pre-existing about/OurTeamSection id="team".
+Home anchors deliberately use /home#… not /#…: src/app/page.tsx is a redirect() to /home, and a fragment is not guaranteed to survive a redirect hop.
+Dropped from the reference: "Sectors" and "Hex Test" (no equivalent content — refused to invent). Dropped existing "Webinars" (was a dead `#`, no webinar content anywhere).
+Verified with a script that resolves EVERY href — checks the route file exists AND that the anchor's owning component is actually rendered by that page. All 12 pass. One false positive investigated and cleared: the script attributed id="services" to garbage/ServiceSection2.tsx (alphabetically first) — that file is unused/dead, the real owner is home/ServiceSection rendered at home/page.tsx:210, so no duplicate id on any rendered page. tsc ✓, biome ✓, next build ✓. 6 files. Not committed.
+OPEN: the 3 social icon hrefs are still "#" — left alone, real profile URLs unknown. Also UNVERIFIED: hash-jump behaviour under Lenis smooth scroll (home wraps in SmoothScroll) — needs the user to click the anchor links.
+
+## 2026-07-20 — blog: match BlogHeroSection's x-padding to BlogFeaturedSection
+Analysis: both outer <section>s ALREADY share `px-3`, so the page gutter was never the mismatch. The difference was inside the black card — Featured's content wrapper uses `p-6 md:p-10 lg:p-14` (x = 24/40/56) while the hero card used `px-6 md:px-12 lg:px-16` (x = 24/48/64). Base matched; md and lg were 8px wider on the hero.
+Fix: hero inner card `md:px-12 → md:px-10`, `lg:px-16 → lg:px-14`. Y padding deliberately untouched (`py-12 md:py-16 lg:py-20`) — the task was x-axis only, and Featured's is a symmetric p-* so copying it wholesale would have changed the vertical rhythm too.
+Verified: greped both files post-edit — hero inner now px-6/md:px-10/lg:px-14 matching Featured's 24/40/56, outer sections both px-3. tsc ✓, biome ✓, next build ✓. 1 file, 2 tokens. Not committed.
+
+## 2026-07-20 — blog: match BlogListSection's x-padding to ExperimentalTestimonials
+ExperimentalTestimonials puts its gutter on the inner wrapper as `px-4 md:px-10` (the site-standard gutter); BlogListSection used a flat `px-6` with no md step on THREE separate wrappers — the header, the category filter row, and the post grid. All three now `px-4 md:px-10`, so the section narrows slightly on mobile (24→16px) and widens on desktop (24→40px), lining the blog cards up with the testimonials block and the rest of the site.
+Neither component puts px on its own <section> — the gutter lives on the inner wrappers in both — so the structural pattern already matched and only the values changed. Left px-5/px-3 on the category pills and card tags untouched (component padding, not gutters).
+Verified: greped for leftover `px-6` (none remain) and confirmed all three gutters read px-4 md:px-10. tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — blog: align BlogHeroSection + BlogListSection x-padding to CtaSection
+Key finding: CtaSection's x-inset comes from TWO stacked layers, not one — the blog page wraps it in `px-3` (blog/page.tsx:13) and its own card content is `px-4 md:px-10`. Its text therefore lands at 12+16 = 28px base / 12+40 = 52px md. Matching only the inner `px-4 md:px-10` would have left both sections 12px short, which is exactly why the previous "match ExperimentalTestimonials" pass (16/40) still looked misaligned against the CTA.
+BlogHeroSection: already had section px-3 (same structure as CTA), so only the card content changed — `px-6 → px-4`, and dropped `lg:px-14` since CtaSection has no lg x-step. Text now 28/52.
+BlogListSection: has no card and had no section px, so added `px-3` to its <section> (bg stays full-bleed; only content moves in) on top of the three inner `px-4 md:px-10` wrappers from the previous task. Text now 28/52.
+Both sections' y-padding untouched. Verified by reading the values back: CTA px-3 + px-4/md:px-10; hero px-3 + px-4/md:px-10 with no lg step; list px-3 + 3 wrappers at px-4/md:px-10. tsc ✓, biome ✓, next build ✓. 2 files. Not committed.
+NOTE: the `//` comment added inside BlogListSection's JSX opening tag is valid (comments are allowed between attributes) — distinct from the `{/* */}`-in-expression-position error that broke the build three times earlier this session. Build confirms.
+
+## 2026-07-20 — blog: Featured → CtaSection parity, List → ExperimentalTestimonials parity
+BlogFeaturedSection → CtaSection (28px base / 52px md text inset): section already had px-3 matching CTA's page wrapper, so only the card content changed. It was a SYMMETRIC `p-6 md:p-10 lg:p-14`, so had to be split into axes to touch x only → `px-4 py-6 md:px-10 md:py-10 lg:py-14` (y values preserved exactly; lg x-step dropped since CtaSection has none).
+Also moved the absolutely-positioned top pills from `left-8 md:left-14` to `left-4 md:left-10`. JUDGMENT CALL, flagged to user: not strictly "section padding", but the pills sit on the same card and were already 8/16px out of step with the content; leaving them would have widened that gap to 16px and made the card look worse after an alignment task. Trivially revertible.
+BlogListSection → ExperimentalTestimonials (16/40): REVERTED the `px-3` I added to its <section> in the previous task. ExperimentalTestimonials puts no px on its section — the gutter is only the inner `px-4 md:px-10` — so the section px had to go. Three inner wrappers (header/filters/grid) confirmed still at px-4 + md:px-10.
+Net: the blog page now deliberately has TWO x-lines — hero + featured + CTA at 28/52 (card-based, sit inside the px-3 page gutter), list at 16/40 (no card, full-bleed dark bg). Per user's explicit instruction.
+Verified by reading values back from all four files; tsc ✓, biome ✓, next build ✓. 2 files. Not committed.
+
+## 2026-07-20 — ContactHeroSectionTwo: remove the foreground video, keep the background one
+The hero had TWO videos: the full-bleed background `/assets/video3.mp4` (absolute inset-0, z-0) and a foreground card `/assets/hero.mp4` in the right column with a click-to-play button. Removed the foreground card, kept the background.
+Removal wasn't just the JSX block — the card owned all the playback state, so also deleted `videoRef`, `isPlaying`, `togglePlay`, the play <button> + its svg, and the now-unused `useRef, useState` import (biome would have failed on the unused vars otherwise). Left column dropped `md:w-3/5` so the headline spans full width; stale "Left: content" comment retitled. `premiumEase`, `reduce` and `motion` are all still used by the headline animation, so they stay.
+Verified: greped the file — only video3.mp4 remains, zero references to videoRef/isPlaying/togglePlay/useState/useRef. tsc ✓, biome ✓ (no unused-import errors), next build ✓. 1 file. Not committed.
+NOTE: /assets/hero.mp4 may now be unreferenced — checked src/ for other usages; see command output in that session step.
+
+## 2026-07-20 — ContactHeroSectionTwo: bigger headline, constrained to 70% width
+Follow-on from removing the foreground video (the headline had been left spanning full width after the right column went away).
+Width: content div `w-full` → `w-full md:w-[70%]`. Kept full width below md — 70% of a phone viewport would be unusably narrow for a 4rem headline.
+Size: text-[3.5rem] → text-[4rem]; sm:text-[4.5rem] → sm:text-[5.25rem]; lg:text-[6.5rem] → lg:text-[7.5rem] (~15% up across the board, keeping the existing three-breakpoint ramp).
+Verified: tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+CAVEAT: the headline is `flex flex-col` with three HARD-CODED spans ("Let's build" / "something" / "great."), so it does NOT reflow — the 70% box constrains the container but cannot rewrap the lines. At lg:7.5rem the longest line ("Let's build") is roughly 700px against ~918px available on a 1440px viewport, so it should fit, but this is arithmetic not observation. If it clips on a narrower desktop, drop lg to 7rem.
+
+## 2026-07-20 — ContactHeroSectionTwo: rephrase headline so it actually fills the 70% column
+Root problem from the previous task: the headline was three HARD-CODED spans ("Let's build" / "something" / "great."), so the md:w-[70%] box constrained it but could never make it fill — the breaks were fixed regardless of viewport, leaving a ragged short-line block.
+Fix: copy → "Let's build something worth talking about." (was "Let's build something great."), and the markup now maps over WORDS instead of lines. Each word is an inline-block motion.span with mr-[0.22em], inside a plain (non-flex) h1, so the text wraps naturally and fills the 70% column at ANY viewport by construction rather than by tuned character counts.
+The staggered reveal survives — stagger moved from per-line to per-word, reusing the existing `line` variant and headlineContainer unchanged, so timing/easing are identical. Words are pre-keyed at module level (`headline-${i}-${word}`) following the Footer's brandLetters convention, since this project avoids raw array-index keys.
+Removed `flex flex-col` from the h1 (it would have blocked normal text wrapping). Stale "Headline — two lines" comment updated.
+Verified: tsc ✓, biome ✓ (no key lint), next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — CareerHeroSection: swap the quote glyph for the ExperimentalTestimonials icon
+The carousel quote card used a typographic “ glyph outlined via WebkitTextStroke (from an earlier task). Replaced it with the inline two-path outlined-quote SVG that ExperimentalTestimonials uses (viewBox 0 0 24 24, fill none, stroke currentColor, strokeWidth 1, round caps/joins) — both `d` strings copied verbatim.
+Kept in flow at the top of the card (not absolutely positioned top-right like the testimonials card) since the task was to swap the icon, not relayout. Sized `h-10 w-10 md:h-12 md:w-12` to land near the old glyph's 48/60px optical size, plus `shrink-0` so the flex column can't squash it. Stroke is currentColor so colour comes from `text-[#2E5BFF]`, preserving the brand-blue outline chosen earlier; the testimonials copy uses text-black/10 because it sits on a white card, which would be invisible on this #131313 one.
+Verified: greped both files and confirmed the two path `d` strings are byte-identical; confirmed zero WebkitTextStroke/“ left. tsc ✓, biome ✓ (title element present, no a11y complaint), next build ✓. 1 file. Not committed.

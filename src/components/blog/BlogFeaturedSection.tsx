@@ -54,7 +54,7 @@ export default function BlogFeaturedSection() {
         />
 
         {/* Top pills */}
-        <div className="pointer-events-none absolute left-6 top-6 z-10 flex flex-wrap items-center gap-3 md:left-10 md:top-10">
+        <div className="pointer-events-none absolute left-4 top-6 z-10 flex flex-wrap items-center gap-3 md:left-10 md:top-10">
           <span className="rounded-full border border-white/20 bg-black/40 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md">
             Featured
           </span>
@@ -66,7 +66,8 @@ export default function BlogFeaturedSection() {
         </div>
 
         {/* Bottom content */}
-        <div className="pointer-events-none relative z-10 flex flex-col gap-6 p-6 md:p-10 lg:p-14">
+        {/* x-padding (px-4 md:px-10) matches CtaSection; y kept as it was. */}
+        <div className="pointer-events-none relative z-10 flex flex-col gap-6 px-4 py-6 md:px-10 md:py-10 lg:py-14">
           <h2 className="max-w-4xl text-3xl font-bold leading-[1.05] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl">
             {featured.title}
           </h2>

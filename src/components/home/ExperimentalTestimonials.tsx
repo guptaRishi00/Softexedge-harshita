@@ -78,7 +78,10 @@ export default function ExperimentalTestimonials() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white pt-16 pb-8 text-zinc-900 md:pt-32">
+    <section
+      id="testimonials"
+      className="relative overflow-hidden bg-white pt-16 pb-8 text-zinc-900 md:pt-32"
+    >
       <div className="mx-auto flex w-full flex-col gap-10 px-4 md:px-10 lg:flex-row lg:items-stretch lg:gap-10">
         {/* LEFT COLUMN: title + description + CTA on top, arrows pinned to the bottom */}
         <motion.div

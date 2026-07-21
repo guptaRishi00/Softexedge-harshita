@@ -81,16 +81,23 @@ function CarouselCard({ item }: { item: CarouselItem }) {
       )}
 
       {item.type === "quote" && (
-        <div className="flex h-full w-full flex-col justify-start gap-1 bg-[#131313] p-5 md:gap-2 md:p-7">
-          {/* Outlined quote mark — transparent fill with a brand-blue stroke.
-              Text stroke has no Tailwind utility, hence the inline style. */}
-          <span
-            className="text-5xl font-bold leading-none text-transparent md:text-6xl"
-            style={{ WebkitTextStroke: "1.5px #2E5BFF" }}
+        <div className="flex h-full w-full flex-col justify-start gap-1 bg-[#565656] p-5 md:gap-2 md:p-7">
+          {/* Outlined quote icon — the same mark ExperimentalTestimonials
+              uses. Stroke follows currentColor, kept brand blue here. */}
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-10 w-10 shrink-0 text-[#464646] md:h-12 md:w-12"
           >
-            “
-          </span>
-          <p className="text-sm font-light leading-[1.3em] tracking-tight text-white md:text-base">
+            <title>Quote</title>
+            <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" />
+            <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
+          </svg>
+          <p className="text-sm font-regular leading-[1.25em] mt-3 tracking-tight text-white md:text-base">
             {item.text}
           </p>
         </div>
@@ -187,7 +194,7 @@ export default function CareerHeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-center text-zinc-600 font-light text-lg md:text-xl max-w-xl mx-auto leading-[1.25em] mb-16"
+            className="text-center text-zinc-600 font-regular text-lg md:text-xl max-w-xl mx-auto leading-[1.25em] mb-16"
           >
             We’re creating impactful digital solutions.
             <br />

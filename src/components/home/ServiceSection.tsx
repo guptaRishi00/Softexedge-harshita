@@ -178,6 +178,7 @@ export default function ServiceSection() {
 
   return (
     <section
+      id="services"
       ref={containerRef}
       onMouseLeave={handleMouseLeave}
       className="relative w-full overflow-hidden bg-black py-16 md:pt-32 md:pb-24 text-white"

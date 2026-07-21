@@ -30,8 +30,9 @@ export default function BlogListSection() {
   // window event (the two components are siblings with no shared parent state).
   useEffect(() => {
     const onFilter = (e: Event) => {
-      const { type, value } = (e as CustomEvent<{ type: string; value: string }>)
-        .detail;
+      const { type, value } = (
+        e as CustomEvent<{ type: string; value: string }>
+      ).detail;
       if (type === "category") {
         setActiveCategory(value as Category);
         setActiveAuthor("All");
@@ -56,13 +57,15 @@ export default function BlogListSection() {
   return (
     <section
       id="blog-list"
+      // No px here — the gutter lives on the inner wrappers as px-4 md:px-10,
+      // matching ExperimentalTestimonials.
       className="relative overflow-hidden bg-[#0a0a0a] py-24 font-sans text-white md:py-32"
     >
       {/* Subtle noise overlay */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 
       {/* Section Header */}
-      <div className="relative mx-auto mb-16 w-full px-6 md:mb-24">
+      <div className="relative mx-auto mb-16 w-full px-4 md:mb-24 md:px-10">
         <motion.span
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -79,7 +82,7 @@ export default function BlogListSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[5rem]"
+            className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[4rem]"
           >
             Explore our{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
@@ -92,7 +95,7 @@ export default function BlogListSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-            className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+            className="max-w-xl text-xl font-light leading-[1.25em] text-white md:text-left"
           >
             Dive deep into our latest thoughts on technology, design, and
             business strategy.
@@ -101,7 +104,7 @@ export default function BlogListSection() {
       </div>
 
       {/* Category Filter Tabs */}
-      <div className="relative mx-auto mb-12 flex w-full px-6 md:mb-16">
+      <div className="relative mx-auto mb-12 flex w-full px-4 md:mb-16 md:px-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -141,7 +144,7 @@ export default function BlogListSection() {
       </div>
 
       {/* Blog Grid */}
-      <div className="relative mx-auto w-full px-6">
+      <div className="relative mx-auto w-full px-4 md:px-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={`${activeCategory}-${activeAuthor}`}
@@ -274,7 +277,7 @@ function BlogCard({
             </h3>
 
             <p
-              className={`mt-4 font-light leading-relaxed text-zinc-400 ${post.featured ? "text-base md:text-lg" : "text-sm md:text-base line-clamp-3"}`}
+              className={`mt-4 font-regular leading-[1.25em] text-zinc-400 ${post.featured ? "text-base md:text-lg" : "text-sm md:text-base line-clamp-3"}`}
             >
               {post.excerpt}
             </p>

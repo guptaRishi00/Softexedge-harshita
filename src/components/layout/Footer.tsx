@@ -8,19 +8,25 @@ import { MdArrowOutward } from "react-icons/md";
 import { RiInstagramLine } from "react-icons/ri";
 import Particles from "@/components/ui/Particles";
 
+// Anything without a page of its own points at that section's anchor on the
+// page that owns it. Home anchors use /home rather than /#… because / is a
+// redirect to /home and a fragment is not guaranteed to survive the hop.
 const footerLinksCol1 = [
-  { name: "Services", href: "/services" },
-  { name: "Work", href: "/work" },
-  { name: "About", href: "#about" },
-  { name: "Culture", href: "#" },
-  { name: "Meet The Team", href: "#" },
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Culture", href: "/about#culture" },
+  { name: "Meet The Team", href: "/about#team" },
+  { name: "Careers", href: "/career" },
+  { name: "Blog & Resources", href: "/blog" },
 ];
 
 const footerLinksCol2 = [
-  { name: "Testimonials", href: "#" },
-  { name: "Blog & Resources", href: "/blog" },
-  { name: "Webinars", href: "#" },
-  { name: "Careers", href: "/career" },
+  { name: "Services", href: "/home#services" },
+  { name: "Work", href: "/work" },
+  { name: "Testimonials", href: "/home#testimonials" },
+  { name: "Processes", href: "/brand-strategy#process" },
+  { name: "FAQs", href: "/brand-strategy#faq" },
+  { name: "Contact", href: "/contact" },
 ];
 
 const socialLinks = [

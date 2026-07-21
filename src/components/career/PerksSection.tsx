@@ -181,7 +181,7 @@ function PerkCard({ icon: Icon, title, description }: Perk) {
           <span className="text-xl font-bold text-white sm:text-2xl">
             {title}
           </span>
-          <span className="text-lg font-light leading-[1.3em] text-zinc-300 mt-6">
+          <span className="text-lg font-regular leading-[1.3em] text-zinc-300 mt-6">
             {description}
           </span>
         </span>

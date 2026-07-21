@@ -134,7 +134,7 @@ export default function WhyJoinUs() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-            className="mt-8 max-w-2xl text-base md:text-lg font-light text-white leading-[1.25em]"
+            className="mt-8 max-w-3xl text-lg font-light leading-[1.25em] text-white md:text-xl"
           >
             We're building an environment where exceptional talent can do their
             best work, supported by world-class benefits and a culture of

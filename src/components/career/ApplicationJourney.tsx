@@ -80,7 +80,7 @@ export default function ApplicationJourney() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-            className="mt-6 max-w-2xl text-lg font-light text-zinc-600 md:text-xl leading-[1.25em]"
+            className="mt-6 max-w-3xl text-lg font-regular leading-[1.25em] text-zinc-600 md:text-xl"
           >
             We've streamlined our hiring process to be transparent, respectful
             of your time, and focused on discovering your true potential.

@@ -110,7 +110,7 @@ export default function SubServices({ children }: { children?: ReactNode }) {
                 Services
               </span>
             </h2>
-            <p className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:text-left">
+            <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
               Delivering scalable, high-performance solutions that elevate
               brands and drive revenue.
             </p>
