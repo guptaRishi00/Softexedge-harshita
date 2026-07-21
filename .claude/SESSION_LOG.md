@@ -4065,3 +4065,173 @@ the component's own math on real geometry (1239x626): spotlight mouseX 12-1239 /
 = fully within bounds and touching visible edges (was 12-1351 / -207..833 off-screen).
 biome: only the pre-existing key={index} on the 80-cell grid (untouched). tsc 0. Motion
 needs eyes. Not committed.
+
+## 2026-07-20 — ServiceSection header: center description against the TITLE only
+Problem: the flex row's two children were the [tag + title] div and the description, so md:items-center centered the description against the combined tag+title block instead of the title. Fix: hoisted the tag OUT of the row — it now sits above as its own <p> (keeps mb-6) — and the row holds only the h2 and the description, switched md:items-end → md:items-center. Description is now vertically centered on the title alone. Outer wrapper keeps mb-10/pb-10; row keeps flex-col-reverse (mobile still shows description above the title; the tag now leads on mobile instead of sitting between them). Single file; tsc + biome clean, next build ✓. Not committed.
+
+## 2026-07-20 — Apply ServiceSection header alignment to 6 sections
+All six had the same broken shape as ServiceSection did: the flex row's first child was a `<div className="flex flex-col gap-5">` holding eyebrow + title, so md:items-end/center aligned the description against the tag+title block. Refactored each: eyebrow hoisted OUT to be the first child of the outer header div (gains `mb-5` to replace the lost gap-5, plus `block` where it's a span so the margin applies); new row holds ONLY title + description with md:items-end → md:items-center; empty gap-5 wrapper deleted; outer keeps just its spacing/context classes; `md:mb-2` (an items-end nudge) removed from descriptions that had it. Files: brand-strategy/{SubServices, ProcessSection, OurTechStack, ProjectShowcase}, work/WorkProjectShowcase, blog/BlogListSection. All framer-motion props preserved verbatim; mobile stacking unchanged (no flex-col-reverse introduced). Web-development copies (SubServices/ProcessSection/OurTechStack/ProjectShowcase) intentionally SKIPPED — they use centered stacked headers with no title|description row. Specialists: frontend-developer (execute) + spec-verifier (done gate, APPROVED, no P0/P1). Verified: tsc + biome + next build ✓ (27 pages). 6 files + plan.md. Not committed.
+
+## 2026-07-20 — Link homepage CTAs to their pages
+Audited every interactive element in src/components/home/*. Found exactly two dead CTAs: the "Connect With Us" buttons in AboutSection and ExperimentalTestimonials were bare `<button type="button">` with no onClick and no href — clicking did nothing. Converted both to `<Link href="/contact">` (next/link import added to each); all classes, the group-hover arrow animation, and the gradient defs left untouched. Everything else on the homepage was already wired: BlogSection CTA → /blog, PortfolioSection cards → project.href, ServiceSection items → service.href, ContactSection "Send Message" is a form submit (not navigation, left alone).
+KNOWN BROKEN (pre-existing, NOT fixed — needs a product decision): there is no /services route, yet 6 of ServiceSection's 8 items, both SubServices files, and the Footer "Services" link all point to /services → 404. Only Web Development (/web-development) and Brand Strategy (/brand-strategy) resolve. Verified: tsc ✓, biome ✓, next build ✓ (route list confirms no /services). 2 files. Not committed.
+
+## 2026-07-20 — 6 remaining service pages mirrored from /brand-strategy
+Header lists 8 services; only /brand-strategy + /web-development existed, the other 6
+pointed at those as placeholders. Created the 6 missing pages the same way web-development
+was made (which is a byte-identical copy of brand-strategy):
+ digital-marketing, ai-marketing-automation, app-development, custom-software,
+ ui-ux-design, video-production.
+Per page: `cp -r src/components/brand-strategy src/components/<slug>` (8 components each =
+48 files, byte-identical so design is guaranteed "same to same"; internal imports are
+relative ./AgencyStats + ../page/Header so they resolve in-folder) + new
+src/app/<slug>/page.tsx mirroring brand-strategy's composition with imports repointed and a
+unique default export. Re-linked the service dropdown in BOTH headers (page/Header.tsx +
+layout/Header.tsx) so each of the 8 services hits its own route.
+Verified: tsc 0; all 6 routes HTTP 200; /digital-marketing DOM fingerprint identical to
+/brand-strategy (same h1 "WeBuildBrandsThatPeopleTrust", same 8 h2s, 11 sections);
+`diff -r` proves all 6 folders IDENTICAL to brand-strategy; biome on a copy = baseline
+exactly (9 errors/8 warnings, all pre-existing in brand-strategy), 6 new page files clean.
+Map updated (8 service routes + service-page pattern note). plan.md written first; previous
+unapproved TracingBorder plan archived as plan-tracingborder-handoff.md.
+Note: copies inherit brand-strategy's SubServices card links (`/brand-strategy`, `/services`
+— /services still doesn't exist) and the placeholder mailto in CtaSection. Content is
+intentionally identical per "same to same"; each folder can now diverge. Not committed.
+
+## 2026-07-20 — /web-development brought back to full parity with /brand-strategy
+Full folder diff (never done before — only StrategyHeroSection had been compared) showed 6
+of 8 components had diverged: SubServices/ProcessSection/OurTechStack/ProjectShowcase had
+CENTERED headers (from the earlier "center align web-development" task), CtaSection kept the
+old p-8/md:p-12 padding + missing font-medium spans, FaqSection had lg:text-[5rem] +
+leading-relaxed; page.tsx used space-y-25.
+Synced: `cp src/components/brand-strategy/*.tsx src/components/web-development/` and
+regenerated src/app/web-development/page.tsx on the same template as the other 7 service
+pages (space-y-10, own imports + WebDevelopmentPage export).
+NOTE: this intentionally REVERTS the earlier centered-header request for this page, per the
+newer "same as brand strategy" instruction — flagged to user.
+Verified: diff -r brand-strategy vs web-development = IDENTICAL (8/8); page composition diff
+= imports/name only; tsc 0; biome clean on page; /web-development 200; live DOM: 4 section
+tags (What We Offer/How We Work/Our Toolkit/Selected Work) all text-align start (left, was
+centered), 11 sections, h1+8 h2s identical to /brand-strategy, FAQ title 48px (was 80px).
+All 8 service pages now share one baseline. Not committed.
+
+## 2026-07-20 — brand-strategy SubServices: last stacking card pinned at the wrong offset
+The 4th/last card was special-cased to pin at `top: calc(5vh + 0px)` (the isLast ternary forced index 0), so instead of stopping 190px below card 3 it rose to the very top and covered the three peeking titles. Removed the ternary — every card now pins at `calc(5vh + i*190px)`. This also fixes a latent desync: the activeIndex tracker (line ~88) already computed pinTop as `innerHeight*0.05 + j*190` for ALL j including the last, so the image-hiding logic disagreed with the actual render for card 4. `isLast` is still used for the card's taller height, so no dead prop. Verified: tsc ✓, biome ✓, next build ✓. 1 file, 1 line. Not committed.
+OPEN: the last card keeps its taller `min-h-[70vh] md:h-[780px]` (others are 600px). That height was chosen when it pinned at 5vh; now that it pins 570px lower it extends further below the fold. Ask user whether to normalize it to 600px.
+
+## 2026-07-20 — SubServices: gate the ProcessSection overlap on the last card reaching the top
+Requested behavior (confirmed with the user, since "hits the top" was ambiguous after the previous fix): card 4 stops in line below card 3's title like the others, THEN lifts to the top, and only after that may the next section overlap it.
+Implementation: added a `RISE = (services.length-1)*190` (=570px) spacer div between the cards and the overlap slot, with its own `useScroll({target: riseRef, offset: ["start end","end end"]})`. That yields 0→1 over exactly the spacer's height; `useTransform` maps it to y 0→-570 applied to the last card only, whose sticky wrapper is now a motion.div. Net effect: card 4 pins at 5vh+570 and holds (the spacer's top is still below the fold), then lifts to 5vh over 570px of scroll, then children — which start at the spacer's BOTTOM — arrive. Overlap is structurally gated: children reach the viewport bottom exactly at lift-complete and need ~another viewport to climb over the card.
+Non-last cards pass y=undefined (no transform). activeIndex tracker unaffected: card 4's rect.top only decreases from its pin line, so it still reads as pinned throughout the lift. Note cards 1-3's peeking titles DO get covered once card 4 reaches the top — user explicitly chose this ("only at the end, not immediately"). Verified: tsc ✓, biome ✓, next build ✓; scroll geometry reasoned through in-loop (no visual verification possible in this workspace). 1 file. Not committed.
+
+## 2026-07-20 — SubServices: release the first card's pin once the last card stops
+Card 1 now switches from `sticky` to `relative` when `activeIndex === services.length - 1` (i.e. the last card has reached its stacked stop), so its peeking title strip scrolls away instead of holding for the rest of the sequence. New `unpinned` prop on Card drives both the position class and dropping `top` (on a relative box `top` would push the card DOWN by 5vh instead of setting a sticky line — that's why it's conditional, not left in place).
+No feedback loop: card 1 releasing doesn't move card 4, so activeIndex can't oscillate. No layout shift either — sticky vs relative doesn't change in-flow height, so cards 2-4 and the rise runway are unaffected. Reversible: scrolling back up re-pins it. Verified: tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+CAVEAT for user review: the release is instant (position swap), so the strip disappears rather than sliding out. If that reads as a glitch, the alternative is a scroll-linked y translate like the last card's lift.
+
+## 2026-07-20 — REVERTED the three SubServices stacking-card tasks
+User reverted all three: (1) last card pinning in line with the others, (2) the rise-runway gate on the ProcessSection overlap, (3) releasing the first card's pin. SubServices.tsx stacking logic is back to its committed state — restored the `isLast ? 0 : i` ternary in the pin `top`, removed RISE/riseRef/riseProgress/lastCardY/useTransform, removed the rise-runway spacer, removed the `y` and `unpinned` props, and reverted the card wrapper from motion.div back to a plain div. The last card once again pins at 5vh and rises over the other cards' peeking titles (the original design).
+Confirmed by `git diff` on the file: the ONLY remaining hunk is the header-alignment change from the earlier task — every trace of the three reverted tasks is gone and the stacking code is byte-identical to HEAD. Note the pre-existing render/tracker desync is back too: the activeIndex tracker computes pinTop as `innerHeight*0.05 + j*190` for all j, which does not match the last card's actual 5vh pin. Left as-is since it is original behavior. Verified: tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — SubServices: last stacking card pins in line with the others (re-applied)
+Re-applied the fix reverted earlier this session (user reverted it only as part of undoing the two follow-ups; asked for this one back on its own). The last card was special-cased to `top: calc(5vh + 0px)` via the `isLast ? 0 : i` ternary, so it climbed to the very top and covered cards 1-3's peeking titles. Now every card pins at `calc(5vh + i*190px)`, so card 4 stops below card 3's title.
+Same side benefit as before: the activeIndex tracker already computed pinTop as `innerHeight*0.05 + j*190` for ALL j, so render and tracker now agree for card 4 (previously desynced). `isLast` is still used for the card's height, so no dead prop. NOT re-applied: the rise-runway overlap gate and the first-card unpin from the two follow-up tasks — those stay reverted.
+Verified: tsc ✓, biome ✓, next build ✓; `git diff` confirms the only hunks in this file are the header alignment and this one-line pin change. 1 file. Not committed.
+
+## 2026-07-20 — brand-strategy: remove the ProcessSection overlap on SubServices
+ProcessSection was passed as `children` to SubServices, which rendered it INSIDE the sticky cards container at z-40 so it scrolled up over the still-pinned last card. Moved it out to a plain sibling: `<SubServices />` then `<ProcessSection />`. SubServices now takes its existing `children`-absent branch and renders the h-[100vh] runway spacer instead, so the last card still holds for a viewport of scroll, then unpins and scrolls away normally before ProcessSection begins. 1 file (page.tsx only) — SubServices.tsx itself untouched; its `children` prop and overlap slot are kept so the behavior can be restored by re-nesting.
+SCOPE (user chose "brand strategy only"): the identical overlap pattern exists in 7 other service pages, each with its OWN component copies — web-development, digital-marketing, ai-marketing-automation, app-development, custom-software, ui-ux-design, video-production. Those still overlap; user declined changing them for now.
+NOTE: those 7 service pages + routes are NEW since earlier this session (my earlier build listed no /digital-marketing etc.), which also resolves part of the /services 404 gap I flagged in the homepage-links task — though ServiceSection/Footer still point at the nonexistent /services rather than these new routes. Verified: tsc ✓, biome ✓, next build ✓ (all new routes build). Not committed.
+
+## 2026-07-20 — SubServices: dropped the last card's leftover size special-case (answering "why does the last card overlap?")
+Question was already resolved by earlier work — the last card stops stacked at 5vh+3*190 like the others. It only ever rose to the top to serve the ProcessSection overlap (the next section slid over a viewport-filling card), and that overlap was removed in the previous task, so the justification was gone.
+What remained was the sizing relic: the last card was `min-h-[70vh] md:h-[780px]` vs `min-h-[50vh] md:h-[600px]` for the rest — sized to fill the viewport when pinned at 5vh. Pinned in the stack at 5vh+570 it ran ~500px past the fold on a 900px viewport, so its lower half (incl. the tags row) was never visible. Made all cards 600px and removed the now-unused `isLast` prop entirely (call site, destructure, and the stale comment about the overlap sliding over the last card). grep confirms zero `isLast` references remain.
+Every card is now identical in pin offset and size — a plain stack, no special cases. Verified: tsc ✓, biome ✓, next build ✓. 1 file. Not committed. Easily reverted (one ternary) if the taller final card was deliberate.
+
+## 2026-07-20 — brand-strategy section dividers made longer
+User asked to "increase the border width" of the rules between ProcessSection / OurTechStack
+/ ProjectShowcase. Ambiguous (thickness vs span) — asked; user chose LONGER LINE (span),
+stroke stays 1px. The two section rules are ProcessSection:116 and OurTechStack:112
+(ProjectShowcase has no rule of its own — it's bounded by OurTechStack's). Both were inset
+40px on desktop by the md:px-10 gutter; now 16px each side (longer, still not edge-to-edge):
+ - OurTechStack: divider wrapper px-4 md:px-10 → px-4.
+ - ProcessSection: divider lives inside the padded container, so pulled out with
+   `md:-mx-6 md:w-[calc(100%_+_3rem)]` (40−24=16px inset).
+BUG CAUGHT: first wrote `w-[calc(100%+3rem)]` — invalid CSS (calc requires whitespace around
++), which would have dropped the width rule while -mx-6 still shifted the line left. Fixed
+with Tailwind underscore syntax; verified in the compiled dev CSS that it emits
+`width: calc(100% + 3rem)` and `.md\:-mx-6 { margin-inline: calc(var(--spacing) * -6) }`.
+Verified: tsc 0; biome 2 pre-existing warnings only. Pane reports viewport 0 on this page and
+can't evaluate md: breakpoints, so span confirmed via compiled CSS + arithmetic, not pixels —
+final look needs user's eyes.
+SCOPE: applied to brand-strategy ONLY as asked; the other 7 service pages (which were just
+brought to byte-identical parity) now differ in these 2 files. Offered to sync. Not committed.
+
+## 2026-07-20 — Career hero quote card → ContactSection gray
+career/CareerHeroSection.tsx: quote CarouselCard bg-[#0a0a0a] → bg-[#161616]. #161616 is the
+gray of ContactSection's ChannelCard boxy-grid cells (ContactSection.tsx:144) — the card's own
+bg-zinc-950/20 base is ~transparent and reads black, so #161616 is the gray actually seen in
+those cards. Verified live /career: all 12 quote cards compute rgb(22,22,22); remaining
+bg-[#0a0a0a] on the page is WhyJoinUs' bento cards (different section, inMarquee false) — no
+quote card missed. tsc 0; biome = the 2 pre-existing findings for this file only.
+SELF-INFLICTED BUG (caught+fixed): first put the explanatory {/* */} comment directly inside
+`{item.type === "quote" && (` — invalid JSX there, broke the parse (TS1005/TS1382). Moved the
+comment above the conditional. Not committed.
+
+## 2026-07-20 — SubServices: completed stack now scrolls away rigidly (no last-card reshuffle, no freeze)
+Problem: with `top: calc(5vh + i*190px)`, sticky release fires when `containerBottom < top + height`, which differed per card — the LAST card (biggest top) unstuck FIRST, so the finished stack peeled apart from the top card down as the section left. Plus the h-[100vh] fallback spacer froze everything for a full viewport before that.
+Fix: all cards now share `top: 5vh` and get their 190px staircase from `transform: translateY(i*190px)` instead. `top + height` is then identical for every card, so they all unstick at the same scroll position and the stack travels up as one rigid block. Compensated the flow spacing with `marginBottom: max(0px, calc(22vh - 190px))` — the transform already adds 190px between consecutive cards, so the margin gives the same 190px back, preserving the original inter-card gap AND the ~608px pin cadence. The max() clamp matters: 22vh < 190px on viewports under ~864px tall, and a negative margin would drag cards into each other. Also removed the 100vh fallback spacer (children branch kept) so the container ends with the last card and the section scrolls up immediately once stacked, instead of holding.
+Tracker still consistent: getBoundingClientRect().top includes the transform, so a pinned card reads 5vh + 190i — exactly the tracker's `innerHeight*0.05 + j*190`.
+Verified: tsc ✓, biome ✓, next build ✓. NOTE: a build run mid-task failed on src/components/career/CareerHeroSection.tsx:85 (JSX comment in expression position — same class of error hit twice earlier this session) from a concurrent user edit; it was resolved by the user and the re-run passed. Not my change. 1 file. Not committed.
+
+## 2026-07-20 — SubServices: reserve the transform offset so the last card stops covering ProcessSection
+Regression from the previous task, caught by a user screenshot: the last card overlapped/hid the top of ProcessSection. Cause is inherent to the translateY staircase — a transform paints the element elsewhere but reserves NO layout space, so the last card was painted (n-1)*190 = 570px below its layout box and spilled over the following section.
+Fix: added a 570px `aria-hidden` reserve div, computed as `(services.length - 1) * STEP`. Deliberately placed OUTSIDE the sticky `container` div (but inside the section): putting it inside would extend the cards' sticky containing block and delay their release by 570px, reintroducing the hold the previous task removed. It is not empty black space in practice — the transformed last card is what occupies it.
+Also extracted the magic 190 into a module-level `STEP` const now that it is used in four places (tracker pinTop, card transform, margin compensation, reserve height) — they must agree or the stack desyncs. Verified: tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — ServiceSection: link the 8 services to their real pages
+Six of the eight items still pointed at `/services`, which has never existed as a route (flagged twice earlier in this session). The dedicated route directories now exist, so mapped each item to its own page: Digital Marketing & Growth → /digital-marketing, AI & Marketing Automation → /ai-marketing-automation, App Development → /app-development, Custom Software & SaaS → /custom-software, UI/UX Design → /ui-ux-design, Video Production → /video-production. Web Development and Brand Strategy were already correct.
+Mapping is NOT invented: page/Header.tsx's Services dropdown (lines 47-96) already links these same 8 titles to exactly these 8 routes, so ServiceSection now matches the header 1:1. Verified each href against the filesystem with a scripted `src/app/<route>/page.tsx` existence check — all 8 OK, zero 404s.
+Verified: tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+STILL BROKEN elsewhere (out of scope, not touched): Footer.tsx:12 "Services" → /services, and 24 `link: "/services"` entries across the 8 per-page SubServices card sets (3 each). Also page/Header.tsx:329 has a stray `href="#contact"`.
+
+## 2026-07-20 — Career hero quote card gray → #131313
+career/CareerHeroSection.tsx: quote CarouselCard bg-[#161616] → bg-[#131313] (user supplied
+the exact hex this time). Dropped the now-inaccurate "same gray as ContactSection cells"
+comment since #131313 is its own value, not the ChannelCard #161616. Verified live /career:
+all 12 quote cards compute rgb(19,19,19); zero stale bg-[#161616] left. tsc 0. Not committed.
+
+## 2026-07-20 — career WhyJoinUs: widen the "Competitive Comp" bento card
+User pointed at the narrow card in row 2 of the Benefits bento (career page). Widening it necessarily narrows its row-mate, so asked; user chose 40/60.
+Implementation: grid md:grid-cols-3 → md:grid-cols-5, and re-spanned all four cards so each row still totals exactly 5 (a short row would wrap a card). Row 1: Flexible 2→3, Creative 1→2. Row 2: Competitive Comp 1→2, Learning 2→3. Competitive Comp goes 33% → 40% of the row.
+Side effect worth knowing: row 1's ratio also shifts (67/33 → 60/40) — unavoidable, since a 5-col grid can only split 3+2 or 4+1, and 3+2 is nearest the original. Mobile is untouched (grid-cols-1, spans are all md:-prefixed).
+NOTE: the file had been edited on disk by the user mid-task; the edits applied cleanly but I re-grepped the spans afterwards rather than trusting my stale read. Verified: spans total 5 per row ✓, tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — career page: add OurValuesSection between OpenPositions and PerksSection
+Inserted `<OurValuesSection />` in src/app/career/page.tsx between OpenPositions and PerksSection. The component lives in components/about/ and is reused as-is (no copy) — the career page already cross-imports OurTeamSection from about/, so this follows the existing convention; import placed after OurTeamSection to keep biome's path sort order.
+Wrapped in `[&>section]:py-16 md:[&>section]:py-24` to match the career page's per-section spacing pattern; 24 on md matches the pt-24/pb-24 of both neighbours (OpenPositions and PerksSection), so the rhythm is unbroken. Component's own section already carries bg-black + py-20/md:py-32.
+Verified: git diff shows exactly 2 hunks (import + block, no collateral), tsc ✓, biome ✓ (import order accepted), next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — WorkProjectShowcase inactive-card dim softened
+work/WorkProjectShowcase.tsx:193 — non-hovered cards' filter
+`brightness(0.3) grayscale(80%)` → `brightness(0.65) grayscale(25%)`. The old value dropped
+70% of luminance AND desaturated 80%, which is why inactive cards read as black & white;
+new value keeps a clear focus falloff without going monochrome. (Separate from the hovered
+card's own bg-black/35 legibility scrim — untouched.)
+Verified: tsc 0; source has only the new value, no stale one; live /work at rest shows no
+brightness/grayscale filter on any card (dim is hover-only, 2 decorative blur layers only);
+scanned all 27 served client scripts — `grayscale(25%)` present, `grayscale(80%)` absent, so
+the new value is what ships. Hover appearance itself needs user's eyes (pane can't drive
+framer hover).
+NOTE: user's dev server was down mid-task (curl 000 / blank doc); restarted via
+preview_start {name:"dev"} and it came back 200. Not committed.
+
+## 2026-07-20 — work page: ET→CtaSection gap reduced
+Measured /work @1280: gap between ExperimentalTestimonials and CtaSection was 304px, and it
+is entirely TechLogoCarousel (which sits between them): pt 64px + logos ~112px + pb 128px.
+CtaSection's wrapper is already md:pt-0, so the lever is the carousel's md:pb-32. Since
+TechLogoCarousel is SHARED (contact/brand-strategy/etc.), scoped the change to the work page
+with the codebase's `[&>section]` wrapper idiom: wrapped it in
+`<div className="md:[&>section]:pb-20">` (128px → 80px). Mobile py-16 untouched.
+Verified live: /work carousel padding-bottom 80px, ET→CTA gap 304 → 256px; /contact carousel
+still 128px (shared component unaffected elsewhere). tsc 0, biome clean. Not committed.

@@ -38,14 +38,14 @@ const navItems: NavItem[] = [
       {
         name: "Digital Marketing & Growth",
         count: "/4 services",
-        link: "/brand-strategy",
+        link: "/digital-marketing",
         image:
           "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGRpZ2l0YWwlMjBtYXJrZXRpbmd8ZW58MHx8MHx8fDA%3D%3D",
       },
       {
         name: "AI & Marketing Automation",
         count: "/4 services",
-        link: "/brand-strategy",
+        link: "/ai-marketing-automation",
         image:
           "https://plus.unsplash.com/premium_photo-1683120966127-14162cdd0935?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fHNvZnR3YXJlfGVufDB8fDB8fHww",
       },
@@ -59,14 +59,14 @@ const navItems: NavItem[] = [
       {
         name: "App Development",
         count: "/4 services",
-        link: "/web-development",
+        link: "/app-development",
         image:
           "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=800&auto=format&fit=crop",
       },
       {
         name: "Custom Software & SaaS",
         count: "/4 services",
-        link: "/web-development",
+        link: "/custom-software",
         image:
           "https://plus.unsplash.com/premium_photo-1685086785636-2a1a0e5b591f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c29mdHdhcmV8ZW58MHx8MHx8fDA%3D",
       },
@@ -80,14 +80,14 @@ const navItems: NavItem[] = [
       {
         name: "UI/UX Design",
         count: "/4 services",
-        link: "/web-development",
+        link: "/ui-ux-design",
         image:
           "https://images.unsplash.com/photo-1545235617-9465d2a55698?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8dWl1eHxlbnwwfHwwfHx8MA%3D%3D",
       },
       {
         name: "Video Production",
         count: "/4 services",
-        link: "/brand-strategy",
+        link: "/video-production",
         image:
           "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=800&auto=format&fit=crop",
       },

@@ -36,8 +36,8 @@ export default function CtaSection() {
           </div>
 
           {/* Top Content: Massive Typography & Social Proof */}
-          {/* Reduced padding (p-8 md:p-12) to match shorter section */}
-          <div className="pointer-events-none relative z-10 p-8 pt-12 md:p-12 lg:p-16 lg:pb-0">
+          {/* x-padding (px-4 md:px-10) matches ExperimentalTestimonials; y kept. */}
+          <div className="pointer-events-none relative z-10 px-4 py-8 pt-12 md:px-10 md:py-12 lg:py-16 lg:pb-0">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -102,8 +102,8 @@ export default function CtaSection() {
           </div>
 
           {/* Bottom Content: Actions & Meta Info */}
-          {/* Reduced padding (p-8 md:p-12) to match shorter section */}
-          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 p-8 md:flex-row md:items-center md:justify-between md:p-12 lg:p-16">
+          {/* x-padding (px-4 md:px-10) matches ExperimentalTestimonials; y kept. */}
+          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -153,7 +153,7 @@ export default function CtaSection() {
               transition={{ duration: 0.8, delay: 0.15, ease: premiumEase }}
               className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
             >
-              <span className="text-xs uppercase tracking-wider text-zinc-500">
+              <span className="text-xs uppercase tracking-wider text-zinc-500 font-medium">
                 Drop us a line
               </span>
               <a
@@ -173,7 +173,7 @@ export default function CtaSection() {
               transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
               className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
             >
-              <span className="text-xs uppercase tracking-wider text-zinc-500">
+              <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">
                 Give us a call
               </span>
               <span className="group relative w-fit cursor-pointer text-base font-bold text-white/90 transition-colors duration-300 hover:text-white md:text-lg">

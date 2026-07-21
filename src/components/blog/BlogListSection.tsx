@@ -62,17 +62,18 @@ export default function BlogListSection() {
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 
       {/* Section Header */}
-      <div className="relative mx-auto mb-16 flex w-full flex-col gap-8 px-6 md:mb-24 md:flex-row md:items-end md:justify-between">
-        <div className="flex flex-col gap-5">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: premiumEase }}
-            className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60"
-          >
-            Insights & News
-          </motion.span>
+      <div className="relative mx-auto mb-16 w-full px-6 md:mb-24">
+        <motion.span
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: premiumEase }}
+          className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60"
+        >
+          Insights & News
+        </motion.span>
+
+        <div className="flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -85,18 +86,18 @@ export default function BlogListSection() {
               thinking.
             </span>
           </motion.h2>
-        </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-          className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
-        >
-          Dive deep into our latest thoughts on technology, design, and business
-          strategy.
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
+            className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+          >
+            Dive deep into our latest thoughts on technology, design, and
+            business strategy.
+          </motion.p>
+        </div>
       </div>
 
       {/* Category Filter Tabs */}

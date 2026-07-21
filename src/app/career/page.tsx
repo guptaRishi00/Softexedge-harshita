@@ -1,5 +1,6 @@
 // src/app/career/page.tsx
 import OurTeamSection from "@/components/about/OurTeamSection";
+import OurValuesSection from "@/components/about/OurValuesSection";
 import ApplicationJourney from "@/components/career/ApplicationJourney";
 import CareerHeroSection from "@/components/career/CareerHeroSection";
 import OpenPositions from "@/components/career/OpenPositions";
@@ -18,6 +19,10 @@ export default function CareerPage() {
 
       <div className="[&>section]:py-16 md:[&>section]:pt-24 md:[&>section]:pb-24">
         <OpenPositions />
+      </div>
+
+      <div className="[&>section]:py-16 md:[&>section]:py-24">
+        <OurValuesSection />
       </div>
 
       <div className="[&>section]:py-16 md:[&>section]:pb-35 md:[&>section]:pt-24">

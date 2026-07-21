@@ -34,11 +34,12 @@ export default function OurTechStack() {
   return (
     <section className="relative w-full overflow-hidden bg-black text-white">
       <div className="mx-auto w-full md:pb-25">
-        <div className="mx-auto mb-20 flex flex-col items-center gap-6 px-4 text-center md:px-10">
-          <div className="flex flex-col items-center gap-5">
-            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
-              Our Toolkit
-            </span>
+        <div className="mx-auto mb-20 px-4 md:px-10">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+            Our Toolkit
+          </span>
+
+          <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -51,18 +52,18 @@ export default function OurTechStack() {
                 Stack
               </span>
             </motion.h2>
-          </div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="max-w-2xl text-center text-xl font-light leading-[1.25em] text-white md:mb-2"
-          >
-            Powered by modern, reliable, and scalable technologies to bring your
-            vision to life.
-          </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+            >
+              Powered by modern, reliable, and scalable technologies to bring
+              your vision to life.
+            </motion.p>
+          </div>
         </div>
 
         <div className="relative flex w-full flex-col gap-5 overflow-hidden rounded-3xl py-16">

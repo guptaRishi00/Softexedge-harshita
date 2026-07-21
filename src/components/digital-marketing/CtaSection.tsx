@@ -1,0 +1,189 @@
+// src/components/home/CtaSection.tsx
+"use client";
+
+import { motion } from "framer-motion";
+import { MdArrowOutward } from "react-icons/md";
+import SpotlightGrid from "../ui/SpotlightGrid";
+
+const premiumEase = [0.22, 1, 0.36, 1] as const;
+
+// Helper array for the realistic avatars
+const avatars = [
+  "https://i.pravatar.cc/150?img=11",
+  "https://i.pravatar.cc/150?img=12",
+  "https://i.pravatar.cc/150?img=5",
+  "https://i.pravatar.cc/150?img=43",
+  "https://i.pravatar.cc/150?img=14",
+  "https://i.pravatar.cc/150?img=49",
+];
+
+export default function CtaSection() {
+  return (
+    <section className="relative w-full bg-white px-0 md:px-0 md:pt-0">
+      <div className="mx-auto w-full">
+        {/* Main CTA Container - Reduced height to 45vh */}
+        <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black">
+          {/* Auto-moving spotlight pattern background */}
+          <SpotlightGrid speed={4} maskRadius={950} travel={1} />
+
+          {/* TEXT BLOCK-OUT LAYERS (Z-5) */}
+          {/* These permanent black gradients sit ABOVE the spotlight grid but BELOW the text, ensuring the spotlight never reveals the grid behind typography. */}
+          <div className="pointer-events-none absolute inset-0 z-[5]">
+            {/* Top-Left Fade for Heading */}
+            <div className="absolute inset-y-0 left-0 w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent" />
+            {/* Bottom Fade for Footer/CTA Elements */}
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black via-black/95 to-transparent" />
+          </div>
+
+          {/* Top Content: Massive Typography & Social Proof */}
+          {/* x-padding (px-4 md:px-10) matches ExperimentalTestimonials; y kept. */}
+          <div className="pointer-events-none relative z-10 px-4 py-8 pt-12 md:px-10 md:py-12 lg:py-16 lg:pb-0">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: premiumEase }}
+            >
+              {/* Main Heading */}
+              <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl lg:text-[5rem]">
+                Let's build something <br className="hidden md:block" />
+                <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-4 text-transparent">
+                  extraordinary.
+                </span>
+              </h2>
+
+              {/* Subtext describing the offer/value */}
+              <p className="mt-6 max-w-2xl text-lg font-light leading-[1.25em] text-white md:text-xl">
+                Join the waitlist and be the first one to experience
+                photorealism at scale. Get additional 50% discount on the first
+                100 people.
+              </p>
+
+              {/* Avatar Stack and Ratings Area */}
+              <div className="mt-10 flex w-fit pointer-events-auto flex-col gap-3">
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* Overlapping Avatars */}
+                  <div className="flex -space-x-3">
+                    {avatars.map((src, i) => (
+                      <div
+                        key={i}
+                        className="relative h-14 w-14 cursor-pointer overflow-hidden rounded-[16px] border-[2px] border-black bg-zinc-800 shadow-sm transition-transform hover:z-20 hover:scale-110"
+                      >
+                        <img
+                          src={src}
+                          alt={`Creator ${i + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 5-Star Rating */}
+                  <div className="flex items-center gap-1 text-[#FFC107]">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg
+                        key={star}
+                        className="h-6 w-6 fill-current"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Trust Text */}
+                <p className="mt-1 text-base font-medium text-zinc-400">
+                  Trusted by 27,000+ creators
+                </p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Bottom Content: Actions & Meta Info */}
+          {/* x-padding (px-4 md:px-10) matches ExperimentalTestimonials; y kept. */}
+          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
+              className="pointer-events-auto shrink-0"
+            >
+              <button
+                type="button"
+                className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100"
+              >
+                <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
+                  Connect With Us
+                </span>
+
+                <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
+                  <svg width="0" height="0" className="absolute">
+                    <title>Connect arrow gradient</title>
+                    <defs>
+                      <linearGradient
+                        id="cta-icon-grad"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop stopColor="#2E5BFF" offset="0%" />
+                        <stop stopColor="#149CCB" offset="100%" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+
+                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                  <MdArrowOutward
+                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    style={{ fill: "url(#cta-icon-grad)" }}
+                  />
+                </div>
+              </button>
+            </motion.div>
+
+            {/* Drop us a line */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.15, ease: premiumEase }}
+              className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
+            >
+              <span className="text-xs uppercase tracking-wider text-zinc-500 font-medium">
+                Drop us a line
+              </span>
+              <a
+                href="mailto:hello@youragency.com"
+                className="group relative w-fit text-base font-bold text-white/90 transition-colors duration-300 hover:text-white md:text-lg"
+              >
+                hello@youragency.com
+                <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
+              </a>
+            </motion.div>
+
+            {/* Give us a call */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
+              className="pointer-events-auto flex flex-col gap-1 text-left md:text-start"
+            >
+              <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+                Give us a call
+              </span>
+              <span className="group relative w-fit cursor-pointer text-base font-bold text-white/90 transition-colors duration-300 hover:text-white md:text-lg">
+                +1 (555) 123-4567
+                <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
+              </span>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

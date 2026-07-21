@@ -1,36 +1,53 @@
-# Plan: TracingBorder — seamless comet → corner-glow handoff (no blank gap)
+# Plan — remaining service pages mirrored from /brand-strategy
 
-## Diagnosis (driver, grounded in src/components/ui/TracingBorder.tsx)
-LAP_DURATION=2.5, HANDOFF=2.35. Comet group fades `delay: LAP_DURATION-0.45,
-duration: 0.45` → opacity hits 0 at exactly t=2.5, the same instant the
-rotation completes; the reveal (rect 1.1s, circles 0.9s from t=2.35) is barely
-visible until ~2.7s. Result: ~0.4s where the card border shows nothing.
-The path starts/ends at the TR corner and the TR mask circle blooms first, so
-spatial continuity is already correct — this is purely a timing fix.
+(Previous plan.md — the never-approved TracingBorder handoff fix — is archived as
+`plan-tracingborder-handoff.md`.)
 
-## Fix (exact values, decided by driver)
-1. Comet group fade: `delay: LAP_DURATION, duration: 0.35` — the comet stays
-   fully visible through its entire lap and dissolves OVER the already-lit
-   border, never before it.
-2. `HANDOFF = LAP_DURATION - 0.3` (was −0.15) — the TR corner glow ignites
-   under the comet's final approach, so at lap-end the corner is already lit
-   (~65% bloomed) exactly where the comet stops.
-3. Mask rect duration `1.1 → 0.8` — edges fade in sooner.
-4. Update the "Timing:" comment (lines ~77-79) to describe the new overlap.
-Unchanged: circle durations/stagger, LAP path animation, all gradients/masks.
+## Goal
+Every service in the header dropdown gets its own page that is design-identical
+to /brand-strategy, backed by its own component copies so each page can diverge
+later. Mirrors exactly how /web-development was created.
 
-## Steps & routing
-| Step | Files (allowlist) | route | Acceptance check |
-|---|---|---|---|
-| T1 | src/components/ui/TracingBorder.tsx | sonnet | grep shows `HANDOFF = LAP_DURATION - 0.3`, comet transition `delay: LAP_DURATION` + `duration: 0.35`, rect `duration: 0.8`; no other timing values changed; `bunx tsc --noEmit` exit 0; biome: nothing new |
-| T2 | — verification — | driver | re-grep constants; confirm no other diff hunks in the file |
-| T3 | — done gate — | spec-verifier | plan vs file state; P0/P1 fixed, max 3 rounds |
+## Reality (verified)
+- Header dropdown lists 8 services. Only 2 have real routes:
+  `/brand-strategy`, `/web-development`. The other 6 point at those as placeholders.
+- `src/components/web-development/*` is a **byte-identical** copy of
+  `src/components/brand-strategy/*` (`diff` empty) — so "same to same" = literal copy.
+- Each folder holds 8 components: AgencyStats, CtaSection, FaqSection, OurTechStack,
+  ProcessSection, ProjectShowcase, StrategyHeroSection, SubServices.
+  (AgencyStats is used *inside* StrategyHeroSection, the other 7 by the page.)
+- SVG gradient ids (`cta-icon-grad`, `icon-gradient`) repeat across folders, but each
+  page imports only its own folder, so there is no same-page id collision. Same as the
+  existing web-development copy — no renaming needed.
 
-Routing: 1 sonnet, 0 opus, driver = analysis/verification only (<20%).
+## New routes (6)
+| Dropdown service | slug |
+|---|---|
+| Digital Marketing & Growth | `digital-marketing` |
+| AI & Marketing Automation  | `ai-marketing-automation` |
+| App Development            | `app-development` |
+| Custom Software & SaaS     | `custom-software` |
+| UI/UX Design               | `ui-ux-design` |
+| Video Production           | `video-production` |
 
-## Constraints (echoed into brief)
-- Minimal diff: ONLY the three timing values + the Timing comment.
-- No changes to gradients, masks, path math, stroke widths, easings other
-  than named; no reformatting; keep line endings.
-- Animation feel is verified by the user's eyes (headless pane can't play it);
-  static evidence = constants + typecheck.
+## Steps
+1. For each slug: copy `src/components/brand-strategy/` → `src/components/<slug>/`
+   (byte-identical, via `cp` so the design is guaranteed "same to same").
+2. For each slug: create `src/app/<slug>/page.tsx` mirroring
+   `src/app/brand-strategy/page.tsx` composition exactly (StrategyHeroSection,
+   SubServices>ProcessSection, OurTechStack, ProjectShowcase,
+   ExperimentalTestimonials, TechLogoCarousel, p-3 CtaSection,
+   space-y-10 [FaqSection, BlogSection], p-3 Footer) with imports pointed at
+   `@/components/<slug>/` and a uniquely named default export.
+3. Re-link the dropdown in **both** headers (`page/Header.tsx` + `layout/Header.tsx`
+   — the duplicate-nav pair) so each service points at its own new route.
+4. Verify: `bunx tsc --noEmit`, biome on new files, and load all 6 routes live
+   asserting the hero + section set render (200, not 404).
+5. Update `.claude/CODEBASE_MAP.md` (6 new routes + component folders) and append
+   `.claude/SESSION_LOG.md`.
+
+## Constraints
+- Design identical to brand-strategy (no content divergence) — that is the ask
+  ("same to same"); per-page copy can be edited later independently.
+- Don't touch brand-strategy / web-development.
+- Don't commit.

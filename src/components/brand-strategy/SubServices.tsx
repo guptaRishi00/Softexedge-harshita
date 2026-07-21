@@ -6,6 +6,9 @@ import { type ReactNode, useRef, useState } from "react";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
+// How much lower each card sits than the one before it in the finished stack.
+const STEP = 190;
+
 // Card content reveals with a soft upward stagger as each card scrolls in.
 const contentContainer = {
   hidden: {},
@@ -85,7 +88,7 @@ export default function SubServices({ children }: { children?: ReactNode }) {
     for (let j = 0; j < services.length; j++) {
       const el = cardRefs.current[j];
       if (!el) continue;
-      const pinTop = window.innerHeight * 0.05 + j * 190;
+      const pinTop = window.innerHeight * 0.05 + j * STEP;
       if (el.getBoundingClientRect().top <= pinTop + 2) active = j;
     }
     setActiveIndex((cur) => (cur === active ? cur : active));
@@ -95,22 +98,23 @@ export default function SubServices({ children }: { children?: ReactNode }) {
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
         {/* HEADER SECTION */}
-        <div className="mx-auto flex w-full flex-col items-start justify-between gap-6 px-4 md:px-10 pt-20 pb-32 md:flex-row md:items-end">
-          <div className="flex flex-col gap-5">
-            <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
-              What We Offer
-            </span>
+        <div className="mx-auto w-full px-4 md:px-10 pt-20 pb-32">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+            What We Offer
+          </span>
+
+          <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Services
               </span>
             </h2>
+            <p className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:text-left">
+              Delivering scalable, high-performance solutions that elevate
+              brands and drive revenue.
+            </p>
           </div>
-          <p className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:text-left">
-            Delivering scalable, high-performance solutions that elevate brands
-            and drive revenue.
-          </p>
         </div>
 
         {/* STACKING CARDS WRAPPER */}
@@ -119,7 +123,6 @@ export default function SubServices({ children }: { children?: ReactNode }) {
             <Card
               key={i}
               i={i}
-              isLast={i === services.length - 1}
               imageHidden={activeIndex > i}
               registerRef={(el: HTMLDivElement | null) => {
                 cardRefs.current[i] = el;
@@ -128,17 +131,27 @@ export default function SubServices({ children }: { children?: ReactNode }) {
             />
           ))}
 
-          {/* OVERLAP SLOT — the next section (ProcessSection, passed as
-              children) lives INSIDE the sticky container and scrolls up over the
-              still-pinned last card. z-40 sits above the cards' z (0–3) and its
-              opaque bg covers the pinned card during the overlap. Falls back to
-              the old runway spacer when no children are provided. */}
+          {/* OVERLAP SLOT — a section passed as children lives INSIDE the
+              sticky container and scrolls up over the still-pinned last card
+              (z-40 sits above the cards' z 0–3). Nothing is rendered without
+              children: the container ends with the last card, so once the
+              stack is complete it immediately scrolls away rather than
+              holding through a runway spacer. */}
           {children ? (
             <div className="relative z-40 w-full">{children}</div>
-          ) : (
-            <div className="pointer-events-none h-[100vh] w-full" />
-          )}
+          ) : null}
         </div>
+
+        {/* TRANSFORM RESERVE — the last card is PAINTED (services.length-1)
+            STEPs below its layout box by its translateY, and a transform
+            reserves no layout space. Without this the card spills over the
+            section that follows. Sits OUTSIDE the sticky container so it does
+            not extend the cards' containing block and delay their release. */}
+        <div
+          aria-hidden
+          className="pointer-events-none w-full"
+          style={{ height: (services.length - 1) * STEP }}
+        />
       </section>
     </ReactLenis>
   );
@@ -147,7 +160,6 @@ export default function SubServices({ children }: { children?: ReactNode }) {
 // --- ISOLATED CARD COMPONENT ---
 function Card({
   i,
-  isLast,
   imageHidden,
   registerRef,
   title1,
@@ -161,18 +173,28 @@ function Card({
   return (
     <div
       ref={registerRef}
-      className="sticky w-full mb-[22vh]"
+      className="sticky w-full"
       style={{
-        // Each card pins 190px lower than the last so previous titles peek —
-        // EXCEPT the last card, which pins at the top (5vh) and holds there so
-        // the ProcessSection overlap slides up over it.
-        top: `calc(5vh + ${(isLast ? 0 : i) * 190}px)`,
+        // Every card shares ONE sticky line and gets its 190px staircase
+        // offset from a transform instead of from `top`. Sticky release
+        // depends on `top + height`, so making that identical for every card
+        // means they all unstick at the same scroll position: the finished
+        // stack scrolls away as one rigid block instead of peeling apart from
+        // the top card down.
+        top: "5vh",
+        transform: `translateY(${i * STEP}px)`,
+        // The transform already pushes each card a STEP further down than the
+        // one before, so the flow gap gives back that same STEP to keep the
+        // original spacing and pin cadence. Clamped at 0 because 22vh is
+        // under a STEP on short viewports, and a negative margin would drag
+        // the cards into each other.
+        marginBottom: `max(0px, calc(22vh - ${STEP}px))`,
         // Later cards stack on top; fixed desktop height keeps earlier cards from poking through
         zIndex: i,
       }}
     >
       <div
-        className={`relative grid ${isLast ? "min-h-[70vh] md:h-[780px]" : "min-h-[50vh] md:h-[600px]"} w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-4 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
+        className={`relative grid min-h-[50vh] md:h-[600px] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-4 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
       >
         {/* LEFT COLUMN: Title, Description & Tags */}
         <motion.div
@@ -210,7 +232,7 @@ function Card({
               {tags.map((tag: string, index: number) => (
                 <span
                   key={index}
-                  className="rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm font-medium tracking-wide text-zinc-300 transition-colors hover:bg-white/10"
+                  className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium tracking-wide text-zinc-300 transition-colors "
                 >
                   {tag}
                 </span>

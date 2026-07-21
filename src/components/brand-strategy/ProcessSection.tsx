@@ -39,14 +39,15 @@ const processSteps = [
 
 export default function ProcessSection() {
   return (
-    <section className="w-full bg-black font-sans pt-20 md:pt-32 md:pb-35">
+    <section className="w-full bg-black font-sans pt-20 md:pt-20 md:pb-35">
       <div className="mx-auto w-full px-4 md:px-10">
         {/* Header Section */}
-        <div className="mb-16 flex flex-col items-start justify-between gap-6 md:mb-35 md:flex-row md:items-end">
-          <div className="flex flex-col gap-5">
-            <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
-              How We Work
-            </span>
+        <div className="mb-16 md:mb-35">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+            How We Work
+          </span>
+
+          <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <motion.h2
               initial={{ opacity: 0, y: -10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -59,19 +60,19 @@ export default function ProcessSection() {
                 Process
               </span>
             </motion.h2>
-          </div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:mb-2 md:text-left"
-          >
-            A streamlined approach to turning complex challenges into elegant
-            digital solutions, from initial concept to global scale. from
-            initial concept to global scale.
-          </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+            >
+              A streamlined approach to turning complex challenges into elegant
+              digital solutions, from initial concept to global scale. from
+              initial concept to global scale.
+            </motion.p>
+          </div>
         </div>
 
         {/* Process Grid */}
@@ -111,8 +112,9 @@ export default function ProcessSection() {
           ))}
         </div>
 
-        {/* NON-EDGE-TO-EDGE BOTTOM BORDER */}
-        <div className="mt-16 w-full border-b border-white/10 md:mt-35" />
+        {/* NON-EDGE-TO-EDGE BOTTOM BORDER — pulled out past the md:px-10
+            gutter so the rule sits 16px from each edge, matching OurTechStack. */}
+        <div className="mt-16 w-full border-b border-white/10 md:-mx-6 md:mt-35 md:w-[calc(100%_+_3rem)]" />
       </div>
     </section>
   );

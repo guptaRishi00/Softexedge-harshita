@@ -81,7 +81,7 @@ function CarouselCard({ item }: { item: CarouselItem }) {
       )}
 
       {item.type === "quote" && (
-        <div className="flex h-full w-full flex-col justify-start gap-1 bg-[#0a0a0a] p-5 md:gap-2 md:p-7">
+        <div className="flex h-full w-full flex-col justify-start gap-1 bg-[#131313] p-5 md:gap-2 md:p-7">
           <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-5xl font-bold leading-none text-transparent md:text-6xl">
             “
           </span>

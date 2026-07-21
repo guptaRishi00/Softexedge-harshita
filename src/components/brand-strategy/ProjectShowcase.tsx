@@ -75,24 +75,25 @@ export default function ProjectShowcase() {
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
       <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">
-        <div className="mb-34 flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <div className="flex flex-col gap-5">
-            <span className="ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
-              Selected Work
-            </span>
+        <div className="mb-34 w-full">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+            Selected Work
+          </span>
+
+          <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <h2 className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[5rem]">
               Our{" "}
               <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
                 Projects
               </span>
             </h2>
-          </div>
 
-          <p className="max-w-2xl text-left text-2xl font-light leading-[1.25em] text-white md:mb-2">
-            Delivering scalable, high-performance solutions that elevate brands
-            and drive revenue. Delivering scalable, high-performance solutions
-            that elevate brands and drive revenue.
-          </p>
+            <p className="max-w-2xl text-left text-2xl font-light leading-[1.25em] text-white">
+              Delivering scalable, high-performance solutions that elevate
+              brands and drive revenue. Delivering scalable, high-performance
+              solutions that elevate brands and drive revenue.
+            </p>
+          </div>
         </div>
 
         <div className="flex h-auto w-full flex-col gap-4 md:h-[100vh] md:gap-6">

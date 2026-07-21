@@ -181,7 +181,7 @@ function PerkCard({ icon: Icon, title, description }: Perk) {
           <span className="text-xl font-bold text-white sm:text-2xl">
             {title}
           </span>
-          <span className="text-lg font-light leading-[1.2em] text-zinc-300 mt-6">
+          <span className="text-lg font-light leading-[1.3em] text-zinc-300 mt-6">
             {description}
           </span>
         </span>
@@ -197,7 +197,7 @@ export default function PerksSection() {
     <section className="w-full bg-black px-4 md:px-10 py-24 font-sans selection:bg-[#2E5BFF]/20 md:pt-20">
       <div className="mx-auto w-full">
         {/* Header */}
-        <div className="mb-14 flex flex-col items-center text-center md:mb-40">
+        <div className="mb-14 flex flex-col items-center text-center md:mb-30">
           <motion.span
             initial={reduce ? false : { opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}

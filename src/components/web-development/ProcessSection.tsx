@@ -42,11 +42,12 @@ export default function ProcessSection() {
     <section className="w-full bg-black font-sans pt-20 md:pt-32 md:pb-35">
       <div className="mx-auto w-full px-4 md:px-10">
         {/* Header Section */}
-        <div className="mb-16 flex flex-col items-center gap-6 text-center md:mb-35">
-          <div className="flex flex-col items-center gap-5">
-            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
-              How We Work
-            </span>
+        <div className="mb-16 md:mb-35">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+            How We Work
+          </span>
+
+          <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <motion.h2
               initial={{ opacity: 0, y: -10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -59,19 +60,19 @@ export default function ProcessSection() {
                 Process
               </span>
             </motion.h2>
-          </div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="max-w-2xl text-center text-xl font-light leading-[1.25em] text-white md:mb-2"
-          >
-            A streamlined approach to turning complex challenges into elegant
-            digital solutions, from initial concept to global scale. from
-            initial concept to global scale.
-          </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+            >
+              A streamlined approach to turning complex challenges into elegant
+              digital solutions, from initial concept to global scale. from
+              initial concept to global scale.
+            </motion.p>
+          </div>
         </div>
 
         {/* Process Grid */}
@@ -103,7 +104,7 @@ export default function ProcessSection() {
                   {step.title}
                 </h3>
 
-                <p className="mb-6 text-[15px] font-medium leading-relaxed text-zinc-400">
+                <p className="mb-6 text-[15px] font-light leading-relaxed text-zinc-400">
                   {step.description}
                 </p>
               </div>

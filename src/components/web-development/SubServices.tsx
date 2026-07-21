@@ -95,22 +95,23 @@ export default function SubServices({ children }: { children?: ReactNode }) {
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
         {/* HEADER SECTION */}
-        <div className="mx-auto flex w-full flex-col items-center gap-6 px-4 md:px-10 pt-20 pb-32 text-center">
-          <div className="flex flex-col items-center gap-5">
-            <span className="text-xs font-medium uppercase tracking-[0.25em] text-white/60">
-              What We Offer
-            </span>
+        <div className="mx-auto w-full px-4 md:px-10 pt-20 pb-32">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+            What We Offer
+          </span>
+
+          <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Services
               </span>
             </h2>
+            <p className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:text-left">
+              Delivering scalable, high-performance solutions that elevate
+              brands and drive revenue.
+            </p>
           </div>
-          <p className="max-w-2xl text-center text-2xl font-light leading-[1.25em] text-white">
-            Delivering scalable, high-performance solutions that elevate brands
-            and drive revenue.
-          </p>
         </div>
 
         {/* STACKING CARDS WRAPPER */}

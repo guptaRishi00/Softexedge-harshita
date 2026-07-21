@@ -2,6 +2,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
 import { useIsDesktop } from "@/lib/useIsDesktop";
@@ -142,8 +143,8 @@ export default function ExperimentalTestimonials() {
             </p>
 
             <div className="mt-8 flex items-start">
-              <button
-                type="button"
+              <Link
+                href="/contact"
                 className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
               >
                 <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
@@ -173,7 +174,7 @@ export default function ExperimentalTestimonials() {
                     style={{ fill: "url(#testimonial-icon-grad)" }}
                   />
                 </div>
-              </button>
+              </Link>
             </div>
           </div>
 

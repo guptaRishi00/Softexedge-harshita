@@ -15,13 +15,13 @@ const services = [
     title: "Digital Marketing & Growth",
     image:
       "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGRpZ2l0YWwlMjBtYXJrZXRpbmd8ZW58MHx8MHx8fDA%3D",
-    href: "/services",
+    href: "/digital-marketing",
   },
   {
     title: "AI & Marketing Automation",
     image:
       "https://plus.unsplash.com/premium_photo-1683120966127-14162cdd0935?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fHNvZnR3YXJlfGVufDB8fDB8fHww",
-    href: "/services",
+    href: "/ai-marketing-automation",
   },
   {
     title: "Web Development",
@@ -33,13 +33,13 @@ const services = [
     title: "App Development",
     image:
       "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=800&auto=format&fit=crop",
-    href: "/services",
+    href: "/app-development",
   },
   {
     title: "Custom Software & SaaS",
     image:
       "https://plus.unsplash.com/premium_photo-1685086785636-2a1a0e5b591f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c29mdHdhcmV8ZW58MHx8MHx8fDA%3D",
-    href: "/services",
+    href: "/custom-software",
   },
   {
     title: "Brand Strategy & Identity",
@@ -51,13 +51,13 @@ const services = [
     title: "UI/UX Design",
     image:
       "https://images.unsplash.com/photo-1545235617-9465d2a55698?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8dWl1eHxlbnwwfHwwfHx8MA%3D%3D",
-    href: "/services",
+    href: "/ui-ux-design",
   },
   {
     title: "Video Production",
     image:
       "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=800&auto=format&fit=crop",
-    href: "/services",
+    href: "/video-production",
   },
 ];
 
@@ -184,22 +184,26 @@ export default function ServiceSection() {
     >
       <div className="w-full px-4 md:px-10">
         {/* HEADER SECTION */}
-        <div className="mb-10 flex w-full flex-col-reverse items-start justify-between gap-8 pb-10 md:flex-row md:items-end">
-          <div>
-            <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
-              What We Offer
-            </p>
+        <div className="mb-10 w-full pb-10">
+          {/* Tag sits ABOVE the row (not inside the title column), so the row's
+              md:items-center aligns the description with the TITLE alone
+              instead of with the combined tag + title block. */}
+          <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
+            What We Offer
+          </p>
+
+          <div className="flex w-full flex-col-reverse items-start justify-between gap-8 md:flex-row md:items-center">
             <h2 className="text-5xl font-bold tracking-tight text-white md:text-[80px]">
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Services
               </span>
             </h2>
+            <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
+              We merge strategic thinking with bold creative execution to
+              deliver scalable digital experiences that elevate your brand
+            </p>
           </div>
-          <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
-            We merge strategic thinking with bold creative execution to deliver
-            scalable digital experiences that elevate your brand
-          </p>
         </div>
 
         {/* SERVICES LIST */}
