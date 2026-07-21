@@ -24,16 +24,31 @@ export default function CtaSection() {
         {/* Main CTA Container - Reduced height to 45vh */}
         <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black">
           {/* Auto-moving spotlight pattern background */}
-          <SpotlightGrid speed={4} maskRadius={950} travel={1} />
+          {/* speed 0.3 → ~1.8 cells/sec, so a box holds for a little over half
+              a second and a full 80-box pass takes ~47s. */}
+          {/* The light travels a rectangle inset from the card edges: from the
+              3rd box in from the left and 3rd row down, ending on the 3rd row
+              up from the bottom (the grid is 8 rows, so that's row index 5). */}
+          <SpotlightGrid
+            speed={0.3}
+            sweep
+            sweepColStart={2}
+            sweepRowStart={2}
+            sweepRowEnd={5}
+          />
 
-          {/* TEXT BLOCK-OUT LAYERS (Z-5) */}
-          {/* These permanent black gradients sit ABOVE the spotlight grid but BELOW the text, ensuring the spotlight never reveals the grid behind typography. */}
-          <div className="pointer-events-none absolute inset-0 z-[5]">
-            {/* Top-Left Fade for Heading */}
-            <div className="absolute inset-y-0 left-0 w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent" />
-            {/* Bottom Fade for Footer/CTA Elements */}
-            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black via-black/95 to-transparent" />
-          </div>
+          {/* TEXT BLOCK-OUT LAYERS (Z-5) — permanent black gradients above the
+              spotlight grid but below the text, keeping typography legible.
+              Kept as separate siblings rather than one wrapper so the left
+              fade can run at full strength while the bottom one stays dimmed. */}
+
+          {/* Left fade for the heading — full strength: the largest type sits
+              on it and needs the contrast. */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent" />
+
+          {/* Bottom fade for the footer/CTA row — held at 50% so the sweeping
+              grid still reads through on the right of the card. */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50" />
 
           {/* Top Content: Massive Typography & Social Proof */}
           {/* x-padding (px-4 md:px-10) matches ExperimentalTestimonials; y kept. */}

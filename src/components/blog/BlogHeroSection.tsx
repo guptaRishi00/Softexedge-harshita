@@ -95,10 +95,20 @@ export default function BlogHeroSection() {
 
       {/* Black hero container with auto-moving spotlight pattern */}
       <div className="relative mx-auto flex min-h-[70vh] w-full flex-col justify-end overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-4 py-12 md:px-10 md:py-16 lg:py-20">
-        <SpotlightGrid speed={4} maskRadius={950} travel={0.35} />
+        {/* The light travels a rectangle inset from the card edges: from the
+            2nd box in from the left and 3rd row down, ending on the third-last
+            row (the grid is 8 rows, so that's row index 5). */}
+        <SpotlightGrid
+          speed={0.3}
+          sweep
+          sweepColStart={1}
+          sweepRowStart={2}
+          sweepRowEnd={5}
+        />
 
-        {/* Bottom fade so the text sits cleanly over the pattern */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-2/3 bg-gradient-to-t from-black via-black/80 to-transparent" />
+        {/* Left→right fade so the text sits cleanly over the pattern — same
+            gradient CtaSection uses. */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black/80 via-black/60 to-transparent" />
 
         {/* Content */}
         <div className="relative z-10">

@@ -4359,3 +4359,181 @@ Verified: tsc ✓, biome ✓ (no key lint), next build ✓. 1 file. Not committe
 The carousel quote card used a typographic “ glyph outlined via WebkitTextStroke (from an earlier task). Replaced it with the inline two-path outlined-quote SVG that ExperimentalTestimonials uses (viewBox 0 0 24 24, fill none, stroke currentColor, strokeWidth 1, round caps/joins) — both `d` strings copied verbatim.
 Kept in flow at the top of the card (not absolutely positioned top-right like the testimonials card) since the task was to swap the icon, not relayout. Sized `h-10 w-10 md:h-12 md:w-12` to land near the old glyph's 48/60px optical size, plus `shrink-0` so the flex column can't squash it. Stroke is currentColor so colour comes from `text-[#2E5BFF]`, preserving the brand-blue outline chosen earlier; the testimonials copy uses text-black/10 because it sits on a white card, which would be invisible on this #131313 one.
 Verified: greped both files and confirmed the two path `d` strings are byte-identical; confirmed zero WebkitTextStroke/“ left. tsc ✓, biome ✓ (title element present, no a11y complaint), next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — brand-strategy CtaSection: no mask, glow sweeps left-to-right
+SpotlightGrid is shared by 9 consumers (8 identical CtaSections + BlogHeroSection, which still needs its mask), so rather than change the shared default I added an opt-in `sweep?: boolean` (default false). With sweep=false every existing consumer's code path is byte-for-byte the behaviour it had.
+sweep=true does two things: (1) the radial reveal mask is not applied at all, so every grid cell stays visible; (2) the rAF loop early-returns into a different driver — a head column advances left→right as `((t*1.2) % (COLUMNS+4)) - 2` and wraps, starting/ending 2 columns outside the grid so the band enters and exits cleanly instead of popping on at the edges. getIntensity gains a sweep branch that measures distance on the COLUMN axis only, so a whole column lights together and the wave marches across one column at a time.
+useMotionTemplate for the mask is now built unconditionally into a `maskImage` const and only applied when !sweep — hooks can't be called inside a branch. `sweep` added to the effect's dep array.
+Per user's scope choice, only brand-strategy/CtaSection opted in: `<SpotlightGrid speed={4} sweep />` (maskRadius/travel dropped as they're unused in sweep). The other 7 CtaSections and BlogHeroSection keep the spotlight+mask.
+Verified: greped all 9 call sites — exactly one passes `sweep`, the rest unchanged. tsc ✓, biome ✓, next build ✓. 2 files. Not committed.
+NOTE: under prefers-reduced-motion the effect early-returns so focus stays null — in sweep mode that now renders a static unlit grid (previously the mask hid everything). Visible but motionless, which seems the better reduced-motion result.
+
+## 2026-07-20 — brand-strategy CtaSection: drop the block-out overlay to 50% so the sweep shows through
+Follow-up to the sweep change — the new left-to-right animation was being hidden. Culprit was NOT SpotlightGrid's own scrims but CtaSection's local "TEXT BLOCK-OUT LAYERS (Z-5)": two full-strength black gradients (from-black via-black/90 → transparent across the left 3xl, and from-black via-black/95 up 48px from the bottom) sitting between the grid and the text.
+Added `opacity-50` to their shared wrapper rather than editing each gradient stop — halves both layers uniformly in one token and keeps their shapes/direction intact. Comment updated to record why the 50% is there, so it doesn't get "fixed" back later.
+Scoped to brand-strategy only, consistent with the sweep change; greped the other 7 CtaSections and confirmed their z-[5] wrappers are untouched (they still have the full mask/spotlight effect these scrims were tuned for).
+Verified: tsc ✓, biome ✓, next build ✓. 1 file, 1 token. Not committed.
+TRADEOFF: those gradients exist for text legibility over the grid. At 50% the heading and footer CTA now sit on a lighter backdrop — needs the user's eyes to confirm contrast is still acceptable, especially as a lit column sweeps under the text.
+
+## 2026-07-20 — brand-strategy CtaSection: left gradient back to full strength
+Previous task put BOTH block-out gradients inside one `opacity-50` wrapper, which also halved the left fade the heading sits on. Split them into two z-[5] siblings instead of one wrapper:
+- Left fade (inset-y-0 left-0, max-w-3xl, from-black via-black/90 → transparent): FULL strength, no opacity class. The largest type sits on it.
+- Bottom fade (inset-x-0 bottom-0, h-48, from-black via-black/95 → transparent): keeps `opacity-50` so the sweeping grid still reads through the right of the card.
+Both gradients' colours, directions and geometry are unchanged from the original — only the opacity grouping moved. Comments record why they're siblings rather than nested, so the wrapper doesn't get reintroduced.
+Still brand-strategy only: greped the other CtaSections, each still has its single original z-[5] wrapper.
+Verified: tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — brand-strategy CtaSection: slow the sweep
+Sweep rate is speed*1.2 columns/sec over a COLUMNS+4 = 14-column cycle, so a full pass = 11.667/speed seconds. At speed={4} that was ~2.9s — too quick to read. Dropped to speed={1.5} → ~7.8s per pass.
+Changed the PROP, not SpotlightGrid's internal 1.2 constant, so the timing change is scoped to this one instance and any future sweep consumer still gets the default cadence. Added a comment with the resulting seconds so the number isn't opaque.
+Greped all 9 call sites: only brand-strategy differs; the other 7 CtaSections and BlogHeroSection remain speed={4} with their mask props.
+Verified: tsc ✓, biome ✓, next build ✓. 1 file, 1 value. Not committed.
+Tuning reference for future asks: speed 4 ≈ 2.9s, 2 ≈ 5.8s, 1.5 ≈ 7.8s, 1 ≈ 11.7s per full left-to-right pass.
+
+## 2026-07-20 — SpotlightGrid sweep: one box at a time in reading order
+Previous sweep lit a whole COLUMN band moving left→right. User wants a single box travelling left→right AND top→bottom, so the driver now walks the FLAT row-major index instead of a column position — index order already is left→right along a row then down to the next, so reading-order traversal falls out for free.
+Changes (all inside the `sweep` branch; non-sweep path untouched):
+- New `sweepHead` state (float index of the leading lit cell), separate from `focus` which stays null in sweep mode.
+- tick: `setSweepHead((t * SWEEP_CELLS_PER_SEC) % (TOTAL_ITEMS + SWEEP_TRAIL))`. The period overruns the grid by SWEEP_TRAIL so the tail fades fully off cell 79 before restarting at cell 0, instead of wrapping mid-tail.
+- getIntensity: sweep branch moved ABOVE the `if (!focus) return 0` guard — that guard would otherwise blank the whole grid now that focus is never set in sweep mode. Lights only cells BEHIND the head (`behind = sweepHead - index`, 0..SWEEP_TRAIL), so the head box is brightest with a short fading tail; nothing lights ahead of it.
+- New module constants SWEEP_CELLS_PER_SEC = 6, SWEEP_TRAIL = 4.
+At CtaSection's speed={1.5} the light advances 9 cells/sec → ~9.3s for a full 80-cell pass.
+Verified: read the final logic back (bounds, wrap, guard order); sweepHead初 -1 means nothing lights pre-first-frame and under reduced-motion. tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — brand-strategy CtaSection: sweep made very slow
+speed 1.5 → 0.3. Rate is speed * SWEEP_CELLS_PER_SEC(6), so 9 → 1.8 cells/sec: each box now holds a little over half a second (0.56s) and a full 80-box pass takes ~47s (was ~9s).
+Changed the instance PROP again rather than SWEEP_CELLS_PER_SEC, so the shared default cadence is preserved for any future sweep consumer. Comment carries the derived numbers.
+Verified: greped all 9 call sites — brand-strategy is speed={0.3}, the other 8 all still speed={4} (checked by counting non-matches: 0). tsc ✓, biome ✓, next build ✓. 1 file, 1 value. Not committed.
+Tuning table (cells/sec = speed*6; full pass = 84/rate): 1.5 → 9/s, ~9s. 0.5 → 3/s, ~28s. 0.3 → 1.8/s, ~47s. 0.15 → 0.9/s, ~93s.
+
+## 2026-07-20 — SpotlightGrid: sweepStart prop; brand-strategy CTA starts at the 3rd box
+New `sweepStart?: number` (default 0) = the flat index the traversal begins from. Three coordinated changes, all inside the sweep path:
+- getIntensity: `if (index < sweepStart) return 0` — cells before the start never light, including as tail. Without this the 4-cell tail would still bleed backwards onto boxes 0-1.
+- driver: period = TOTAL_ITEMS - sweepStart + SWEEP_TRAIL and head = sweepStart + (…% period), so on wrap the head returns to sweepStart rather than index 0, and the cycle isn't lengthened by cells it no longer visits.
+- sweepStart added to the effect dep array.
+brand-strategy CtaSection now `<SpotlightGrid speed={0.3} sweep sweepStart={2} />`. Default 0 means the 8 other consumers are behaviourally untouched (verified: all 8 still speed={4}, none pass sweep/sweepStart).
+Scope note: this skips the first two boxes of the TOP ROW only — later rows still traverse their columns 0-1 normally, which matches "start from the third box" literally. If the intent was for every row to skip the two columns hidden under the left gradient, that's a different change (a per-row column floor) — flagged to user.
+Verified: read the sweep branch back; tsc ✓, biome ✓, next build ✓. 2 files. Not committed.
+
+## 2026-07-20 — SpotlightGrid: sweep confined to a cell rectangle (replaces sweepStart)
+Request needed a REGION, not a linear offset, so last task's `sweepStart` is replaced by four inclusive bounds: sweepColStart/sweepColEnd/sweepRowStart/sweepRowEnd (defaults cover the whole grid, so the 8 non-sweep consumers are untouched).
+Deliberately kept them as four PRIMITIVE props rather than one `sweepBounds` object — an inline object literal would be a new identity every render and retrigger the rAF effect through its dep array every time.
+- getIntensity: derives r/c from the flat index, returns 0 outside the rectangle, then converts to an ORDINAL within the region — `(r - rowStart) * regionCols + (c - colStart)` — so traversal is left→right then top→bottom *inside* the region.
+- driver: cycle length is now regionCount + SWEEP_TRAIL, not the whole grid, so the light doesn't idle through cells it never visits.
+brand-strategy CtaSection: sweepColStart={2} sweepRowStart={2} sweepRowEnd={5}. Grid is 8 rows (TOTAL_ITEMS 80 / COLUMNS 10) so 3rd-from-bottom = index 5; colEnd left at default 9 since no right bound was specified.
+Math verified by hand: region = 8 cols x 4 rows = 32 cells; ordinal 0 = (row2,col2) = 3rd from left & top; ordinal 31 = (row5,col9) = last box on the 3rd row up from the bottom. period 36 at 1.8 cells/s → ~20s per pass.
+Caught mid-task: first edit referenced a nonexistent ROWS_FROM_BOTTOM constant (ROWS isn't exported from SpotlightGrid) — replaced with the literal 5 plus a comment deriving it.
+Verified: greped for stale `sweepStart` (none left anywhere); tsc ✓, biome ✓, next build ✓. 2 files. Not committed.
+
+## 2026-07-20 — SubServices: last card now hides the previous card's image
+Symptom: every card's image faded out as the next one stacked over it, EXCEPT the 3rd card when the 4th (last) stacked.
+Root cause was NOT the fade logic but the tracker's clock. `useScroll({offset: ["start start","end end"]})` reaches progress 1 when the container's bottom meets the VIEWPORT bottom, and `useMotionValueEvent(…, "change")` stops firing once the value is pinned at 1. But the last card only reaches its pin line much later — it sticks only while containerBottom >= 5vh + cardHeight (~645px on a 900px viewport), i.e. well after containerBottom passed 900. So the progress had already saturated and the tracker was dead by the time the last card pinned; activeIndex never reached 3, so card index 2's `imageHidden={activeIndex > 2}` never became true.
+Fix: offset → ["start start", "end start"], so the range runs until the container's bottom clears the viewport TOP and change events keep firing through the whole pinning sequence. Safe because scrollYProgress is used ONLY as the tracker's tick (verified by grep: 2 references, the useScroll and the useMotionValueEvent) — nothing visual is driven by its value, so widening the range changes no animation.
+Note the last card's pin window is only ~8px of scroll (container ends right after it), which is why the render/tracker agreement matters — but since rect.top keeps decreasing after unstick, `rect.top <= pinTop + 2` stays true and activeIndex latches at 3.
+Verified: tsc ✓, biome ✓, next build ✓. 1 file, 1 value. Not committed.
+
+## 2026-07-20 — BlogHeroSection: adopt the CtaSection sweep animation
+Was `<SpotlightGrid speed={4} maskRadius={950} travel={0.35} />` (radial reveal mask + Lissajous wander). Now `<SpotlightGrid speed={0.3} sweep />` — no mask, glow steps one box at a time left→right / top→bottom, same speed as the brand-strategy CTA. maskRadius/travel dropped since sweep ignores them.
+Deliberately did NOT copy the CTA's sweepColStart/sweepRowStart/sweepRowEnd: those bounds exist to keep the light clear of the CTA card's full-strength LEFT gradient, which this hero doesn't have. The hero's only scrim is a bottom fade (h-2/3 from-black via-black/80), so the full-grid sweep is the right analogue — the top third reads clearly and the lower rows dim naturally under the existing fade.
+Verified: greped all 9 call sites — exactly 2 now in sweep mode (blog hero + brand-strategy CTA), the other 7 CtaSections still speed={4} with mask props. tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+OPEN for user: if the bottom fade swallows too much of the sweep, the fix is bounding it to the visible top rows (e.g. sweepRowEnd={2}) rather than weakening the scrim.
+
+## 2026-07-20 — BlogHeroSection: scrim switched to CtaSection's left→right gradient
+Hero had a single bottom-up scrim (inset-x-0 bottom-0, h-2/3, bg-gradient-to-t from-black via-black/80). Replaced with CtaSection's left gradient verbatim: `inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent` — greped both files, the class string is byte-identical.
+One layer in, one layer out (not additive): the hero now has NO bottom fade, unlike CtaSection which pairs its left gradient with a dimmed h-48 bottom one. Kept it to a single scrim because the task asked to make the hero's gradient left→right, not to add a second layer.
+Verified: gradient parity by grep; confirmed no `bg-gradient-to-t` remains in the hero. tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+WATCH: the headline sits at the BOTTOM of this card (flex justify-end) and runs to text-[7rem] at lg, so its right-hand words now extend past the max-w-3xl gradient onto the raw grid. Previously the h-2/3 bottom fade covered exactly that area. If legibility drops at the bottom-right, re-add CtaSection's dimmed bottom fade alongside rather than widening the left one.
+
+## 2026-07-20 — BlogHeroSection: confine the sweep to an inset rectangle
+Was a full-grid sweep; now bounded: sweepColStart={3} sweepRowStart={3} sweepRowEnd={6}. Grid is 8 rows (TOTAL_ITEMS 80 / COLUMNS 10), so "second last row" = index 6; "4th from left/top" = index 3 each. colEnd left at its default 9 — no right bound was specified, so the light still runs to the right edge.
+Region = 7 cols x 4 rows = 28 cells; ordinal 0 lands on (row 3, col 3) and ordinal 27 on (row 6, col 9). Period 32 at 1.8 cells/sec → ~17.8s per pass (was ~47s over the full 80-cell grid, so it cycles noticeably more often now).
+Reuses the sweepColStart/RowStart/RowEnd props added for CtaSection — no component change needed, just the call site. The two sweep consumers now carry different regions (CTA 2/2/5, hero 3/3/6), which is expected: each is tuned to its own scrim.
+Verified: read both sweep call sites back; confirmed the other 7 CtaSections still mask-mode at speed={4}. tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — BlogHeroSection: re-bound the sweep region
+sweepColStart 3→1, sweepRowStart 3→2, sweepRowEnd 6→5. Grid is 8 rows, so "third last row" = index 5; "2nd from left" = index 1, "3rd from top" = index 2. colEnd still default 9 (no right bound given).
+Region grows from 7x4=28 to 9x4=36 cells; ordinal 0 = (row 2, col 1), last ordinal 35 = (row 5, col 9). Period 40 at 1.8 cells/sec → ~22s per pass (was ~17.8s).
+Call site only — the bounds props already existed. Verified: read the call site back; tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — TracingBorder comet stops where the TR radius begins
+ui/TracingBorder.tsx: the comet path started/ended at the 45° MIDPOINT of the top-right
+corner arc (sx/sy computed via k=Math.SQRT1_2 from the arc centre), so the comet ran along
+the top edge and then continued halfway around the curve before stopping. Re-anchored the
+path to the tangent point where the radius BEGINS: sx = inset+W-r, sy = inset. This also
+removed the awkward split TR arc (path had two half-arcs at TR) — it's now one clean arc per
+corner, closing with `L sx sy Z` along the top edge. Dropped now-unused k/trCx/trCy; moved
+`f()` above sx/sy.
+Verified: tsc 0, biome 0 findings. `grep SQRT1_2 src/` = NONE, and scanning all 27 served
+client scripts finds no SQRT1_2 → old stop point no longer ships. Geometry on a real
+1185x600 card (r=18.5): stop moved from (1178.08, 6.92) mid-arc → (1165, 1.5) = exactly the
+top-edge tangent (y == inset), i.e. 13.08px left / 5.42px up.
+Shared component: applies to WorkProjectShowcase, BlogListSection and all 8 ProjectShowcase
+copies (consistent comet everywhere). Comet is hover-driven (active={isHovered}) so the pane
+can't play it — motion needs user's eyes. Not committed.
+
+## 2026-07-20 — TracingBorder comet stops 24px before the TR radius
+Follow-up: stopping exactly at the radius start was slightly too far. Moved the start/stop
+point back along the top edge by a fixed `STOP_SHORT = 24`px:
+  sx = max(inset + r, inset + W - r - 24)   (clamped to the TL tangent for narrow cards)
+Path had to gain a leading `L (inset+W-r) inset` so the rest of the top edge into the TR arc
+is still drawn — `d` also renders the STATIC corner-weighted border, so the shape must remain
+a complete rounded rect; only the dash start/end moves.
+Verified on a real 1185x600 card (r=18.5) by building the path and measuring it:
+ comet stop (1141, 1.5) vs radius start x=1165 → exactly 24px before, y == inset (on the top
+ edge); getPointAtLength(0) == getPointAtLength(len) == (1141, 1.5); measured path length
+ 3526.3 vs true perimeter 3526.2 → shape intact, static border undistorted.
+tsc 0, biome 0. Hover-driven so motion needs user's eyes; STOP_SHORT is a one-number knob if
+24px isn't the right amount. Not committed.
+
+## 2026-07-20 — TracingBorder comet stop moved back again (24 → 48px)
+Same "stop a little before" request repeated, so doubled the single knob:
+ui/TracingBorder.tsx STOP_SHORT 24 → 48. Verified on the real 1185x600 card (r=18.5):
+stop x 1141 → 1117 (24px further back), now 48px before the radius start (x=1165), still on
+the top edge (y = inset = 1.5); path start == end; measured length still == true perimeter
+(shape intact, static border undistorted). tsc 0, biome 0. Hover-driven — needs user's eyes.
+Not committed.
+
+## 2026-07-20 — TracingBorder STOP_SHORT 48 → 100px (3rd "a little before")
+Same request a third time — 24px steps were ~2% of the 1145px top edge, too small to read,
+so made a decisive step instead of inching. ui/TracingBorder.tsx STOP_SHORT 48 → 100.
+Verified on the real 1185x600 card (r=18.5): stop x 1117 → 1065; radius starts at x=1165, so
+now 100px before it = 8.7% back along the 1145px top edge. Progression: 1165 (at radius) →
+1141 → 1117 → 1065.
+Hover-driven, so still adjusting blind — asked user to name a target (fraction of the top
+edge) or send a screenshot if this overshoots/undershoots, rather than keep bisecting.
+tsc 0, biome 0. Not committed.
+
+## 2026-07-20 — ROOT CAUSE: comet head was never stopping near the TR corner
+4th identical "stop a little before" → stopped nudging and analysed the dash geometry.
+FINDING: the comet is `strokeDasharray "0.25 0.75"` on pathLength=1, i.e. the visible streak
+is 25% of the perimeter = 882px on a 1185x600 card. The animation ran dashoffset 1.0 → 0,
+which leaves the dash spanning path [0, 0.25]: its TRAILING end at the anchor and its LEADING
+end 882px further on — measured at (1002, 599), on the BOTTOM edge. So every previous
+STOP_SHORT tweak (24/24/52px) only slid an 882px streak by ~1%; the head never came near the
+top-right corner, which is why 4 rounds of nudging changed nothing perceptible.
+FIX: shifted the dash range by one tail-length so the LEADING edge lands on the anchor —
+initial strokeDashoffset 1+TAIL, animate to TAIL (applied to both halo and core paths). Now
+the anchor genuinely is "where the comet stops". Reset STOP_SHORT 100 → 40 (a modest "little
+before"), and updated the comment (anchor = leading-edge rest point).
+Verified on the real 1185x600 card: leading edge now rests at (1125, 2) on the TOP edge,
+exactly 40px before the radius start (x=1165); trailing edge at (243, 1) also on the top edge
+(882px streak). Was (1002, 599) BOTTOM edge. tsc 0, biome 0.
+Larger change than a nudge — flagged to user; STOP_SHORT is still the single knob. Hover-only
+so needs their eyes. Not committed.
+
+## 2026-07-20 — TracingBorder STOP_SHORT 40 → 120px
+First adjustment since the leading-edge fix, so the knob now moves what the user actually
+watches. ui/TracingBorder.tsx STOP_SHORT 40 → 120. Verified on the real 1185x600 card:
+comet's LEADING edge rests at (1045, 2) — still on the top edge — 120px before the radius
+start (x=1165) = 10.5% back along the 1145px top edge; was (1125, 2) at 40px, so it moved a
+further 80px. Path length still == true perimeter (shape intact, static border undistorted).
+tsc 0, biome 0. Hover-only; needs user's eyes. Not committed.
+
+## 2026-07-20 — TracingBorder STOP_SHORT 120 → 100px (direction reversed)
+User asked for "a little AFTER" (forward, toward the corner) — 120px was slightly too far
+back. ui/TracingBorder.tsx STOP_SHORT 120 → 100. Target is now bracketed: 40px read as too
+near the corner, 120px as slightly too far, so 100 sits just inside the far bound.
+Verified on the real 1185x600 card: comet's leading edge rests at (1065, 2), still on the top
+edge, 100px before the radius start (x=1165) — moved 20px forward from (1045, 2). Path length
+still == true perimeter (shape intact). tsc 0, biome 0. Hover-only; needs user's eyes.
+Not committed.

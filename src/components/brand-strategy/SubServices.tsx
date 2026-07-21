@@ -76,9 +76,15 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Only used as a per-frame tick for the tracker below, so the range has to
+  // stay unsaturated for as long as cards are still pinning. With "end end"
+  // progress hit 1 (and stopped emitting) once the container's bottom reached
+  // the viewport bottom — which happens BEFORE the last card reaches its pin
+  // line, so the last card never registered. "end start" runs the range on
+  // until the container's bottom clears the viewport top.
   const { scrollYProgress } = useScroll({
     target: container,
-    offset: ["start start", "end end"],
+    offset: ["start start", "end start"],
   });
 
   // Track the top-most card that has actually pinned (reached its sticky line).

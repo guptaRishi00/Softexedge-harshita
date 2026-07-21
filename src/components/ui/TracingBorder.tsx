@@ -37,18 +37,21 @@ export default function TracingBorder({
   const W = w - inset * 2;
   const H = h - inset * 2;
   const r = Math.max(0, Math.min(radius - inset, W / 2, H / 2));
-  const k = Math.SQRT1_2;
-
-  // Start at the 45° midpoint of the top-right corner arc
-  const trCx = inset + W - r;
-  const trCy = inset + r;
-  const sx = (trCx + r * k).toFixed(2);
-  const sy = (trCy - r * k).toFixed(2);
   const f = (n: number) => n.toFixed(2);
 
+  // Where the comet's LEADING edge comes to rest: on the top edge, a short
+  // distance before the top-right radius begins. (Clamped to the top-left
+  // tangent so narrow cards can't push it past the opposite corner.)
+  const STOP_SHORT = 100;
+  const sx = f(Math.max(inset + r, inset + W - r - STOP_SHORT));
+  const sy = f(inset);
+
+  // NOTE: `d` also draws the static corner-weighted border, so it must stay a
+  // complete rounded rect — only the start/stop point moves along the top edge.
   const d =
     W > 0 && H > 0
       ? `M ${sx} ${sy}` +
+        ` L ${f(inset + W - r)} ${f(inset)}` +
         ` A ${r} ${r} 0 0 1 ${f(inset + W)} ${f(inset + r)}` +
         ` L ${f(inset + W)} ${f(inset + H - r)}` +
         ` A ${r} ${r} 0 0 1 ${f(inset + W - r)} ${f(inset + H)}` +
@@ -56,8 +59,7 @@ export default function TracingBorder({
         ` A ${r} ${r} 0 0 1 ${f(inset)} ${f(inset + H - r)}` +
         ` L ${f(inset)} ${f(inset + r)}` +
         ` A ${r} ${r} 0 0 1 ${f(inset + r)} ${f(inset)}` +
-        ` L ${f(inset + W - r)} ${f(inset)}` +
-        ` A ${r} ${r} 0 0 1 ${sx} ${sy} Z`
+        ` L ${sx} ${sy} Z`
       : "";
 
   // Comet animation constants
@@ -227,8 +229,8 @@ export default function TracingBorder({
                 strokeOpacity={0.28}
                 strokeLinecap="round"
                 strokeDasharray={`${TAIL} ${GAP}`}
-                initial={{ strokeDashoffset: 1.0 }}
-                animate={{ strokeDashoffset: 0 }}
+                initial={{ strokeDashoffset: 1 + TAIL }}
+                animate={{ strokeDashoffset: TAIL }}
                 transition={{ duration: LAP_DURATION, ease: "easeInOut" }}
               />
               {/* Core */}
@@ -239,8 +241,8 @@ export default function TracingBorder({
                 strokeWidth={2.5}
                 strokeLinecap="round"
                 strokeDasharray={`${TAIL} ${GAP}`}
-                initial={{ strokeDashoffset: 1.0 }}
-                animate={{ strokeDashoffset: 0 }}
+                initial={{ strokeDashoffset: 1 + TAIL }}
+                animate={{ strokeDashoffset: TAIL }}
                 transition={{ duration: LAP_DURATION, ease: "easeInOut" }}
               />
             </motion.g>

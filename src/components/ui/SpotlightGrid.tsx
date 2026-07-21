@@ -12,6 +12,11 @@ const TOTAL_ITEMS = 80;
 const COLUMNS = 10;
 const ROWS = TOTAL_ITEMS / COLUMNS;
 
+// Sweep mode: how many cells the light advances per second (before the `speed`
+// multiplier), and how many cells the fading tail spans behind the head.
+const SWEEP_CELLS_PER_SEC = 6;
+const SWEEP_TRAIL = 4;
+
 /**
  * Auto-moving spotlight pattern: a dark grid revealed by a soft radial mask
  * that drifts on its own (no mouse), with the cells under the spotlight lit by
@@ -31,12 +36,28 @@ export default function SpotlightGrid({
   // Lissajous swing amplitude as a fraction of the VISIBLE cell band (1 =
   // reaches the visible edge cells; lower keeps the spotlight nearer center).
   travel = 0.9,
+  // Sweep mode: drops the reveal mask entirely (every cell stays visible) and
+  // marches the glow across the grid column by column, left to right, on a
+  // loop. maskRadius/travel are unused in this mode.
+  sweep = false,
+  // Sweep mode: the inclusive cell rectangle the light travels through, so it
+  // can be kept clear of edges that sit under a scrim. Anything outside never
+  // lights. Defaults cover the whole grid.
+  sweepColStart = 0,
+  sweepColEnd = COLUMNS - 1,
+  sweepRowStart = 0,
+  sweepRowEnd = ROWS - 1,
 }: {
   speed?: number;
   glowColor?: string;
   glowVia?: string;
   maskRadius?: number;
   travel?: number;
+  sweep?: boolean;
+  sweepColStart?: number;
+  sweepColEnd?: number;
+  sweepRowStart?: number;
+  sweepRowEnd?: number;
 }) {
   const reduce = useReducedMotion();
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -47,6 +68,8 @@ export default function SpotlightGrid({
   const mouseX = useMotionValue(-1000); // Start far off-screen
   const mouseY = useMotionValue(-1000);
   const [focus, setFocus] = useState<{ row: number; col: number } | null>(null);
+  // Sweep mode only: index of the leading lit cell in the flat, row-major grid.
+  const [sweepHead, setSweepHead] = useState(-1);
 
   // Auto-drive the spotlight on a slow Lissajous wander (no mouse needed).
   useEffect(() => {
@@ -69,6 +92,22 @@ export default function SpotlightGrid({
     const tick = (now: number) => {
       if (!start) start = now;
       const t = ((now - start) / 1000) * speed;
+
+      // Sweep: one cell at a time through the flat row-major index, so the
+      // light runs left→right along a row, drops to the start of the next, and
+      // continues top→bottom. The period overruns the grid by SWEEP_TRAIL so
+      // the tail finishes fading off the last cell before it restarts at the
+      // first. No mask here, so the px spotlight position is irrelevant.
+      if (sweep) {
+        // Head is an ordinal WITHIN the region (0 = its top-left cell), so the
+        // cycle length is the region's cell count, not the whole grid's.
+        const regionCount =
+          (sweepColEnd - sweepColStart + 1) * (sweepRowEnd - sweepRowStart + 1);
+        const period = regionCount + SWEEP_TRAIL;
+        setSweepHead((t * SWEEP_CELLS_PER_SEC) % period);
+        raf = requestAnimationFrame(tick);
+        return;
+      }
 
       // Grid renders at 120% width, shifted -5% left, vertically centered, so
       // its square cells overflow the container (extra columns off the right,
@@ -106,9 +145,39 @@ export default function SpotlightGrid({
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, [reduce, mouseX, mouseY, speed, travel]);
+  }, [
+    reduce,
+    mouseX,
+    mouseY,
+    speed,
+    travel,
+    sweep,
+    sweepColStart,
+    sweepColEnd,
+    sweepRowStart,
+    sweepRowEnd,
+  ]);
 
   const getIntensity = (index: number) => {
+    // Sweep is driven by the flat index, not a row/col position, and must be
+    // checked before the `focus` guard below — focus stays null in this mode.
+    // Only cells BEHIND the head light up, so the box at the head is brightest
+    // and the few before it fade out as a tail.
+    if (sweep) {
+      const r = Math.floor(index / COLUMNS);
+      const c = index % COLUMNS;
+      if (r < sweepRowStart || r > sweepRowEnd) return 0;
+      if (c < sweepColStart || c > sweepColEnd) return 0;
+
+      // Position within the region, counted left→right then top→bottom.
+      const regionCols = sweepColEnd - sweepColStart + 1;
+      const ordinal = (r - sweepRowStart) * regionCols + (c - sweepColStart);
+
+      const behind = sweepHead - ordinal;
+      if (behind < 0 || behind > SWEEP_TRAIL) return 0;
+      return 1 - behind / SWEEP_TRAIL;
+    }
+
     if (!focus) return 0;
 
     const row = Math.floor(index / COLUMNS);
@@ -120,6 +189,10 @@ export default function SpotlightGrid({
     return Math.max(0, 1 - distance / 1.79);
   };
 
+  // Built unconditionally (hooks can't be called in a branch) but only applied
+  // when not sweeping — sweep mode shows the whole grid, unmasked.
+  const maskImage = useMotionTemplate`radial-gradient(${maskRadius}px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`;
+
   return (
     <div
       ref={rootRef}
@@ -127,11 +200,15 @@ export default function SpotlightGrid({
     >
       <motion.div
         className="absolute inset-0 flex items-center justify-center overflow-hidden transition-opacity duration-500"
-        style={{
-          // This mask cuts a hole to reveal the pattern where the spotlight is
-          WebkitMaskImage: useMotionTemplate`radial-gradient(${maskRadius}px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
-          maskImage: useMotionTemplate`radial-gradient(${maskRadius}px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`,
-        }}
+        style={
+          sweep
+            ? undefined
+            : {
+                // Cuts a hole to reveal the pattern where the spotlight is
+                WebkitMaskImage: maskImage,
+                maskImage,
+              }
+        }
       >
         <div
           className="grid w-[120%] -ml-[5%] gap-3"
