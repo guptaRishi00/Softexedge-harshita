@@ -18,14 +18,17 @@ export default function ContactPage({}: any) {
       <div className="[&>section]:py-16 md:[&>section]:py-30">
         <ContactSection />
       </div>
-      <div className="[&>section]:pt-16 [&>section]:pb-6 md:[&>section]:pt-26 md:[&>section]:pb-10">
+      <div className="[&>section]:pt-12 [&>section]:pb-6 md:[&>section]:pt-28 md:[&>section]:pb-8">
         <ExperimentalTestimonials />
       </div>
-      <TechLogoCarousel />
-      <div className="[&>section]:py-16 md:[&>section]:pt-0">
+      {/* Trim the carousel's own md:pb-32 — page-scoped, it's a shared component. */}
+      <div className="md:[&>section]:pb-20">
+        <TechLogoCarousel />
+      </div>
+      <div className="[&>section]:py-12 md:[&>section]:pb-5 md:[&>section]:pt-3">
         <ContactFaqSection />
       </div>
-      <div className="px-3 [&>section]:py-10 md:[&>section]:pt-0">
+      <div className="px-3 [&>section]:py-12 md:[&>section]:pb-16 md:[&>section]:pt-0">
         <CtaSection />
       </div>
       <div className="px-3 pt-16 pb-3 md:pt-8 ">

@@ -3,7 +3,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useRef, useState } from "react";
 import Header from "../page/Header";
-import SpotlightGrid from "../ui/SpotlightGrid";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -42,20 +41,27 @@ export default function ContactHeroSectionTwo() {
   };
 
   return (
-    <section className="relative w-full bg-white px-3 pt-24 pb-16 font-sans selection:bg-[#2E5BFF]/20 md:pb-24 md:pt-30">
-      {/* Header — shared inner-page header, on the white top strip */}
+    <section className="relative flex min-h-screen w-full flex-col overflow-hidden bg-black font-sans selection:bg-[#2E5BFF]/20">
+      {/* Full-bleed background video (replaces the SpotlightGrid pattern) —
+          edge-to-edge treatment like WorkHeroSection, not a card container. */}
+      <video
+        src="/assets/video3.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 z-0 h-full w-full object-cover"
+      />
+
+      {/* Scrim so the copy stays legible over the footage */}
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/75 via-black/50 to-black/30" />
+
+      {/* Header — overlays the video, light variant like WorkHeroSection */}
       <div className="absolute left-0 top-0 z-50 w-full">
-        <Header />
+        <Header onDark />
       </div>
 
-      {/* Black hero container (rounded card, same framing as CtaSection) with
-          auto-moving spotlight pattern */}
-      <div className="relative mx-auto flex min-h-[62vh] w-full flex-col items-center gap-10 overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-6 py-12 md:flex-row md:justify-between md:gap-6 md:px-12 md:py-28 lg:gap-12 lg:px-16">
-        <SpotlightGrid speed={4} maskRadius={950} travel={0.35} />
-
-        {/* Left-side scrim so the copy stays legible over the pattern */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black/20 via-black/5 to-transparent" />
-
+      <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center gap-10 px-6 py-28 md:flex-row md:justify-between md:gap-6 md:px-12 lg:gap-12 lg:px-16 lg:mt-25">
         {/* Left: content */}
         <div className="relative z-10 flex w-full flex-col items-start text-left md:w-3/5">
           {/* Headline — two lines */}

@@ -4235,3 +4235,68 @@ with the codebase's `[&>section]` wrapper idiom: wrapped it in
 `<div className="md:[&>section]:pb-20">` (128px → 80px). Mobile py-16 untouched.
 Verified live: /work carousel padding-bottom 80px, ET→CTA gap 304 → 256px; /contact carousel
 still 128px (shared component unaffected elsewhere). tsc 0, biome clean. Not committed.
+
+## 2026-07-20 — Contact hero: pattern → background video, de-carded like WorkHeroSection
+contact/ContactHeroSectionTwo.tsx rebuilt shell only, foreground untouched:
+ - REMOVED SpotlightGrid (import + usage) and the rounded-[20px]/border-zinc-800/50 card
+   framing + px-3 gutters + pt-24/pb-16 white shell.
+ - Section is now `relative flex min-h-screen w-full flex-col overflow-hidden bg-black`,
+   mirroring WorkHeroSection's full-bleed treatment.
+ - Added full-bleed <video src="/assets/video3.mp4" autoPlay loop muted playsInline
+   className="absolute inset-0 z-0 h-full w-full object-cover"> + a z-[1] left-weighted
+   scrim (black/75→/50→/30) for copy legibility.
+ - Chose video3.mp4 (previously unused) because the FOREGROUND card already plays hero.mp4 —
+   avoids the same clip running twice on screen.
+ - Header now <Header onDark /> (was light-on-white-strip) since it overlays dark footage,
+   same as WorkHeroSection. NOTE: this supersedes the earlier "keep the contact header bg
+   white" task — flagged to user.
+Foreground kept verbatim: headline (Let's build/something/great.) + click-to-play hero.mp4
+card with play button.
+Verified live /contact: hero padding 0 / radius 0 / border 0, width 1265 = viewport, height
+720 = full screen, top offset 0 (no white strip) and #contact resumes at 720; bg video src
+video3.mp4 readyState 4, muted, object-fit cover; spotlight grid absent; headline + play
+button intact; header logo = logo.png (light onDark variant). tsc 0, biome 0 findings
+(removed an ineffective biome-ignore I'd added — muted video doesn't trigger useMediaCaption).
+Motion/appearance needs user's eyes. Not committed.
+
+## 2026-07-20 — Contact page spacing aligned to the about/work convention
+Audited the 4 components across pages. /about and /work agree on the convention (they use the
+same [&>section] wrapper system); the service pages (brand-strategy family) use a different
+bare/p-3/space-y-10 scheme and were excluded as not comparable.
+  ET:       about pt-16 pb-6 md:pt-24 md:pb-10 | work same but md:pt-26
+  Carousel: about bare | work md:pb-24 (one-off I added on request)
+  Cta:      about+work BOTH `px-3 [&>section]:py-16 md:pb-24 md:pt-0`  ← consensus
+  Faq:      about `py-16 md:pb-24 md:pt-3` | work `py-16 md:pb-30 md:pt-0`
+Contact diverged on Cta (`py-10 md:pt-0`) and Faq (`pt-0 md:pb-10`); ET was 8px off (pt-26).
+Changed 3 wrappers in src/app/contact/page.tsx to the about values (the file's own header
+comment states "Section spacing mirrors the about page", so about is the stated reference):
+ ET md:pt-26 → md:pt-24; ContactFaqSection → [&>section]:py-16 md:pb-24 md:pt-3;
+ CtaSection → px-3 [&>section]:py-16 md:pb-24 md:pt-0. TechLogoCarousel already bare = about.
+Kept contact's FAQ-before-CTA order (task was spacing only, not ordering).
+Verified live @1280 by measuring computed section padding on /about then /contact:
+ ET pt96/pb40, Carousel pt64/pb128, Faq pt12/pb96, Cta pt0/pb96 — all 4 identical, 0
+ mismatches. tsc 0; biome findings on the page are pre-existing boilerplate (unused React
+ import, unused Props type, {}: any) on lines 1-12, untouched by this diff. Not committed.
+
+## 2026-07-20 — CareerHeroSection: outline the quote mark, lighten the quote text
+In the carousel's `item.type === "quote"` card: the big “ glyph was a SOLID brand gradient (bg-linear-to-r + bg-clip-text + text-transparent). Swapped to an outline — dropped the gradient/bg-clip classes, kept `text-transparent` for the fill, and added `WebkitTextStroke: "1.5px #2E5BFF"` inline (Tailwind has no text-stroke utility). Quote body `font-medium` → `font-light`, matching the site-wide description weight normalization done earlier.
+Chose text-stroke on the existing glyph over swapping in lucide's outline `Quote` icon: it keeps the exact typographic mark, size and position, so only the fill/stroke changes.
+Comment placed as a JSX child, NOT in expression position — the `{cond && ( {/* … */} <div>` shape is the parse error hit three times in this session.
+Verified: tsc ✓, biome ✓, next build ✓. 1 file. Not committed.
+TRADEOFF for user review: an outlined glyph can't carry the blue→cyan gradient (that needs a fill), so the stroke is solid #2E5BFF. Say the word if you want white instead, or a different stroke width.
+
+## 2026-07-20 — Contact page spacing tightened (~29%)
+Follow-up: the about-matched spacing read too airy. Reduced the 4 big paddings in
+src/app/contact/page.tsx (desktop, md@1280):
+  ExperimentalTestimonials  pt 96→64, pb 40→32   (md:pt-24→pt-16, md:pb-10→pb-8; base pt-16→pt-12)
+  TechLogoCarousel          pb 128→80            (was bare; added page-scoped
+                                                  `md:[&>section]:pb-20` wrapper — shared component)
+  ContactFaqSection         pb 96→64             (py-16→py-12, md:pb-24→pb-16; md:pt-3 kept)
+  CtaSection                pb 96→64             (py-16→py-12, md:pb-24→pb-16; md:pt-0 kept)
+Total padding across the 4: 532px → 380px (−152px, −29%).
+NOTE: this intentionally diverges from /about again (previous task had matched it exactly) —
+contact is now tighter than the about/work convention. Flagged to user; can propagate the
+tighter values to about/work if they want it site-wide.
+Verified live /contact @1280 with md active: et pt64/pb32, carousel pt64/pb80, faq pt12/pb64,
+cta pt0/pb64. (First measurement attempt reported viewport 0 = base/mobile values; re-measured
+after layout settled.) tsc 0. Not committed.

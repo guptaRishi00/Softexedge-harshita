@@ -82,10 +82,15 @@ function CarouselCard({ item }: { item: CarouselItem }) {
 
       {item.type === "quote" && (
         <div className="flex h-full w-full flex-col justify-start gap-1 bg-[#131313] p-5 md:gap-2 md:p-7">
-          <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-5xl font-bold leading-none text-transparent md:text-6xl">
+          {/* Outlined quote mark — transparent fill with a brand-blue stroke.
+              Text stroke has no Tailwind utility, hence the inline style. */}
+          <span
+            className="text-5xl font-bold leading-none text-transparent md:text-6xl"
+            style={{ WebkitTextStroke: "1.5px #2E5BFF" }}
+          >
             “
           </span>
-          <p className="text-sm font-medium leading-[1.3em] tracking-tight text-white md:text-base">
+          <p className="text-sm font-light leading-[1.3em] tracking-tight text-white md:text-base">
             {item.text}
           </p>
         </div>

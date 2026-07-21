@@ -51,7 +51,7 @@ export default function ApplicationJourney() {
     <section className="relative w-full bg-white px-6 py-24 text-zinc-900 md:py-32">
       <div className="mx-auto w-full">
         {/* Title Area */}
-        <div className="mx-auto flex max-w-3xl flex-col items-center text-center mb-16 md:mb-30">
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-center mb-16 md:mb-35">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
