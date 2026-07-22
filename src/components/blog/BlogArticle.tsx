@@ -1,18 +1,12 @@
 "use client";
 
 import { motion, useScroll, useSpring } from "framer-motion";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  Calendar,
-  Check,
-  Clock,
-  Link2,
-} from "lucide-react";
+import { ArrowLeft, Calendar, Check, Clock, Link2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
+import { MdArrowOutward } from "react-icons/md";
 import type { BlogPost, ContentBlock } from "@/data/blog";
 import Header from "../page/Header";
 
@@ -49,7 +43,7 @@ export default function BlogArticle({
       {/* Reading progress bar */}
       <motion.div
         style={{ scaleX: progress }}
-        className="fixed left-0 top-0 z-[200] h-[3px] w-full origin-left bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+        className="fixed left-0 top-0 z-[200] h-[3px] w-full origin-left bg-linear-to-r from-[#2E5BFF] to-[#149CCB]"
       />
 
       {/* Header */}
@@ -59,7 +53,7 @@ export default function BlogArticle({
 
       {/* ---------- HERO ---------- */}
       <section className="relative w-full overflow-hidden bg-[#FAFAFA] px-6 pb-16 pt-36 md:px-10 md:pb-20 md:pt-44">
-        <div className="mx-auto w-full max-w-3xl">
+        <div className="w-full ">
           <motion.div
             initial="hidden"
             animate="visible"
@@ -82,7 +76,7 @@ export default function BlogArticle({
             variants={fadeUp}
             className="mt-8"
           >
-            <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.2em]">
+            <span className="inline-flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.2em]">
               <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]" />
               <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 {post.category}
@@ -105,7 +99,7 @@ export default function BlogArticle({
             animate="visible"
             custom={3}
             variants={fadeUp}
-            className="mt-6 text-lg font-medium leading-[1.6] text-zinc-500 md:text-xl"
+            className="mt-6 text-lg font-medium leading-[1.25em] text-zinc-500 md:text-xl"
           >
             {post.lead}
           </motion.p>
@@ -149,19 +143,21 @@ export default function BlogArticle({
       </section>
 
       {/* ---------- COVER IMAGE ---------- */}
-      <div className="w-full bg-white px-6 md:px-10">
+      {/* Edge-to-edge with the site's standard p-3 inset + rounded-[20px],
+          same framing as the CtaSection / Footer / home hero blocks. */}
+      <div className="w-full bg-white px-3">
         <motion.figure
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.4, ease: premiumEase }}
-          className="relative mx-auto -mt-6 aspect-[16/10] w-full max-w-5xl overflow-hidden rounded-[24px] bg-zinc-100 md:aspect-[16/9]"
+          className="relative -mt-6 aspect-[16/10] w-full overflow-hidden rounded-[20px] bg-zinc-100 md:aspect-[16/9]"
         >
           <Image
             src={wide(post.image)}
             alt={post.title}
             fill
             priority
-            sizes="(max-width: 1024px) 100vw, 1024px"
+            sizes="100vw"
             className="object-cover"
           />
         </motion.figure>
@@ -169,7 +165,7 @@ export default function BlogArticle({
 
       {/* ---------- BODY ---------- */}
       <section className="w-full bg-white px-6 py-16 md:px-10 md:py-24">
-        <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-12 lg:grid-cols-[200px_minmax(0,1fr)]">
+        <div className="grid w-full  grid-cols-1 gap-12 lg:grid-cols-[200px_minmax(0,1fr)]">
           {/* Sticky share rail */}
           <aside className="hidden lg:block">
             <div className="sticky top-32 flex flex-col gap-4">
@@ -178,7 +174,7 @@ export default function BlogArticle({
           </aside>
 
           {/* Prose */}
-          <article className="w-full max-w-[720px]">
+          <article className="w-full max-w-[1000px]">
             {post.content.map((block, i) => (
               <Block key={`${block.type}-${i}`} block={block} />
             ))}
@@ -188,7 +184,7 @@ export default function BlogArticle({
               {post.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-zinc-200 bg-zinc-50 px-4 py-1.5 text-sm font-medium text-zinc-600"
+                  className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-1.5 text-sm font-medium text-zinc-600"
                 >
                   #{tag}
                 </span>
@@ -224,22 +220,49 @@ export default function BlogArticle({
 
       {/* ---------- RELATED ---------- */}
       {related.length > 0 && (
-        <section className="w-full bg-[#FAFAFA] px-6 py-20 md:px-10 md:py-28">
-          <div className="mx-auto w-full max-w-6xl">
-            <div className="mb-12 flex items-end justify-between gap-6">
+        <section className="w-full bg-[#FAFAFA] px-6 py-16 md:px-10 md:py-20">
+          <div className="w-full ">
+            <div className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
               <h2 className="text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl">
                 Continue reading
               </h2>
+
+              {/* Same CTA button as the BlogSection / ExperimentalTestimonials */}
               <Link
                 href="/blog"
-                className="group hidden items-center gap-2 text-sm font-semibold text-zinc-500 transition-colors hover:text-zinc-900 sm:inline-flex"
+                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
               >
-                View all
-                <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
+                  View all
+                </span>
+
+                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
+                  <svg width="0" height="0" className="absolute">
+                    <title>View all arrow gradient</title>
+                    <defs>
+                      <linearGradient
+                        id="related-cta-grad"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop stopColor="#2E5BFF" offset="0%" />
+                        <stop stopColor="#149CCB" offset="100%" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+
+                  <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                  <MdArrowOutward
+                    className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    style={{ fill: "url(#related-cta-grad)" }}
+                  />
+                </div>
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
               {related.map((rp, i) => (
                 <RelatedCard key={rp.slug} post={rp} index={i} />
               ))}
@@ -262,14 +285,14 @@ function Block({ block }: { block: ContentBlock }) {
       );
     case "paragraph":
       return (
-        <p className="mb-6 text-lg leading-[1.85] text-zinc-600">
+        <p className="mb-6 text-lg leading-[1.25em] text-zinc-600">
           {block.text}
         </p>
       );
     case "quote":
       return (
         <blockquote className="my-10 border-l-2 border-[#2E5BFF] pl-6 md:pl-8">
-          <p className="text-xl font-medium italic leading-[1.6] text-zinc-800 md:text-2xl">
+          <p className="text-xl font-medium italic leading-[1.2em] text-zinc-800 md:text-2xl">
             “{block.text}”
           </p>
           {block.cite && (
@@ -285,7 +308,7 @@ function Block({ block }: { block: ContentBlock }) {
           {block.items.map((item) => (
             <li key={item} className="flex items-start gap-3">
               <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]" />
-              <span className="text-lg leading-[1.7] text-zinc-600">
+              <span className="text-lg leading-[1.25em] text-zinc-600">
                 {item}
               </span>
             </li>
@@ -303,7 +326,7 @@ function Block({ block }: { block: ContentBlock }) {
           <h3 className="mt-3 text-xl font-bold tracking-tight text-zinc-900 md:text-2xl">
             {block.title}
           </h3>
-          <p className="mt-3 text-lg leading-[1.7] text-zinc-600">
+          <p className="mt-3 text-lg leading-[1.25em] text-zinc-600">
             {block.text}
           </p>
         </div>
@@ -418,29 +441,35 @@ function RelatedCard({ post, index }: { post: BlogPost; index: number }) {
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, delay: index * 0.08, ease: premiumEase }}
     >
-      <Link href={post.href} className="group flex h-full flex-col">
-        <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-zinc-100">
-          <Image
-            src={post.image}
-            alt={post.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 400px"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-          />
-          <span className="absolute left-4 top-4 rounded-md border border-white/20 bg-black/40 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md">
-            {post.category}
-          </span>
-        </div>
-        <div className="mt-5 flex flex-1 flex-col">
-          <h3 className="text-lg font-bold leading-snug tracking-tight text-zinc-900 transition-colors duration-300 group-hover:text-[#149CCB]">
-            {post.title}
-          </h3>
-          <div className="mt-4 flex items-center gap-3 text-xs font-medium text-zinc-500">
-            <span>{post.author}</span>
-            <span className="h-1 w-1 rounded-full bg-zinc-300" />
-            <span>{post.readTime}</span>
+      {/* Same card as the home BlogSection: square image that grows on hover
+          while the meta + title slide up over it behind a scrim. */}
+      <Link href={post.href} className="block h-full">
+        <article className="group flex h-full flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:p-5 max-md:shadow-sm">
+          <div className="relative aspect-square w-full overflow-hidden rounded-[1.25rem] bg-zinc-100 transition-[aspect-ratio] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:aspect-[3/4]">
+            <Image
+              src={post.image}
+              alt={post.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1232px) 25vw, 288px"
+              className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:scale-105"
+            />
+            <div className="pointer-events-none absolute inset-0 rounded-[1.25rem] bg-gradient-to-t from-black/75 via-black/15 to-transparent opacity-0 transition-opacity duration-500 md:group-hover:opacity-100" />
           </div>
-        </div>
+
+          <div className="relative z-10 mt-4 flex flex-1 flex-col px-2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:-mt-32 md:group-hover:px-4 md:group-hover:pb-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 transition-colors duration-500 md:group-hover:text-white/70">
+              <span className="text-zinc-800 transition-colors duration-500 md:group-hover:text-white">
+                {post.author}
+              </span>
+              <span className="h-1 w-1 rounded-full bg-zinc-300 md:group-hover:bg-white/50" />
+              <span>{post.readTime}</span>
+            </div>
+
+            <h3 className="text-lg font-bold leading-[1.2em] tracking-tight text-zinc-900 transition-colors duration-500 md:group-hover:text-white lg:text-xl">
+              {post.title}
+            </h3>
+          </div>
+        </article>
       </Link>
     </motion.div>
   );

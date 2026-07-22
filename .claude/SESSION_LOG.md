@@ -5171,3 +5171,145 @@ Verified: tsc 0; biome unchanged (2 pre-existing). Live /work: 0 elements with a
 brightness/grayscale filter; all 9 cards' dim overlays computed opacity 0 at rest; server HTML
 now ships style="opacity:0" on the overlay. Smoothness itself needs the user's eyes — the pane
 can't profile FPS. Comet left as-is. Not committed.
+
+## 2026-07-22 — Footer: wider, evenly distributed spacing across the three link columns
+`lg:gap-16` → `lg:justify-between lg:gap-20`.
+Two things at once: gap-20 (80px) raises the floor from 64px, and justify-between spreads the columns across the full links block instead of bunching them left — which removes the void before the newsletter that the previous flex change introduced (flagged at the time). With exactly three items, justify-between keeps both gaps identical, so the equality won last task is preserved.
+Effective gap now: content widths are roughly 70 (Pages) + 187 (Services) + 120 (Explore) = ~377px inside a ~743px block, so the leftover ~366px splits into two gaps of ~183px each — comfortably above the 80px floor, and equal by construction. gap-20 only takes over on narrower desktops where the leftover would otherwise squeeze them together.
+Mobile untouched: the 2-col grid (`grid-cols-2 gap-x-10 gap-y-12`) still applies below lg, since both new classes are lg-prefixed.
+Verified: greped the new class, confirmed no `lg:gap-16` remains; tsc ✓; lint diagnostics LF-normalised vs `git show HEAD:` 4 before / 4 after; next build ✓. 1 file, 1 class. Not committed.
+WATCH: with justify-between the Explore column's right edge now sits flush to the end of the links block, i.e. ~48px from the newsletter content (its wrapper has lg:pl-12). If that reads as crowded against the newsletter, `lg:justify-around` would keep equal gaps while leaving breathing room at both ends.
+
+## 2026-07-22 — Footer: dial the column gap back down
+`lg:justify-between lg:gap-20` → `lg:gap-28`.
+The key point: justify-between distributes ALL leftover space, so it was forcing ~183px between columns and the gap value was never actually applied (it was only a floor). Reducing the number alone would have changed nothing — justify-between had to go for the gap to become controllable at all.
+Now an explicit 112px (gap-28), sitting between the 64px it was two tasks ago and the ~183px justify-between produced. Still equal between all three columns, since flex sizes each to its content.
+Consequence: the columns bunch left again, leaving ~142px of trailing space before the newsletter block (roughly 743px block − 377px of content − 224px of gaps). That is the trade for controlling the gap directly.
+Verified: greped the new class and confirmed lg:justify-between is gone; tsc ✓; lint diagnostics LF-normalised vs `git show HEAD:` 4 before / 4 after; next build ✓. 1 file, 1 class. Not committed.
+
+## 2026-07-22 — Blog article page (/blog/[slug]): pill radius, leading, spacing
+Task: keep w-full; "Resources" tag shouldn't be rounded-full; unify text leading; cut the
+excessive component spacing, especially CtaSection→Footer.
+`components/blog/BlogArticle.tsx` (used ONLY by blog/[slug], so page-scoped):
+(1) category pill :85 and (2) #tag pills :191 `rounded-full` → `rounded-md`, matching the blog
+LISTING's own category tag (BlogListSection:256) and PortfolioSection:378. The 4 remaining
+rounded-full are genuine circles (2 gradient dots, h-11 avatar, separator dot) — left alone.
+(3) body paragraph :265 `leading-[1.85]` → `leading-[1.7]`, so all text-lg body copy (paragraph
++ list items :286 + callout :304) now matches. Left the hero lead :108 and blockquote :270 at
+leading-[1.6] — larger display sizes, internally consistent.
+(4) related section :227 `py-20 md:py-28` → `py-16 md:py-20`.
+`app/blog/[slug]/page.tsx`: Cta wrapper `py-16 md:py-24` → `pt-12 pb-8 md:pt-16 md:pb-12`;
+Footer wrapper `pt-16 md:pt-24` → `pt-8 md:pt-12`. md gaps: related→Cta 208px → 144px;
+Cta→Footer 192px → 96px (now identical to the /blog index's pb-12+pt-12).
+w-full/max-w NOT touched anywhere (count unchanged at 14) per the user's constraint.
+spec-verifier: no P0/P1, all 5 requirements confirmed implemented; fixed its P3 (my comment
+claimed the whole rhythm matched /blog when only the Cta→Footer pairing does).
+OPEN / FLAGGED, deliberately NOT changed (outside the stated page scope): the user's premise
+"our website doesn't use rounded-full" is only partly true — `blog/BlogFeaturedSection.tsx:58,61`
+still render the SAME blog category badge as rounded-full (visible one click away on /blog), and
+the `#tag`-style chips in all 8 service SubServices.tsx:214 are rounded-full too. Ask the user
+before expanding.
+Verified: tsc ✓, biome-format clean both files, /blog and /blog/google-io-2026 HTTP 200 with 0
+remaining rounded-full pills and 0 error markers. 2 files. Not committed.
+
+## 2026-07-22 — Blog article: edge-to-edge cover image + correct leading (corrects prior task)
+User corrected two things from the previous pass.
+(1) "w-full" meant EDGE-TO-EDGE like other pages: the big cover image should use the same p-3
+inset as the CtaSection. Site full-bleed pattern confirmed = `px-3` wrapper + inner
+`rounded-[20px]` block (home hero, CtaSection :25, Footer :112; rounded-[20px] used 42x).
+`blog/BlogArticle.tsx` cover image: wrapper `px-6 md:px-10` → `px-3`; figure dropped
+`mx-auto max-w-5xl`, `rounded-[24px]` → `rounded-[20px]`. ALSO updated the next/image
+`sizes` from "(max-width: 1024px) 100vw, 1024px" → "100vw" — the element is now viewport-wide,
+so the old hint would have served a 1024px file to a much wider box (blurry on desktop).
+Kept -mt-6 overlap + aspect ratios. The other max-w-5xl (:174) is the article BODY grid — left
+constrained on purpose (reading measure); only the image is edge-to-edge.
+(2) Leading: my 1.7 was wrong — verified `leading-[1.25em]` is the site standard (64 uses
+across 61 files; 1.7 appeared nowhere else). Set body paragraph, list items, callout text AND
+the hero lead to `leading-[1.25em]`. Also aligned the pull-quote :272 `leading-[1.6]` →
+`leading-[1.2em]`: 1.6 existed only 2x sitewide (both blog outliers) while the site's quote
+card at the identical size/weight (text-xl md:text-2xl font-medium, OurValuesSection:114) uses
+leading-[1.2em]. h1 leading-[1.08] and related-card leading-snug left (display roles).
+NOTE: 1.25em is tight for long-form article body — applied because it is the user's stated
+system standard; flagged to them as an easy dial.
+Verified: tsc ✓, biome-format clean (had to re-wrap the paragraph after the longer class
+pushed it past print width), served /blog/google-io-2026 HTTP 200 — px-3 wrapper 1,
+full-width rounded-[20px] figure 1, sizes=100vw 1, leading-[1.25em] 13, zero leading-[1.7]/[1.6]
+remaining, 0 error markers. 1 file. Not committed.
+
+## 2026-07-22 — Blog article: left-align the content
+Task: move the content to the left on /blog/[slug]. The three content blocks in
+`components/blog/BlogArticle.tsx` were centred with `mx-auto`; dropped it from all three:
+:62 hero (`mx-auto w-full max-w-3xl` → `w-full max-w-3xl`), :174 body grid
+(`mx-auto grid w-full max-w-5xl ...` → `grid w-full max-w-5xl ...`), :230 related section
+(`mx-auto w-full max-w-6xl` → `w-full max-w-6xl`). Kept the max-w values so the article keeps
+a readable line length — only the alignment changed, from centred to flush against the
+section's left gutter (px-6 md:px-10 on the hero/body sections). Matches the site's dominant
+pattern (27 full-width/left-aligned containers vs 12 centred max-w columns). The cover image
+is unaffected (already edge-to-edge at px-3 from the previous task).
+Verified: 0 mx-auto remaining in the file; tsc ✓; biome-format clean; served
+/blog/google-io-2026 HTTP 200 with 0 centred containers, 3 left-aligned containers, 0 error
+markers. 1 file. Not committed.
+
+## 2026-07-22 — Blog article: widen the content
+Task: increase the content width on /blog/[slug]. The page had THREE different container
+widths (768 / 1024 / 1152) so the left+right edges were ragged down the page, and the actual
+reading column was only 720px sitting under a now-full-bleed cover image.
+`components/blog/BlogArticle.tsx`: unified all three top-level containers to the widest value
+already in use, max-w-6xl (1152px) — :62 hero `max-w-3xl` → `max-w-6xl`, :174 body grid
+`max-w-5xl` → `max-w-6xl`, :230 related already 6xl (unchanged) — so every block now shares
+the same left/right edges. Widened the inner reading measure :183 `max-w-[720px]` →
+`max-w-[860px]`.
+Grid math checked: body grid 1152 − 200px sidebar − 48px gap = 904px article track, so the
+860px measure fits with 44px headroom (not clipped). Reading measure goes ~80 → ~96 chars at
+text-lg; 860 chosen over the full 904 to stay nearer a comfortable measure — the value is a
+one-number dial if the user wants it wider still.
+Verified: tsc ✓; biome-format clean; served /blog/google-io-2026 HTTP 200 — 3 max-w-6xl
+containers, 1 max-w-[860px] article, 0 remaining max-w-3xl/5xl/[720px], 0 error markers.
+1 file. Not committed.
+
+## 2026-07-22 — Blog article "Continue reading": BlogSection-style cards + CTA button
+Task: make the related-article cards like the home BlogSection, and the "View all" link like
+the other CTA buttons. 1 file: `components/blog/BlogArticle.tsx`.
+CARDS — RelatedCard rewritten to mirror BlogSection's CardTrack card: Link>article.group,
+square image `rounded-[1.25rem]` growing to `md:group-hover:aspect-[3/4]`, image
+group-hover:scale-105, hover scrim `from-black/75 via-black/15 to-transparent`, content block
+`mt-4 px-2` sliding up (`md:group-hover:-mt-32 md:group-hover:px-4 md:group-hover:pb-4`), meta
+row (author • readTime) ABOVE the title, text→white on hover, plus BlogSection's max-md card
+chrome. Deliberately did NOT copy the marquee-only `w-[55vw]…lg:w-[25vw]` widths or
+draggable={false} (these sit in a 3-col grid). Kept the existing motion.div stagger wrapper.
+Removed the category pill overlay — BlogSection has none (post.category still shown in the
+article hero, so no dead data path).
+CTA — replaced the small text link with the BlogSection "Explore all articles" button markup
+(h-16 white pill, border-transparent→hover:border-black, pl-0→hover:pl-6, black rounded-xl
+chip with the two-MdArrowOutward diagonal swap), unique gradient id `related-cta-grad`; header
+row made responsive `flex-col md:flex-row`. Swapped the now-unused lucide ArrowUpRight import
+for react-icons/md MdArrowOutward. NOTE the "Back to blog" link at :63 keeps the subtle
+text-link style on purpose — it's back-nav, not a CTA.
+spec-verifier: no P0/P1; CTA confirmed byte-for-byte vs reference; `related-cta-grad` confirmed
+non-colliding with cta-icon-grad (CtaSection) / footer-arrow-grad (Footer). Fixed its P2 — the
+next/image `sizes` was over-specified: the grid column caps at ~363px (max-w-6xl 1152 minus
+md:gap-8 ÷ 3), so plain `33vw` fetched ~1.7x oversized files on wide screens; now
+`(max-width: 768px) 100vw, (max-width: 1232px) 33vw, 384px`.
+Open/flagged P3s (not changed): hovering one card grows the grid row height (faithful to the
+reference flex track, but more visible in a 3-up grid — needs the user's eyes); the defs-only
+<svg><title> accessible-name quirk is inherited from the reference component, not a regression.
+Verified: tsc ✓, biome check CLEAN (no lint errors), biome-format clean, served
+/blog/google-io-2026 HTTP 200 — 3 cards with the new hover structure, 0 old card markers, CTA
+present, corrected sizes on all 3 images, 0 error markers. Not committed.
+
+## 2026-07-22 — Blog article "Continue reading": 3 cards → 4
+Task: show four cards in the related section. 2 files, 3 coordinated edits:
+(1) `app/blog/[slug]/page.tsx:45` `getRelatedPosts(slug, 3)` → `(slug, 4)`. Data supports it —
+blog.ts has 6 posts and getRelatedPosts excludes the current slug, so 5 others are always
+available; no article can come up short.
+(2) `components/blog/BlogArticle.tsx:265` grid `grid-cols-1 gap-6 md:grid-cols-3 md:gap-8` →
+`grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-4` (1 → 2 → 4 responsive ladder, same
+shape as career/ApplicationJourney's 4-up grid).
+(3) Retuned the next/image `sizes` for the narrower column — computed: max-w-6xl 1152 with
+32px gaps gives 363px at 3 cols but only 264px at 4, so the previous
+`(max-width: 1232px) 33vw, 384px` would over-fetch. Now
+`(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1232px) 25vw, 288px`,
+which also covers the new 2-col md band.
+Verified: tsc ✓, biome check clean, biome-format clean both files; served TWO different
+articles (/blog/google-io-2026 and /blog/rise-at-seven-expansion) — each renders exactly 4
+cards with lg:grid-cols-4 and the new sizes on all 4 images, 0 error markers. Not committed.

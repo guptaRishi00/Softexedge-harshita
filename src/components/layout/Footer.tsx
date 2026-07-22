@@ -122,8 +122,11 @@ export default function Footer() {
               track, so ~156px of dead space sat before the gap, while
               "Services" nearly filled its track. Flex sizes each column to its
               content, so the gap is the ONLY spacing and all three read equal.
-              Mobile keeps the 2-col grid. */}
-          <div className="grid grid-cols-2 gap-x-10 gap-y-12 lg:col-span-7 lg:flex lg:gap-16">
+              Mobile keeps the 2-col grid.
+              A FIXED gap, not justify-between: that distributed all the
+              leftover space and forced ~183px between columns regardless of
+              the gap value. gap-28 sets the spacing explicitly instead. */}
+          <div className="grid grid-cols-2 gap-x-10 gap-y-12 lg:col-span-7 lg:flex lg:gap-28">
             {footerLinkGroups.map(({ title, links }) => (
               <div key={title} className="flex flex-col gap-2.5">
                 {/* Column heading — same tag style the page sections use. */}
