@@ -5083,3 +5083,20 @@ col-span-7 of 12 minus gap-x-20 ≈ 296px per column vs ~215px for the longest l
 lines = equal height — that is a CALCULATION, not a measurement. Worth the user's eyes,
 especially at mid widths where col 2 (all long service names) would wrap before col 1 does.
 Not committed.
+
+## 2026-07-22 — SpotlightGrid sweep: fix the LAG (per-frame React re-render)
+"Laggy" turned out to be a performance defect, not an easing one — and the previous two tasks were treating the wrong thing.
+CAUSE: the rAF loop called `setSweepHead(...)` on EVERY frame. Each call re-rendered SpotlightGrid → all 80 cells → each running getIntensity, which in `plus` mode calls centreAt 5x (bounds checks + modular arithmetic + scatterSteps lookup). So ~400 centreAt calls plus 160 DOM nodes reconciled with fresh inline styles, 60 times a second. The glow div also had NO css transition, so it *depended* on that per-frame churn to look continuous — the expensive path was load-bearing.
+FIX — render rarely, let the compositor interpolate:
+1. Quantised the state update: `setSweepHead(cur => Math.floor(next) === Math.floor(cur) ? cur : next)`. It now fires only when the head crosses into a new cell — about once a second at speed 0.15, instead of 60x.
+2. Added a CSS transition sized to exactly one cell-step (`sweepStepMs = 1000 / (speed * SWEEP_CELLS_PER_SEC)`) on BOTH animated layers: `opacity` on the glow div and `background-color` on the inner cell. Matching the step length means the tween lands exactly as the next render arrives, so it reads continuous.
+3. `willChange: opacity` on the glow in sweep mode only.
+The inner cell's existing `transition-colors duration-300` had to be overridden inline: 300ms would finish long before the ~1100ms gap and step visibly.
+SCOPED to sweep — `sweepTween` is undefined outside it, so the 7 mask-mode CtaSections keep their per-frame path untouched (they have the same per-frame re-render cost, but nobody has reported it and changing them was not asked for).
+No call-site changes: speed 0.15 / scatter / plus / sweepTrail 6 verified unchanged on both consumers.
+Verified: greped the quantisation and both tween sites; tsc ✓; lint diagnostics LF-normalised vs `git show HEAD:` 1 before / 1 after; next build ✓. 1 file. Not committed.
+
+## 2026-07-22 — Blog hero already has the smoothness/lag fix — NO CHANGE MADE
+Checked before editing: the fix from the previous task lives entirely inside SpotlightGrid's `sweep` code path — the quantised `setSweepHead` sits inside `if (sweep) {…}` in the rAF tick, and `sweepTween` is `sweep ? … : undefined`. Neither is gated on anything CtaSection-specific, so every consumer passing `sweep` inherits it. BlogHeroSection passes `sweep`, so it already had the fix the moment that task landed.
+Also diffed the two call sites in full: byte-identical apart from `sweepColStart` (2 for the CTA, 1 for the hero) — a per-section region the user set deliberately to clear each card's own scrim, not part of the animation.
+Deliberately made no edit. Re-passing the same props or duplicating the fix would have been a no-op diff dressed up as work.

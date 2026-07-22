@@ -146,7 +146,15 @@ export default function SpotlightGrid({
         const regionCount =
           (sweepColEnd - sweepColStart + 1) * (sweepRowEnd - sweepRowStart + 1);
         const period = regionCount + sweepTrail;
-        setSweepHead((t * SWEEP_CELLS_PER_SEC) % period);
+        // Re-render only when the head crosses into a NEW cell. Setting state
+        // every frame re-rendered all 80 cells — and in plus mode ran ~400
+        // centreAt calls — 60 times a second, which is what made this lag.
+        // At these speeds this fires roughly once a second instead; the CSS
+        // transition on the glow below tweens the gap between renders.
+        const next = (t * SWEEP_CELLS_PER_SEC) % period;
+        setSweepHead((cur) =>
+          Math.floor(next) === Math.floor(cur) ? cur : next,
+        );
         raf = requestAnimationFrame(tick);
         return;
       }
@@ -263,6 +271,12 @@ export default function SpotlightGrid({
     return Math.max(0, 1 - distance / 1.79);
   };
 
+  // Duration of one cell-step. Sweep now re-renders only when the head crosses
+  // a cell, so this is exactly the gap CSS has to tween across — matching it
+  // makes the glow ramp continuously instead of stepping.
+  const sweepStepMs = 1000 / Math.max(0.001, speed * SWEEP_CELLS_PER_SEC);
+  const sweepTween = sweep ? `${sweepStepMs}ms linear` : undefined;
+
   // Built unconditionally (hooks can't be called in a branch) but only applied
   // when not sweeping — sweep mode shows the whole grid, unmasked.
   const maskImage = useMotionTemplate`radial-gradient(${maskRadius}px circle at ${mouseX}px ${mouseY}px, black 0%, transparent 100%)`;
@@ -317,6 +331,10 @@ export default function SpotlightGrid({
                   }
                   style={{
                     opacity: intensity * 0.8,
+                    // Bridges the quantised sweep updates. Undefined outside
+                    // sweep mode, where the mask path still updates per frame.
+                    transition: sweepTween && `opacity ${sweepTween}`,
+                    willChange: sweep ? "opacity" : undefined,
                     background:
                       glowColor && glowVia
                         ? `linear-gradient(to bottom, ${glowColor}, ${glowVia}, ${glowColor})`
@@ -327,7 +345,12 @@ export default function SpotlightGrid({
                 {/* The inner dark cell */}
                 <div
                   className="relative z-10 h-full w-full rounded-2xl transition-colors duration-300"
-                  style={{ backgroundColor: bgColor }}
+                  style={{
+                    backgroundColor: bgColor,
+                    // Overrides duration-300 in sweep mode: 300ms would finish
+                    // long before the next render and step visibly.
+                    transition: sweepTween && `background-color ${sweepTween}`,
+                  }}
                 />
               </div>
             );
