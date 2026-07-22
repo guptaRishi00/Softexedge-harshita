@@ -240,7 +240,10 @@ function ProjectCard({
               }}
               className="max-w-md"
             >
-              <p className="mb-4 text-xs font-medium uppercase tracking-[0.3em] text-zinc-400">
+              {/* inline-block so the gradient spans the text, not the full
+                  row; pr covers the trailing letter-spacing so bg-clip-text
+                  doesn't clip the last glyph. */}
+              <p className="mb-4 inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-[0.3em] text-xs font-medium uppercase tracking-[0.3em] text-transparent">
                 Featured Case
               </p>
 

@@ -13,6 +13,10 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+// Seconds the auto-advance takes to cross the whole horizontal phase once the
+// section pins. With 5 panels that's ~1.5s per panel.
+const AUTO_ADVANCE_SECONDS = 6;
+
 const projects = [
   {
     id: 1,
@@ -125,6 +129,8 @@ export default function PortfolioSection() {
         }
 
         // 2. HORIZONTAL SCROLL ANIMATION
+        // Declared out here so the cleanup at the bottom can reach it.
+        let cleanupAuto: () => void = () => {};
         const track = trackRef.current;
         if (track) {
           const totalWidth = track.scrollWidth - window.innerWidth;
@@ -144,6 +150,24 @@ export default function PortfolioSection() {
                 scrub: 1,
                 anticipatePin: 1,
                 invalidateOnRefresh: true,
+                // Settle on one panel at a time. Only the horizontal phase
+                // snaps — past xPhase the timeline is the one-viewport hold
+                // that Stats slides over, and snapping there would fight that
+                // overlap, so those values are returned untouched.
+                snap: {
+                  snapTo: (value) => {
+                    if (value >= xPhase) return value;
+                    const steps = projects.length - 1;
+                    return (
+                      (Math.round((value / xPhase) * steps) / steps) * xPhase
+                    );
+                  },
+                  // Short, and delayed enough that it waits for the scrub to
+                  // settle instead of yanking mid-gesture.
+                  duration: { min: 0.15, max: 0.4 },
+                  delay: 0.08,
+                  ease: "power1.inOut",
+                },
                 onUpdate: (self) => {
                   const newIndex = Math.round(
                     Math.min(1, self.progress / xPhase) * (projects.length - 1),
@@ -159,6 +183,68 @@ export default function PortfolioSection() {
               duration: totalWidth,
             })
             .to({}, { duration: holdPx });
+
+          // 2b. AUTO-ADVANCE — once the section pins, walk the PAGE scroll
+          // through the horizontal phase on its own. It has to move the page
+          // scroll rather than the track: the timeline is scrubbed to scroll
+          // position, so animating the track directly would desync it from the
+          // panel snap and the text reveals.
+          const st = scrollTween.scrollTrigger;
+          let autoTween: gsap.core.Tween | null = null;
+
+          const stopAuto = () => {
+            autoTween?.kill();
+            autoTween = null;
+          };
+
+          const startAuto = () => {
+            if (!st || autoTween) return;
+            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              return;
+            }
+            const from = st.scroll();
+            // Stop at the end of the horizontal phase — never into the hold,
+            // which belongs to the Stats overlap.
+            const to = st.start + totalWidth;
+            if (from >= to) return;
+
+            const proxy = { y: from };
+            autoTween = gsap.to(proxy, {
+              y: to,
+              // Pace is per-distance, so the tour runs at the same speed
+              // regardless of how far in the section was entered.
+              duration: ((to - from) / totalWidth) * AUTO_ADVANCE_SECONDS,
+              ease: "none",
+              onUpdate: () => st.scroll(proxy.y),
+              onComplete: stopAuto,
+            });
+          };
+
+          // Any real input hands control straight back to the user — an
+          // auto-scroll that fights the wheel is worse than none.
+          const interrupts = ["wheel", "touchstart", "pointerdown", "keydown"];
+          for (const evt of interrupts) {
+            window.addEventListener(evt, stopAuto, { passive: true });
+          }
+
+          // Separate (unpinned) trigger purely for the enter/leave events —
+          // the pinned timeline above is created first, so its callbacks
+          // cannot reference these handlers without a TDZ error.
+          ScrollTrigger.create({
+            trigger: containerRef.current,
+            start: "top top",
+            end: () => `+=${totalWidth + holdPx}`,
+            onEnter: startAuto,
+            onLeave: stopAuto,
+            onLeaveBack: stopAuto,
+          });
+
+          cleanupAuto = () => {
+            stopAuto();
+            for (const evt of interrupts) {
+              window.removeEventListener(evt, stopAuto);
+            }
+          };
 
           // 3. TEXT REVEALS ON SCROLL
           gsap.utils
@@ -190,6 +276,7 @@ export default function PortfolioSection() {
           if (moveCursor) {
             window.removeEventListener("mousemove", moveCursor);
           }
+          cleanupAuto();
         };
       });
       return () => mm.revert();

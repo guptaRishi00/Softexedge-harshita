@@ -76,19 +76,11 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Only used as a per-frame tick for the tracker below, so the range has to
-  // stay unsaturated for as long as cards are still pinning. With "end end"
-  // progress hit 1 (and stopped emitting) once the container's bottom reached
-  // the viewport bottom — which happens BEFORE the last card reaches its pin
-  // line, so the last card never registered. "end start" runs the range on
-  // until the container's bottom clears the viewport top.
   const { scrollYProgress } = useScroll({
     target: container,
     offset: ["start start", "end start"],
   });
 
-  // Track the top-most card that has actually pinned (reached its sticky line).
-  // A card's image hides once the NEXT card has pinned over it (activeIndex > i).
   useMotionValueEvent(scrollYProgress, "change", () => {
     let active = 0;
     for (let j = 0; j < services.length; j++) {
@@ -104,7 +96,7 @@ export default function SubServices({ children }: { children?: ReactNode }) {
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
         {/* HEADER SECTION */}
-        <div className="mx-auto w-full px-4 md:px-10 pt-20 pb-32">
+        <div className="mx-auto w-full px-4 md:px-10 pt-30 pb-32">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
             What We Offer
           </span>

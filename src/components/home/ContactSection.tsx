@@ -164,7 +164,7 @@ function ChannelCard({
           <span className="text-sm font-semibold tracking-wide text-zinc-500 uppercase">
             {label}
           </span>
-          <span className="text-lg font-bold text-white sm:text-xl">
+          <span className="text-lg font-medium text-white sm:text-xl">
             {value}
           </span>
         </span>

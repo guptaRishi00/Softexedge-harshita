@@ -215,7 +215,10 @@ export const NavItems = ({
               {hovered === idx && (
                 <motion.div
                   layoutId="hovered"
-                  className="absolute inset-0 h-full w-full rounded-lg bg-white shadow-md"
+                  // shadow-md's two layers are both +Y (0 4px / 0 2px), so it
+                  // only ever casts downward. Those exact layers are kept and
+                  // mirrored to -Y so the pill is shadowed on top as well.
+                  className="absolute inset-0 h-full w-full rounded-lg bg-white shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1),0_2px_4px_-2px_rgb(0_0_0_/_0.1),0_-4px_6px_-1px_rgb(0_0_0_/_0.1),0_-2px_4px_-2px_rgb(0_0_0_/_0.1)]"
                 />
               )}
 

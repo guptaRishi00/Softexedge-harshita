@@ -30,8 +30,11 @@ export default function CtaSection() {
               3rd box in from the left and 3rd row down, ending on the 3rd row
               up from the bottom (the grid is 8 rows, so that's row index 5). */}
           <SpotlightGrid
-            speed={0.3}
+            speed={0.15}
             sweep
+            scatter
+            plus
+            sweepTrail={6}
             sweepColStart={2}
             sweepRowStart={2}
             sweepRowEnd={5}

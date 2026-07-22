@@ -11,22 +11,33 @@ import Particles from "@/components/ui/Particles";
 // Anything without a page of its own points at that section's anchor on the
 // page that owns it. Home anchors use /home rather than /#… because / is a
 // redirect to /home and a fragment is not guaranteed to survive the hop.
-const footerLinksCol1 = [
-  { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Culture", href: "/about#culture" },
-  { name: "Meet The Team", href: "/about#team" },
-  { name: "Careers", href: "/career" },
-  { name: "Blog & Resources", href: "/blog" },
-];
-
-const footerLinksCol2 = [
-  { name: "Services", href: "/home#services" },
-  { name: "Work", href: "/work" },
-  { name: "Testimonials", href: "/home#testimonials" },
-  { name: "Processes", href: "/brand-strategy#process" },
-  { name: "FAQs", href: "/brand-strategy#faq" },
-  { name: "Contact", href: "/contact" },
+// Four columns of four. Every href resolves to a real route or to a section
+// anchor on the page that owns it.
+const footerLinkGroups = [
+  [
+    { name: "Home", href: "/" },
+    { name: "About", href: "/about" },
+    { name: "Culture", href: "/about#culture" },
+    { name: "Meet The Team", href: "/about#team" },
+  ],
+  [
+    { name: "Work", href: "/work" },
+    { name: "Blog & Resources", href: "/blog" },
+    { name: "Testimonials", href: "/home#testimonials" },
+    { name: "Careers", href: "/career" },
+  ],
+  [
+    { name: "Web Development", href: "/web-development" },
+    { name: "Brand Strategy", href: "/brand-strategy" },
+    { name: "UI/UX Design", href: "/ui-ux-design" },
+    { name: "App Development", href: "/app-development" },
+  ],
+  [
+    { name: "Services", href: "/home#services" },
+    { name: "Processes", href: "/brand-strategy#process" },
+    { name: "FAQs", href: "/brand-strategy#faq" },
+    { name: "Contact", href: "/contact" },
+  ],
 ];
 
 const socialLinks = [
@@ -83,39 +94,30 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay" />
 
       <div className="relative z-10 mx-auto w-full flex flex-col px-6 md:px-10 lg:px-16">
-        <div className="grid grid-cols-1 gap-12 pb-16 lg:grid-cols-12 md:pb-20">
-          <div className="grid grid-cols-2 gap-10 lg:col-span-7 lg:flex lg:justify-start lg:gap-20">
-            <div className="flex flex-col gap-4">
-              {footerLinksCol1.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="group relative w-fit text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
-                >
-                  {link.name}
-                  {/* UPDATED: Follow-through underline animation */}
-                  <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
-                </Link>
-              ))}
-            </div>
-
-            <div className="flex flex-col gap-4">
-              {footerLinksCol2.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="group relative w-fit text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
-                >
-                  {link.name}
-                  {/* UPDATED: Follow-through underline animation */}
-                  <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
-                </Link>
-              ))}
-            </div>
+        {/* items-start so the links block and the newsletter block each size to
+            their own content and sit at the top, instead of the grid's default
+            stretch making them equal height. */}
+        <div className="grid grid-cols-1 items-start gap-12 pb-16 lg:grid-cols-12 md:pb-20">
+          <div className="grid grid-cols-2 gap-x-10 gap-y-14 lg:col-span-7 lg:grid-cols-4 lg:gap-x-12">
+            {footerLinkGroups.map((group) => (
+              <div key={group[0].name} className="flex flex-col gap-8">
+                {group.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="group relative w-fit text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
+                  >
+                    {link.name}
+                    {/* UPDATED: Follow-through underline animation */}
+                    <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
+                  </Link>
+                ))}
+              </div>
+            ))}
           </div>
 
-          <div className="flex flex-col items-start lg:col-span-5 lg:pl-12 ">
-            <h3 className="mb-6 text-[2rem] font-semibold leading-tight tracking-[-0.04em] text-white">
+          <div className="flex flex-col items-start lg:col-span-5 lg:pl-12 lg:-mt-1">
+            <h3 className="mb-8 text-[2rem] font-semibold leading-tight tracking-[-0.04em] text-white">
               Stay updated with Softexedge news
             </h3>
 
@@ -157,7 +159,7 @@ export default function Footer() {
               </button>
             </form>
 
-            <div className="mt-8 flex flex-wrap gap-2.5">
+            <div className="mt-8 flex flex-wrap gap-3">
               {socialLinks.map((social, i) => (
                 <a
                   key={i}
@@ -267,7 +269,7 @@ export default function Footer() {
             <div className="flex flex-wrap items-center gap-6">
               <p className="tracking-wide">All Rights Reserved</p>
               <a href="#" className="transition-colors hover:text-white">
-                Privacy Policy (you really care?)
+                Privacy Policy (we know, thrilling stuff)
               </a>
             </div>
           </div>

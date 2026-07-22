@@ -6,7 +6,7 @@ import {
   useMotionValue,
   useReducedMotion,
 } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const TOTAL_ITEMS = 80;
 const COLUMNS = 10;
@@ -16,6 +16,8 @@ const ROWS = TOTAL_ITEMS / COLUMNS;
 // multiplier), and how many cells the fading tail spans behind the head.
 const SWEEP_CELLS_PER_SEC = 6;
 const SWEEP_TRAIL = 4;
+// Plus mode: how bright the four arms are relative to their centre box.
+const PLUS_ARM = 0.35;
 
 /**
  * Auto-moving spotlight pattern: a dark grid revealed by a soft radial mask
@@ -47,6 +49,17 @@ export default function SpotlightGrid({
   sweepColEnd = COLUMNS - 1,
   sweepRowStart = 0,
   sweepRowEnd = ROWS - 1,
+  // Sweep mode only: visit the region's cells in a scattered order instead of
+  // marching along each row, so the light reads as random rather than a line.
+  scatter = false,
+  // Sweep mode only: how many cells stay lit behind the head. Higher = denser
+  // (in scatter mode this is simply how many boxes glow at once); in the plain
+  // sweep it's the length of the comet tail.
+  sweepTrail = SWEEP_TRAIL,
+  // Sweep mode only: light each cell as a plus — the cell at full strength and
+  // its four orthogonal neighbours at PLUS_ARM of it. Arms never spill outside
+  // the sweep region.
+  plus = false,
 }: {
   speed?: number;
   glowColor?: string;
@@ -58,6 +71,9 @@ export default function SpotlightGrid({
   sweepColEnd?: number;
   sweepRowStart?: number;
   sweepRowEnd?: number;
+  scatter?: boolean;
+  sweepTrail?: number;
+  plus?: boolean;
 }) {
   const reduce = useReducedMotion();
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -70,6 +86,32 @@ export default function SpotlightGrid({
   const [focus, setFocus] = useState<{ row: number; col: number } | null>(null);
   // Sweep mode only: index of the leading lit cell in the flat, row-major grid.
   const [sweepHead, setSweepHead] = useState(-1);
+
+  // Scatter mode: `scatterSteps[ordinal]` is the step at which that cell
+  // lights. It's a shuffle of 0..n-1, so the light hops randomly around the
+  // region instead of running along rows, while still visiting every cell
+  // exactly once per cycle (no clumping, no gaps, same pace as the sweep).
+  // The PRNG is seeded, so the server and client agree on the order.
+  const scatterSteps = useMemo(() => {
+    if (!scatter) return null;
+    const n =
+      (sweepColEnd - sweepColStart + 1) * (sweepRowEnd - sweepRowStart + 1);
+    let seed = 0x9e3779b9;
+    const rnd = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 0x100000000;
+    };
+    // order[step] = which cell lights at that step (seeded Fisher-Yates).
+    const order = Array.from({ length: n }, (_, i) => i);
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    // Invert it, since getIntensity asks "when does THIS cell light?".
+    const steps = new Array<number>(n);
+    for (let s = 0; s < n; s++) steps[order[s]] = s;
+    return steps;
+  }, [scatter, sweepColStart, sweepColEnd, sweepRowStart, sweepRowEnd]);
 
   // Auto-drive the spotlight on a slow Lissajous wander (no mouse needed).
   useEffect(() => {
@@ -95,7 +137,7 @@ export default function SpotlightGrid({
 
       // Sweep: one cell at a time through the flat row-major index, so the
       // light runs left→right along a row, drops to the start of the next, and
-      // continues top→bottom. The period overruns the grid by SWEEP_TRAIL so
+      // continues top→bottom. The period overruns the grid by sweepTrail so
       // the tail finishes fading off the last cell before it restarts at the
       // first. No mask here, so the px spotlight position is irrelevant.
       if (sweep) {
@@ -103,7 +145,7 @@ export default function SpotlightGrid({
         // cycle length is the region's cell count, not the whole grid's.
         const regionCount =
           (sweepColEnd - sweepColStart + 1) * (sweepRowEnd - sweepRowStart + 1);
-        const period = regionCount + SWEEP_TRAIL;
+        const period = regionCount + sweepTrail;
         setSweepHead((t * SWEEP_CELLS_PER_SEC) % period);
         raf = requestAnimationFrame(tick);
         return;
@@ -156,6 +198,7 @@ export default function SpotlightGrid({
     sweepColEnd,
     sweepRowStart,
     sweepRowEnd,
+    sweepTrail,
   ]);
 
   const getIntensity = (index: number) => {
@@ -164,18 +207,45 @@ export default function SpotlightGrid({
     // Only cells BEHIND the head light up, so the box at the head is brightest
     // and the few before it fade out as a tail.
     if (sweep) {
+      // Brightness of a cell treated as a glow CENTRE — 0 unless it sits in
+      // the region and is currently within the trail behind the head.
+      const centreAt = (row: number, col: number) => {
+        if (row < sweepRowStart || row > sweepRowEnd) return 0;
+        if (col < sweepColStart || col > sweepColEnd) return 0;
+
+        // Position within the region, counted left→right then top→bottom.
+        const regionCols = sweepColEnd - sweepColStart + 1;
+        const ordinal =
+          (row - sweepRowStart) * regionCols + (col - sweepColStart);
+        // Scatter reorders WHEN each cell lights; the head/tail timing here is
+        // unchanged, so the pace and the number of lit cells stay the same.
+        const step = scatterSteps ? scatterSteps[ordinal] : ordinal;
+
+        const behind = sweepHead - step;
+        if (behind < 0 || behind > sweepTrail) return 0;
+        return 1 - behind / sweepTrail;
+      };
+
       const r = Math.floor(index / COLUMNS);
       const c = index % COLUMNS;
+      // Cells outside the region never light — not even as a plus arm, so the
+      // formation stays clear of the scrimmed edges.
       if (r < sweepRowStart || r > sweepRowEnd) return 0;
       if (c < sweepColStart || c > sweepColEnd) return 0;
 
-      // Position within the region, counted left→right then top→bottom.
-      const regionCols = sweepColEnd - sweepColStart + 1;
-      const ordinal = (r - sweepRowStart) * regionCols + (c - sweepColStart);
+      const own = centreAt(r, c);
+      if (!plus) return own;
 
-      const behind = sweepHead - ordinal;
-      if (behind < 0 || behind > SWEEP_TRAIL) return 0;
-      return 1 - behind / SWEEP_TRAIL;
+      // Plus formation: this cell at full strength when it's a centre, or dimly
+      // lit when it's an arm of a neighbouring centre. Taking the max keeps a
+      // centre at full brightness even when it also borders another centre.
+      const arm = Math.max(
+        centreAt(r - 1, c),
+        centreAt(r + 1, c),
+        centreAt(r, c - 1),
+        centreAt(r, c + 1),
+      );
+      return Math.max(own, arm * PLUS_ARM);
     }
 
     if (!focus) return 0;

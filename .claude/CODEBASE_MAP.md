@@ -1,177 +1,214 @@
 # softexedge-may-2026 — Codebase Map
-_Last updated: 2026-07-10_
+_Last updated: 2026-07-22_
 
 ## Identity
 Marketing/agency website for **SoftexEdge**. Frontend-only, animation-heavy
-brochure site — no backend, API, database, or auth. Focus is visual polish:
-scroll-driven GSAP animations, WebGL/Three.js effects, smooth scrolling.
+brochure site — **no backend, API, database, or auth**. All content is
+hard-coded in `src/data/`. Focus is visual polish: scroll-driven GSAP
+animations, framer-motion, smooth scrolling, WebGL effects.
 
-- **Framework:** Next.js 16.2.5 (App Router) + React 19.2.4, React Compiler enabled
-- **Language:** TypeScript 5 (strict), `"@/*"` → `./src/*`
-- **Min runtime:** Next 16 / React 19 (modern Node; project uses Bun)
+- **Framework:** Next.js 16.2.5 (App Router) + React 19.2.4, React Compiler enabled (`next.config.ts` `reactCompiler: true`)
+- **Language:** TypeScript 5, `strict: true`, alias `@/*` → `./src/*`
+- **Runtime:** modern Node; project uses Bun
 
 ## Stack & build
-- **Package manager:** Bun (`bun.lock`). npm also works.
-- **Bundler/build:** Next.js (Turbopack-era 16), PostCSS + Tailwind CSS v4
-- **Lint/format:** Biome 2.2.0 (`biome.json`) — also Prettier + prettier-plugin-tailwindcss present
-- **Animation:** GSAP + ScrollTrigger, Framer Motion, Lenis (smooth scroll)
-- **3D/WebGL:** Three.js + @react-three/fiber/drei, ogl, postprocessing
-- **UI libs:** Radix slot, Embla carousel, Tabler/Lucide/react-icons
-- **Font:** Satoshi Variable — self-hosted via `@font-face` in `globals.css` (`public/fonts/Satoshi-Variable.woff2`), set as `--font-sans` default (no `next/font`)
+- **Package manager:** Bun (`bun.lock` is the only lockfile). npm works; `.claude/launch.json` uses `npm run dev`.
+- **Styling:** Tailwind CSS v4 — **no `tailwind.config.*`**, configured in CSS via `@theme` in `src/app/globals.css`
+- **Lint/format:** Biome 2.2.0 (`biome.json`). Prettier + prettier-plugin-tailwindcss are installed but have no config — **dead deps**, don't use them.
+- **Animation:** framer-motion (111 files), GSAP + ScrollTrigger (11 files), Lenis
+- **WebGL:** three + @react-three/fiber + drei + postprocessing, and ogl — two stacks, both barely used
+- **Font:** Satoshi Variable, self-hosted `@font-face` in `globals.css` → `--font-sans`. **`next/font` is not used.**
 
 ## Commands
 | Action | Command |
 |---|---|
-| Run dev | `bun dev` (or `npm run dev`) → http://localhost:3000 |
-| Run all tests | _none — no test setup_ |
+| Run dev | `bun run dev` (→ `next dev`), http://localhost:3000 |
+| Run all tests | _none — no test runner, no test files_ |
 | Run one test | _n/a_ |
-| Lint | `bun run lint` (`biome check`) |
-| Format | `bun run format` (`biome format --write`) |
-| Typecheck | `npx tsc --noEmit` (passes clean as of map date) |
-| Build | `bun run build` (`next build`) |
+| Lint | `bun run lint` (→ `biome check`) — **currently exits 1**; the repo has pre-existing violations (see below). Lint a single file to judge your own change. |
+| Lint + autofix | _no script_ — `bunx @biomejs/biome check --write .` |
+| Format | `bun run format` (→ `biome format --write`) |
+| Typecheck | _no script_ — `bunx tsc --noEmit` |
+| Build | `bun run build` (→ `next build`) |
 | Start (prod) | `bun run start` |
 
 ## Bootstrap flow
-`src/app/layout.tsx` (RootLayout, loads Satoshi font + globals.css) →
-route `page.tsx` files. `/` redirects to `/home`. Each page composes section
-components and includes its own `<Footer>`. GSAP plugins registered per-page
-behind `typeof window !== "undefined"` guards.
+`src/app/layout.tsx` is 20 lines and does almost nothing — imports
+`globals.css`, sets `metadata`, applies `font-sans` to `<html>`. **No providers,
+no header, no footer, no fonts, no analytics.**
+
+Each route `page.tsx` composes section components and renders its own
+`<Footer>`. The site header is rendered *inside each page's hero component*
+(see Gotchas). GSAP plugins are registered per-file behind
+`typeof window !== "undefined"`.
 
 ## Directory layout
-- `src/app/` — App Router routes (`page.tsx` per route), `layout.tsx`, `globals.css`
-- `src/components/home|about|brand-strategy|contact|career|work/` — page-specific section components
-- `src/components/ui/` — reusable visual/WebGL effects + base UI (button, carousel, navbar)
-- `src/components/layout/` — Header, Footer, SmoothScroll (Lenis wrapper)
-- `src/components/page/` — **second** Header + resizable-navbar (used by inner pages)
-- `src/components/shared/` — ConnectButton variants (3 of them)
-- `src/components/garbage/` — **DEAD CODE**, 25 files, nothing imports it
-- `src/data/` — static content modules (`blog.ts`, `projects.ts`)
-- `src/lib/utils.ts` — `cn()` (clsx + tailwind-merge)
-- `public/assets/` — images, `hero.mp4`, logos; `public/fonts/` — Satoshi
-
-Notable shared `ui/` components (added recently): `TracingBorder` (comet
-border that traces on hover then settles into TR/BL corner glows — blog +
-work cards; optional `color` prop renders it as a solid color instead of the
-gradient — work passes `#2E5BFF`, blog keeps the gradient), `TechLogoCarousel`
-(tech-stack logo marquee under `ExperimentalTestimonials` on every page),
-`DomeGallery` (2026-07-14: REWRITTEN as a flat 2D masonry wall — the 3D
-sphere, drag gestures, and enlarge-on-click viewer are GONE, along with the
-dome-era props fit/fitBasis/minRadius/maxVerticalRotationDeg/segments/
-dragDampening; it no longer imports @use-gesture/react). Now: 18 columns with
-UNEVEN px widths (`WIDTH_PATTERN`) and UNEVEN card heights (`HEIGHT_PATTERN`
-fractions of container height, phase-shifted per column via coprime index
-stepping so horizontal seams never align), and ONE constant `gap` prop
-(default 16px) everywhere — between columns, between cards, and at the loop
-seam (strip pitch includes a trailing gap). `autoRotate`/`autoRotateSpeed`
-now mean a seamless horizontal marquee (rAF translate3d over one strip
-pitch; strip tiled ceil(w/pitch)+1 times); reduced-motion → static wall.
-Renders pointer-events-none as an ambient background (raw `<img>` tiles).
-Only consumer: `WorkHeroSection`.
+- `src/app/` — App Router routes, `layout.tsx`, `globals.css`
+- `src/components/<page>/` — page-specific sections (`home`, `about`, `blog`, `career`, `contact`, `work`)
+- `src/components/<service>/` — **8 near-identical service-page component sets** (see Duplication)
+- `src/components/ui/` — shared primitives + WebGL effects (25 files, **14 unreferenced**)
+- `src/components/layout/` — Header, Footer, SmoothScroll
+- `src/components/page/` — **second** Header + its own resizable-navbar copy
+- `src/components/shared/` — 3 ConnectButton variants, **all unreferenced**
+- `src/components/garbage/` — **dead code, 25 files, zero external imports**
+- `src/data/` — `blog.ts`, `projects.ts` (all site content)
+- `src/lib/` — `utils.ts` (`cn()`), `useIsDesktop.ts`
+- `public/assets/` (~75 files incl. 5 `.mp4`), `public/fonts/`
 
 ## Surfaces
-All routes are public (static marketing pages, no auth anywhere).
+**All 16 routes are public and static. There is no auth anywhere** — no auth
+library, no middleware, no session/cookie/token handling, no access control.
 
 | Name | Type | File:Line | Auth | Purpose |
 |---|---|---|---|---|
-| Home (redirect) | Route | `src/app/page.tsx:3` | public | Redirects `/` → `/home` |
-| HomePage | Route | `src/app/home/page.tsx:32` | public | Main landing: hero, Trusted-By logo loop, about, portfolio, stats, services, testimonials (+`TechLogoCarousel`), contact, blog |
-| AboutPage | Route | `src/app/about/page.tsx:14` | public | About: hero, traditional, culture (OurValuesSection), team, testimonials + `TechLogoCarousel`, FAQ, CTA |
-| BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:16` | public | Service page: hero, sub-services, process, tech stack, showcase, testimonials + `TechLogoCarousel`, CTA, FAQ, blog |
-| WebDevelopmentPage | Route | `src/app/web-development/page.tsx:15` | public | 2026-07-14: exact mirror of /brand-strategy, but ALL 8 section components are independent copies in `src/components/web-development/` (incl. its own CtaSection/FaqSection) so this page can diverge — edit those, not the brand-strategy ones. Other pages still import the brand-strategy CtaSection/FaqSection. Not yet linked from the Header nav. |
-| ContactPage | Route | `src/app/contact/page.tsx:12` | public | Contact: hero, `ContactSection` form, testimonials + `TechLogoCarousel`, FAQ, CTA |
-| CareerPage | Route | `src/app/career/page.tsx:11` | public | Careers: `CareerHeroSection` → `WhyJoinUs` → `OpenPositions` (accordion job board) → `PerksSection` (benefit cards) → `OurTeamSection` → `ApplicationJourney` (sticky-deck) → Footer. (`CareerValues` present but commented out.) |
-| WorkPage | Route | `src/app/work/page.tsx:10` | public | Work index: `WorkHeroSection` (rotating colour `DomeGallery` bg + black overlay + `<Header onDark/>`, stat counters) + `WorkProjectShowcase` (cards → `/work/<slug>`, `TracingBorder` hover) |
-| WorkProjectPage | Route | `src/app/work/[slug]/page.tsx:22` | public | Per-project case study. SSG via `generateStaticParams` over the 8 `projects` (`data/projects.ts`); unknown slug → `getProjectBySlug` → 404. `<Header onDark/>` + `ProjectHero` → `ProjectDetailsContent` → `NextProject` + Footer |
-| BlogPage | Route | `src/app/blog/page.tsx:7` | public | Blog index: `BlogHeroSection` (left-aligned blog-index hero matching a provided design: huge two-line headline "News, [inline rounded image] views / and everything else" + a list-header row ("Showing 1-N of N posts" from `blogPosts.length` + "By Category"/"By Author" filter-style pills, currently VISUAL/non-functional). Carries the page `Header`) → `BlogFeaturedSection` (featured post; no Header) → `BlogListSection` (filterable grid, excludes the featured post) → CTA → Footer. |
-| BlogArticlePage | Route | `src/app/blog/[slug]/page.tsx:36` | public | Per-article read page. SSG via `generateStaticParams` over the 6 slugs (`dynamicParams=false` → unknown slug 404s); per-post `generateMetadata`. `BlogArticle` (hero, cover, sticky share rail + prose blocks, tags, author bio, related) + `CtaSection` + Footer |
+| Root redirect | Route | `src/app/page.tsx:3` | public | `redirect("/home")` |
+| HomePage | Route | `src/app/home/page.tsx:32` | public | Hero, LogoLoop, About, Portfolio, Stats, Services, Testimonials, Contact, Blog. **Only route using `SmoothScroll`.** |
+| AboutPage | Route | `src/app/about/page.tsx:14` | public | Hero, Traditional, OurValues, OurTeam, Testimonials, CTA, FAQ, Blog |
+| ContactPage | Route | `src/app/contact/page.tsx:12` | public | Hero (bg video), ContactSection form, Testimonials, FAQ, CTA |
+| CareerPage | Route | `src/app/career/page.tsx:11` | public | CareerHero, WhyJoinUs, OpenPositions, OurValues, Perks, OurTeam, ApplicationJourney |
+| WorkPage | Route | `src/app/work/page.tsx:10` | public | WorkHero (DomeGallery), WorkProjectShowcase, Testimonials, CTA, FAQ, Blog |
+| WorkProjectPage | Route | `src/app/work/[slug]/page.tsx:22` | public | SSG via `generateStaticParams:12`. Renders `<Header onDark/>` directly. Unknown slug → `notFound():29` |
+| BlogPage | Route | `src/app/blog/page.tsx:7` | public | BlogHero (filter emitter), Featured, List, CTA |
+| BlogArticlePage | Route | `src/app/blog/[slug]/page.tsx:36` | public | SSG `generateStaticParams:11`, `dynamicParams=false:9`, `generateMetadata:15` |
+| BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:16` | public | **The divergent original** service page |
+| AiMarketingAutomationPage | Route | `src/app/ai-marketing-automation/page.tsx:15` | public | Service page (copy) |
+| AppDevelopmentPage | Route | `src/app/app-development/page.tsx:15` | public | Service page (copy) |
+| CustomSoftwarePage | Route | `src/app/custom-software/page.tsx:15` | public | Service page (copy) |
+| DigitalMarketingPage | Route | `src/app/digital-marketing/page.tsx:15` | public | Service page (copy) |
+| UiUxDesignPage | Route | `src/app/ui-ux-design/page.tsx:15` | public | Service page (copy) |
+| VideoProductionPage | Route | `src/app/video-production/page.tsx:15` | public | Service page (copy) |
+| WebDevelopmentPage | Route | `src/app/web-development/page.tsx:15` | public | Service page (copy) |
+
+**No route handlers, no API routes, no server actions (`"use server"` appears
+nowhere), no `middleware.ts`, no `not-found.tsx`/`error.tsx`/`loading.tsx`, no
+`sitemap.ts`/`robots.ts`/`opengraph-image`.** Both dynamic routes call
+`notFound()` but fall through to Next's default 404 page.
+
+### Forms & external input
+| Surface | File:Line | Wired? |
+|---|---|---|
+| Contact form (name/email/phone/company/service/message) | `src/components/home/ContactSection.tsx:263` | **DEAD** — no `onSubmit`, no `action`, no state. Appears on `/home` and `/contact`. |
+| Newsletter subscribe | `src/components/layout/Footer.tsx:122` | **DEAD** — no handler. Appears on **all 16 routes**. |
+| Blog category/author filter | `src/components/blog/BlogListSection.tsx:118` | Works — client-side `useState`, via window event (below) |
+| `mailto:hello@softexedge.com`, `tel:` | `src/components/home/ContactSection.tsx:20-21,28` | Real |
+| `mailto:careers@softexedge.com` | `src/components/career/OpenPositions.tsx:312` | Real — the only working apply path |
+
+**The site has zero working lead capture.** Both real forms are decorative.
 
 ## Data
-No backend/storage/API. Two static content modules in **`src/data/`**:
-- **`blog.ts`** — 6 typed `BlogPost`s (`ContentBlock` union, `categories`) +
-  `getPostBySlug` / `getRelatedPosts`. Consumed by `BlogListSection` and
-  `/blog/[slug]`.
-- **`projects.ts`** — 8 typed `Project`s + `getProjectBySlug`. Consumed by
-  `/work/[slug]`. **Gotcha:** `WorkProjectShowcase.tsx` has its OWN inline
-  `projects` array (the listing cards) that must stay in sync with `data/projects.ts`
-  (the detail pages) — same 8 slugs, duplicated.
+No storage/API. Two static modules in `src/data/`:
+- **`blog.ts`** — `blogPosts` (6 posts), `categories`, types `BlogPost`/`ContentBlock` (discriminated union on `type`: heading/paragraph/quote/list/callout/image), `Author`; helpers `getPostBySlug:570`, `getRelatedPosts:575`. Consumed by `/blog/[slug]`, `BlogHeroSection`, `BlogFeaturedSection`, `BlogListSection`, `BlogArticle`.
+- **`projects.ts`** — `projects` (8), `Project`, `getProjectBySlug:217`. Consumed by `/work/[slug]`, `WorkProjectShowcase`.
 
-No env vars. Remote images allowed from `images.unsplash.com`,
-`plus.unsplash.com`, `randomuser.me` (`next.config.ts` `remotePatterns`).
+**No env vars anywhere** (`process.env` is read nowhere in `src/` or config).
+**No `fetch`/`axios`/XHR anywhere.**
 
 ## Assets
-- Source/static served from `public/assets/` (referenced by `/assets/...` paths)
-- Local font: `public/fonts/Satoshi-Variable.woff2` → `@font-face` in `globals.css`, exposed as `--font-sans`
-- `next/image` used for remote (unsplash) and local images
+- `public/assets/` — ~75 files. Videos: `hero.mp4`, `video1..4.mp4` (used by AboutTraditional, CareerHeroSection, ContactHeroSectionTwo, Herosection, PortfolioSection).
+- Imagery is **remote-heavy**: ~60 files reference `images.unsplash.com`; only 18 import `next/image`.
+- `next.config.ts` `remotePatterns`: `images.unsplash.com` (**listed twice**, :11 and :22), `plus.unsplash.com`, `randomuser.me`. Any other remote host will throw at runtime.
+- Font: `public/fonts/Satoshi-Variable.woff2` via `@font-face` in `globals.css:6-13`.
 
 ## External services
-None wired. No SDK keys, no analytics, no form backend (contact form is UI-only).
+**None wired.** No SDK keys, no analytics/GTM/pixel, no `<iframe>`, no
+`next/script`, no form backend, no CMS.
 
 ## Conventions
-- **Client components:** most sections are `"use client"` (animation/interaction heavy)
-- **Styling:** Tailwind v4 utility classes; merge via `cn()` from `@/lib/utils`
-- **Imports:** `@/` alias for `src/`; sections imported into route `page.tsx`
-- **Composition:** each route page assembles section components + its own Footer
-- **GSAP:** register plugins guarded by `typeof window !== "undefined"`; animations via `useGSAP`
+- Most sections are `"use client"` (animation-heavy).
+- Tailwind v4 utilities; merge with `cn()` from `@/lib/utils`.
+- `@/` alias for `src/`; each route page assembles sections + its own `Footer`.
+- GSAP registered behind `typeof window !== "undefined"`; animations via `useGSAP`.
+- **Responsive idiom:** mobile fixes are *additive* — smaller base/`sm:` values with the desktop value re-asserted at `md:`/`lg:` so desktop stays pixel-identical. `max-md:*` is the idiom for mobile-only overrides.
+- **`bun run lint` fails on a clean checkout.** Pre-existing violations exist across the repo (e.g. `home/PortfolioSection.tsx` alone has `noImgElement`, two `noUnusedVariables`, `noArrayIndexKey`, `noStaticElementInteractions`). So a non-zero exit does **not** mean you broke something — diff your file's issues against `git show HEAD:<path>` to see whether any are yours. Also note the working tree is **CRLF**, so `biome format --write` will rewrite whole files; avoid it on files you didn't author.
+- **Biome rules that bite:** `noArrayIndexKey` (pre-key lists, see `Footer` brandLetters), `noUnusedImports`/`noUnusedVariables` (removing JSX must remove its state/imports), `a11y/useMediaCaption` (7 components use `<video>` — needs a `biome-ignore`), `useExhaustiveDependencies`.
 
 ## Where to add a thing
-- **New page:** add `src/app/<route>/page.tsx`; compose from `src/components/<route>/`
-- **New section:** add to `src/components/<pageName>/`, import into the route page
-- **Reusable effect/UI:** add to `src/components/ui/`
-- **Nav/footer change:** see duplication gotcha below before editing
+- **New page:** `src/app/<route>/page.tsx` + a folder under `src/components/`
+- **New service page:** copy an existing service folder — that is the established (if unfortunate) pattern
+- **New section:** `src/components/<pageName>/`, import into the route page
+- **Reusable effect/UI:** `src/components/ui/`
+- **Nav/footer change:** read the Header gotcha below first
 
 ## Risks & gotchas
-- **`src/components/garbage/` is fully unused dead code** (25 files). Safe to delete; nothing outside it imports it.
-- **Duplicate navigation components — edit the right one:**
-  - `layout/Header.tsx` + `layout/SmoothScroll.tsx` → used by `/home` only (via `home/Herosection.tsx`)
-  - `page/Header.tsx` + `page/resizable-navbar.tsx` → used by `/about`, `/brand-strategy`, `/contact` hero sections
-  - `ui/resizable-navbar.tsx` (464 lines) ≈ near-duplicate of `page/resizable-navbar.tsx` (465 lines)
-  - `page/Header.tsx` accepts an `onDark` prop → threads to `NavItems`/`CustomLogo`/`MobileNavToggle` in `page/resizable-navbar.tsx` for light links + white logo at the top over a dark hero. `WorkHeroSection` uses `<Header onDark />` (identical hover/scroll/dropdown as other pages).
-  - `work/WorkHeader.tsx` — now ORPHANED (work page uses the shared `page/Header` with `onDark`); safe to delete.
-  - Three `shared/ConnectButton*.tsx` variants exist
-- **No Header in `layout.tsx`** — each hero section imports its own Header. There is no shared/global nav.
-- **SmoothScroll (Lenis) only on `/home`, and only at ≥768px** — inner pages and
-  mobile scroll natively.
-- **Homepage animations are desktop-only by design** (all via
-  `gsap.matchMedia("(min-width: 768px)")`): the about pin+scale and service
-  scale/rotate scrubs (`app/home/page.tsx`), and the ENTIRE `PortfolioSection`
-  GSAP (pinned 500vw horizontal scroll, custom cursor, text reveals). On mobile
-  the portfolio is a plain vertical stack (`h-[70svh]` panels; track `flex-col`
-  base, `md:w-max md:flex-row` — md:w-max × md:w-screen panels reproduce the old
-  inline 500vw width, so don't reintroduce an inline width). The "View Project"
-  cursor pill is `hidden md:flex`.
-- **Herosection height gotcha:** all its children are absolutely positioned, so
-  the root NEEDS a min-height at every breakpoint (`min-h-[100svh]
-  lg:min-h-[96.5vh]`) — removing the base value makes the hero 0px below lg.
-- **Responsive convention (this codebase):** mobile fixes are additive — smaller
-  base/sm: values with the old value re-asserted at md:/lg: so desktop stays
-  pixel-identical. Follow it when touching homepage styles. `max-md:*` (max-width
-  <768) is the idiom used to override a base utility on mobile only; it reliably
-  wins over the unprefixed class here.
-- **Mobile gotcha — `w-full` + `mx-*` overflows.** A box with `w-full`
-  (width:100%) AND horizontal margins has a margin-box wider than its parent by
-  2×margin → horizontal overflow (clipped by an ancestor's `overflow-hidden`,
-  reads as "card is cut off"). Fix: `max-md:w-auto` so auto width fills parent
-  minus margins (see `home/StatsSection.tsx` `.stat-inner`). Bit us once.
-- **Mobile gotcha — custom-cursor pills leak into the hero.** `ServiceSection`
-  ("View Services") and `PortfolioSection` ("View Project") each render a
-  `fixed`-positioned follower `<div>` whose ONLY initial hide is
-  `gsap.set(cursor,{scale:0})` — and that lives inside a `min-width:768px`
-  matchMedia gate, so on touch it never runs and the pill sits over the hero.
-  Both pills now carry `hidden md:flex`; keep that guard on any new hover cursor.
-- **Mobile gotcha — hover-only reveals are invisible on touch.** Several homepage
-  bits reveal on `group-hover` (e.g. `ServiceSection` thumbnails are `w-0
-  opacity-0` → `group-hover:w-[80px] opacity-100`). Add a `max-md:*` override to
-  show them by default on mobile (thumbnails now use `max-md:w-[80px]
-  max-md:opacity-100`).
-- **Default boilerplate metadata** in `layout.tsx` (`title: "Create Next App"`); no per-page metadata or OG tags — SEO gap for a marketing site.
-- **Loose types:** empty `type Props = {}` in pages; `ContactPage({}: any)`.
-- **No tests, no CI.**
-- `structure.txt` and `tsconfig.tsbuildinfo` exist; `structure.txt` is gitignored.
-- **Orphaned file:** `src/components/3d-globe-demo.tsx` sits loose at the top of
-  `src/components/` and is imported nowhere — safe to delete.
+
+### Duplication — the dominant structural fact
+**8 service folders × 8 components = 64 files, ~8 real implementations.**
+Verified byte-identical by md5 across the 7 copies (ai-marketing-automation,
+app-development, custom-software, digital-marketing, ui-ux-design,
+video-production, web-development):
+
+| Component | Identical across | Diverges |
+|---|---|---|
+| `AgencyStats`, `StrategyHeroSection` | all **8** incl. brand-strategy | — |
+| `SubServices`, `ProcessSection`, `OurTechStack`, `ProjectShowcase`, `FaqSection`, `CtaSection` | the **7** copies | `brand-strategy/*` |
+
+Editing one service page's section changes **only** that page. A site-wide
+change to these means editing 8 files. `garbage/CtaSection.tsx` is a third,
+older CTA variant — **do not use it as a dedupe base**.
+
+Page composition also differs in one real way:
+- `brand-strategy/page.tsx:21-22` — `<SubServices />` then `<ProcessSection />` as **siblings** (no overlap)
+- the other 7 — `<SubServices><ProcessSection /></SubServices>` **nested** (ProcessSection scrolls over the pinned last card)
+
+### Two Header components — edit the right one
+| File | Navbar dep | Used by |
+|---|---|---|
+| `layout/Header.tsx` | `ui/resizable-navbar` | **`/home` only**, via `home/Herosection.tsx:4` |
+| `page/Header.tsx` | `page/resizable-navbar` | **everything else** — 15 hero components + `work/[slug]/page.tsx:3` directly |
+
+`page/resizable-navbar.tsx` and `ui/resizable-navbar.tsx` are a near-duplicate
+pair. `work/WorkHeader.tsx` is a third, orphaned variant. `page/Header.tsx`
+takes `onDark` for light links over dark heroes.
+**There is no header in `layout.tsx`** — the site nav is nested inside hero
+components, so a nav change means editing both Headers.
+
+### Two conflicting Lenis integrations
+- `layout/SmoothScroll.tsx:21-49` — `new Lenis()` wired into ScrollTrigger + GSAP ticker. Used by `/home` only.
+- `<ReactLenis root>` inside **all 8 `*/SubServices.tsx`** — a *section component* seizing global scroll, on pages with no SmoothScroll wrapper and no ScrollTrigger sync.
+
+### Scroll-fragile code (touch with care)
+1. `app/home/page.tsx:71-142` + `home/PortfolioSection.tsx:143` — a hand-tuned chain of `pinSpacing:false` pins joined by `endTrigger`, plus a magic `md:-mt-[100vh]` documented at `app/home/page.tsx:92-95`. Any height change in About/Portfolio/Stats/Service breaks the overlap. All inside `matchMedia("(min-width: 768px)")` — mobile takes a different path.
+2. `*/SubServices.tsx` — sticky card stack driven by `useScroll` + `useMotionValueEvent`. Cards share one sticky line (`top: 5vh`) and get their staircase from `translateY(i * STEP)`, so `top + height` is equal for all and they release together. **A transform reserves no layout space** — hence the explicit reserve div after the stack. The tracker's `useScroll` offset must stay unsaturated while cards are still pinning (`["start start","end start"]`, not `"end end"`).
+3. `home/PortfolioSection.tsx` also carries **snap-to-panel** and **auto-advance** on the same pinned trigger. Both deliberately stop at `st.start + totalWidth` (the end of the horizontal phase) and never enter the trailing hold, which belongs to the Stats overlap. Auto-advance moves the **page scroll** via `st.scroll()`, not the track — animating the track would desync the scrub, the snap and the panel reveals. Any wheel/touch/pointer/key input cancels it.
+4. `home/ServiceSection.tsx:111` / `home/PortfolioSection.tsx:119` — cursor followers on pinned sections; `mouseleave` never fires during scroll, so hiding is manual (ticker-polled).
+5. `blog/BlogArticle.tsx:40` — document-level `useScroll` progress bar, ignores Lenis.
+
+### Cross-component couplings
+- **`blog:filter` window event** — dispatched `blog/BlogHeroSection.tsx:80`, listened `blog/BlogListSection.tsx:34`. Untyped, stringly-keyed, no shared constant, no props relationship.
+- **`createPortal`** — `home/ServiceSection.tsx:263` mounts the cursor pill outside the pinned subtree to escape the GSAP transform.
+- **`TracingBorder` `gradientId`** — a *global SVG id namespace* shared by 10 call sites; collisions silently break the gradient.
+- **`SpotlightGrid`** (`ui/SpotlightGrid.tsx:30-61`) — 9 consumers. Props: `speed`, `glowColor`, `glowVia`, `maskRadius`, `travel`, and sweep mode: `sweep`, `sweepColStart/ColEnd/RowStart/RowEnd` (inclusive cell rectangle). In `sweep` mode the reveal mask is dropped and the glow steps one box at a time left→right/top→bottom; `maskRadius`/`travel` are ignored. Grid is 10 cols × 8 rows. Currently `brand-strategy/CtaSection` and `blog/BlogHeroSection` use sweep; the other 7 CtaSections use the mask.
+
+### Content / correctness defects
+- **Placeholder email `hello@youragency.com` — 16 occurrences across all 8 `*/CtaSection.tsx`.** Reachable on every service page plus `/about`, `/blog`, `/blog/[slug]`, `/contact`, `/work`, `/work/[slug]`. The real address is `hello@softexedge.com`.
+- **`layout.tsx:5` metadata** — title is `"Softexedge"` but description is still `"Generated by create next app"`. No per-page metadata except `/blog/[slug]`, no OG tags, no sitemap/robots — significant SEO gap for a marketing site.
+- `projects.ts` has **no `slug` field**; `getProjectBySlug:218` matches via `p.href.endsWith("/" + slug)` — fragile.
+- `WorkProjectShowcase.tsx:23` keeps its own project list alongside `data/projects.ts` — two sources for the same 8 projects.
+- Loose types: `type Props = {}`, `ContactPage({}: any)`.
+
+### Dead weight
+- `src/components/garbage/` — 25 files, **zero imports from outside** (verified). Safe to delete.
+- `src/components/ui/` — **14 unreferenced effect components**, several 300–500 lines of WebGL: `BorderGlow`, `CardSwap`, `ColorBends`, `DotGrid`, `Galaxy`, `Grainient`, `GridDistortion`, `ImageTrail`, `LaserFlow`, `PixelBlast`, `PixelTrail`, `SplashCursor`, `Strands`, `VariableProximity`.
+- `src/components/3d-globe-demo.tsx`, `shared/ConnectButton{,Two,Three}.tsx`, `work/WorkHeader.tsx`, `career/CareerValues.tsx` — all orphaned.
+- Both `lenis` and legacy `@studio-freight/lenis` installed. `prettier` + plugin installed with no config.
+
+### Mobile gotchas (carried forward, still applicable)
+- **Homepage animation is desktop-only by design** — everything is inside `matchMedia("(min-width: 768px)")`. On mobile PortfolioSection is a plain vertical stack.
+- **`Herosection` needs a min-height at every breakpoint** (`min-h-[100svh] lg:min-h-[96.5vh]`) — all children are absolutely positioned, so dropping the base value makes the hero 0px below `lg`.
+- **`w-full` + horizontal margins overflows** — margin-box exceeds the parent by 2×margin. Fix with `max-md:w-auto` (see `StatsSection` `.stat-inner`).
+- **Cursor pills leak on touch** — the hide is `gsap.set(cursor,{scale:0})` inside the desktop matchMedia gate, so on touch it never runs. Both pills carry `hidden md:flex` / `invisible opacity-0`; keep that guard on any new hover cursor.
+- **Hover-only reveals are invisible on touch** — add `max-md:*` overrides (see `ServiceSection` thumbnails).
+
+### Repo state
+Git repo on `main`, working tree clean. **Every commit is titled "first commit"**
+(6+ of them) — there is no usable history for `git log`/`git blame`. No CI, no
+tests, no PR workflow.
 
 ## Open questions
-- Is `src/components/garbage/` intentionally kept (scratch/reference) or safe to remove?
-- Should navigation be unified into one shared Header in `layout.tsx`?
-- Is the contact form meant to submit anywhere (needs a backend/form service)?
-- Intended production domain / real site metadata + SEO content?
+1. **Is the duplication intentional?** 64 near-identical service files is the single biggest maintenance cost. Should the 7 copies collapse into one parameterised set (content in `src/data/services.ts`), keeping brand-strategy separate?
+2. **Should the dead forms be wired?** Contact + newsletter are decorative; the site currently has no lead capture. Needs a form service or an API route.
+3. **`hello@youragency.com`** — replace with `hello@softexedge.com` across the 8 CtaSections? (Looks like an oversight, not a decision.)
+4. **Is `garbage/` + the 14 unused `ui/` effects intentionally kept** as a reference library, or safe to delete?
+5. **Should nav be unified** into one Header in `layout.tsx` instead of two nested in hero components?
+6. **SEO:** real metadata/OG/sitemap and a production domain?
+7. `.claude/` holds three finished plan files (`plan.md`, `plan-subservices-overlap.md`, `plan-tracingborder-handoff.md`) and a 378 KB `SESSION_LOG.md` — prune/rotate?

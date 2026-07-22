@@ -98,9 +98,16 @@ export default function BlogHeroSection() {
         {/* The light travels a rectangle inset from the card edges: from the
             2nd box in from the left and 3rd row down, ending on the third-last
             row (the grid is 8 rows, so that's row index 5). */}
+        {/* Animation config matches CtaSection: scattered order, plus-shaped
+            cells, 6-cell trail, speed 0.15. The sweep REGION stays this
+            hero's own — those bounds are set to clear its scrim, not the
+            CTA card's. */}
         <SpotlightGrid
-          speed={0.3}
+          speed={0.15}
           sweep
+          scatter
+          plus
+          sweepTrail={6}
           sweepColStart={1}
           sweepRowStart={2}
           sweepRowEnd={5}
@@ -149,7 +156,7 @@ export default function BlogHeroSection() {
                     onClick={() =>
                       setOpenMenu((cur) => (cur === key ? null : key))
                     }
-                    className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white/90 transition-colors duration-300 hover:border-white/40 hover:bg-white/10"
+                    className="flex items-center gap-2 rounded-full border border-white/15 bg-[#222222] px-5 py-2.5 text-sm font-medium text-white/90 transition-colors duration-300 hover:border-white/40 "
                   >
                     {label}
                     <MdKeyboardArrowDown

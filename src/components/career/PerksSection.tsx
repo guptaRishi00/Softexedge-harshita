@@ -178,7 +178,7 @@ function PerkCard({ icon: Icon, title, description }: Perk) {
           <Icon className="h-5 w-5" strokeWidth={1.5} />
         </span>
         <span className="flex flex-col gap-1">
-          <span className="text-xl font-bold text-white sm:text-2xl">
+          <span className="text-xl font-medium text-white sm:text-2xl">
             {title}
           </span>
           <span className="text-lg font-regular leading-[1.3em] text-zinc-300 mt-6">

@@ -201,7 +201,10 @@ export const NavItems = ({
               {hovered === idx && (
                 <motion.div
                   layoutId="hovered"
-                  className="absolute inset-0 h-full w-full rounded-lg bg-white shadow-md"
+                  // Mirrors the page/resizable-navbar pill: shadow-md is +Y
+                  // only, so its layers are kept and mirrored to -Y for a top
+                  // shadow too.
+                  className="absolute inset-0 h-full w-full rounded-lg bg-white shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1),0_2px_4px_-2px_rgb(0_0_0_/_0.1),0_-4px_6px_-1px_rgb(0_0_0_/_0.1),0_-2px_4px_-2px_rgb(0_0_0_/_0.1)]"
                 />
               )}
 

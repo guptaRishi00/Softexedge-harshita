@@ -4537,3 +4537,422 @@ Verified on the real 1185x600 card: comet's leading edge rests at (1065, 2), sti
 edge, 100px before the radius start (x=1165) — moved 20px forward from (1045, 2). Path length
 still == true perimeter (shape intact). tsc 0, biome 0. Hover-only; needs user's eyes.
 Not committed.
+
+## 2026-07-22 — PortfolioSection: snap the horizontal scroll to each panel
+Asked first — the section ALREADY force-scrolls (pinned + scrubbed 500vw track, you cannot scroll past until all panels pass), so "force scrolling" was ambiguous. User chose snap-to-panel.
+Added `snap` to the existing ScrollTrigger (no new trigger, no restructure): `snapTo` maps progress to the nearest panel via `(round((value/xPhase)*steps)/steps)*xPhase`, `duration {min .15, max .4}`, `delay .08`, `ease power1.inOut`.
+The critical constraint is the early return: `if (value >= xPhase) return value`. The timeline has TWO phases — horizontal movement (0→xPhase) and a one-viewport hold (xPhase→1) that exists so StatsSection can slide over the still-pinned section via `md:-mt-[100vh]`. Snapping during the hold would fight that overlap, so those values pass through unsnapped.
+Verified: tsc ✓ (exit 0), next build ✓. Lint checked by DIFFING against baseline: `git show HEAD:...PortfolioSection.tsx` and the working copy report the identical issue set (noImgElement, 2x noUnusedVariables, noArrayIndexKey, noStaticElementInteractions) — my edit adds zero new violations. All are pre-existing.
+DISCOVERED + recorded in the map: `bun run lint` exits 1 on a clean checkout (repo-wide pre-existing violations), and the tree is CRLF so `biome format --write` would rewrite whole files. Earlier session entries claiming "biome ✓" were per-file checks on files that happened to be clean, not project-wide passes.
+UNVERIFIABLE HERE — needs the user in a browser: /home runs Lenis (`layout/SmoothScroll.tsx:21`) synced to ScrollTrigger via `lenis.on("scroll", ScrollTrigger.update)` with NO `scrollerProxy`. ScrollTrigger's snap drives the scroll programmatically, which can fight Lenis's own rAF. If snap stutters or gets undone, the fix is a scrollerProxy in SmoothScroll (or routing the snap through `lenis.scrollTo`), not tuning the snap numbers.
+Also note: snap is desktop-only by inheritance — the whole block sits inside `matchMedia("(min-width: 768px)")`. 1 file. Not committed.
+
+## 2026-07-22 — PortfolioSection: auto-advance the pinned horizontal scroll
+Same request re-issued. Checked first: the snap from the previous task was still in the file, uncommitted and unreverted, so the ask was NOT "redo it". Asked what was actually wanted — user chose auto-advance (not snap, not a hard lock).
+Implementation (1 file, self-contained in the existing matchMedia block):
+- Drives the PAGE scroll via `st.scroll(proxy.y)` from a GSAP-tweened proxy, NOT the track. The timeline is scrubbed to scroll position, so animating the track directly would desync it from the panel snap and the `containerAnimation` text reveals.
+- Target is `st.start + totalWidth` — the end of the horizontal phase only. It never scrolls into the trailing hold, which exists for the Stats `md:-mt-[100vh]` overlap.
+- Duration is proportional to remaining distance (`(to-from)/totalWidth * AUTO_ADVANCE_SECONDS`), so the pace is identical regardless of how far in the section was entered. AUTO_ADVANCE_SECONDS = 6 (~1.5s/panel over 5 panels).
+- Cancels on wheel/touchstart/pointerdown/keydown; skips entirely under prefers-reduced-motion; desktop-only by inheritance from the enclosing matchMedia.
+- Uses a SEPARATE unpinned ScrollTrigger for onEnter/onLeave/onLeaveBack. The pinned timeline is created first, so putting these callbacks in its config would hit a TDZ error referencing handlers declared after it. Does NOT start on onEnterBack — scrolling up into the section shouldn't launch a forward tour.
+- `cleanupAuto` declared outside the `if (track)` block so the existing cleanup return can reach it; kills the tween and removes all 4 listeners.
+Verification method worth reusing: raw `biome check` is useless here (repo lint fails on a clean checkout AND the tree is CRLF so every file shows a format diff). Normalised BOTH the working copy and `git show HEAD:` baseline to LF with `tr -d '\r'`, then compared diagnostic category counts. First pass revealed a REAL formatting deviation I'd introduced (a 4-element array Biome wanted on one line) — fixed, re-checked, now byte-for-byte the same diagnostic set as baseline (5 pre-existing lint issues, zero format). tsc ✓ exit 0, next build ✓.
+UNVERIFIABLE HERE: the Lenis conflict is now MORE acute than with snap — auto-advance sets native scroll every frame while Lenis's rAF drives its own target, with no scrollerProxy in SmoothScroll. If the tour stutters/stalls, that's the cause; remedy is a scrollerProxy or routing through lenis.scrollTo, not tuning AUTO_ADVANCE_SECONDS. Also watch snap+auto interplay: snap should stay dormant during the continuous auto scroll and is a no-op at the landing point (progress == xPhase returns unsnapped).
+Map updated with both behaviours under scroll-fragile code. 1 source file. Not committed.
+
+## 2026-07-22 — Footer: four columns of four links
+Was 2 columns x 6. Four columns of four needs 16 links and only 12 existed, so I KEPT all 12 and added 4 service routes (which only came into existence recently) rather than padding or dropping anything:
+- Col1: Home, About, Culture, Meet The Team
+- Col2: Work, Blog & Resources, Testimonials, Careers
+- Col3 (new): Web Development, Brand Strategy, UI/UX Design, App Development
+- Col4: Services, Processes, FAQs, Contact
+Structure: replaced the two hardcoded `footerLinksCol1/Col2` arrays with a single `footerLinkGroups` array of 4 groups, and collapsed the two duplicated column <div>s into one `.map`. The Link markup existed twice verbatim before; now once. Grid `grid-cols-2 ... lg:grid-cols-4 lg:gap-10` (was `lg:flex lg:gap-20`) — 2 cols on mobile, 4 from lg.
+Group key is `group[0].name`, NOT the array index — biome's noArrayIndexKey is enabled and would have failed on the obvious `key={i}`.
+Verified: scripted resolver over all 16 hrefs — checks the route file exists AND, for anchors, that the owning component is actually rendered by that page. All 16 OK, zero 404s (excluded garbage/ from the anchor-owner search this time, which had caused a false positive on #services in the earlier footer pass). Lint compared LF-normalised against `git show HEAD:` — identical diagnostic set (2 format, useValidAnchor, noUnusedImports, noUnusedVariables, noArrayIndexKey — all pre-existing). tsc ✓, next build ✓. 1 file. Not committed.
+WATCH: 4 columns now sit inside the same `lg:col-span-7` that held 2. Longest label is "Blog & Resources" (~136px at 1.1rem) against roughly 169px per column at 1440 — should fit, but it is arithmetic not observation. If labels wrap, widen to lg:col-span-8 or shorten that label to "Blog".
+
+## 2026-07-22 — Footer: wider gaps between links
+Vertical (between links inside a column): `gap-4` → `gap-6` (16 → 24px) on the group div. Applies at every breakpoint; no width cost.
+Horizontal (between the columns): `lg:gap-10` → `lg:gap-x-12` (40 → 48px), lg ONLY. Deliberately did not raise the mobile gap: at 375px the 2 columns are ~143px each while the longest label "Blog & Resources" is ~133px, so a wider mobile gap would wrap it. Used gap-x so the (irrelevant at lg, single-row) row gap is untouched.
+Also deliberately did NOT widen the links block to buy the space: the right-hand block (`lg:col-span-5`) holds an h3 plus a `max-w-[420px]` form; dropping it to col-span-4 would take its usable width from ~469px to ~356px and visibly squeeze the newsletter. Gaps were the ask, not a re-layout.
+Sizing arithmetic at 1440: outer 12-col grid with gap-12 → links block ≈743px; at gap-x-12 each column ≈ (743 − 144)/4 ≈ 150px vs the ~133px longest label, so ~17px slack remains.
+Verified: greped both classes; lint compared LF-normalised against `git show HEAD:` — identical diagnostic set (2 format, useValidAnchor, noUnusedImports, noUnusedVariables, noArrayIndexKey, all pre-existing); tsc ✓; next build ✓. 1 file. Not committed.
+IF MORE IS WANTED: the next step up (lg:gap-x-14 = 56px) leaves only ~11px of slack on "Blog & Resources" — going beyond that needs either lg:col-span-8 for the links block or shortening that label to "Blog".
+
+## 2026-07-22 — Footer: more vertical gap between links
+Second increase (24px was still too tight). Link gap `gap-6` → `gap-8` (24 → 32px).
+Knock-on handled: the grid's mobile ROW gap between groups was `gap-10` (40px). With links at 32px the two are close enough that the four stacked groups read as one continuous list on mobile, so the grid went `gap-10` → `gap-x-10 gap-y-14` — row gap 56px, comfortably clear of the 32px link gap, while the mobile COLUMN gap stays at 40px (raising it would wrap "Blog & Resources", which is ~133px against ~143px columns at 375px).
+Net gaps: links 32px vertical; groups 56px apart vertically, 40px apart horizontally on mobile, 48px from lg.
+Verified: greped both classes; lint compared LF-normalised against `git show HEAD:` — identical diagnostic set, nothing new introduced; tsc ✓; next build ✓. 1 file. Not committed.
+IF STILL TIGHT: gap-10 (40px) is the next step, but it would need gap-y-16/20 alongside to keep the group separation reading, and the links column then runs ~216px tall vs ~176px for the newsletter block, so the footer grows.
+
+## 2026-07-22 — Footer: open up the newsletter column spacing
+Same treatment as the link columns, applied to the right-hand block from the user's screenshot (heading / email form / social icons).
+- h3 `mb-6` → `mb-10` (24 → 40px) — heading to form.
+- social row `mt-8` → `mt-12` (32 → 48px) — form to icons.
+- social icon pills `gap-2.5` → `gap-3.5` (10 → 14px) — the icons were the tightest thing left in that column.
+The parent is `flex flex-col items-start` with NO gap class, so these mb/mt utilities are the only spacing in play — adjusted them in place rather than converting the column to `gap-*`, which would also have applied between the form's own children.
+Column rhythm now roughly matches the links side (32px between links, 56px between groups).
+Verified: greped both classes; lint compared LF-normalised against `git show HEAD:` — identical diagnostic set; tsc ✓; next build ✓. 1 file. Not committed.
+
+## 2026-07-22 — Footer: dial the newsletter column spacing back a notch
+Previous entry overshot. Stepped each value back ONE notch rather than reverting to the originals, so it lands between the two:
+- h3 `mb-10` → `mb-8` (40 → 32px; was 24px originally)
+- social row `mt-12` → `mt-10` (48 → 40px; was 32px)
+- social pills `gap-3.5` → `gap-3` (14 → 12px; was 10px)
+Verified: greped both classes; lint compared LF-normalised against `git show HEAD:` — identical diagnostic set; tsc ✓; next build ✓. 1 file. Not committed.
+
+## 2026-07-22 — Footer: top-align the links and newsletter blocks
+Added `items-start` to the OUTER grid (`grid grid-cols-1 ... lg:grid-cols-12`) that holds the two blocks. CSS grid defaults to align-items: stretch, so the links block and the newsletter block were being stretched to equal height; the taller one dictated both.
+One class on the parent covers both children, so neither child's own classes changed — note the newsletter block already had its own `items-start`, but that is its FLEX cross-axis (horizontal alignment of its children in a flex-col) and has nothing to do with how the grid sized it. Adding it to the children would not have fixed this.
+Verified: greped the parent and confirmed both children are untouched; lint compared LF-normalised against `git show HEAD:` — identical diagnostic set; tsc ✓; next build ✓. 1 file, 1 class. Not committed.
+
+## 2026-07-22 — brand-strategy hero: title scaled down to the shared site size
+Surveyed every hero's title ramp before touching anything:
+- brand-strategy StrategyHeroSection: text-5xl / sm:6xl / md:[95px] / lg:[118px] / xl:[135px]  <- the largest
+- work/WorkHeroSection: IDENTICAL to brand-strategy
+- about + career: text-[2.75rem] / sm:6xl / md:7xl / lg:[6rem]  <- shared by two heroes, the common scale
+- blog: text-6xl / sm:7xl / md:8xl / lg:[7rem]
+- contact: text-[4rem] / sm:[5.25rem] / lg:[7.5rem]
+Chose the about/career ramp as "the other pages'" size since it is the only one two heroes share, and it is the smaller direction the request implies (118 → 96px at lg). The xl:[135px] step is dropped, matching the reference which has no xl step.
+ONLY the size utilities changed — `leading-[1em]`, tracking, colour, flex/items-center all preserved. Note about uses `leading-[1.05]`; I did NOT copy that, since the ask was size.
+Scope: brand-strategy only. Verified the other 7 service StrategyHeroSection copies still carry lg:text-[118px] (grep count = 7) and work/WorkHeroSection is untouched — so /brand-strategy now differs from its 7 sibling service pages, which is a deliberate consequence of the stated scope.
+Verified: greped the new class against about's ramp (identical size tokens); lint compared LF-normalised against `git show HEAD:` — identical (1 pre-existing noImgElement); tsc ✓; next build ✓. 1 file. Not committed.
+
+## 2026-07-22 — Navbar hover pill: add the missing top shadow
+Cause: the pill used Tailwind's `shadow-md`, whose BOTH layers are positive-Y (`0 4px 6px -1px`, `0 2px 4px -2px`). A +Y offset can only cast downward, which is exactly the reported symptom — bottom shadow fine, nothing on top.
+Fix: kept those two layers byte-for-byte (so the bottom is unchanged, as the user said it was good) and mirrored them to -Y:
+`shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1),0_2px_4px_-2px_rgb(0_0_0_/_0.1),0_-4px_6px_-1px_rgb(0_0_0_/_0.1),0_-2px_4px_-2px_rgb(0_0_0_/_0.1)]`
+Arbitrary-shadow syntax matches existing usage in the repo (e.g. home/page.tsx section shadows).
+SCOPE — fixed BOTH navbar copies, which is more than the 5 pages listed. page/resizable-navbar.tsx:218 serves the listed pages (brand-strategy/about/work/career/blog, plus contact + the 7 other service pages); ui/resizable-navbar.tsx:204 serves /home via layout/Header and had the byte-identical `shadow-md`. Left alone, the same pill would have kept the bug on the homepage only. This is a defect in a duplicated primitive, not a per-page design choice — flagged so half can be reverted if disagreed with.
+Verified: greped both files — the two pills now carry an identical shadow string and no bare `shadow-md` remains on either. Lint compared LF-normalised against `git show HEAD:` for BOTH files — diagnostic sets identical in each case (all pre-existing: noStaticElementInteractions, noSvgWithoutTitle, noImgElement, noArrayIndexKey, and noUnusedFunctionParameters in the ui copy). tsc ✓; next build ✓. 2 files. Not committed.
+
+## 2026-07-22 — brand-strategy: restore the ProcessSection overlap
+Re-instates the overlap that was removed earlier in this session. No new mechanism was needed — SubServices still accepts `children` and renders them inside its sticky container at z-40 (above the cards' z 0–3); brand-strategy had simply stopped passing them.
+1. src/app/brand-strategy/page.tsx — `<SubServices /><ProcessSection />` (siblings) → `<SubServices><ProcessSection /></SubServices>` (nested), matching the shape the other 7 service pages use.
+2. src/components/brand-strategy/SubServices.tsx — made the TRANSFORM RESERVE conditional: `{children ? null : <div …/>}`. This was the non-obvious part. That 570px reserve exists because the last card is painted (services.length-1)*STEP below its layout box by its translateY and a transform reserves no layout space. With children nested, the overlap section is opaque (`bg-black`, verified at ProcessSection.tsx:44) and sits at z-40 above the cards, so it already covers the spill — leaving the reserve in would have added a ~570px blank black band between ProcessSection and OurTechStack.
+Note the reserve exists ONLY in brand-strategy's SubServices; the 7 sibling copies are still the older pre-STEP implementation, so nothing there is affected.
+Verified: greped the page composition, the conditional reserve, the intact z-40 slot, and ProcessSection's bg-black (the precondition for dropping the reserve). Lint compared LF-normalised against `git show HEAD:` — identical diagnostic set (noImgElement, 2x noArrayIndexKey, noExplicitAny — all pre-existing). tsc ✓; next build ✓. 2 files. Not committed.
+UNVERIFIABLE HERE: whether the last card now holds long enough under the overlap. With children the container extends by ProcessSection's height, so the cards stay sticky through it — but the card mechanics changed since the overlap last existed (shared top:5vh + translateY staircase, container ending at the last card). Needs the user to scroll it.
+
+## 2026-07-22 — REVERTED the brand-strategy ProcessSection overlap
+Undid both halves of the previous task:
+1. src/app/brand-strategy/page.tsx — back to `<SubServices />` + `<ProcessSection />` as siblings (nesting and its explanatory comment removed). ProcessSection no longer scrolls over the pinned last card.
+2. src/components/brand-strategy/SubServices.tsx — TRANSFORM RESERVE back to unconditional, original comment restored. It is required again now that no children are passed: the last card is painted (services.length-1)*STEP below its layout box by its translateY and nothing else covers that spill, so without the reserve the card would bleed onto OurTechStack.
+Not touched (correctly): SubServices' `children` prop and its z-40 overlap slot both PREDATE that task, so the capability remains available — re-nesting ProcessSection on the page is all it takes to bring the overlap back. The 7 sibling service pages still nest theirs and are unaffected.
+Verified: greped the page composition (siblings, no comment), confirmed no `children ? null` remains, printed the restored reserve block, and confirmed the z-40 slot is still there. Lint compared LF-normalised against `git show HEAD:` — identical diagnostic set (noImgElement, 2x noArrayIndexKey, noExplicitAny, all pre-existing). tsc ✓; next build ✓. 2 files. Not committed.
+
+## 2026-07-22 — brand-strategy: ProcessSection overlap, gated on the last card reaching the top
+Asked first, because the cards rest at `top:5vh` + `translateY(i*STEP)` so the last one settles ~570px down and never literally reaches the top. User chose "card lifts to the top first" — i.e. rebuild the rise-runway behaviour and gate the overlap behind it.
+SubServices.tsx:
+- New `RISE = (services.length-1)*STEP` (570) and a `riseRef` runway div rendered INSIDE the sticky container, AFTER the cards and BEFORE the z-40 overlap slot. Position is the whole mechanism: inside → cards stay pinned through the lift; before the slot → ProcessSection physically cannot reach the viewport until the runway has been scrolled, so the overlap starts only once the lift is done. No timing constant involved.
+- `useScroll({target: riseRef, offset:["start end","end end"]})` → 0→1 over exactly the runway's height; `useTransform` maps it to y RISE→0 for the last card only.
+- Cards' staircase moved from a static `transform: translateY(...)` STRING to framer's `y` (plain number for cards 0..n-2, the MotionValue for the last). The wrapper is now a motion.div — a static transform string and framer's y both write `transform`, so they cannot coexist.
+- TRANSFORM RESERVE made conditional again (`{children ? null : …}`): with children the lift ends at y=0 so there is no spill left to reserve for, and the opaque z-40 overlap covers it meanwhile. Without children it is still required.
+page.tsx: `<SubServices><ProcessSection /></SubServices>`.
+Reasoned through, not observed: the activeIndex tracker still reads the last card as pinned throughout the lift (rect.top only falls from 5vh+570 toward 5vh, staying ≤ its pinTop of 5vh+3*STEP), so the image fade logic is unaffected. Cards 1-3's peeking titles DO get covered once card 4 reaches the top — user explicitly accepted this.
+Verified: greped element order (cards → runway → overlap; reserve outside and conditional), confirmed no static translateY string remains and both motion.div tags balance. tsc ✓; lint LF-normalised vs `git show HEAD:` identical (noImgElement, 2x noArrayIndexKey, noExplicitAny — all pre-existing); next build ✓. 2 files. Not committed.
+
+## 2026-07-22 — REVERTED the rise-runway + ProcessSection overlap (2nd time this pairing was reverted)
+Undid all six pieces of the previous task:
+1. page.tsx — `<SubServices><ProcessSection /></SubServices>` back to siblings.
+2. Removed the `useTransform` import.
+3. Removed `RISE`, `riseRef`, the second `useScroll` (riseProgress) and `lastCardY`.
+4. Removed the `y={...}` prop passed to Card.
+5. Removed the rise-runway spacer div from inside the sticky container.
+6. Card: motion.div → plain div, `y` param dropped, static `transform: translateY(${i * STEP}px)` restored; TRANSFORM RESERVE back to unconditional with its original comment.
+Untouched (pre-existing capability): the `children` prop and the z-40 overlap slot remain in SubServices, so nesting ProcessSection on the page is still all that's needed to bring an overlap back.
+Verified: greped for every remnant — RISE/riseRef/riseProgress/lastCardY/useTransform all gone; static transform string present; no `children ? null` left (reserve unconditional); page shows siblings; motion.* open/close tags balanced at 4/4 (only the content-stagger ones remain). tsc ✓; lint LF-normalised vs `git show HEAD:` identical (noImgElement, 2x noArrayIndexKey, noExplicitAny — all pre-existing); next build ✓. 2 files. Not committed.
+NOTE FOR FUTURE SESSIONS: this SubServices ↔ ProcessSection overlap has now been built and reverted twice (plain nesting, then nesting + rise runway). Do not re-propose it without new direction from the user.
+
+## 2026-07-22 — brand-strategy: OurTechStack overlaps ProcessSection
+Pure CSS, page-level only — no component touched, no GSAP. The homepage does this kind of overlap with ScrollTrigger pins, but brand-strategy's page.tsx is a SERVER component; adding GSAP would have meant making it "use client". Sticky + z-index achieves the same and needs neither.
+Shape: ProcessSection wrapped in `sticky top-0 z-0`, OurTechStack in `relative z-10`, both inside a shared `relative` wrapper. The shared wrapper is the important bit — it bounds how long ProcessSection sticks, so it releases once OurTechStack has passed instead of sticking for the rest of the page.
+Preconditions checked rather than assumed: both sections are opaque `bg-black` (OurTechStack.tsx section, ProcessSection.tsx:44), so the higher z-index actually occludes. And sticky works here because the page wrapper is `overflow-x-clip`, NOT `overflow-x-hidden` — `clip` leaves overflow-y visible, whereas `hidden` would force overflow-y:auto and make that div the scroll container, silently killing the sticky. SubServices already sticks inside this same wrapper, which is empirical confirmation.
+Verified: printed the resulting structure; tsc ✓; lint LF-normalised vs `git show HEAD:` identical (noBannedTypes, noEmptyPattern — both pre-existing, from `type Props = {}` / `({}: Props)`); next build ✓. 1 file. Not committed.
+WATCH: both sections are black, so the overlap has no visible seam — it will read as ProcessSection simply holding still while content slides over. If a visible edge is wanted, the options are a rounded top (`rounded-t-[20px]`, matching the site's 20px card language) or a hairline `border-t border-white/10` on the OurTechStack wrapper. The homepage's `shadow-[0_-8px...]` trick will NOT show on black-on-black.
+
+## 2026-07-22 — brand-strategy OurTechStack: pt-30
+Added `pt-30` (120px) to the section element in src/components/brand-strategy/OurTechStack.tsx:35. The section previously had no top padding of its own — its inner div only carried `md:pb-25`.
+`pt-30` is not on Tailwind's default numeric scale but is valid under v4's dynamic spacing, and the repo already relies on this (SubServices.tsx:99 uses pt-30, ProcessSection md:pb-35, StrategyHeroSection mb-15/lg:mt-25). Confirmed by grep before using it.
+Scope: brand-strategy only. Verified the 7 sibling service OurTechStack copies still have zero `pt-30` occurrences, so /brand-strategy now differs from them by this padding — a deliberate consequence of the stated scope.
+Verified: tsc ✓; lint LF-normalised vs `git show HEAD:` identical (1 pre-existing noImgElement); next build ✓. 1 file, 1 class. Not committed.
+CONTEXT: this lands on top of the previous task's overlap — OurTechStack now scrolls over a sticky ProcessSection, so the new 120px of top padding is black space that passes over ProcessSection before the tech-stack header appears.
+
+## 2026-07-22 — brand-strategy: fix the partial OurTechStack / ProcessSection overlap
+Symptom: OurTechStack only covered about half of ProcessSection. Cause is geometric, not a z-index or timing issue.
+A sticky element releases as soon as its containing block's bottom rises past it. Here the containing block is the shared wrapper, so ProcessSection stays pinned for exactly OurTechStack's OWN height of scrolling. OurTechStack's top therefore climbs only to (P - T) where P = ProcessSection height and T = OurTechStack height — it reaches 0 (full cover) only if T >= P. Worth noting a negative margin does NOT help: it shifts the start and shortens the pin by the same amount, so the final gap stays P - T.
+Measured from the markup at ~1440px: P ≈ 1040px and RISING with viewport width (ProcessSection's cards are aspect-[4/4.5], so wider columns = taller images), while T ≈ 936px and essentially FIXED (OurTechStack's logo tiles are h-36). So OurTechStack was ~100px short at 1440 and further short on wider screens — matching the report.
+Fix: `pb-[35vh]` on the OurTechStack wrapper to buy the missing travel, plus `bg-black` on that same wrapper — without it the padded region is transparent and would expose the pinned ProcessSection behind, i.e. the padding alone would not have worked. vh-based so it scales: checked 1440x900, 1920x1080 and 1440x700, T exceeds P in each.
+Extra black space lands before ProjectShowcase, which is itself bg-black with pt-35, so it reads as section spacing rather than a gap.
+Verified: printed the resulting structure; tsc ✓; lint LF-normalised vs `git show HEAD:` identical (noBannedTypes, noEmptyPattern — both pre-existing); next build ✓. 1 file. Not committed.
+IF A SLIVER REMAINS on a very wide monitor, raise the pb value — the requirement is simply T >= P.
+
+## 2026-07-20 — WorkProjectShowcase card eyebrow → brand gradient
+work/WorkProjectShowcase.tsx:285 — the tag directly ABOVE the card title (the uppercase
+tracking-[0.3em] eyebrow rendering project.subtitle, inside the hover-revealed block) changed
+from text-zinc-400 to the brand gradient: `inline-block bg-gradient-to-r from-[#2E5BFF]
+to-[#149CCB] bg-clip-text pr-[0.3em] text-transparent`.
+Interpretation note: in this project "tag" has consistently meant the uppercase eyebrow above
+a title (FaqSection/PerksSection/SubServices tasks), and this is the only element sitting on
+top of the title — the category PILL is at the top of the card, not above the title. Flagged
+to user in case they meant the pill.
+Two details that matter: inline-block is required (isolated test: with it the p is 150px and
+hugs the text so the gradient spans the glyphs; without it the p is block/800px and the short
+eyebrow would show only a near-solid blue sliver of the gradient), and pr-[0.3em] covers the
+trailing letter-spacing so bg-clip-text doesn't clip the last glyph (same class of bug fixed
+earlier on the career titles).
+Verified: tsc 0; biome 2 errors/1 warning all pre-existing (<img> line 210, useButtonType
+line 88), none from this diff. Eyebrow is hover-only so absent from the DOM at rest —
+confirmed via bundle scan of all 27 served scripts: new gradient class string present, old
+`text-zinc-400` eyebrow string gone. Computed check: linear-gradient + background-clip:text +
+transparent fill. Needs user's eyes on hover. Not committed.
+
+## 2026-07-22 — CtaSection bg: randomise the sweep order (line march → scatter)
+Task: "in CtaSection the bg animation is moving in a line make it random".
+DISAMBIGUATION (8 CtaSections now exist): the 7 service-page copies use the Lissajous wander
+(speed=4 travel=1); `brand-strategy/CtaSection` uses SpotlightGrid's `sweep` mode, which
+literally marches cell-by-cell left→right along each row then drops a row — that IS the line.
+It's also the main CtaSection (rendered on about, contact, blog, blog/[slug], work,
+work/[slug], brand-strategy), so that's the one targeted.
+Change (2 files): `ui/SpotlightGrid.tsx` gains an opt-in `scatter?: boolean`. New memo
+`scatterSteps` = seeded Fisher–Yates shuffle of 0..n-1 for the sweep REGION, inverted to
+"cell ordinal → step at which it lights"; getIntensity uses it instead of the row-major
+ordinal. Head/tail timing (SWEEP_CELLS_PER_SEC, SWEEP_TRAIL) untouched, so pace and the
+number of simultaneously-lit cells are unchanged — only WHICH cells light changes.
+`brand-strategy/CtaSection.tsx` adds the `scatter` flag. BlogHeroSection also uses sweep and
+was deliberately LEFT on the line march (user scoped the request to CtaSection) — one word to
+enable there if wanted.
+Chose a seeded shuffle over an LCG/coprime-jump permutation: verified in node that the LCG
+gave a rigid alternating rhythm (only 2 distinct consecutive-distance values — a marching
+constellation), while the shuffle gives 17 distinct values with just 1 adjacent hop in 31.
+Verified (node, actual region cols2-9 × rows2-5 = 32 cells): deterministic across runs
+(SSR-safe, no hydration mismatch), a true bijection (all 32 steps unique) so every cell still
+lights exactly once per cycle — no clumping or gaps. tsc ✓; biome-format clean; 4 biome lint
+errors all pre-existing (noImgElement/noSvgWithoutTitle/noArrayIndexKey), none from this diff.
+`bun run build` could NOT run — "Another next build process is already running" (stale/concurrent
+lock, unrelated to this change; did not kill the user's processes). Instead exercised the dev
+server: /about, /contact, /brand-strategy all HTTP 200, 80 grid cells rendered, 0 error markers.
+Live motion is rAF-driven → needs the user's eyes. Not committed.
+
+## 2026-07-22 — brand-strategy: remove the gap before ProjectShowcase, keep the overlap
+The pb-[35vh] added last task could NOT simply be deleted — that height IS the scroll travel that lets OurTechStack finish covering ProcessSection (sticky releases after the overlapper's own height, so T >= P is required). Removing it would have restored the half-overlap.
+Fix: keep the padding in flow, cancel it in LAYOUT only. Added `-mb-[35vh]` to the shared wrapper, so ProjectShowcase is pulled up over the padded tail rather than being pushed below it. Sticky math is untouched — a wrapper's own margin does not affect the containing block's padding box, so the pin duration and therefore the overlap are exactly as before.
+Also added `z-0` to that wrapper. Required, not cosmetic: `position:relative` with `z-index:auto` creates NO stacking context, so the inner `z-10` (OurTechStack) would have escaped and painted over the pulled-up ProjectShowcase, hiding it. `z-0` scopes it.
+KNOWN TRADEOFF (arithmetic, not observed): ProjectShowcase now enters the viewport once `d > P + T_total - pad - V`. That is after full cover (d = P) only while OurTechStack's own height (~936px) >= viewport height. On viewports taller than ~936px (e.g. 1080), ProjectShowcase will creep in at the bottom slightly before OurTechStack has finished covering ProcessSection. Reads as a second overlap rather than a defect; reduce the -mb (leaving a little natural spacing) if it bothers.
+Verified: printed the structure; tsc ✓; lint LF-normalised vs `git show HEAD:` identical (noBannedTypes, noEmptyPattern, both pre-existing); next build ✓ 33 pages. NOTE the first build attempt failed inside src/components/ui/SpotlightGrid.tsx — a file being edited concurrently (the new `scatter` prop), not part of this diff; the re-run was clean. 1 file. Not committed.
+
+## 2026-07-22 — CtaSection scatter: increase density
+Follow-up to the scatter change. Density in sweep/scatter mode = how many cells stay lit
+behind the head, i.e. the SWEEP_TRAIL constant (4 → ~5 boxes glowing at once). That constant
+is shared with BlogHeroSection's line sweep, where it's the comet-tail LENGTH, so bumping it
+globally would have lengthened the blog hero's streak unrequested. Instead made it a prop:
+`sweepTrail?: number` defaulting to SWEEP_TRAIL (4), replacing the constant at its 3 use sites
+(period calc + the two intensity lines) and added to the effect dep array. Set
+`sweepTrail={6}` on brand-strategy/CtaSection → ~7 boxes lit at once instead of ~5 ("a little
+bit" denser). BlogHeroSection omits the prop so it keeps 4 — byte-identical behaviour.
+Also fixed a comment that still named SWEEP_TRAIL where the code now reads the prop.
+Note the period is regionCount + sweepTrail, so the tail still finishes fading before the
+cycle restarts — no overlap artifact at the wrap. Verified: tsc ✓, biome-format clean,
+/about + /brand-strategy HTTP 200 with 80 cells and 0 error markers on the dev server.
+(next build still blocked by the pre-existing concurrent-build lock, unrelated.) rAF motion
+needs the user's eyes. 2 files. Not committed.
+
+## 2026-07-22 — brand-strategy: ProcessSection pins later
+`sticky top-0` catches the instant the section's top edge meets the viewport top, which is why it felt early. Changed the ProcessSection wrapper to `sticky -top-[15vh]`: a NEGATIVE sticky offset lets the element scroll a further 15vh before it catches, so more of the section is read before it freezes.
+Checked the interaction with the overlap rather than assuming: with `top = -X`, pin duration is unchanged (still the overlapper's own height) but OurTechStack now only needs `P - X` of travel to cover the screen instead of `P`, since ProcessSection's box top sits X above the viewport. So the coverage margin from the earlier fix gets BETTER, not worse — the -15vh cannot reintroduce the half-overlap.
+Side effect worth knowing: ProcessSection is taller than the viewport, so something is always cropped while pinned. Previously its bottom hung below; now its top 15vh (part of the eyebrow/heading) sits above. Kept the value modest for that reason — deeper offsets eat more of the header.
+Verified: greped the new class and confirmed the overlap plumbing (pb-[35vh], -mb-[35vh], z-0 wrapper, z-10 overlapper) is untouched; lint LF-normalised vs `git show HEAD:` identical; tsc ✓; next build ✓. 1 file, 1 class. Not committed.
+NOTE: the first tsc run failed on src/components/ui/SpotlightGrid.tsx (`sweepTrail` destructured before it was added to the props type) — a concurrent in-flight edit, not this diff. It completed on its own and the re-run was clean. Second time this session a mid-edit snapshot of a file has produced a false failure.
+
+## 2026-07-22 — brand-strategy: ProcessSection pins only after it has fully scrolled through
+Same complaint re-issued, so the previous fix (`-top-[15vh]`) was the wrong KIND of change, not merely too small a number. Any `top-*` value — however negative — still pins the section by its TOP edge, which for a section taller than the viewport necessarily freezes it while most of it is unread. Turning the dial further would also have kept eating the header.
+Switched to `sticky bottom-0`: the element is held only once its BOTTOM edge reaches the viewport bottom, i.e. after the entire section has scrolled through. This is the CSS equivalent of the homepage's `start: "bottom bottom"` pins (app/home/page.tsx:107 and :122, used for StatsSection and the testimonials group) — the codebase's own precedent for this exact problem, which the map notes exists because pinning earlier froze those sections with content still hidden.
+Coverage improves as a side effect: at the pin moment ProcessSection's bottom sits at the viewport bottom, so OurTechStack's top starts exactly there and needs only one viewport of travel to cover the screen — against T_total ≈ 936px + 35vh available. Far more margin than the old top-pin, which needed the full P.
+Also removes the cropping tradeoff: the visible portion while pinned is now the section's own bottom viewport-worth rather than an arbitrarily clipped top.
+Verified: greped the new class, confirmed no stale `-top-[` remains and the overlap plumbing (-mb-[35vh] wrapper, z-10 bg-black pb-[35vh] overlapper) is untouched; tsc ✓; lint LF-normalised vs `git show HEAD:` identical; next build ✓. 1 file, 1 class. Not committed.
+
+## 2026-07-22 — CtaSection scatter: plus-shaped glow formation
+Task: keep the (now-perfect) density and randomness, but each glow should form a PLUS — centre
+box bright, its four adjacent boxes at lower opacity.
+`ui/SpotlightGrid.tsx`: factored the sweep branch's per-cell brightness into a local
+`centreAt(row,col)` helper (same region check + scatterSteps ordinal + head/trail maths as
+before — unchanged), then added an opt-in `plus?: boolean` prop: a cell's value becomes
+`max(own, PLUS_ARM * brightest orthogonal neighbour-centre)`, with `PLUS_ARM = 0.35` at module
+scope. Only the 4 orthogonal neighbours (no diagonals). The pre-existing region guard on the
+cell ITSELF stays, so arms never spill into the scrimmed edge rows/cols. `plus` is render-only
+→ NOT added to the effect deps. brand-strategy/CtaSection adds the `plus` flag; sweepTrail={6}
+and scatter untouched. BlogHeroSection doesn't pass `plus` → `if (!plus) return own` → its line
+sweep is byte-identical.
+VERIFIED by simulating the exact logic in node over all 38 head positions of the real region
+(cols 2-9 × rows 2-5, trail 6): ASCII render shows correct plus shapes; arms leaking outside
+region = 0; lit-but-not-orthogonally-adjacent cells = 0 (no diagonals); centres DIMMED = 0 —
+so centre count/order/timing (= density + randomness) is provably unchanged. 12 cells differ
+from the no-plus baseline and all are BRIGHTENED: tail-end centres (own 0.167/0.333, the two
+faintest trail steps) adjacent to a brighter centre now show that neighbour's halo instead of
+their own fainter glow — the intended max() behaviour, never dimmer.
+tsc ✓; biome-format clean; /about /brand-strategy /contact /blog all HTTP 200, grid cells
+rendered, 0 error markers. (next build still blocked by the pre-existing concurrent-build lock.)
+rAF motion needs the user's eyes. PLUS_ARM (0.35) is the dial if arms are too bright/dim.
+2 files. Not committed.
+
+## 2026-07-22 — CtaSection scatter: slow the animation down
+Task: slow down the CtaSection background animation. One prop, one file:
+brand-strategy/CtaSection.tsx `speed={0.3}` → `speed={0.15}` (halved). Chose the call-site
+prop over the shared SWEEP_CELLS_PER_SEC constant so BlogHeroSection's sweep keeps its own
+speed={0.3} — confirmed unchanged. Density (sweepTrail=6), scatter order and the plus
+formation are all untouched; only the rate changes.
+Pacing computed from the actual values (SWEEP_CELLS_PER_SEC=6, region n=32, trail=6,
+period=38): 1.80 → 0.90 cells/sec; a new box lights every 0.56s → 1.11s; each box now fades
+over 6.7s instead of 3.3s; full cycle 21s → 42s.
+Verified: tsc ✓, biome-format clean, /about /brand-strategy /contact all HTTP 200 with 80
+cells and 0 error markers. (next build still blocked by the pre-existing concurrent-build
+lock.) rAF motion needs the user's eyes — `speed` is the dial if 0.15 is too slow/fast.
+1 file. Not committed.
+
+## 2026-07-22 — BlogHeroSection: adopt CtaSection's current bg animation
+CtaSection had moved on since the blog hero last copied it — it now runs `speed={0.15} sweep scatter plus sweepTrail={6}` (the `scatter` and `plus` props were added to SpotlightGrid outside my work). The blog hero was still on `speed={0.3} sweep` with none of those.
+Copied the four ANIMATION props: speed 0.3 → 0.15, plus `scatter` (visits the region's cells in a scattered order rather than marching along rows), `plus` (each lit cell renders as a plus — full-strength cell with dimmer orthogonal arms), and `sweepTrail={6}` (6 cells lit behind the head instead of the default 4).
+Deliberately did NOT copy the sweep REGION. CtaSection uses colStart 2; the blog hero keeps colStart 1 / rowStart 2 / rowEnd 5, which the user set explicitly for this hero ("second box from left, third from top, third last row") to clear its own scrim. The region is per-section framing, not part of the animation.
+Verified: greped the animation props from BOTH call sites — byte-identical (speed={0.15} sweep scatter plus sweepTrail={6}); confirmed the regions still differ as intended. tsc ✓; lint LF-normalised vs `git show HEAD:` — both clean, zero diagnostics either side; next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — REVERTED: WorkProjectShowcase card eyebrow gradient
+Reverted the previous task. work/WorkProjectShowcase.tsx:285 restored verbatim to
+`<p className="mb-3 text-xs font-medium uppercase tracking-[0.3em] text-zinc-400">` — dropped
+the gradient/bg-clip-text/inline-block/pr-[0.3em] classes and the explanatory comment I had
+added. Net effect: file is back to its pre-task state for that element.
+Verified: tsc 0; grep shows line 285 back to text-zinc-400 and the only remaining bg-clip-text
+in the file is line 60, the pre-existing "Featured Projects" section-heading gradient
+(untouched — confirmed still rendering a linear-gradient live). Bundle scan of all 27 served
+scripts: original zinc-400 eyebrow string present, gradient-eyebrow string absent. biome
+unchanged at the 2 pre-existing findings (<img> 210, useButtonType 88). Not committed.
+
+## 2026-07-20 — brand-strategy ProjectShowcase card tag → brand gradient
+brand-strategy/ProjectShowcase.tsx:243 — the "Featured Case" tag sitting directly above the
+card title (inside the hover-revealed block) changed from text-zinc-400 to
+`inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-[0.3em]
+text-transparent`. Unambiguous target here (literal "Featured Case" line immediately above
+the h3) — unlike the work-page equivalent, which was reverted last task.
+inline-block + pr-[0.3em] reused from that earlier investigation (gradient must span the text
+not the full row; pr covers tracking-[0.3em]'s trailing space so bg-clip-text can't clip the
+last glyph).
+Verified: tsc 0; biome 2 warnings identical to the untouched web-development/ProjectShowcase
+copy (noImgElement:168, noUnusedImports:4) → nothing introduced. Tag is hover-only (absent
+from DOM at rest, confirmed); bundle scan of 27 served scripts shows the gradient string ships
+and the old zinc-400 string is gone from this route. Computed check of the exact class string:
+display inline-block, width 144px (hugs text, not the 800px row), linear-gradient with both
+brand stops, background-clip:text, transparent fill.
+SCOPE: brand-strategy only, as asked. The other 7 ProjectShowcase copies (web-development +
+6 service pages) still have the plain zinc-400 tag — offered to sync. Not committed.
+
+## 2026-07-22 — brand-strategy: fix the overlap I broke with `sticky bottom-0`
+MY REGRESSION, from the previous task. `bottom-0` does not mean "pin late". A bottom-sticky element is pushed DOWN as soon as its natural bottom edge rises above the offset line — and ProcessSection is the FIRST child of a tall wrapper, so that condition is true the moment the wrapper enters view. It was therefore shoved to float at the viewport bottom straight away, while OurTechStack (laid out after ProcessSection's NATURAL position, since sticky doesn't affect layout) sat above it. No overlap at all. My earlier reasoning that bottom-sticky was "the CSS equivalent of start: bottom bottom" was wrong.
+Fix: back to a TOP offset, but computed rather than guessed — `top-[calc(100vh-1040px)]`. Sticky catches when the element's top reaches the offset, so setting the offset to (viewport − section height) makes it catch exactly when its BOTTOM reaches the viewport bottom, which is the genuine "pin after it has been read" behaviour. 1040px is ProcessSection's approximate desktop height (measured from its markup earlier: pt-20 + header + one aspect-[4/4.5] card row + md:pb-35). On tall viewports the value goes positive, which correctly means "pin once fully visible".
+Coverage re-checked: at the pin moment ProcessSection's bottom is at the viewport bottom, so OurTechStack's top starts there and needs one viewport of travel to cover; available travel is still T_total ≈ 936px + 35vh. Pin duration is unchanged at T_total, so the earlier full-coverage fix still holds.
+Caveat: 1040px is an estimate and ProcessSection grows with viewport WIDTH (its cards are aspect-[4/4.5]), so on very wide screens it will pin slightly before its bottom reaches the fold. A runtime-accurate version would need the homepage's GSAP `start: "bottom bottom"` approach, which would mean making this page a client component.
+Verified: greped the new class, confirmed no `sticky bottom-` remains and the overlap plumbing is untouched; tsc ✓; lint LF-normalised vs `git show HEAD:` identical; next build ✓. 1 file, 1 class. Not committed.
+
+## 2026-07-22 — CareerHeroSection: ChannelCard bg pattern on the quote tile
+Analysed ContactSection's ChannelCard (src/components/home/ContactSection.tsx:105-157): the pattern is a grid of boxy cells (aspect-square, rounded-md, #161616) at gap-2 inside a `w-[110%] -left-[5%] -translate-y-6` wrapper, all under a radial mask `radial-gradient(280px circle at X Y, black 0%, rgba(0,0,0,0.15) 100%)` that follows the pointer and PARKS at (85% width, 50% height) when not hovered.
+Ported the RESTING state only — mask hard-coded to `85% 50%` in CSS percentages, no mouse tracking, no per-cell intensity. Deliberate: these quote tiles are duplicated 6x per marquee row across two rows, so 12 live pointer-tracking grids (each with ResizeObserver + rAF parking) would be real cost for a tile that continuously scrolls past. At rest the source card's cells are uniformly #161616 anyway (intensity 0 → rgb(22,22,22) = #161616), so the static copy is visually identical to its idle state.
+60 cells at grid-cols-6, pre-keyed (`quote-cell-${i}`) because biome's noArrayIndexKey is on.
+NON-OBVIOUS FIX included: the pattern layer is `absolute z-0`, and a POSITIONED z-0 element paints above STATIC in-flow siblings — so the quote icon and text would have been buried under it. Added `relative z-10` to both.
+Verified: greped the rendered structure and the z-10 lifts; tsc ✓; lint LF-normalised vs `git show HEAD:` identical (noImgElement, noArrayIndexKey — both pre-existing, from the carousel's <img> and loopIndex key); next build ✓. 1 file. Not committed.
+NOTE: the card's own bg is #565656 (user-set), whereas ChannelCard sits on bg-zinc-950/20. The #161616 cells will read as dark squares on mid-grey rather than the subtle near-tonal texture of the original — flagged for the user's eye.
+
+## 2026-07-22 — CareerHeroSection quote tile: make the mask visible, bigger boxes, tighter gap
+1. MASK — it was applied, just invisible. Copied verbatim from ChannelCard it used a 280px circle, but these tiles are only ~130-210px wide, so the circle blanketed the entire card and there was no falloff to see. Changed to a PERCENTAGE radius: `radial-gradient(60% 60% at 85% 50%, …)`, which scales the fade with the tile at every breakpoint instead of being fixed to the much larger source card. Park position (85% 50%) and the 0.15 outer alpha are unchanged.
+2. BOX SIZE — grid-cols-6 → grid-cols-4. Cells are w-full aspect-square, so fewer columns = bigger boxes: ~54px on the desktop tile (was ~36px).
+3. GAP — gap-2 (8px) → gap-1 (4px). Note the card's own `gap-1 md:gap-2` (flex spacing between the quote icon and text) is a DIFFERENT gap and was deliberately left alone.
+Cell count 60 → 32 to match: at 4 cols the grid is 8 rows ≈ 464px on the desktop tile and ≈ 288px on mobile, both comfortably past the card heights (260 / 160), so coverage holds while cutting ~340 DOM nodes across the 12 duplicated tiles.
+Verified: greped all four values and confirmed no stale 280px/grid-cols-6 remain (the only `gap-2` left is the card's own flex gap); tsc ✓; lint LF-normalised vs `git show HEAD:` identical (noImgElement, noArrayIndexKey — both pre-existing); next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — Work hero title sized to match the other hero sections
+Audited hero h1 scales: work was the outlier —
+  work            text-5xl sm:6xl md:[95px] lg:[118px] xl:[135px]   (118-135px)
+  brand-strategy  text-[2.75rem] sm:6xl md:7xl lg:[7rem]            (112px)
+  about / career  text-[2.75rem] sm:6xl md:7xl lg:[6rem]            (96px)
+  blog            text-6xl sm:7xl md:8xl lg:[7rem]                  (112px)
+work/WorkHeroSection.tsx:81 → text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[7rem]
+(dropped the xl override). Chose brand-strategy as the reference: the two heroes are
+structural twins (same `mb-6 flex flex-col items-center … leading-[1em] tracking-tight`
+word-stagger markup) differing only in text colour and this scale — brand-strategy had
+already been reduced, work hadn't.
+Verified live @1280 (lg active): /brand-strategy h1 = 112px/700, /work h1 = 112px/700 —
+exact match (was 118px, 135px at xl). tsc 0; biome 1 pre-existing warning.
+Pane quirk: tab-3 persistently reported viewport 0 so media queries never fired (only base
+44px readable) even after resize_window; switching to a different tab gave a correct 1280
+reading. Not committed.
+
+## 2026-07-22 — CareerHeroSection quote tile: full ChannelCard treatment (pattern + black bg + hover)
+Replaced the static pattern with a real port of ContactSection's ChannelCard behaviour, in a new `QuoteCard` component. It HAD to be its own component: the hooks cannot live inside CarouselCard's `item.type === "quote"` conditional branch.
+Ported verbatim from ChannelCard (ContactSection.tsx:53-157): mouseX/mouseY motion values; `parkMask` to (offsetWidth*0.85, offsetHeight/2); the double-rAF `setCardRef` (offsetWidth is 0 on the first frame inside the marquee track); the ResizeObserver that re-parks while not hovering; `getIntensity` (grid distance, cutoff 3.5, 1 - d/1.79); and the per-cell colour `Math.round(22 + 14*intensity)` with the outer cell going transparent while lit.
+Deviations, both deliberate: mask radius 140px not 280px (these tiles are ~130-210px wide; the source radius blanketed the card, which is why the mask looked absent two tasks ago), and the grid stays at the user's grid-cols-4 / gap-1 / 32 cells rather than the source's 6 cols / gap-2 / 80 — that sizing was an explicit earlier request.
+Card bg #565656 → black, as asked. Now matches the source's dark base, so the #161616 cells read as subtle texture rather than dark squares on grey (the mismatch flagged last task).
+LINT: the pointer handlers on non-interactive divs trip a11y/noStaticElementInteractions in two places (card wrapper, each cell). Added biome-ignore suppressions — note they must be SINGLE-LINE and immediately precede the element; my first attempt wrapped the reason onto a second `//` line and did not bind.
+Verified by counting diagnostic HEADERS (file:line:col) rather than rule-name occurrences, which had misled me: baseline 2, current 2, same two pre-existing rules (noImgElement, noArrayIndexKey). tsc ✓; next build ✓. 1 file. Not committed.
+
+## 2026-07-20 — WorkProjectShowcase card tag → gradient (re-applied)
+Re-applied the change that was reverted earlier, now that the same treatment is live on
+brand-strategy/ProjectShowcase. work/WorkProjectShowcase.tsx:285 — the uppercase eyebrow
+above the card title (project.subtitle, inside the hover-revealed block) →
+`inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-[0.3em]
+text-transparent`. Same positional element and same recipe as brand-strategy's "Featured
+Case" tag (brand-strategy's card has no category pill, only this eyebrow — which confirms the
+eyebrow is the "tag on top of the title").
+Verified: tsc 0; biome 2 errors/1 warning = the same pre-existing findings (noImgElement:210,
+useButtonType:88), unchanged by this diff. Eyebrow is hover-only; bundle scan of 27 served
+scripts shows the gradient string ships and the old zinc-400 string is gone. Isolated computed
+check: display inline-block, width 188px (hugs text, not the 800px row), linear-gradient with
+both brand stops, background-clip:text, transparent fill.
+Note: the two ProjectShowcase-family tags now match; the other 7 brand-strategy copies
+(web-development + 6 service pages) still have the plain zinc-400 tag. Not committed.
+
+## 2026-07-20 — Contact hero title sized to match the other hero sections
+Audit of hero h1 scales (contact had since been reworked by user and was the outlier):
+  contact (was)   text-[4rem] sm:[5.25rem] lg:[7.5rem]              120px
+  work            text-[2.75rem] sm:6xl md:7xl lg:[7rem]            112px
+  brand-strategy  text-[2.75rem] sm:6xl md:7xl lg:[7rem]            112px
+  blog            text-6xl sm:7xl md:8xl lg:[7rem]                  112px
+  about / career  text-[2.75rem] sm:6xl md:7xl lg:[6rem]             96px
+lg:text-[7rem] = 112px is the convention (3 pages agree). contact/ContactHeroSectionTwo.tsx:59
+→ text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[7rem], matching work's ramp exactly (closest
+structural sibling — both full-bleed media heroes). Size classes only: kept contact's own
+leading-[0.95], font-bold, tracking-tight, text-white.
+Verified live @1280 (lg active): /contact h1 = 112px/700 (was 120px), /work = 112px,
+/blog = 112px — all three match. tsc 0, biome clean. Not committed.
+
+## 2026-07-20 — Contact hero background video → video5.mp4
+Asset lives at public/assets/video5.mp4 (not public/ root). contact/ContactHeroSectionTwo.tsx:35
+src /assets/video3.mp4 → /assets/video5.mp4. Interpreted "add" as "use it as the hero
+background": after the user's rework the hero has exactly ONE video slot (the full-bleed bg) —
+the old foreground click-to-play card is gone — so a second video would just stack on the
+first. Flagged to user.
+Verified: tsc 0, biome clean; curl /assets/video5.mp4 → 200, 31,016,497 bytes; live /contact
+DOM: 1 video, src /assets/video5.mp4, readyState 4, no error, muted/loop/autoplay all true,
+object-fit cover, spans the full hero width, intrinsic 3840x2160.
+WATCH-OUT: 31 MB / 4K source is heavy for a hero autoplay — worth compressing or serving a
+720/1080p variant if load time matters. Not committed.
+
+## 2026-07-20 — Contact hero: left black scrim made slight
+A left→right scrim already existed but was heavy — from-black/75 via-black/50 to-black/30,
+which dimmed the entire frame (still 30% black at the right edge). Rather than stack a second
+overlay, lightened the existing one: contact/ContactHeroSectionTwo.tsx:44 →
+`bg-gradient-to-r from-black/60 via-black/20 to-transparent`. Keeps weight behind the headline
+(left column) for legibility while clearing the right so the footage reads.
+Verified live /contact: computed backgroundImage =
+linear-gradient(to right, oklab(0 0 0/0.6) 0%, oklab(0 0 0/0.2) 50%, rgba(0,0,0,0) 100%);
+direction left→right, covers full hero, pointer-events none, z-index 1 vs video z-index 0
+(sits above the video). tsc 0, biome clean. Exact darkness needs user's eyes. Not committed.
+
+## 2026-07-22 — ContactFaqSection aligned with the shared FaqSection
+Diffed contact/ContactFaqSection.tsx against brand-strategy/FaqSection.tsx first: they are near-duplicates and the FAQ content arrays are BYTE-IDENTICAL. Only five things differed, three of them visible.
+Applied the three visible ones:
+1. Added the missing "FAQs" eyebrow tag above the heading (`mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium`) — the main thing that made contact's look different.
+2. Heading `lg:text-[5rem]` → `lg:text-6xl` (80px → 60px).
+3. Answer text `leading-relaxed` → `leading-[1.25em]`, matching the site-wide description leading.
+Deliberately NOT applied, with reasons:
+- `id="faq"` — an anchor, not appearance. The footer's FAQs link points at /brand-strategy#faq, and adding a second element with the same id risks a duplicate should a page ever render both FAQ components.
+- section padding (`md:py-0 mb-20` vs `md:py-20`) — invisible on /contact anyway, because the page wrapper's `md:[&>section]:pt-3 md:[&>section]:pb-5` is a descendant selector and outranks a plain class on the section. Changing it would only have altered /work/[slug]'s spacing, which nobody asked for.
+SCOPE NOTE: ContactFaqSection is rendered by BOTH /contact and /work/[slug] (verified by grep), so the eyebrow tag and smaller heading now appear on the work detail pages too. That is a consistency gain — those pages sit next to sections that already carry the tag — but it is more than the literal ask, so flagged.
+Verified: post-edit diff against FaqSection shows only the component name and the section element remain different; tsc ✓; lint diagnostics LF-normalised vs `git show HEAD:` — 4 before, 4 after; next build ✓. 1 file. Not committed.

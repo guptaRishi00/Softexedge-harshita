@@ -78,7 +78,7 @@ export default function WorkHeroSection() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="mb-6 mt-16 md:mt-24 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-white sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
+          className="mb-6 mt-16 md:mt-24 flex flex-col items-center text-[2.75rem] font-bold leading-[1em] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-[7rem]"
         >
           <span className="flex items-center justify-center whitespace-nowrap">
             <motion.span variants={wordVariants}>Our</motion.span>

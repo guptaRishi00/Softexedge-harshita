@@ -282,7 +282,10 @@ function ProjectCard({
                     }}
                     className="absolute bottom-8 left-8 right-8 md:bottom-10 md:left-10 md:right-10"
                   >
-                    <p className="mb-3 text-xs font-medium uppercase tracking-[0.3em] text-zinc-400">
+                    {/* inline-block so the gradient spans the text, not the
+                        full row; pr covers the trailing letter-spacing so
+                        bg-clip-text doesn't clip the last glyph. */}
+                    <p className="mb-3 inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-[0.3em] text-xs font-medium uppercase tracking-[0.3em] text-transparent">
                       {project.subtitle}
                     </p>
 

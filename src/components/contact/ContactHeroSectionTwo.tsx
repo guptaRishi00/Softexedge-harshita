@@ -22,9 +22,6 @@ const line = {
   },
 } as const;
 
-// Staggered per WORD rather than per line: the headline wraps naturally inside
-// its 70% column, so it fills that width at any viewport instead of breaking at
-// hard-coded points. Pre-keyed (no array-index keys), as in Footer.
 const headlineWords = "Let's build something worth talking about."
   .split(" ")
   .map((word, i) => ({ word, id: `headline-${i}-${word}` }));
@@ -34,10 +31,8 @@ export default function ContactHeroSectionTwo() {
 
   return (
     <section className="relative flex min-h-screen w-full flex-col overflow-hidden bg-black font-sans selection:bg-[#2E5BFF]/20">
-      {/* Full-bleed background video (replaces the SpotlightGrid pattern) —
-          edge-to-edge treatment like WorkHeroSection, not a card container. */}
       <video
-        src="/assets/video3.mp4"
+        src="/assets/video5.mp4"
         autoPlay
         loop
         muted
@@ -45,15 +40,16 @@ export default function ContactHeroSectionTwo() {
         className="absolute inset-0 z-0 h-full w-full object-cover"
       />
 
-      {/* Scrim so the copy stays legible over the footage */}
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/75 via-black/50 to-black/30" />
+      {/* Slight left→right black scrim: enough weight behind the headline for
+          legibility, fading to fully clear so the footage reads on the right. */}
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
 
       {/* Header — overlays the video, light variant like WorkHeroSection */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header onDark />
       </div>
 
-      <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center gap-10 px-6 py-28 md:flex-row md:justify-between md:gap-6 md:px-12 lg:gap-12 lg:px-10 lg:mt-25">
+      <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center gap-10 px-6 py-28 md:flex-row md:justify-between md:gap-6 md:px-12 lg:gap-12 lg:px-10 lg:mt-14">
         {/* Content */}
         <div className="relative z-10 flex w-full flex-col items-start text-left md:w-[70%]">
           {/* Headline — wraps to fill the 70% column */}
@@ -61,7 +57,7 @@ export default function ContactHeroSectionTwo() {
             variants={headlineContainer}
             initial={reduce ? false : "hidden"}
             animate="visible"
-            className="text-[4rem] font-bold leading-[0.95] tracking-tight text-white sm:text-[5.25rem] lg:text-[7.5rem]"
+            className="text-[2.75rem] font-bold leading-[0.95] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-[7rem]"
           >
             {headlineWords.map(({ word, id }) => (
               <motion.span

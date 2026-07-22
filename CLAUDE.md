@@ -10,5 +10,10 @@ gotchas so you don't have to re-explore.
   heed deprecation notices.
 - **Lint/format with Biome** (`bun run lint`, `bun run format`) — not ESLint.
 - **Do not edit `src/components/garbage/`** — it's dead code (see map). Don't add to it.
-- **Navigation is duplicated** — check the map's gotchas to edit the correct
-  Header/navbar for the page you're touching.
+- **Navigation is duplicated** — `layout/Header` serves `/home` only; `page/Header`
+  serves every other page. Check the map before editing either.
+- **The 8 service pages have their own copies of every section** (CtaSection,
+  SubServices, ProcessSection, OurTechStack, ProjectShowcase, FaqSection,
+  StrategyHeroSection, AgencyStats — 64 files). Editing one changes ONE page;
+  a site-wide change means 8 files. Always confirm the intended scope first.
+- **No `test` or `typecheck` script exists** — use `bunx tsc --noEmit`.
