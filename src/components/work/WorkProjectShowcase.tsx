@@ -186,13 +186,7 @@ function ProjectCard({
         >
           {/* Background image or video */}
           <motion.div
-            animate={{
-              scale: isHovered ? 1.06 : 1.02,
-              filter:
-                isAnyHovered && !isHovered
-                  ? "brightness(0.65) grayscale(25%)"
-                  : "brightness(1)",
-            }}
+            animate={{ scale: isHovered ? 1.06 : 1.02 }}
             transition={smoothSpring}
             className="absolute inset-0 h-full w-full"
           >
@@ -215,6 +209,21 @@ function ProjectCard({
               />
             )}
           </motion.div>
+
+          {/* Dim for the non-hovered cards. Deliberately an opacity fade on a
+              black overlay rather than `filter: brightness()/grayscale()` on
+              the media: filter is not compositable, so springing it re-painted
+              every other card's full-size image on every frame — that was the
+              hover jank. Opacity animates on the compositor. */}
+          <motion.div
+            // `initial` is required: the fill is fully opaque black and the
+            // dim lives entirely in opacity, so without it the SSR markup ships
+            // no inline opacity and the card paints solid black until hydration.
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isAnyHovered && !isHovered ? 0.35 : 0 }}
+            transition={{ duration: 0.4, ease: premiumEase }}
+            className="pointer-events-none absolute inset-0 bg-black"
+          />
 
           {/* Bottom gradient — always present, keeps the default title legible
               without darkening the whole image. */}
@@ -354,6 +363,7 @@ function ProjectCard({
             radius={20}
             gradientId={`work-trace-${project.id}`}
             color="#2E5BFF"
+            edgeComets
           />
         </div>
       </motion.div>

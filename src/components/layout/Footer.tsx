@@ -17,24 +17,46 @@ import Particles from "@/components/ui/Particles";
 // 14 links split 7/7 so both columns are exactly equal: the list runs down
 // column one (site pages, then services) and continues into column two.
 const footerLinkGroups = [
-  [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Work", href: "/work" },
-    { name: "Blog", href: "/blog" },
-    { name: "Careers", href: "/career" },
-    { name: "Contact", href: "/contact" },
-    { name: "Digital Marketing & Growth", href: "/digital-marketing" },
-  ],
-  [
-    { name: "AI & Marketing Automation", href: "/ai-marketing-automation" },
-    { name: "Web Development", href: "/web-development" },
-    { name: "App Development", href: "/app-development" },
-    { name: "Custom Software & SaaS", href: "/custom-software" },
-    { name: "Brand Strategy & Identity", href: "/brand-strategy" },
-    { name: "UI/UX Design", href: "/ui-ux-design" },
-    { name: "Video Production", href: "/video-production" },
-  ],
+  {
+    title: "Pages",
+    links: [
+      { name: "Home", href: "/" },
+      { name: "About", href: "/about" },
+      { name: "Work", href: "/work" },
+      { name: "Blog", href: "/blog" },
+      { name: "Careers", href: "/career" },
+      { name: "Contact", href: "/contact" },
+    ],
+  },
+  {
+    // All eight service routes, in the same order as the homepage
+    // ServiceSection and the header dropdown.
+    title: "Services",
+    links: [
+      { name: "Digital Marketing & Growth", href: "/digital-marketing" },
+      { name: "AI & Marketing Automation", href: "/ai-marketing-automation" },
+      { name: "Web Development", href: "/web-development" },
+      { name: "App Development", href: "/app-development" },
+      { name: "Custom Software & SaaS", href: "/custom-software" },
+      { name: "Brand Strategy & Identity", href: "/brand-strategy" },
+      { name: "UI/UX Design", href: "/ui-ux-design" },
+      { name: "Video Production", href: "/video-production" },
+    ],
+  },
+  {
+    // Sections that have no page of their own — each points at the anchor on
+    // the page that owns it.
+    title: "Explore",
+    links: [
+      { name: "Our Services", href: "/home#services" },
+      { name: "Portfolio", href: "/home#portfolio" },
+      { name: "Testimonials", href: "/home#testimonials" },
+      { name: "Culture", href: "/about#culture" },
+      { name: "Meet The Team", href: "/about#team" },
+      { name: "Our Process", href: "/brand-strategy#process" },
+      { name: "FAQs", href: "/brand-strategy#faq" },
+    ],
+  },
 ];
 
 const socialLinks = [
@@ -95,14 +117,24 @@ export default function Footer() {
             their own content and sit at the top, instead of the grid's default
             stretch making them equal height. */}
         <div className="grid grid-cols-1 items-start gap-12 pb-16 lg:grid-cols-12 md:pb-20">
-          <div className="grid grid-cols-2 gap-x-10 lg:col-span-7 lg:gap-x-20">
-            {footerLinkGroups.map((group) => (
-              <div key={group[0].name} className="flex flex-col gap-4">
-                {group.map((link) => (
+          {/* FLEX at lg, not a 3-track grid. Equal-width grid tracks made the
+              spacing look uneven: "Pages" tops out at ~70px inside a ~226px
+              track, so ~156px of dead space sat before the gap, while
+              "Services" nearly filled its track. Flex sizes each column to its
+              content, so the gap is the ONLY spacing and all three read equal.
+              Mobile keeps the 2-col grid. */}
+          <div className="grid grid-cols-2 gap-x-10 gap-y-12 lg:col-span-7 lg:flex lg:gap-16">
+            {footerLinkGroups.map(({ title, links }) => (
+              <div key={title} className="flex flex-col gap-2.5">
+                {/* Column heading — same tag style the page sections use. */}
+                <p className="mb-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
+                  {title}
+                </p>
+                {links.map((link) => (
                   <Link
                     key={link.name}
                     href={link.href}
-                    className="group relative w-fit text-[1.1rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
+                    className="group relative w-fit text-[0.95rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
                   >
                     {link.name}
                     {/* UPDATED: Follow-through underline animation */}

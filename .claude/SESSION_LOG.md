@@ -5100,3 +5100,74 @@ Verified: greped the quantisation and both tween sites; tsc ✓; lint diagnostic
 Checked before editing: the fix from the previous task lives entirely inside SpotlightGrid's `sweep` code path — the quantised `setSweepHead` sits inside `if (sweep) {…}` in the rAF tick, and `sweepTween` is `sweep ? … : undefined`. Neither is gated on anything CtaSection-specific, so every consumer passing `sweep` inherits it. BlogHeroSection passes `sweep`, so it already had the fix the moment that task landed.
 Also diffed the two call sites in full: byte-identical apart from `sweepColStart` (2 for the CTA, 1 for the hero) — a per-section region the user set deliberately to clear each card's own scrim, not part of the animation.
 Deliberately made no edit. Re-passing the same props or duplicating the fix would have been a no-op diff dressed up as work.
+
+## 2026-07-22 — Footer: three titled columns + section deep-links
+Restructured `footerLinkGroups` from a plain array-of-arrays into `{ title, links }` objects, so each column can carry a heading:
+- PAGES (6): Home, About, Work, Blog, Careers, Contact
+- SERVICES (8): all eight service routes, in the same order as the homepage ServiceSection and the header dropdown. "Digital Marketing & Growth" was stranded in the pages group — moved here where it belongs.
+- EXPLORE (7): section deep-links, each pointing at the anchor on the page that owns it — Our Services /home#services, Portfolio /home#portfolio, Testimonials /home#testimonials, Culture /about#culture, Meet The Team /about#team, Our Process /brand-strategy#process, FAQs /brand-strategy#faq. Portfolio is NEW (the #portfolio anchor already existed on PortfolioSection but nothing linked to it).
+Render updated to destructure `{ title, links }`, key the column by `title` (was `group[0].name`, which no longer exists), and print the heading in the site's standard tag style (`text-sm uppercase tracking-[0.3em] text-zinc-500`) so it matches the section eyebrows elsewhere.
+Grid: `lg:grid-cols-2` → `lg:grid-cols-3`, with `lg:gap-x-8` rather than something wider — at lg:col-span-7 that leaves ~226px per column against a ~216px longest label ("Digital Marketing & Growth"), so the gap is what keeps those on one line. Added gap-y-12 for the mobile 2-col wrap.
+Verified: scripted resolver over ALL 21 hrefs — route file exists, and for each of the 7 anchors the owning component is actually rendered by that page. 21/21 pass, zero 404s. Confirmed no stale `group[0]` reference remains. tsc ✓; lint diagnostics LF-normalised vs `git show HEAD:` 4 before / 4 after; next build ✓. 1 file. Not committed.
+WATCH: the service labels are long. If any wrap to two lines on your screen, widening the links block to lg:col-span-8 (newsletter to 4) is the fix — its form is max-w-[420px] and would shrink to ~356px.
+
+## 2026-07-22 — Footer links: tighter vertical rhythm, smaller type
+Two values on the link columns:
+- Vertical gap `gap-4` → `gap-2.5` (16px → 10px) on the column flex container.
+- Link font `text-[1.1rem]` → `text-[0.95rem]` (17.6px → 15.2px).
+Left alone deliberately: the column heading (`text-sm uppercase tracking-[0.3em]`) and its `mb-2`, so the headings still read as headings against the now-smaller links rather than merging with them.
+Side benefit: the smaller type relieves the width pressure flagged last task. The longest label ("Digital Marketing & Growth") drops from ~216px to ~187px against ~226px of column width, so the two-line-wrap risk at lg is largely gone.
+Verified: greped both new values and confirmed no `text-[1.1rem]` remains; tsc ✓; lint diagnostics LF-normalised vs `git show HEAD:` 4 before / 4 after; next build ✓. 1 file, 2 values. Not committed.
+
+## 2026-07-20 — WorkProjectShowcase: orbiting comet → two edge comets
+Replaced the single comet that laps the whole card with two edge comets that each land on the
+corner whose glow already blooms there:
+  top    — TL tangent → right along the top edge → through the TR arc  (feeds the TR glow)
+  bottom — BR tangent → left  along the bottom edge → through the BL arc (feeds the BL glow)
+Bottom runs right→left (not left→right) because the existing glows sit at TR and BL; ending at
+BL is what makes the comet visibly become that side glow. Corner-glow layer (Layer 2 mask +
+circles) untouched — same effect, now fed by two comets.
+Implemented as a new `edgeComets` prop on ui/TracingBorder.tsx (default false) and enabled
+only in work/WorkProjectShowcase.tsx, because TracingBorder is SHARED by BlogListSection and
+all 9 ProjectShowcase copies — a global change would have altered those too. Orbit branch left
+byte-identical for them.
+Dash math differs per branch and this is the subtle part: the orbit is a CLOSED loop so the
+head lands back on the start point (offset 1+TAIL → TAIL), but each edge is an OPEN path where
+the head must travel 0→1, which needs offset TAIL → TAIL-1. Getting this wrong would park the
+comet off-path.
+Verified on the real 1185x600 card (r=18.5) by building both paths and measuring:
+  top    start (20,2)    end (1184,20)  — x 20→1184, ends at TR glow centre (1184,2)
+  bottom start (1165,599) end (1,580)   — x 1165→1, ends at BL glow centre (2,599)
+  both paths 1174.1px long → symmetric, identical speed over LAP_DURATION.
+tsc 0; TracingBorder biome-clean; WorkProjectShowcase's 2 findings are pre-existing (88, 210).
+/work, /blog, /brand-strategy all 200 (orbit consumers unaffected). Hover-only so the motion
+needs the user's eyes. Not committed.
+
+## 2026-07-22 — Footer: equalise the spacing between the three link columns
+Symptom: Pages→Services looked far wider than Services→Explore. The CSS gaps were already identical (`lg:grid-cols-3` + `lg:gap-x-8`); the imbalance came from TRAILING WHITESPACE inside equal-width grid tracks. Each track was ~226px, but "Pages" tops out at ~70px ("Contact") so ~156px of dead space sat before the gap began, whereas "Services" (~187px, "Digital Marketing & Growth") nearly filled its track. Effective spacing was therefore ~188px vs ~71px.
+Fix: `lg:grid-cols-3 lg:gap-x-8` → `lg:flex lg:gap-16`. Flex sizes each column to its own content, so the gap is the only spacing between them and all three read equal. Mobile keeps the existing 2-col grid (`grid-cols-2 gap-x-10 gap-y-12`), which `lg:flex` only overrides from lg up.
+Note this returns the block to the flex layout the footer used originally (it was `lg:flex lg:justify-start lg:gap-20` before the 4-column rework), so it matches prior convention rather than introducing a new one.
+Consequence to expect: the three columns now bunch left and leave more empty space before the newsletter block, because they no longer stretch to fill equal tracks. gap-16 (64px) was chosen as a middle ground between the old ~188px and ~71px.
+Verified: greped the new class and confirmed both `lg:grid-cols-3` and `lg:gap-x-8` are gone; tsc ✓; lint diagnostics LF-normalised vs `git show HEAD:` 4 before / 4 after; next build ✓. 1 file, 1 class. Not committed.
+
+## 2026-07-20 — Work card hover jank fixed (filter → opacity overlay)
+ROOT CAUSE (not the comet): work/WorkProjectShowcase.tsx animated
+`filter: brightness(0.65) grayscale(25%)` with a SPRING on each card's media layer, keyed on
+`isAnyHovered && !isHovered`. So hovering one card spring-animated a filter on all ~8 other
+cards' full-size images/videos simultaneously. `filter` is not compositable — every frame
+forces a full re-rasterisation of each card image, which is exactly the reported
+"inconsistent and laggy". The new comet is 4 SVG paths on ONE card by comparison — far
+cheaper, and not the culprit.
+FIX: removed `filter` from the media motion.div (it now animates only `scale`, a compositable
+transform) and added a sibling black overlay animating `opacity` 0 → 0.35, which runs on the
+compositor. 0.35 black ≈ the old brightness(0.65). TRADE-OFF: loses the grayscale(25%)
+desaturation — acceptable/desirable since the user had already asked for that dim to be
+reduced ("feels like black and white").
+BUG CAUGHT MID-TASK: the overlay is `bg-black` (fully opaque) with the dim living entirely in
+opacity, so with no `initial` framer shipped NO inline opacity in the SSR markup → every card
+painted solid black until hydration. (The pre-existing hover scrim escapes this only because
+bg-black/35 is translucent.) Added `initial={{ opacity: 0 }}`.
+Verified: tsc 0; biome unchanged (2 pre-existing). Live /work: 0 elements with a
+brightness/grayscale filter; all 9 cards' dim overlays computed opacity 0 at rest; server HTML
+now ships style="opacity:0" on the overlay. Smoothness itself needs the user's eyes — the pane
+can't profile FPS. Comet left as-is. Not committed.

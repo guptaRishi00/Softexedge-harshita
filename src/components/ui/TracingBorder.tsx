@@ -11,6 +11,7 @@ export default function TracingBorder({
   radius = 20,
   gradientId,
   color,
+  edgeComets = false,
 }: {
   active: boolean;
   radius?: number;
@@ -18,6 +19,11 @@ export default function TracingBorder({
   // When set, the comet + border render as this solid color instead of the
   // default blue→cyan gradient.
   color?: string;
+  // Swap the single orbiting comet for two edge comets: one runs the TOP edge
+  // left→right into the top-right corner, one runs the BOTTOM edge right→left
+  // into the bottom-left corner — landing exactly on the two corners whose
+  // glow then blooms, so each comet visibly "becomes" its side glow.
+  edgeComets?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -61,6 +67,28 @@ export default function TracingBorder({
         ` A ${r} ${r} 0 0 1 ${f(inset + r)} ${f(inset)}` +
         ` L ${sx} ${sy} Z`
       : "";
+
+  // Edge-comet paths (edgeComets mode). Each runs along one edge and finishes
+  // ON the corner whose glow blooms next, so the comet reads as feeding it:
+  //   top    — TL tangent → right along the top → through the TR arc
+  //   bottom — BR tangent → left  along the bottom → through the BL arc
+  // Same direction/sweep as the corresponding segments of `d`.
+  const topD =
+    W > 0 && H > 0
+      ? `M ${f(inset + r)} ${f(inset)}` +
+        ` L ${f(inset + W - r)} ${f(inset)}` +
+        ` A ${r} ${r} 0 0 1 ${f(inset + W)} ${f(inset + r)}`
+      : "";
+  const bottomD =
+    W > 0 && H > 0
+      ? `M ${f(inset + W - r)} ${f(inset + H)}` +
+        ` L ${f(inset + r)} ${f(inset + H)}` +
+        ` A ${r} ${r} 0 0 1 ${f(inset)} ${f(inset + H - r)}`
+      : "";
+  const edgePaths = [
+    { id: "top", d: topD },
+    { id: "bottom", d: bottomD },
+  ];
 
   // Comet animation constants
   const TAIL = 0.25;
@@ -205,9 +233,9 @@ export default function TracingBorder({
               </mask>
             </defs>
 
-            {/* ═══ Layer 1: Revolving comet — one full-brightness lap, then a
-                 quick dissolve that fires only once it lands at the top-right
-                 corner (delay = LAP_DURATION) so the handoff is instant.
+            {/* ═══ Layer 1: the comet(s) — full brightness for the whole run,
+                 then a quick dissolve that fires only once they land (delay =
+                 LAP_DURATION) so the handoff to the corner glow is instant.
                  Glow = a wide soft halo stroke under the crisp core stroke
                  (layered strokes animate cheaply; an feGaussianBlur filter
                  would re-rasterize every frame and stutter). ═══ */}
@@ -220,31 +248,83 @@ export default function TracingBorder({
                 ease: "easeOut",
               }}
             >
-              {/* Halo */}
-              <motion.path
-                d={d}
-                pathLength={1}
-                stroke={color ?? `url(#comet-${gradientId})`}
-                strokeWidth={6}
-                strokeOpacity={0.28}
-                strokeLinecap="round"
-                strokeDasharray={`${TAIL} ${GAP}`}
-                initial={{ strokeDashoffset: 1 + TAIL }}
-                animate={{ strokeDashoffset: TAIL }}
-                transition={{ duration: LAP_DURATION, ease: "easeInOut" }}
-              />
-              {/* Core */}
-              <motion.path
-                d={d}
-                pathLength={1}
-                stroke={color ?? `url(#comet-${gradientId})`}
-                strokeWidth={2.5}
-                strokeLinecap="round"
-                strokeDasharray={`${TAIL} ${GAP}`}
-                initial={{ strokeDashoffset: 1 + TAIL }}
-                animate={{ strokeDashoffset: TAIL }}
-                transition={{ duration: LAP_DURATION, ease: "easeInOut" }}
-              />
+              {edgeComets
+                ? // Two open edge paths. Unlike the closed orbit, the head has
+                  // to travel from path start (0) to path end (1): the dash
+                  // spans [-offset, -offset+TAIL], so the head sits at
+                  // -offset+TAIL and the offset runs TAIL → TAIL-1.
+                  edgePaths.map((edge) => (
+                    <g key={edge.id}>
+                      {/* Halo */}
+                      <motion.path
+                        d={edge.d}
+                        pathLength={1}
+                        stroke={color ?? `url(#comet-${gradientId})`}
+                        strokeWidth={6}
+                        strokeOpacity={0.28}
+                        strokeLinecap="round"
+                        strokeDasharray={`${TAIL} ${GAP}`}
+                        initial={{ strokeDashoffset: TAIL }}
+                        animate={{ strokeDashoffset: TAIL - 1 }}
+                        transition={{
+                          duration: LAP_DURATION,
+                          ease: "easeInOut",
+                        }}
+                      />
+                      {/* Core */}
+                      <motion.path
+                        d={edge.d}
+                        pathLength={1}
+                        stroke={color ?? `url(#comet-${gradientId})`}
+                        strokeWidth={2.5}
+                        strokeLinecap="round"
+                        strokeDasharray={`${TAIL} ${GAP}`}
+                        initial={{ strokeDashoffset: TAIL }}
+                        animate={{ strokeDashoffset: TAIL - 1 }}
+                        transition={{
+                          duration: LAP_DURATION,
+                          ease: "easeInOut",
+                        }}
+                      />
+                    </g>
+                  ))
+                : [
+                    // Single comet orbiting the full rounded rect (closed loop,
+                    // so the head lands back on the path's start point).
+                    <g key="orbit">
+                      {/* Halo */}
+                      <motion.path
+                        d={d}
+                        pathLength={1}
+                        stroke={color ?? `url(#comet-${gradientId})`}
+                        strokeWidth={6}
+                        strokeOpacity={0.28}
+                        strokeLinecap="round"
+                        strokeDasharray={`${TAIL} ${GAP}`}
+                        initial={{ strokeDashoffset: 1 + TAIL }}
+                        animate={{ strokeDashoffset: TAIL }}
+                        transition={{
+                          duration: LAP_DURATION,
+                          ease: "easeInOut",
+                        }}
+                      />
+                      {/* Core */}
+                      <motion.path
+                        d={d}
+                        pathLength={1}
+                        stroke={color ?? `url(#comet-${gradientId})`}
+                        strokeWidth={2.5}
+                        strokeLinecap="round"
+                        strokeDasharray={`${TAIL} ${GAP}`}
+                        initial={{ strokeDashoffset: 1 + TAIL }}
+                        animate={{ strokeDashoffset: TAIL }}
+                        transition={{
+                          duration: LAP_DURATION,
+                          ease: "easeInOut",
+                        }}
+                      />
+                    </g>,
+                  ]}
             </motion.g>
 
             {/* ═══ Layer 2: Corner-weighted static border, revealed entirely
