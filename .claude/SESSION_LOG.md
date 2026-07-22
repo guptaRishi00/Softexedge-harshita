@@ -4956,3 +4956,130 @@ Deliberately NOT applied, with reasons:
 - section padding (`md:py-0 mb-20` vs `md:py-20`) — invisible on /contact anyway, because the page wrapper's `md:[&>section]:pt-3 md:[&>section]:pb-5` is a descendant selector and outranks a plain class on the section. Changing it would only have altered /work/[slug]'s spacing, which nobody asked for.
 SCOPE NOTE: ContactFaqSection is rendered by BOTH /contact and /work/[slug] (verified by grep), so the eyebrow tag and smaller heading now appear on the work detail pages too. That is a consistency gain — those pages sit next to sections that already carry the tag — but it is more than the literal ask, so flagged.
 Verified: post-edit diff against FaqSection shows only the component name and the section element remain different; tsc ✓; lint diagnostics LF-normalised vs `git show HEAD:` — 4 before, 4 after; next build ✓. 1 file. Not committed.
+
+## 2026-07-22 — BlogHeroSection: match CtaSection's gradient stack
+Analysis: CtaSection uses TWO scrim layers, not one —
+  1. LEFT, full strength: `inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent`
+  2. BOTTOM, dimmed: `inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50`
+The blog hero had only the left one, and weakened (`from-black/80 via-black/60`).
+Brought both to parity: strengthened the left layer to the CTA's exact stops and added the missing bottom layer verbatim. The bottom fade is particularly apt here — this hero is `justify-end`, so its headline and filter row sit exactly where that layer lands.
+Verified by extracting the class strings from BOTH files and comparing: byte-identical on both layers. tsc ✓; lint diagnostics LF-normalised vs `git show HEAD:` — 0 before, 0 after (this file is clean); next build ✓. 1 file. Not committed.
+WATCH: the sweep animation now sits under two scrims instead of one. The bottom layer is only 50% over an h-48 band, but if the sweep looks dimmer than intended in the lower area, that band is why.
+
+## 2026-07-22 — SpotlightGrid sweep: smooth chain-reaction wave (3 distinct causes fixed)
+The complaint had three separate causes, diagnosed from the code:
+1. "comes instantly then disappears" — `return 1 - behind/sweepTrail`. At the head `behind = 0` → intensity 1 IMMEDIATELY: no attack at all, only a linear release. Replaced with a sin² envelope: `Math.sin(Math.PI * (1 - behind/sweepTrail)) ** 2`, so a cell swells from 0, peaks mid-trail, and subsides. Ease in AND out.
+2. "adjacent box's opacity gets very low" — `backgroundColor: intensity > 0 ? "transparent" : "#121212"`. ANY intensity above zero (a plus arm at 0.35, or the last sliver of a trail) stripped the tile's background, so faintly-lit cells rendered as holes rather than tiles. Now always `#121212`; the glow layer sits above it, so keeping the tile costs nothing.
+3. No chain reaction — `scatter` deliberately reorders which cell lights next, which is precisely what destroys spatial adjacency. Removed from both call sites.
+Call sites: speed 0.15 → 0.1 (0.6 cells/sec) and sweepTrail 6 → 10, so ~10 cells are lit in a gradient at once and the 32-cell region takes ~70s per cycle — a slow wave rolling through neighbours.
+Applied to CtaSection AND BlogHeroSection to preserve the parity the user asked for earlier; verified both call sites now read identically (speed 0.1, sweep, plus, sweepTrail 10). The `scatter` prop stays in SpotlightGrid, just unused.
+Shared-component note: fixes 1 and 2 live in SpotlightGrid. Fix 1 is inside the `sweep` branch so only these two consumers are affected. Fix 2 is shared with the 7 mask-mode CtaSections — there the change is near-invisible (glow over #121212 vs over the black card) and removes the same hole artefact.
+Stale comment in BlogHeroSection describing "scattered order" updated.
+Verified: greped both call sites for parity; tsc ✓; lint diagnostic counts LF-normalised vs `git show HEAD:` unchanged in all three files (1/1, 3/3, 0/0); next build ✓. 3 files. Not committed.
+
+## 2026-07-20 — Footer links back to two columns
+layout/Footer.tsx:101 — the link-groups grid was `grid-cols-2 … lg:grid-cols-4 lg:gap-x-12`
+(2 cols on mobile but FOUR on desktop). Now `grid-cols-2 … lg:grid-cols-2 lg:gap-x-20`, so
+the 4 groups flow 2 columns x 2 rows at every breakpoint. Widened the desktop column gap
+10→20 to match the old two-list `lg:gap-20` spacing noted in the session history.
+Data untouched (footerLinkGroups still 4 groups of 4 links).
+Verified: tsc 0; biome 4 findings all pre-existing (lines 9/87/165/271 — unused import,
+unused var, useValidAnchor, index key), none near line 101. Live DOM: element className has
+lg:grid-cols-2 and no lg:grid-cols-4; the 4 groups render at 2 distinct x-positions over 2
+rows (Home | Work / Web Development | Services).
+Pane quirk again: viewport reported 0 on both tabs so md/lg media queries never fired and
+widths computed 0 — verified the lg behaviour via class identity + compiled CSS instead
+(.lg\:grid-cols-2 rule present, gap-x-20 generated). Desktop look needs user's eyes.
+Not committed.
+
+## 2026-07-20 — Footer link spacing tightened
+layout/Footer.tsx:103 — each link group's column `flex flex-col gap-8` → `gap-4`, halving the
+vertical space between individual links (32px → 16px). Grid gaps between the GROUPS
+(gap-x-10 / gap-y-14, lg:gap-x-20) left as-is — the ask was the gaps between links.
+Verified live /home: group className `flex flex-col gap-4`, computed row-gap 16px, and the
+measured distance between all 3 consecutive link pairs is 16px each (was 32px).
+tsc 0; biome 4 findings all pre-existing (lines 9/87/165/271), none from this diff.
+Note for follow-up: with links at 16px, the 56px (gap-y-14) row gap between the two rows of
+groups now reads proportionally large — easy to drop if the user wants it tighter. Not committed.
+
+## 2026-07-20 — Footer: 4 links removed
+layout/Footer.tsx footerLinkGroups — removed Culture (/about#culture) and Meet The Team
+(/about#team) from group 1, and Services (/home#services) and Processes
+(/brand-strategy#process) from group 4. 16 links → 12.
+Verified live /home: rendered groups are now [Home, About] / [Work, Blog & Resources,
+Testimonials, Careers] / [Web Development, Brand Strategy, UI/UX Design, App Development] /
+[FAQs, Contact]; none of the 4 removed names appear anywhere in the rendered footer; grep
+confirms they're gone from the source. tsc 0; biome findings unchanged (all pre-existing).
+Note: group key is group[0].name — group 4's key changed "Services" → "FAQs", still unique.
+Groups are now uneven (2/4/4/2), so the 2x2 column layout is ragged — offered to rebalance.
+Not committed.
+
+## 2026-07-22 — REVERTED the chain-reaction sweep changes
+Undid all five pieces of the previous task, across the same 3 files:
+1. SpotlightGrid getIntensity — sin² envelope back to `return 1 - behind / sweepTrail` (instant attack, linear release).
+2. SpotlightGrid cell tile — back to `backgroundColor: intensity > 0 ? "transparent" : "#121212"` (so a faintly-lit cell loses its tile again).
+3. CtaSection call site — `speed={0.15} sweep scatter plus sweepTrail={6}` restored, and my explanatory comment removed. The two PRE-EXISTING comments above it (the speed note and the region note) were left untouched — they predate that task.
+4. BlogHeroSection call site — same restore to speed 0.15 / scatter / sweepTrail 6.
+5. BlogHeroSection comment — back to "scattered order, plus-shaped cells, 6-cell trail, speed 0.15".
+Verified: greped for every remnant (Math.sin(Math.PI, "sin² envelope", "chain reaction", the unconditional #121212) — none remain; confirmed the two restored SpotlightGrid lines and that both call sites read speed 0.15 / sweep / scatter / plus / sweepTrail 6. tsc ✓; lint diagnostic counts LF-normalised vs `git show HEAD:` unchanged in all three (1/1, 3/3, 0/0); next build ✓. 3 files. Not committed.
+NOTE: the two genuine defects I identified are back by request — cells snap to full brightness with no attack, and any cell with intensity > 0 renders without its tile. Recorded here so a future session doesn't "rediscover" and silently re-fix them.
+
+## 2026-07-20 — Footer links regrouped into two clean columns
+User screenshot showed the problem I'd flagged but not fixed: after removing 4 links the
+groups were 2/4/4/2 in a 2x2 grid, so each column had a short group above a tall one with a
+dead hole between (big void under Home/About and under FAQs/Contact).
+Fix: consolidated footerLinkGroups from 4 fragments into 2 balanced columns of 6, each one
+continuous list —
+  col 1 (company/explore): Home, About, Work, Blog & Resources, Testimonials, Careers
+  col 2 (services/contact): Web Development, Brand Strategy, UI/UX Design, App Development,
+                            FAQs, Contact
+Also dropped now-dead grid classes: gap-y-14 (only one row now) and the redundant
+lg:grid-cols-2 (grid-cols-2 already applies at all breakpoints) → `grid grid-cols-2 gap-x-10
+lg:col-span-7 lg:gap-x-20`.
+Verified live /home: 2 columns, 6 links each, both 238px tall, tops aligned to the same px,
+uniform 16px gap between every link in both columns, 12 links total, no gaps/holes.
+tsc 0; biome 4 findings all pre-existing. Not committed.
+
+## 2026-07-20 — Footer links now point only at real pages
+Audited footer hrefs against `find src/app -name page.tsx`. Two entries pointed at SECTIONS of
+other pages (the "other page's component links" the user meant): Testimonials
+→ /home#testimonials and FAQs → /brand-strategy#faq. Four real service pages were also missing
+entirely (digital-marketing, ai-marketing-automation, custom-software, video-production).
+Rebuilt footerLinkGroups — 12 links → 14, all real routes, zero anchors:
+  col 1 company (6): Home /, About, Work, Blog, Careers, Contact
+  col 2 services (8): the 8 service pages, named as in the header dropdown for consistency
+  ("Blog & Resources" → "Blog" since the route is just /blog)
+Verified: tsc 0; biome unchanged (4 pre-existing). Live DOM: 14 links, 0 containing "#".
+curl'd every href — 13 x 200 plus / = 307 (the intended redirect to /home in
+src/app/page.tsx). No 404s.
+Note: columns are now 6 vs 8 (services outnumber company links), so the right column runs ~2
+links taller; both are still continuous lists with no holes. Social chips + Privacy Policy
+still href="#" — those are external/legal placeholders, not internal pages, so left alone.
+Not committed.
+
+## 2026-07-22 — SpotlightGrid: reapply ONLY the two defect fixes (smoothness + adjacent-tile holes)
+Re-applied the two genuine fixes from the reverted chain-reaction task, WITHOUT any of its pacing changes — the split offered at the end of that revert.
+1. SMOOTHNESS — getIntensity sweep branch: `1 - behind/sweepTrail` had the cell at FULL brightness the instant the head arrived (no attack, only a linear release), which is why it read as popping on then vanishing. Now a sin² envelope, `Math.sin(Math.PI * (1 - behind/sweepTrail)) ** 2`, so a cell eases in and out.
+2. ADJACENT-TILE OPACITY — the cell tile was `intensity > 0 ? "transparent" : "#121212"`, so ANY non-zero intensity (a plus arm at 0.35, or the last sliver of the trail) stripped the tile and the cell next to a glowing box rendered as a hole. Now always `#121212`; the glow layer sits above it so nothing is lost.
+Deliberately NOT changed, unlike the reverted task: speed stays 0.15, `scatter` stays on, sweepTrail stays 6 — on BOTH call sites. Verified by grep after the edit, since those were the parts the user reverted.
+Scope: 1 file (SpotlightGrid). Fix 1 is inside the `sweep` branch → only CtaSection + BlogHeroSection see it. Fix 2 is shared with the 7 mask-mode CtaSections, where it removes the same hole artefact and is otherwise near-invisible (glow over #121212 vs over the black card).
+Verified: greped both fixes present and no stale conditional tile remains; confirmed both call sites still read speed 0.15 / sweep / scatter / plus / sweepTrail 6; git status confirms CtaSection is untouched vs HEAD. tsc ✓; lint diagnostics LF-normalised vs `git show HEAD:` 1 before / 1 after; next build ✓. Not committed.
+
+## 2026-07-20 — Footer links split equally 7/7
+14 links were 6 (company) / 8 (services). "Divide equally" = 7/7, which means the
+company/services boundary can't coincide with the column break, so the list now runs as one
+continuous sequence down col 1 and into col 2:
+  col 1 (7): Home, About, Work, Blog, Careers, Contact, Digital Marketing & Growth
+  col 2 (7): AI & Marketing Automation, Web Development, App Development, Custom Software &
+             SaaS, Brand Strategy & Identity, UI/UX Design, Video Production
+Verified live: both columns render exactly 7 links (equalCounts true), tops aligned, all 14
+links intact. tsc 0; biome unchanged (4 pre-existing).
+HONESTY / pane limit: the pane reported viewport 0 on every tab this session, so column widths
+computed 0 and long labels wrapped to 3-4 lines — the "equal 571px heights" it reported is an
+artifact of that degenerate width, NOT evidence about desktop. Counts (7/7) are structural and
+viewport-independent, so that part is solid. At a real 1280 desktop the links block is
+col-span-7 of 12 minus gap-x-20 ≈ 296px per column vs ~215px for the longest label
+("Brand Strategy & Identity"), so nothing should wrap and both columns should be 7 single
+lines = equal height — that is a CALCULATION, not a measurement. Worth the user's eyes,
+especially at mid widths where col 2 (all long service names) would wrap before col 1 does.
+Not committed.

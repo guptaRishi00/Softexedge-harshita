@@ -13,30 +13,27 @@ import Particles from "@/components/ui/Particles";
 // redirect to /home and a fragment is not guaranteed to survive the hop.
 // Four columns of four. Every href resolves to a real route or to a section
 // anchor on the page that owns it.
+// Every entry is a real route under src/app — no in-page section anchors.
+// 14 links split 7/7 so both columns are exactly equal: the list runs down
+// column one (site pages, then services) and continues into column two.
 const footerLinkGroups = [
   [
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
-    { name: "Culture", href: "/about#culture" },
-    { name: "Meet The Team", href: "/about#team" },
-  ],
-  [
     { name: "Work", href: "/work" },
-    { name: "Blog & Resources", href: "/blog" },
-    { name: "Testimonials", href: "/home#testimonials" },
+    { name: "Blog", href: "/blog" },
     { name: "Careers", href: "/career" },
-  ],
-  [
-    { name: "Web Development", href: "/web-development" },
-    { name: "Brand Strategy", href: "/brand-strategy" },
-    { name: "UI/UX Design", href: "/ui-ux-design" },
-    { name: "App Development", href: "/app-development" },
-  ],
-  [
-    { name: "Services", href: "/home#services" },
-    { name: "Processes", href: "/brand-strategy#process" },
-    { name: "FAQs", href: "/brand-strategy#faq" },
     { name: "Contact", href: "/contact" },
+    { name: "Digital Marketing & Growth", href: "/digital-marketing" },
+  ],
+  [
+    { name: "AI & Marketing Automation", href: "/ai-marketing-automation" },
+    { name: "Web Development", href: "/web-development" },
+    { name: "App Development", href: "/app-development" },
+    { name: "Custom Software & SaaS", href: "/custom-software" },
+    { name: "Brand Strategy & Identity", href: "/brand-strategy" },
+    { name: "UI/UX Design", href: "/ui-ux-design" },
+    { name: "Video Production", href: "/video-production" },
   ],
 ];
 
@@ -98,9 +95,9 @@ export default function Footer() {
             their own content and sit at the top, instead of the grid's default
             stretch making them equal height. */}
         <div className="grid grid-cols-1 items-start gap-12 pb-16 lg:grid-cols-12 md:pb-20">
-          <div className="grid grid-cols-2 gap-x-10 gap-y-14 lg:col-span-7 lg:grid-cols-4 lg:gap-x-12">
+          <div className="grid grid-cols-2 gap-x-10 lg:col-span-7 lg:gap-x-20">
             {footerLinkGroups.map((group) => (
-              <div key={group[0].name} className="flex flex-col gap-8">
+              <div key={group[0].name} className="flex flex-col gap-4">
                 {group.map((link) => (
                   <Link
                     key={link.name}
@@ -269,7 +266,7 @@ export default function Footer() {
             <div className="flex flex-wrap items-center gap-6">
               <p className="tracking-wide">All Rights Reserved</p>
               <a href="#" className="transition-colors hover:text-white">
-                Privacy Policy (we know, thrilling stuff)
+                Privacy Policy ( peek responsibly )
               </a>
             </div>
           </div>

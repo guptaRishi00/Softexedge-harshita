@@ -115,7 +115,13 @@ export default function BlogHeroSection() {
 
         {/* Left→right fade so the text sits cleanly over the pattern — same
             gradient CtaSection uses. */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black/80 via-black/60 to-transparent" />
+        {/* Left fade for the heading — full strength: the largest type sits
+            on it and needs the contrast. */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent" />
+
+        {/* Bottom fade for the headline/filter row — held at 50% so the
+            sweeping grid still reads through on the right of the card. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50" />
 
         {/* Content */}
         <div className="relative z-10">

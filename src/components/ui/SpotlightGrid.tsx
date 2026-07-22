@@ -223,7 +223,11 @@ export default function SpotlightGrid({
 
         const behind = sweepHead - step;
         if (behind < 0 || behind > sweepTrail) return 0;
-        return 1 - behind / sweepTrail;
+        // sin² envelope, not a linear ramp. `1 - behind/trail` put the cell at
+        // FULL brightness the instant the head arrived — an instant pop, with
+        // only the fade-out gradual. This eases in AND out, so a cell swells
+        // and subsides as the light passes it.
+        return Math.sin(Math.PI * (1 - behind / sweepTrail)) ** 2;
       };
 
       const r = Math.floor(index / COLUMNS);
@@ -295,9 +299,12 @@ export default function SpotlightGrid({
               <div
                 key={index}
                 className="relative aspect-square w-full overflow-hidden rounded-2xl p-[2px] transition-all duration-300 ease-out"
-                style={{
-                  backgroundColor: intensity > 0 ? "transparent" : "#121212",
-                }}
+                // Always #121212. Switching to "transparent" the moment
+                // intensity exceeded 0 meant a barely-lit cell — a plus arm, or
+                // the tail end of the trail — lost its tile entirely and read
+                // as a hole next to the glowing box. The glow layer sits above
+                // this, so keeping the tile costs nothing.
+                style={{ backgroundColor: "#121212" }}
               >
                 {/* The colored glow that follows the spotlight */}
                 <div
@@ -306,7 +313,7 @@ export default function SpotlightGrid({
                       ? "absolute inset-0"
                       : // Brand blue fading to a slightly darker tone of itself
                         // (not the cyan) so the lit cells stay monochrome-blue.
-                        "absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#274DD9]"
+                        "absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#1473cb]"
                   }
                   style={{
                     opacity: intensity * 0.8,
