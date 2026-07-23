@@ -11,23 +11,11 @@ import Particles from "@/components/ui/Particles";
 // Anything without a page of its own points at that section's anchor on the
 // page that owns it. Home anchors use /home rather than /#… because / is a
 // redirect to /home and a fragment is not guaranteed to survive the hop.
-// Four columns of four. Every href resolves to a real route or to a section
-// anchor on the page that owns it.
-// Every entry is a real route under src/app — no in-page section anchors.
-// 14 links split 7/7 so both columns are exactly equal: the list runs down
-// column one (site pages, then services) and continues into column two.
+// Every href resolves to a real route or to a section anchor on the page
+// that owns it. Order is Services → Explore → Pages (Services first, as the
+// primary offering; Pages last). Rendered flex at lg so each column sizes to
+// its own content (see the flex comment at the render site below).
 const footerLinkGroups = [
-  {
-    title: "Pages",
-    links: [
-      { name: "Home", href: "/" },
-      { name: "About", href: "/about" },
-      { name: "Work", href: "/work" },
-      { name: "Blog", href: "/blog" },
-      { name: "Careers", href: "/career" },
-      { name: "Contact", href: "/contact" },
-    ],
-  },
   {
     // All eight service routes, in the same order as the homepage
     // ServiceSection and the header dropdown.
@@ -55,6 +43,17 @@ const footerLinkGroups = [
       { name: "Meet The Team", href: "/about#team" },
       { name: "Our Process", href: "/brand-strategy#process" },
       { name: "FAQs", href: "/brand-strategy#faq" },
+    ],
+  },
+  {
+    title: "Pages",
+    links: [
+      { name: "Home", href: "/" },
+      { name: "About", href: "/about" },
+      { name: "Work", href: "/work" },
+      { name: "Blog", href: "/blog" },
+      { name: "Careers", href: "/career" },
+      { name: "Contact", href: "/contact" },
     ],
   },
 ];

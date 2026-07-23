@@ -13,23 +13,17 @@ export default function ProjectGallery({ project }: { project: Project }) {
       <div className="mx-auto max-w-[1400px]">
         {/* Bento Grid Container */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          {project.gallery.slice(0, 4).map((image, index) => {
-            // Bento Grid for exactly 4 items:
-            // 0: span 2 cols (wide)
-            // 1: span 1 col (square/portrait)
-            // 2: span 1 col (square/portrait)
-            // 3: span 2 cols (wide)
-
-            let gridClass = "";
-            if (index === 0 || index === 3) {
-              gridClass = "md:col-span-2";
-            } else {
-              gridClass = "md:col-span-1";
-            }
+          {project.gallery.map((image, index) => {
+            // Bento rhythm that tiles for any image count, repeating every 4:
+            // wide (2 cols) → narrow → narrow → wide. This keeps the varied
+            // wide/narrow layout for 4, 6, or more images without stragglers
+            // landing awkwardly. Each full 4-cycle fills 6 grid tracks (2 rows).
+            const isWide = index % 4 === 0 || index % 4 === 3;
+            const gridClass = isWide ? "md:col-span-2" : "md:col-span-1";
 
             return (
               <motion.div
-                key={index}
+                key={image}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
@@ -38,7 +32,7 @@ export default function ProjectGallery({ project }: { project: Project }) {
               >
                 <img
                   src={image}
-                  alt={`${project.title} gallery image ${index + 1}`}
+                  alt={`${project.title} — view ${index + 1}`}
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                 />
               </motion.div>

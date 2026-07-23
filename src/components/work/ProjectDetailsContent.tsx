@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import type { ReactNode } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import type { Project } from "@/data/projects";
 
@@ -11,9 +12,25 @@ export default function ProjectDetailsContent({
 }: {
   project: Project;
 }) {
+  // Illustrative headline metrics — placeholders flagged inline so they can be
+  // swapped for verified figures per project.
+  const results = [
+    { value: "140%", label: "Engagement lift" },
+    { value: "2.4×", label: "Faster delivery" },
+    { value: "98", label: "Performance score" },
+  ];
+
+  // Per-project deliverables derived from the stack + category so each project
+  // lists something specific rather than identical copy across all eight.
+  const deliverables = [
+    `${project.category} strategy & art direction`,
+    ...project.tech.map((t) => `${t} engineering & integration`),
+    "Design system, motion language, and QA handoff",
+  ];
+
   return (
     <section className="bg-[#0a0a0a] px-6 py-24 md:px-12 md:py-32">
-      <div className="mx-auto">
+      <div className="mx-auto max-w-[1400px]">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-24">
           {/* Sticky Sidebar */}
           <div className="lg:col-span-4">
@@ -112,34 +129,19 @@ export default function ProjectDetailsContent({
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* Main Content — capped to a readable measure so long lines don't
+              stretch edge-to-edge at xl widths. */}
           <div className="lg:col-span-8">
-            <div className="flex flex-col gap-24">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, ease: premiumEase }}
-              >
-                <h2 className="mb-8 text-3xl font-bold tracking-tight text-white md:text-4xl leading-[1.2em]">
-                  Overview
-                </h2>
+            <div className="flex max-w-3xl flex-col gap-24">
+              <Section heading="Overview">
                 <p className="text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
                   {project.description} This project challenged us to rethink
                   standard conventions and deliver an experience that not only
                   meets user needs but sets a new benchmark in the industry.
                 </p>
-              </motion.div>
+              </Section>
 
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, ease: premiumEase }}
-              >
-                <h2 className="mb-8 text-3xl font-bold tracking-tight text-white md:text-4xl leading-[1.2em]">
-                  The Challenge
-                </h2>
+              <Section heading="The Challenge">
                 <p className="text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
                   The primary hurdle was unifying a disjointed digital presence
                   into a cohesive, lightning-fast platform. Stakeholders
@@ -147,17 +149,9 @@ export default function ProjectDetailsContent({
                   maintaining a highly curated, premium aesthetic that resonated
                   with their core demographic.
                 </p>
-              </motion.div>
+              </Section>
 
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, ease: premiumEase }}
-              >
-                <h2 className="mb-8 text-3xl font-bold tracking-tight text-white md:text-4xl leading-[1.2em]">
-                  Our Approach
-                </h2>
+              <Section heading="Our Approach">
                 <p className="text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
                   We employed a modern tech stack focused on performance and
                   fluid interactivity. By leveraging advanced animation
@@ -165,11 +159,69 @@ export default function ProjectDetailsContent({
                   achieved a seamless user journey that feels both instantaneous
                   and deeply engaging.
                 </p>
-              </motion.div>
+              </Section>
+
+              <Section heading="Key Results">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                  {results.map((stat) => (
+                    <div
+                      key={stat.label}
+                      className="rounded-2xl border border-white/5 bg-[#100F0F] p-6"
+                    >
+                      <p className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-4xl font-bold text-transparent md:text-5xl">
+                        {stat.value}
+                      </p>
+                      <p className="mt-3 text-sm font-medium uppercase tracking-wider text-white/50">
+                        {stat.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-4 text-xs font-light text-white/30">
+                  Illustrative metrics — replace with verified figures.
+                </p>
+              </Section>
+
+              <Section heading="What We Delivered">
+                <ul className="flex flex-col gap-4">
+                  {deliverables.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]" />
+                      <span className="text-lg font-light leading-[1.25em] text-white/70">
+                        {item}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Section>
             </div>
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+// Animated body section wrapper — one definition of the motion config so the
+// five body sections stay consistent without repeating the motion props.
+function Section({
+  heading,
+  children,
+}: {
+  heading: string;
+  children: ReactNode;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8, ease: premiumEase }}
+    >
+      <h2 className="mb-8 text-3xl font-bold tracking-tight text-white leading-[1.2em] md:text-4xl">
+        {heading}
+      </h2>
+      {children}
+    </motion.div>
   );
 }

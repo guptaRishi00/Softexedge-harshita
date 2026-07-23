@@ -4,7 +4,7 @@ import { motion, useScroll, useSpring } from "framer-motion";
 import { ArrowLeft, Calendar, Check, Clock, Link2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { type MouseEvent, useEffect, useRef, useState } from "react";
 import { FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
 import { MdArrowOutward } from "react-icons/md";
 import type { BlogPost, ContentBlock } from "@/data/blog";
@@ -24,6 +24,16 @@ const fadeUp = {
   }),
 } as const;
 
+// URL-safe id for a heading. Matches the id we stamp onto the rendered <h2>
+// so TOC links and anchors stay in sync from one source (the heading text).
+const slugify = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
 export default function BlogArticle({
   post,
   related,
@@ -37,6 +47,14 @@ export default function BlogArticle({
     damping: 30,
     mass: 0.4,
   });
+
+  // Table of contents: derive from the article's heading blocks.
+  const toc = post.content
+    .filter(
+      (block): block is { type: "heading"; text: string } =>
+        block.type === "heading",
+    )
+    .map((block) => ({ id: slugify(block.text), text: block.text }));
 
   return (
     <main className="relative w-full bg-white font-sans selection:bg-[#2E5BFF]/20">
@@ -89,7 +107,7 @@ export default function BlogArticle({
             animate="visible"
             custom={2}
             variants={fadeUp}
-            className="mt-6 text-4xl font-bold leading-[1.08] tracking-tight text-zinc-900 md:text-5xl lg:text-6xl"
+            className="mt-6 max-w-5xl text-4xl font-bold leading-[1.08] tracking-tight text-zinc-900 md:text-5xl lg:text-6xl"
           >
             {post.title}
           </motion.h1>
@@ -99,7 +117,7 @@ export default function BlogArticle({
             animate="visible"
             custom={3}
             variants={fadeUp}
-            className="mt-6 text-lg font-medium leading-[1.25em] text-zinc-500 md:text-xl"
+            className="mt-6 text-lg font-medium leading-[1.25em] text-zinc-500 md:text-xl max-w-5xl"
           >
             {post.lead}
           </motion.p>
@@ -166,9 +184,11 @@ export default function BlogArticle({
       {/* ---------- BODY ---------- */}
       <section className="w-full bg-white px-6 py-16 md:px-10 md:py-24">
         <div className="grid w-full  grid-cols-1 gap-12 lg:grid-cols-[200px_minmax(0,1fr)]">
-          {/* Sticky share rail */}
+          {/* Sticky left rail: table of contents (above) + share (below) */}
           <aside className="hidden lg:block">
-            <div className="sticky top-32 flex flex-col gap-4">
+            <div className="sticky top-32 flex flex-col gap-6">
+              <TableOfContents headings={toc} />
+              <div className="h-px w-full bg-zinc-200" />
               <ShareRail title={post.title} />
             </div>
           </aside>
@@ -220,49 +240,56 @@ export default function BlogArticle({
 
       {/* ---------- RELATED ---------- */}
       {related.length > 0 && (
-        <section className="w-full bg-[#FAFAFA] px-6 py-16 md:px-10 md:py-20">
+        <section className="w-full overflow-hidden bg-white pb-16 md:py-32 ">
           <div className="w-full ">
-            <div className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-              <h2 className="text-3xl font-bold tracking-tight text-zinc-900 md:text-4xl">
-                Continue reading
-              </h2>
+            <div className="mb-12 flex w-full flex-col items-start justify-between gap-8 px-4 md:mb-20 md:flex-row md:items-center md:px-10">
+              <div className="flex flex-col items-start">
+                <p className="mb-3 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
+                  Related articles
+                </p>
+                <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-6xl lg:leading-[1.05]">
+                  Continue reading
+                </h2>
+              </div>
 
               {/* Same CTA button as the BlogSection / ExperimentalTestimonials */}
-              <Link
-                href="/blog"
-                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
-              >
-                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
-                  View all
-                </span>
+              <div className="flex w-full items-center justify-end md:w-auto">
+                <Link
+                  href="/blog"
+                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
+                >
+                  <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
+                    Explore all articles
+                  </span>
 
-                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
-                  <svg width="0" height="0" className="absolute">
-                    <title>View all arrow gradient</title>
-                    <defs>
-                      <linearGradient
-                        id="related-cta-grad"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="0%"
-                      >
-                        <stop stopColor="#2E5BFF" offset="0%" />
-                        <stop stopColor="#149CCB" offset="100%" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
+                  <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
+                    <svg width="0" height="0" className="absolute">
+                      <title>Explore arrow gradient</title>
+                      <defs>
+                        <linearGradient
+                          id="related-cta-grad"
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="0%"
+                        >
+                          <stop stopColor="#2E5BFF" offset="0%" />
+                          <stop stopColor="#149CCB" offset="100%" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
 
-                  <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
-                  <MdArrowOutward
-                    className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
-                    style={{ fill: "url(#related-cta-grad)" }}
-                  />
-                </div>
-              </Link>
+                    <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                    <MdArrowOutward
+                      className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                      style={{ fill: "url(#related-cta-grad)" }}
+                    />
+                  </div>
+                </Link>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+            <div className="mx-auto grid w-full grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3 px-3">
               {related.map((rp, i) => (
                 <RelatedCard key={rp.slug} post={rp} index={i} />
               ))}
@@ -279,7 +306,10 @@ function Block({ block }: { block: ContentBlock }) {
   switch (block.type) {
     case "heading":
       return (
-        <h2 className="mt-14 mb-5 text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl">
+        <h2
+          id={slugify(block.text)}
+          className="mt-14 mb-5 scroll-mt-28 text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl"
+        >
           {block.text}
         </h2>
       );
@@ -379,14 +409,14 @@ function ShareRail({ title }: { title: string }) {
   };
 
   const btn =
-    "flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 transition-all duration-300 hover:border-transparent hover:bg-zinc-900 hover:text-white";
+    "flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 transition-all duration-300 hover:border-transparent hover:bg-zinc-900 hover:text-white";
 
   return (
     <>
       <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">
         Share
       </span>
-      <div className="flex gap-3 lg:flex-col">
+      <div className="flex gap-2.5">
         <button
           type="button"
           aria-label="Share on X"
@@ -399,7 +429,7 @@ function ShareRail({ title }: { title: string }) {
           }
           className={btn}
         >
-          <FaXTwitter className="h-4 w-4" />
+          <FaXTwitter className="h-3.5 w-3.5" />
         </button>
         <button
           type="button"
@@ -413,7 +443,7 @@ function ShareRail({ title }: { title: string }) {
           }
           className={btn}
         >
-          <FaLinkedinIn className="h-4 w-4" />
+          <FaLinkedinIn className="h-3.5 w-3.5" />
         </button>
         <button
           type="button"
@@ -422,13 +452,99 @@ function ShareRail({ title }: { title: string }) {
           className={btn}
         >
           {copied ? (
-            <Check className="h-4 w-4 text-green-500" />
+            <Check className="h-3.5 w-3.5 text-green-500" />
           ) : (
-            <Link2 className="h-4 w-4" />
+            <Link2 className="h-3.5 w-3.5" />
           )}
         </button>
       </div>
     </>
+  );
+}
+
+// ---------- Table of contents ----------
+function TableOfContents({
+  headings,
+}: {
+  headings: { id: string; text: string }[];
+}) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    // No headings — nothing to observe. Keeps the effect a no-op on SSR/prerender.
+    if (headings.length === 0) return;
+
+    const targets = headings
+      .map((h) => document.getElementById(h.id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (targets.length === 0) return;
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        // Pick the topmost intersecting heading as the active section.
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) {
+          setActiveId(visible[0].target.id);
+        }
+      },
+      // Trigger near the top: a heading counts as "active" once its top
+      // crosses ~25% of the viewport, leaving room for the fixed header.
+      { rootMargin: "-25% 0px -65% 0px", threshold: 0 },
+    );
+
+    for (const el of targets) {
+      observerRef.current.observe(el);
+    }
+
+    return () => observerRef.current?.disconnect();
+  }, [headings]);
+
+  if (headings.length === 0) return null;
+
+  const handleClick = (e: MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      // Keep the URL hash in sync without an instant jump, then smooth-scroll.
+      history.replaceState(null, "", `#${id}`);
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  return (
+    <nav
+      aria-label="Table of contents"
+      className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-[#FAFAFA] p-5"
+    >
+      <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">
+        On this page
+      </span>
+      <ul className="flex flex-col gap-2.5">
+        {headings.map((h) => {
+          const isActive = h.id === activeId;
+          return (
+            <li key={h.id}>
+              <a
+                href={`#${h.id}`}
+                onClick={(e) => handleClick(e, h.id)}
+                className={
+                  "block border-l-2 py-0.5 pl-3 text-sm leading-snug transition-colors duration-200 " +
+                  (isActive
+                    ? "border-[#2E5BFF] font-semibold text-zinc-900"
+                    : "border-zinc-200 font-medium text-zinc-500 hover:border-zinc-400 hover:text-zinc-800")
+                }
+              >
+                {h.text}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }
 

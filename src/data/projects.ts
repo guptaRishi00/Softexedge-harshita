@@ -45,6 +45,8 @@ export const projects: Project[] = [
       "/assets/cake.png",
       "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
       "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
+      "/assets/laptop-screen-with-minimalist-ecommerce-dashboard.jpg",
+      "/assets/microsoft-copilot-pqMPnPo4_ZA-unsplash.jpg",
     ],
   },
   {
@@ -65,6 +67,8 @@ export const projects: Project[] = [
       "/assets/project-dashboard-displaying-key-metrics-like-progress-budget-deadlines.jpg",
       "/assets/fotis-fotopoulos-SyvsTmuuZyM-unsplash.jpg",
       "/assets/branding.webp",
+      "/assets/microsoft-copilot-qUJ8fgoaLTg-unsplash.jpg",
+      "/assets/laptop-screen-with-minimalist-ecommerce-dashboard.jpg",
     ],
   },
   {
@@ -88,6 +92,8 @@ export const projects: Project[] = [
       "/assets/project-dashboard-displaying-key-metrics-like-progress-budget-deadlines.jpg",
       "/assets/microsoft-copilot-pqMPnPo4_ZA-unsplash.jpg",
       "/assets/branding2.png",
+      "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+      "/assets/microsoft-copilot-qUJ8fgoaLTg-unsplash.jpg",
     ],
   },
   {
@@ -109,6 +115,8 @@ export const projects: Project[] = [
       "/assets/branding.webp",
       "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
       "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+      "/assets/brand.jpg",
+      "/assets/creative.jpg",
     ],
   },
   {
@@ -130,6 +138,8 @@ export const projects: Project[] = [
       "/assets/fotis-fotopoulos-SyvsTmuuZyM-unsplash.jpg",
       "/assets/project-dashboard-displaying-key-metrics-like-progress-budget-deadlines.jpg",
       "/assets/cake.png",
+      "/assets/digital_creative_top.webp",
+      "/assets/microsoft-copilot-pqMPnPo4_ZA-unsplash.jpg",
     ],
   },
   {
@@ -149,6 +159,8 @@ export const projects: Project[] = [
       "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
       "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
       "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
+      "/assets/competative.jpg",
+      "/assets/laptop-screen-with-minimalist-ecommerce-dashboard.jpg",
     ],
   },
   {
@@ -170,6 +182,8 @@ export const projects: Project[] = [
       "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
       "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
       "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
+      "/assets/laptop-screen-with-minimalist-ecommerce-dashboard.jpg",
+      "/assets/creative.jpg",
     ],
   },
   {
@@ -190,6 +204,8 @@ export const projects: Project[] = [
       "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
       "/assets/branding.webp",
       "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
+      "/assets/microsoft-copilot-qUJ8fgoaLTg-unsplash.jpg",
+      "/assets/laptop-screen-with-minimalist-ecommerce-dashboard.jpg",
     ],
   },
   {
@@ -210,6 +226,8 @@ export const projects: Project[] = [
       "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
       "/assets/f1a35da30130d44c9a129deaf2b6b9f4.webp",
       "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+      "/assets/brand.jpg",
+      "/assets/creative.jpg",
     ],
   },
 ];

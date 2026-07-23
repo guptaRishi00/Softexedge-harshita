@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
-import Footer from "@/components/layout/Footer";
-import Header from "@/components/page/Header";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import ContactFaqSection from "@/components/contact/ContactFaqSection";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/page/Header";
 import NextProject from "@/components/work/NextProject";
 import ProjectDetailsContent from "@/components/work/ProjectDetailsContent";
 import ProjectGallery from "@/components/work/ProjectGallery";
 import ProjectHero from "@/components/work/ProjectHero";
+import ProjectOutcomes from "@/components/work/ProjectOutcomes";
 import { getProjectBySlug, projects } from "@/data/projects";
 
 export async function generateStaticParams() {
@@ -43,6 +44,7 @@ export default async function ProjectPage(props: {
       <ProjectHero project={project} />
       <ProjectDetailsContent project={project} />
       <ProjectGallery project={project} />
+      <ProjectOutcomes project={project} />
       <NextProject nextProject={nextProject} />
 
       <div className="bg-white pt-24">

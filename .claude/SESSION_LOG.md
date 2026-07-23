@@ -5313,3 +5313,183 @@ which also covers the new 2-col md band.
 Verified: tsc ✓, biome check clean, biome-format clean both files; served TWO different
 articles (/blog/google-io-2026 and /blog/rise-at-seven-expansion) — each renders exactly 4
 cards with lg:grid-cols-4 and the new sizes on all 4 images, 0 error markers. Not committed.
+
+## 2026-07-23 — Blog article: cap the title width at max-w-7xl
+Task: in the blog slug page, reduce the width of the title to `max-w-7xl`. 1 file,
+1 token. The title is the `<motion.h1>` in `components/blog/BlogArticle.tsx:87-95`
+(post.title). Its className previously had NO width cap, so on wide viewports the
+heading ran the full bleed of the hero container (`<div className="w-full ">` :56).
+Added `max-w-7xl` (80rem / 1280px) to the h1 ONLY — back-link, category pill, lead
+paragraph, and meta row are untouched. 7xl is intentionally wider than the body's
+max-w-6xl (1152px) containers, consistent with the hero-widest note from 2026-07-22.
+Verified: tsc on the source file clean (the one TS1128 is in the generated
+`.next/dev/types/validator.ts`, a stale Next dev artifact — not source, not mine);
+biome format clean (single file, no fixes). Not committed.
+
+## 2026-07-23 — Blog article: add a Table of Contents panel above the share rail
+Task: in the blog slug page, add a content panel on the left above the share. Clarified
+via AskUserQuestion → **Table of contents**. 1 file: `components/blog/BlogArticle.tsx`.
+The left column is the 200px sticky `<aside>` (`lg:grid-cols-[200px_minmax(0,1fr)]`) that
+held only `<ShareRail>`. Added a TOC above it with a divider between.
+- `slugify()` helper (top of file) — URL-safe id from heading text; single source so the
+  TOC links and the `<h2>` anchors can't drift apart.
+- Collected `toc` in the component from `post.content` filtered to `type === "heading"`
+  (type-predicate narrows ContentBlock → { type, text }). Data path is real: 19 heading
+  blocks exist across blog.ts, so the TOC is populated (not empty) for every post.
+- Anchored the `Block` heading case: `<h2 id={slugify(text)} className="... scroll-mt-28 ...">`
+  so smooth-scroll lands below the fixed header.
+- New `TableOfContents` component (`useEffect` + `useRef`): `IntersectionObserver`
+  (rootMargin `-25% 0px -65% 0px`) highlights the active heading; click →
+  `history.replaceState` (no jump) + `scrollIntoView({behavior:"smooth"})`. Active link gets
+  the brand-blue left border + zinc-900; inactive zinc-500 with hover. Renders nothing if
+  0 headings (no-op on SSR/prerender — guards before observe).
+- Wired into `<aside>`: `<TableOfContents>` → divider → `<ShareRail>`. Sticky stack
+  `gap-6`, both share the existing `top-32`.
+- Import: added `useEffect, useRef, type MouseEvent` to the React import (React namespace
+  is not imported under the new JSX transform, so `React.MouseEvent` would not resolve —
+  used the imported `MouseEvent<HTMLAnchorElement>` type instead).
+Verified: tsc on source CLEAN (the lone TS1128 is in generated `.next/dev/types/validator.ts`,
+unchanged from prior sessions); biome check + format CLEAN after applying 2 safe autofixes
+(import sort `type MouseEvent` first; wrapped the long filter-predicate line); confirmed
+19 heading blocks in blog.ts. Not committed.
+
+## 2026-07-23 — Blog article TOC: style the panel as a bordered box
+Task: make the content panel (the Table of Contents added earlier today) like a box with
+`rounded-2xl`. 1 file: `components/blog/BlogArticle.tsx`, 1 element.
+The TOC `<nav>` was a bare `flex flex-col gap-3` (no border/bg). A "box" needs a visible
+container, so matched the existing card idiom — the author-bio card at :195 uses
+`rounded-3xl border border-zinc-200 bg-[#FAFAFA]`. Applied the same tokens at 2xl radius:
+`rounded-2xl border border-zinc-200 bg-[#FAFAFA] p-5`. Kept the per-item `border-l-2` active
+accent inside (the active-state affordance still reads correctly within a panel). The nav
+className wrapped to multi-line as it grew past Biome's print width — that's the only reason
+git shows the whole element as added; the token delta is just the box classes.
+Verified: biome check + format CLEAN (no fixes); tsc on source CLEAN (only the pre-existing
+generated `.next/dev/types/validator.ts` TS1128 remains). Not committed.
+
+## 2026-07-23 — Blog article ShareRail: smaller buttons, flex-row layout
+Task: the share buttons are in flex-col, reduce their size and make them flex-row.
+1 file: `components/blog/BlogArticle.tsx`, ShareRail region only.
+- `btn`: `h-11 w-11` → `h-9 w-9` (44→36px); `rounded-xl` → `rounded-lg` (radius kept
+  proportional at the smaller size); rest of the token string (border/hover) unchanged.
+- Container: `flex gap-3 lg:flex-col` → `flex gap-2.5`. Dropped the `lg:flex-col` breakpoint
+  so the buttons are row at ALL breakpoints. The rail lives in the left `<aside>` which is
+  `hidden lg:block`, so the row shows only at lg+ regardless — removing the override just
+  stops it flipping back to a column there.
+- Icons: all four `h-4 w-4` → `h-3.5 w-3.5` (FaXTwitter, FaLinkedinIn, Check, Link2) so they
+  stay proportional in the smaller button. Targeted each by surrounding context — NOT
+  replace_all — because `h-4 w-4` is also used by Calendar/Clock in the unrelated meta row.
+Verified: biome check + format CLEAN; tsc on source CLEAN (only the pre-existing generated
+`.next/dev/types/validator.ts` TS1128 remains). Not committed.
+
+## 2026-07-23 — Blog article "Continue reading": match BlogSection's padding/heading/button
+Task (with screenshot): in the Related/Continue-reading section, make the section padding,
+heading, and CTA button match the homepage BlogSection. 1 file: `components/blog/BlogArticle.tsx`.
+Read `home/BlogSection.tsx` header layer (lines 207-295) as the reference. Three changes:
+- SECTION: `w-full bg-[#FAFAFA] px-6 py-16 md:px-10 md:py-20` →
+  `w-full overflow-hidden bg-[#FAFAFA] py-16 md:py-32`. Matched BlogSection's `py` scale
+  (16/32) + `overflow-hidden` (it clips the marquee there; harmless here, keeps parity).
+  Kept this section's own `#FAFAFA` bg (BlogSection is `bg-white`) — the bg is a per-section
+  choice, not part of the "padding/heading/button" ask. Dropped the section-level `px` since
+  BlogSection pushes horizontal padding onto the header row instead.
+- HEADING: `text-3xl md:text-4xl` → `text-4xl md:text-5xl lg:text-6xl lg:leading-[1.05]`,
+  wrapped in `<div className="flex flex-col items-start">`, and added the BlogSection eyebrow
+  `text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 mb-3` labelled "Related articles"
+  (BlogSection's says "Latest Insights" — the text is section-specific, the style is the match).
+- BUTTON: the Link markup was ALREADY byte-identical to BlogSection's CTA (confirmed in the
+  2026-07-22 log — only label "View all" + gradient id `related-cta-grad` differ, both
+  intentional/non-colliding). Added the one missing piece: BlogSection wraps the CTA in
+  `<div className="flex w-full items-center justify-end md:w-auto">` — added that wrapper so
+  alignment matches (button right-aligned on desktop, full-width row on mobile).
+Verified: tsc on source CLEAN; biome check + format CLEAN (format --write normalized the
+indentation of the re-nested Link children — I authored that block). Not committed.
+
+## 2026-07-23 — Blog article "Continue reading": match BlogSection's section padding exactly
+Task (with screenshot of the Related/Continue-reading section): analyze the homepage BlogSection's
+padding and apply the same padding to this section. 1 file: `components/blog/BlogArticle.tsx`, 1 token.
+Analyzed `home/BlogSection.tsx:208-211`:
+- BlogSection SECTION: `pb-16 md:pb-32` — BOTTOM-ONLY, no top pad (it sits flush below a neighbor).
+- BlogSection HEADER div: `px-4 md:px-10` carries the horizontal padding.
+The related section's header div ALREADY matched BlogSection token-for-token (set last task). The only
+delta was the section element: it was `py-16 md:py-32` (top+bottom). Changed to `pb-16 md:pb-32`
+(bottom-only) to match BlogSection exactly. Dropped the top padding — the preceding BODY section
+(`px-6 py-16 md:px-10 md:py-24`) provides its own bottom pad, so there's no gap; removing the top
+pad brings this section flush against the body, mirroring how BlogSection abuts its predecessor.
+Verified: biome check + format CLEAN; tsc on source CLEAN. Not committed.
+
+## 2026-07-23 — Footer: realign link groups to Services → Explore → Pages
+Task: in the footer, realign the links — keep the Services first, then Explore, then the pages.
+1 file: `components/layout/Footer.tsx`, data-only change (no JSX/markup touched).
+`footerLinkGroups` was ordered Pages → Services → Explore. Reordered the array to
+**Services → Explore → Pages** (Services first as the primary offering, Pages last). The
+`.map()` render at :130 iterates the array, so visual column order follows automatically — no
+markup/layout changes needed. Within each group the link order is unchanged.
+Also rewrote the stale comment above the array (was documenting the old "site pages, then
+services" 7/7 split that no longer applies) to state the new order + the lg flex sizing note.
+Verified: tsc on source CLEAN. biome check on the file surfaces 2 findings — both PRE-EXISTING
+and unrelated to this change: `noUnusedImports` for `Particles` (HEAD line 9) and
+`noUnusedVariables` for `catch (e)` in formatTime (HEAD line 106); my diff touches neither
+(confirmed vs HEAD). The repo's clean-checkout lint failure is documented in the map.
+Not committed.
+
+## 2026-07-23 — Blog article Related: use the BlogSection "Explore all articles" CTA label
+Task: in BlogArticle's related-blogs section, replace the View all button with the button used
+in the homepage BlogSection. 1 file: `components/blog/BlogArticle.tsx`, text-only change.
+Context: the related-section CTA's MARKUP (Link tokens, h-16 button, h-11 w-11 arrow chip, the
+two MdArrowOutward icons + diagonal-swap transitions, the wrapper div) was ALREADY byte-identical
+to BlogSection's CTA — confirmed in the 2022-07-22 log and re-verified against
+`home/BlogSection.tsx:262-293`. So "replace with the BlogSection button" reduced to adopting its
+visible identity:
+- label: "View all" → "Explore all articles"
+- <title>: "View all arrow gradient" → "Explore arrow gradient"
+Kept the gradient id `related-cta-grad` UNIQUE (did not copy BlogSection's `blog-cta-grad`) — the
+map warns that <linearGradient> ids share a global SVG namespace and collisions silently break the
+gradient; both define the same #2E5BFF→#149CCB stops, so only the id differs. The `style={{fill:
+"url(#related-cta-grad)""}}` reference was left matching its own unique id.
+Verified: biome check + format CLEAN; tsc on source CLEAN. Not committed.
+
+## 2026-07-23 — Blog article Related: reduce the related-card size
+Task: reduce the cards size in related cards in BlogArticle. 1 file:
+`components/blog/BlogArticle.tsx`, 1 element (the card grid container).
+The related grid was full-width (`grid grid-cols-1 ... lg:grid-cols-3` + `md:px-3`), so at lg
+the 3 columns each took ~1/3 of the full #FAFAFA section — making the square-aspect cards large.
+Reduced size by constraining the grid: `mx-auto grid w-full max-w-6xl ... lg:grid-cols-3`.
+`max-w-6xl` (1152px) is the site's standard widest container (per the 2022-07-22 hero-widest
+note), so the 3 columns now share 1152px instead of the full section width — each card/image is
+~33% narrower, uniformly. Kept the responsive ladder (1→2→3 cols) and added `mx-auto` to center.
+Removed the now-redundant `md:px-3` (section padding + the max-w container handle inset).
+Did NOT touch the card internals (RelatedCard) — `aspect-square`, hover-grow, and the slide-up
+content are unchanged; only the container width changed. The next/image `sizes` is slightly
+over-specified now (still fetches for ~363px columns but they're narrower at lg) — left as-is,
+not a correctness issue, just slightly over-fetching; can retune if flagged.
+Verified: biome check + format CLEAN; tsc on source CLEAN. Not committed.
+
+## 2026-07-23 — Work slug: more headings + more images + layout tweak + post-gallery content
+Task: increase content of every project (more headings, more images), tweak the layout, AND add
+content after the images. Planned in `.claude/plan-work-slug-content.md`. Scope confirmed via
+AskUserQuestion: uncap gallery + reuse existing /assets; structural sections with placeholder
+metrics. 5 files, two turns (prior turn did headings/images/layout; this turn added post-gallery).
+**PRIOR TURN (intact, re-verified):**
+- `data/projects.ts`: each of 8 galleries expanded 4→6 images, drawn from the existing /assets
+  pool (themed per category). All 8 now = 6 images (verified via node extraction).
+- `work/ProjectGallery.tsx`: removed `.slice(0,4)`; generalized bento col-span via
+  `index % 4 === 0 || === 3` → wide, else narrow — tiles for any count. key={image} (stable,
+  not array index). Inner container unchanged `max-w-[1400px]`.
+- `work/ProjectDetailsContent.tsx`: extracted `Section` helper (DRY 5× motion block); body
+  constrained `max-w-3xl` reading measure; inner div `max-w-[1400px]`. Added two sections —
+  "Key Results" (3 stat cards, illustrative metrics flagged "replace with verified figures")
+  and "What We Delivered" (bulleted, derived from project.tech + category so per-project).
+  Body now 5 sections: Overview → Challenge → Approach → Key Results → What We Delivered.
+**THIS TURN — post-gallery content:**
+- NEW `work/ProjectOutcomes.tsx`: testimonial (figure/blockquote, illustrative, flagged) +
+  "How the engagement ran" 3-phase timeline (Discovery / Design & Build / Launch & Optimise).
+  Uses project.category to read per-project. Same dark theme (#0a0a0a/#100F0F) + premiumEase.
+- `app/work/[slug]/page.tsx`: wired <ProjectOutcomes> between <ProjectGallery> and <NextProject>.
+  Render order now Hero → DetailsContent → Gallery → ProjectOutcomes → NextProject → CTA → Footer.
+**DONE GATE (inline — verifier subagent timed out at 600s, did not re-dispatch per grounded-loops):**
+verified render order (line 44-48), all galleries = 6 images, gallery key stable, 0 empty tech
+arrays (deliverables derivation safe), placeholders flagged in code + UI.
+**Verification:** tsc on source CLEAN. biome: ProjectOutcomes.tsx / projects.ts / page.tsx = 0
+findings; ProjectGallery.tsx = 1 (`noImgElement` <img>, pre-existing at HEAD line 39, out of
+scope); ProjectDetailsContent.tsx = 1 (`useValidAnchor` href="#", pre-existing at HEAD line 78,
+out of scope). Fixed the `noRedundantAlt` that WAS mine (alt "gallery image"→"— view N"). Not
+committed.
