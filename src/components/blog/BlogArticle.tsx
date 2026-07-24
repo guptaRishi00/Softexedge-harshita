@@ -173,7 +173,7 @@ export default function BlogArticle({
       </div>
 
       {/* ---------- BODY ---------- */}
-      <section className="w-full bg-white px-6 py-16 md:px-10 md:py-24">
+      <section className="w-full bg-white px-6 py-16 md:px-10 md:pt-24 md:pb-14">
         <div className="grid w-full  grid-cols-1 gap-12 lg:grid-cols-[380px_minmax(0,1fr)]">
           {/* Sticky left rail: table of contents (above) + share (below) */}
           <aside className="hidden lg:block">

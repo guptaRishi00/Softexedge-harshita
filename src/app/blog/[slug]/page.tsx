@@ -47,8 +47,7 @@ export default async function BlogArticlePage({
   return (
     <div className="bg-white">
       <BlogArticle post={post} related={related} />
-      {/* CtaSection→Footer gap matches the /blog index (pb-12 + pt-12 at md):
-          the old py-24/pt-24 pairing doubled up to ~192px. */}
+
       <div className="px-3 [&>section]:pt-12 [&>section]:pb-8 md:[&>section]:pt-16 md:[&>section]:pb-12">
         <CtaSection />
       </div>

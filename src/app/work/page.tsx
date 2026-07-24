@@ -15,8 +15,7 @@ export default function WorkPage() {
       <div className="[&>section]:pt-16 [&>section]:pb-6 md:[&>section]:pt-26 md:[&>section]:pb-10">
         <ExperimentalTestimonials />
       </div>
-      {/* Trim the carousel's md:pb-32 so the CTA sits closer to the
-          testimonials. Page-scoped — TechLogoCarousel is shared. */}
+
       <div className="md:[&>section]:pb-24">
         <TechLogoCarousel />
       </div>
