@@ -327,23 +327,53 @@ export default function TracingBorder({
                   ]}
             </motion.g>
 
-            {/* ═══ Layer 2: Corner-weighted static border, revealed entirely
-                 by the animated mask above — same layered-stroke glow ═══ */}
-            <g mask={`url(#corner-mask-${gradientId})`}>
-              <path
-                d={d}
-                stroke={color ?? `url(#border-color-${gradientId})`}
-                strokeWidth={5.5}
-                strokeOpacity={0.25}
-                strokeLinecap="round"
-              />
-              <path
-                d={d}
-                stroke={color ?? `url(#border-color-${gradientId})`}
-                strokeWidth={2.25}
-                strokeLinecap="round"
-              />
-            </g>
+            {/* ═══ Layer 2: the settled border. In edgeComets mode the comet
+                 traces the TOP and BOTTOM edges, so the settle lights exactly
+                 those two edges (fading in as the comets land) — two clean
+                 lines, not the TR/BL corner glows, which on a wide card read as
+                 four partial segments. Default mode keeps the corner-weighted
+                 reveal (same layered-stroke glow) for its single orbit. ═══ */}
+            {edgeComets ? (
+              <motion.g
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1.1, delay: HANDOFF, ease: "easeOut" }}
+              >
+                {edgePaths.map((edge) => (
+                  <g key={edge.id}>
+                    <path
+                      d={edge.d}
+                      stroke={color ?? `url(#border-color-${gradientId})`}
+                      strokeWidth={5.5}
+                      strokeOpacity={0.25}
+                      strokeLinecap="round"
+                    />
+                    <path
+                      d={edge.d}
+                      stroke={color ?? `url(#border-color-${gradientId})`}
+                      strokeWidth={2.25}
+                      strokeLinecap="round"
+                    />
+                  </g>
+                ))}
+              </motion.g>
+            ) : (
+              <g mask={`url(#corner-mask-${gradientId})`}>
+                <path
+                  d={d}
+                  stroke={color ?? `url(#border-color-${gradientId})`}
+                  strokeWidth={5.5}
+                  strokeOpacity={0.25}
+                  strokeLinecap="round"
+                />
+                <path
+                  d={d}
+                  stroke={color ?? `url(#border-color-${gradientId})`}
+                  strokeWidth={2.25}
+                  strokeLinecap="round"
+                />
+              </g>
+            )}
           </motion.svg>
         )}
       </AnimatePresence>

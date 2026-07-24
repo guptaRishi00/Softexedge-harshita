@@ -54,7 +54,7 @@ export default function ProjectHero({ project }: { project: Project }) {
       />
 
       {/* Content */}
-      <div className="relative z-10 w-full px-6 pb-24 md:px-10 md:pb-32">
+      <div className="relative z-10 w-full px-4 pb-24 md:px-10 md:pb-32">
         <div className="flex flex-col gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

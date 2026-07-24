@@ -31,16 +31,18 @@ export default function ProjectOutcomes({ project }: { project: Project }) {
   ];
 
   return (
-    <section className="bg-[#0a0a0a] px-6 py-24 md:px-12 md:py-32">
+    <section className="bg-[#0a0a0a] px-4 py-24 md:px-10 md:pb-32 md:pt-20">
       <div className="mx-auto max-w-[1400px]">
-        <div className="mx-auto max-w-3xl">
+        {/* Testimonial and engagement timeline sit side by side on desktop,
+            stacking on mobile. */}
+        <div className="flex flex-col gap-16 lg:flex-row lg:items-start lg:gap-24">
           {/* ---------- Testimonial ---------- */}
           <motion.figure
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: premiumEase }}
-            className="rounded-3xl border border-white/5 bg-[#100F0F] p-8 md:p-12"
+            className="lg:w-1/2 rounded-3xl border border-white/5 bg-[#100F0F] p-8 md:p-12"
           >
             <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-5xl font-bold leading-none text-transparent">
               &ldquo;
@@ -66,7 +68,7 @@ export default function ProjectOutcomes({ project }: { project: Project }) {
           </motion.figure>
 
           {/* ---------- Engagement timeline ---------- */}
-          <div className="mt-24">
+          <div className="lg:w-1/2">
             <motion.h2
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}

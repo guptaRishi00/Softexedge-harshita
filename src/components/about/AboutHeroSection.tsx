@@ -1,8 +1,10 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import React, { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import React from "react";
 import Header from "../page/Header";
+import Counter from "./Counter";
+import EdgeToEdgeCarousel from "./EdgeToEdgeCarousel";
 
 const cn = (...classes: (string | boolean | undefined | null)[]) => {
   return classes.filter(Boolean).join(" ");
@@ -30,77 +32,6 @@ const WORD_STAGGER = 0.18;
 const LINE_ONE = ["The", "minds", "behind"];
 // Split opens only after every word has appeared one by one
 const SPLIT_DELAY = 1.7;
-
-function Counter({ value, suffix }: { value: number; suffix: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!inView) return;
-
-    let frame = 0;
-    let startTime = 0;
-    const duration = 1600;
-
-    const tick = (now: number) => {
-      if (!startTime) startTime = now;
-      const progress = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - (1 - progress) ** 3;
-      setCount(Math.round(value * eased));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [inView, value]);
-
-  return (
-    <span ref={ref}>
-      {count}
-      <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent ml-1 pr-1">
-        {suffix}
-      </span>
-    </span>
-  );
-}
-
-function EdgeToEdgeCarousel({ images }: { images: string[] }) {
-  const SET_MIN = 12;
-  const repeats = Math.max(2, Math.ceil(SET_MIN / images.length));
-  const set = Array.from({ length: repeats }, () => images).flat();
-
-  return (
-    <div className="relative flex w-full overflow-hidden py-6">
-      <motion.div
-        className="flex w-max"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{
-          repeat: Infinity,
-          repeatType: "loop",
-          ease: "linear",
-          duration: 65,
-        }}
-      >
-        {[...set, ...set].map((src, idx) => (
-          <div
-            key={idx}
-            aria-hidden={idx >= set.length}
-            className="relative h-[100px] w-[150px] shrink-0 overflow-hidden rounded-lg mr-4 md:mr-3 md:h-[140px] md:w-[210px]"
-          >
-            <img
-              src={src}
-              alt=""
-              loading="lazy"
-              draggable={false}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out hover:scale-105"
-            />
-          </div>
-        ))}
-      </motion.div>
-    </div>
-  );
-}
 
 export default function AboutHeroSection() {
   return (

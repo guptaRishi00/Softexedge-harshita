@@ -20,7 +20,7 @@ export default function NextProject({ nextProject }: { nextProject: Project }) {
   return (
     <section
       ref={containerRef}
-      className="relative bg-[#0a0a0a] px-6 pt-12 pb-24 md:px-12 md:pt-16 md:pb-32"
+      className="relative bg-[#0a0a0a] px-4 pt-12 pb-24 md:px-10 md:pt-16 md:pb-32"
     >
       <Link href={nextProject.href} className="block w-full">
         <motion.div

@@ -208,89 +208,95 @@ export default function BlogSection() {
     <section className="w-full overflow-hidden bg-white text-black pb-16 md:pb-32">
       <div className="mx-auto w-full ">
         {/* HEADER LAYER */}
-        <div className="mb-12 flex w-full flex-col items-start justify-between gap-8 px-4 md:mb-20 md:flex-row md:items-center md:px-10">
-          <motion.div
-            initial={isDesktop ? { opacity: 0, x: -20 } : false}
-            whileInView={isDesktop ? { opacity: 1, x: 0 } : undefined}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            viewport={{ once: true, margin: "-50px" }}
-            className="flex flex-col items-start"
-          >
-            <p className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
-              Latest Insights
-            </p>
-            <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-6xl lg:leading-[1.05]">
-              Thoughts & {/* Rotating Gradient Text */}
-              {/* px/-mx fade band at each edge (no layout shift) — sliding
-                  words dissolve at the edges, same as ExperimentalTestimonials. */}
-              <span className="inline-grid overflow-hidden py-1 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
-                {isDesktop ? (
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={index}
-                      // Exactly the AboutSection rotating-word config: enter
-                      // from the left on the spring, exit right on a quick tween.
-                      initial={{ x: "-100%", opacity: 0 }}
-                      animate={{ x: "0%", opacity: 1 }}
-                      exit={{
-                        x: "100%",
-                        opacity: 0,
-                        transition: { duration: 1.5, ease: "easeInOut" },
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 22,
-                        damping: 20,
-                        mass: 1,
-                      }}
-                      className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent"
-                    >
-                      {rotatingWords[index]}
-                    </motion.span>
-                  </AnimatePresence>
-                ) : (
-                  <span className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent">
-                    {rotatingWords[0]}
-                  </span>
-                )}
-              </span>
-            </h2>
-          </motion.div>
+        <div className="mb-12 w-full px-4 md:mb-20 md:px-10">
+          {/* Tag hoisted ABOVE the row (matching ServiceSection) so the row's
+              md:items-center aligns the CTA with the TITLE alone, not the
+              combined tag + title block. */}
+          <p className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
+            Latest Insights
+          </p>
 
-          {/* CTA — same style as the ExperimentalTestimonials CTA */}
-          <div className="flex w-full items-center justify-end md:w-auto">
-            <Link
-              href="/blog"
-              className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
+          <div className="flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-center">
+            <motion.div
+              initial={isDesktop ? { opacity: 0, x: -20 } : false}
+              whileInView={isDesktop ? { opacity: 1, x: 0 } : undefined}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, margin: "-50px" }}
+              className="flex flex-col items-start"
             >
-              <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
-                Explore all articles
-              </span>
+              <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-6xl lg:leading-[1.05]">
+                Thoughts & {/* Rotating Gradient Text */}
+                {/* px/-mx fade band at each edge (no layout shift) — sliding
+                    words dissolve at the edges, same as ExperimentalTestimonials. */}
+                <span className="inline-grid overflow-hidden py-1 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
+                  {isDesktop ? (
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={index}
+                        // Exactly the AboutSection rotating-word config: enter
+                        // from the left on the spring, exit right on a quick tween.
+                        initial={{ x: "-100%", opacity: 0 }}
+                        animate={{ x: "0%", opacity: 1 }}
+                        exit={{
+                          x: "100%",
+                          opacity: 0,
+                          transition: { duration: 1.5, ease: "easeInOut" },
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 22,
+                          damping: 20,
+                          mass: 1,
+                        }}
+                        className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent"
+                      >
+                        {rotatingWords[index]}
+                      </motion.span>
+                    </AnimatePresence>
+                  ) : (
+                    <span className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent">
+                      {rotatingWords[0]}
+                    </span>
+                  )}
+                </span>
+              </h2>
+            </motion.div>
 
-              <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
-                <svg width="0" height="0" className="absolute">
-                  <title>Explore arrow gradient</title>
-                  <defs>
-                    <linearGradient
-                      id="blog-cta-grad"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="0%"
-                    >
-                      <stop stopColor="#2E5BFF" offset="0%" />
-                      <stop stopColor="#149CCB" offset="100%" />
-                    </linearGradient>
-                  </defs>
-                </svg>
+            {/* CTA — same style as the ExperimentalTestimonials CTA */}
+            <div className="flex w-full items-center justify-end md:w-auto">
+              <Link
+                href="/blog"
+                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
+              >
+                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
+                  Explore all articles
+                </span>
 
-                <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
-                <MdArrowOutward
-                  className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
-                  style={{ fill: "url(#blog-cta-grad)" }}
-                />
-              </div>
-            </Link>
+                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
+                  <svg width="0" height="0" className="absolute">
+                    <title>Explore arrow gradient</title>
+                    <defs>
+                      <linearGradient
+                        id="blog-cta-grad"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop stopColor="#2E5BFF" offset="0%" />
+                        <stop stopColor="#149CCB" offset="100%" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+
+                  <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                  <MdArrowOutward
+                    className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    style={{ fill: "url(#blog-cta-grad)" }}
+                  />
+                </div>
+              </Link>
+            </div>
           </div>
         </div>
 

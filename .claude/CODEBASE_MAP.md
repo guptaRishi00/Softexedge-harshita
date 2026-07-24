@@ -1,5 +1,5 @@
 # softexedge-may-2026 — Codebase Map
-_Last updated: 2026-07-22_
+_Last updated: 2026-07-24_
 
 ## Identity
 Marketing/agency website for **SoftexEdge**. Frontend-only, animation-heavy
@@ -88,7 +88,7 @@ nowhere), no `middleware.ts`, no `not-found.tsx`/`error.tsx`/`loading.tsx`, no
 | Surface | File:Line | Wired? |
 |---|---|---|
 | Contact form (name/email/phone/company/service/message) | `src/components/home/ContactSection.tsx:263` | **DEAD** — no `onSubmit`, no `action`, no state. Appears on `/home` and `/contact`. |
-| Newsletter subscribe | `src/components/layout/Footer.tsx:122` | **DEAD** — no handler. Appears on **all 16 routes**. |
+| Newsletter subscribe | `src/components/layout/Footer.tsx:155` | **DEAD** — no handler. Appears on **all 16 routes**. |
 | Blog category/author filter | `src/components/blog/BlogListSection.tsx:118` | Works — client-side `useState`, via window event (below) |
 | `mailto:hello@softexedge.com`, `tel:` | `src/components/home/ContactSection.tsx:20-21,28` | Real |
 | `mailto:careers@softexedge.com` | `src/components/career/OpenPositions.tsx:312` | Real — the only working apply path |
@@ -177,7 +177,7 @@ components, so a nav change means editing both Headers.
 - **`blog:filter` window event** — dispatched `blog/BlogHeroSection.tsx:80`, listened `blog/BlogListSection.tsx:34`. Untyped, stringly-keyed, no shared constant, no props relationship.
 - **`createPortal`** — `home/ServiceSection.tsx:263` mounts the cursor pill outside the pinned subtree to escape the GSAP transform.
 - **`TracingBorder` `gradientId`** — a *global SVG id namespace* shared by 10 call sites; collisions silently break the gradient.
-- **`SpotlightGrid`** (`ui/SpotlightGrid.tsx:30-61`) — 9 consumers. Props: `speed`, `glowColor`, `glowVia`, `maskRadius`, `travel`, and sweep mode: `sweep`, `sweepColStart/ColEnd/RowStart/RowEnd` (inclusive cell rectangle). In `sweep` mode the reveal mask is dropped and the glow steps one box at a time left→right/top→bottom; `maskRadius`/`travel` are ignored. Grid is 10 cols × 8 rows. Currently `brand-strategy/CtaSection` and `blog/BlogHeroSection` use sweep; the other 7 CtaSections use the mask.
+- **`SpotlightGrid`** (`ui/SpotlightGrid.tsx`) — 9 consumers. Props: `speed`, `glowColor`, `glowVia`, `maskRadius`, `travel`, and **sweep mode**: `sweep`, `sweepColStart/ColEnd/RowStart/RowEnd` (inclusive cell rectangle), plus three sweep-only modifiers added 2026-07-22 — `scatter` (visit region cells in a seeded-shuffle order instead of row-major, so the glow reads as random not a line; still a bijection = every cell lights once per cycle), `sweepTrail` (how many cells stay lit behind the head = density; default `SWEEP_TRAIL`=4), and `plus` (light each cell as a plus — centre at full strength, its 4 orthogonal neighbours at `PLUS_ARM`=0.35). In `sweep` mode the reveal mask is dropped and the glow steps one box at a time; `maskRadius`/`travel` are ignored. Grid is 10 cols × 8 rows. `brand-strategy/CtaSection` and `blog/BlogHeroSection` BOTH use `sweep scatter plus sweepTrail={6} speed={0.15}` (differing only in `sweepColStart` — 2 vs 1, a per-scrim region choice); the other 7 CtaSections use the mask. rAF-driven — motion is not observable in the frozen preview pane (verify sweep/scatter/plus logic by simulating it in node, as the 07-22 log entries did). **PERF (2026-07-24):** the sweep branch quantises its React state update — `setSweepHead` only fires when the head crosses into a new cell (~1×/sec), not every frame; a CSS `transition` sized to one cell-step (`1000/(speed*SWEEP_CELLS_PER_SEC)`) on the glow `opacity` + inner-cell `background-color` bridges the gap. Do NOT restore a per-frame `setSweepHead` — that re-rendered all 80 cells 60×/sec (~400 `centreAt` calls in plus mode) and was the "laggy" complaint. The `intensity>0 ? transparent` tile switch was also removed (any lit cell lost its tile → holes); tile is now always `#121212`.
 
 ### Content / correctness defects
 - **Placeholder email `hello@youragency.com` — 16 occurrences across all 8 `*/CtaSection.tsx`.** Reachable on every service page plus `/about`, `/blog`, `/blog/[slug]`, `/contact`, `/work`, `/work/[slug]`. The real address is `hello@softexedge.com`.

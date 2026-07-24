@@ -5493,3 +5493,170 @@ findings; ProjectGallery.tsx = 1 (`noImgElement` <img>, pre-existing at HEAD lin
 scope); ProjectDetailsContent.tsx = 1 (`useValidAnchor` href="#", pre-existing at HEAD line 78,
 out of scope). Fixed the `noRedundantAlt` that WAS mine (alt "gallery image"→"— view N"). Not
 committed.
+
+## 2026-07-24 — Blog article: shorten the cover image a little
+Task: reduce the cover image height a little on /blog/[slug]. `components/blog/BlogArticle.tsx:171`
+cover figure aspect `aspect-[16/10] md:aspect-[16/9]` → `aspect-[16/9] md:aspect-[2/1]` (widened
+ratio = shorter at the same full-bleed width). Computed drop: desktop@1440 797→708px (-11%),
+mobile@390 229→206px (-10%) — "a little". Only the big cover figure; the body content-image
+block :367 (aspect-[16/9]) and related cards :564 untouched. Class-only.
+Verified: tsc ✓; served /blog/google-io-2026 HTTP 200 with md:aspect-[2/1] present, old cover
+class gone, 0 error markers. 1 file. Not committed. aspect ratio is the dial if you want it
+shorter still (md:aspect-[21/9]≈2.33).
+
+## 2026-07-24 — home BlogSection: align the CTA with the title (ServiceSection pattern)
+Same "hoist the eyebrow out of the row" fix applied to 6 sections on 07-20, now for BlogSection's header. The row's `md:items-center` was centering the "Explore all articles" CTA against the COMBINED tag+title block (the motion.div wrapped both "Latest Insights" + the h2), so the button sat slightly above the title's vertical centre.
+Fix: hoisted the "Latest Insights" tag OUT to be a sibling above the row (plain <p>, matching ServiceSection's static eyebrow). Outer div reduced to spacing+padding (`mb-12 w-full px-4 md:mb-20 md:px-10`); new row div holds ONLY the title (motion.div, entrance animation preserved) + the CTA, with `flex ... md:flex-row md:items-center`. Button now aligns to the title alone.
+Behavioral note: the tag was previously animated (inside the title's motion.div, slid in from left); it is now a static <p>, exactly like the ServiceSection reference. Title and CTA animations unchanged.
+The title/CTA blocks re-indented +2 for the new nesting level — verified `biome format` reports 0 diffs on the file (LF-normalised), so the indentation is correct, not just plausible.
+Verified: greped the new structure; tsc ✓; biome diagnostics LF-normalised vs `git show HEAD:` 1/1 (the one pre-existing); biome format clean; next build ✓. 1 file. Not committed.
+Visual alignment needs the user's eyes on :3000 — frozen preview can't confirm layout here.
+
+## 2026-07-24 — Blog article Related section → home BlogSection marquee
+Task: make /blog/[slug] "Related articles" the same as the home BlogSection. Header + card
+already matched from a prior task; the remaining delta was static GRID vs BlogSection's
+draggable auto-scroll MARQUEE. Ported it into `components/blog/BlogArticle.tsx`:
+- Extracted the inline related block (was a lg:grid-cols-3 grid of RelatedCard) into a new
+  `RelatedArticles({ related })` component — hooks can't live in the old inline `{cond && (...)}`.
+- Deleted the `RelatedCard` motion.div (its whileInView entrance is wrong for a marquee where
+  cards constantly cross the viewport).
+- Copied BlogSection's marquee VERBATIM: module `SCROLL_SECONDS=22` + `wrap()`; per-instance
+  `x` useMotionValue, `trackRef`, `loopWidth` (ResizeObserver measuring first CardTrack width +
+  column-gap), `xWrapped` useTransform, `useAnimationFrame` auto-scroll, threshold-based
+  pointer drag (setPointerCapture past 6px, onClickCapture suppresses the trailing click).
+  Desktop renders two CardTrack copies for a seamless loop; mobile stacks vertically
+  (max-md:flex-col). Card markup is BlogSection's exact card (square→3/4 on hover, scrim,
+  meta+title slide up), keyed by post.slug, sizes="(max-width:768px) 55vw, 25vw".
+- Added imports useAnimationFrame/useMotionValue/useTransform + useIsDesktop.
+Note: page still requests getRelatedPosts(slug, 3) (the earlier "4 cards" change was reverted;
+tree was clean at onboard) → 3 cards, which the marquee duplicates fine. Count is a separate
+decision — left as-is; say the word to bump to 4.
+Verified: tsc ✓; biome-format clean; the ONE biome lint (useExhaustiveDependencies on the
+loopWidth effect) is byte-identical to home/BlogSection.tsx:97 — faithful copy, pre-existing
+pattern, not introduced defect. Served /blog/google-io-2026 HTTP 200: marquee track + w-max +
+cursor-grab + overflow-x-clip present, 3 cards, 0 grid remnants, 0 error markers. Drag/auto-
+scroll motion is rAF-driven → needs the user's eyes. 1 file. Not committed.
+
+## 2026-07-24 — Blog article: enlarge the "On this page" TOC box
+Task (with screenshot of the TOC box): make the content box bigger — wider + taller. The
+"content box" = the sticky left-rail TableOfContents nav (`components/blog/BlogArticle.tsx`),
+which was cramped at the 200px rail so titles wrapped to 3 lines.
+Width: body grid rail `lg:grid-cols-[200px_...]` → `[260px_...]` (+60px; article column is
+minmax(0,1fr) so it just absorbs it — negligible on a full-width article). Height/breathing:
+TOC nav `p-5`→`p-6` and heading↔list `gap-3`→`gap-4`; list item `gap-2.5`→`gap-3.5`; each link
+`py-0.5`→`py-1.5`. ShareRail (same rail) benefits from the extra width too; the box only
+appears at lg+ (aside is hidden lg:block). Class-only, 4 edits, 1 file.
+Verified: tsc ✓; biome-format clean; served /blog/google-io-2026 HTTP 200 — rail 260px present,
+TOC p-6 present, 0 old 200px/p-5 remnants, 0 error markers. Not committed. rail width / p-6 are
+the dials if they want it bigger still.
+
+## 2026-07-24 — Blog TOC box: match the work-slug left box size
+Task (with TOC screenshot): make the blog "On this page" box the same size as the work
+article's left sidebar box. MEASURED both live at 1440px viewport: work left box
+(ProjectDetailsContent :37, lg:col-span-4 of a max-w-[1400px] 12-col grid, p-8 md:p-10) =
+379px wide, 40px padding, rounded-2xl. Blog TOC was 260px / 24px (p-6).
+Matched in `components/blog/BlogArticle.tsx`: body-grid rail `lg:grid-cols-[260px_...]` →
+`[380px_...]`; TOC nav padding `p-6` → `p-8 md:p-10`. Left the internal gaps/border/radius
+(already rounded-2xl). Kept article max-w-[1000px] (absorbs the wider rail).
+Verified LIVE (static geometry, reliable in the pane): blog TOC now 380px wide + 40px padding
+at 1440 — widthMatch & padMatch true vs the work box (≤1px). tsc ✓; biome-format clean.
+CAVEATS surfaced to user: (1) the work box is a FLUID col-span-4 so it scales with viewport
+(≈379px@1440, ~403px@1496+); the blog rail is a FIXED 380px, so they match at ~desktop and
+drift slightly on very wide/narrow screens. (2) HEIGHT is content-driven — the work box is
+much taller because it holds project overview/deliverables/tech/CTA vs a 3-item TOC; matching
+height would need a min-height forcing empty space. Matched width+padding+radius (the box
+"size"); did not force height. 1 file. Not committed.
+
+## 2026-07-24 — Work article page: alternate info→images→info→images→next
+Task: below the (kept) hero, the /work/[slug] page should go info → images → info → images →
+next. It was Hero → DetailsContent(info) → Gallery(ALL images) → Outcomes(info) → Next — i.e.
+only one image block. Split the gallery to bracket the outcomes.
+`app/work/[slug]/page.tsx`: compute `gallery=project.gallery??[]`, `mid=ceil(len/2)`,
+galleryA=slice(0,mid) / galleryB=slice(mid); render `<ProjectGallery images={galleryA}/>`
+BEFORE `<ProjectOutcomes/>` and `<ProjectGallery images={galleryB}/>` AFTER it (Next last).
+`components/work/ProjectGallery.tsx`: added optional `images?: string[]` prop (defaults to
+project.gallery; returns null when empty). Replaced the index%4 bento with parity spans
+(wide=index%2===0 → col-span-2, else col-span-1) + a lonely-trailing-wide image → col-span-3
+(full width) so a 3-image block tiles cleanly (row [2,1] then a full-width feature) with no
+gap. key={image} → key=`${image}-${index}` (verifier P2 hardening; no noArrayIndexKey flag).
+All sections are bg-[#0a0a0a] so the seams are invisible; galleryB (pb-12 md:pb-16) flows into
+NextProject's pt-12 md:pt-16. Every project has 6 gallery images → 3+3.
+Specialists: spec-verifier (done gate) — PASS, no P0/P1; only the P2 key note (now fixed).
+Verified: tsc ✓, biome-format clean, next build ✓; served /work/aura-skincare HTTP 200 — 2
+gallery grids, split 3+3 (6 imgs), 2 full-width trailing images, byte-offset order
+galleryA(18695) < outcomes(21164) < galleryB(23129) < next(25394) = correct alternation, 0
+error markers. Empty-gallery projects safely render nothing for both blocks. rrhythm/visual
+needs the user's eyes. 2 files. Not committed.
+
+## 2026-07-24 — (correction to entry above) reverted the key hardening
+The `key=\`${image}-${index}\`` P2 hardening tripped biome noArrayIndexKey (template with index
+is flagged). Reverted to the original `key={image}` — lint-clean, and verified unique within
+every current gallery half, so no live dup-key bug. The P2 stays a documented latent note (only
+bites if a future project repeats a URL within one half). tsc ✓, no noArrayIndexKey.
+
+## 2026-07-24 — Work slug: ProjectOutcomes flex-row + uniform x-padding (= ExperimentalTestimonials)
+Two parts.
+(1) ProjectOutcomes (the testimonial + "How the engagement ran" timeline block, per screenshot):
+was a vertical stack inside `mx-auto max-w-3xl` (testimonial, then timeline at mt-24). Changed
+the wrapper to `flex flex-col gap-16 lg:flex-row lg:items-start lg:gap-24`; testimonial figure +
+`lg:w-1/2`, timeline div `mt-24`→`lg:w-1/2`. Now side-by-side on lg, stacked on mobile. Dropped
+max-w-3xl so the row uses the section's max-w-[1400px] (~half each). lg:gap-24 matches
+ProjectDetailsContent (the sibling 2-col block on this page).
+(2) x-padding of the whole work-slug page → ExperimentalTestimonials standard `px-4 md:px-10`
+(5 files): ProjectHero px-6→px-4 (md already px-10); ProjectDetailsContent/ProjectGallery/
+ProjectOutcomes/NextProject `px-6 md:px-12`→`px-4 md:px-10`. Shared sections on the page
+(ContactFaqSection, CtaSection, Footer) left alone — they're site-wide, not work-specific.
+Verified: tsc ✓; biome-format clean (5 files); next build ✓; served /work/aura-skincare HTTP 200
+— flex-row container present, testimonial lg:w-1/2 present, 9 px-4 md:px-10 sections, 0 leftover
+md:px-12, old max-w-3xl stack gone, 0 error markers. Padding matches ExperimentalTestimonials by
+identical class. Did NOT dispatch spec-verifier: mechanical padding swaps + one 3-class flex
+restructure, fully evidenced by served HTML + green build. rrow visual balance needs user's eyes.
+Note: hero mobile px-6→px-4 (8px) included for page uniformity though "hero is good" — trivial
+to revert if unwanted. 5 files. Not committed.
+
+## 2026-07-24 — Work slug: align ProjectDetailsContent x-padding with the FaqSection
+Task: the black-bg section below the hero (ProjectDetailsContent) should have the same x-axis
+padding as the work page's FAQ (ContactFaqSection). Diagnosis (measured live @1920): both
+sections already had identical section paddingLeft = 40px (px-4 md:px-10), but the CONTENT
+edges differed — Details started at 253px because its inner wrapper was `mx-auto max-w-[1400px]`
+(capped + centered), while the FAQ inner is `mx-auto w-full` (full width, content at 40px).
+Fix (1 file): ProjectDetailsContent:33 `mx-auto max-w-[1400px]` → `w-full` — content now spans
+full width like the FAQ. Verified live @1920: detailsContentLeft 253→40px, faqContentLeft 40px,
+aligned=true. tsc ✓, biome-format clean, served /work HTTP 200, 0 errors. Left ProjectGallery
+(×2) + ProjectOutcomes on max-w-[1400px] — out of scope (task named only the section below the
+hero). CONSEQUENCE flagged: removing the cap widens the sticky project-details left box on
+screens >1480px (col-span-4 of a now full-width 12-col grid grows ~379px→~549px @1920); that's
+the direct result of matching the full-width FAQ — say the word to re-cap or narrow the box.
+1 file. Not committed.
+
+## 2026-07-24 — WORKER MODE: extracted all in-file subcomponents into their own files
+User complaint: files too long, components nested inside components. Constraint: ZERO UI/animation change. Executed as driver (Fable) with routed workers per plan.md.
+15 new files created, 9 parents slimmed:
+- home/RotatingWord.tsx (from AboutSection), home/ChannelCard.tsx (from ContactSection; prop type (typeof channels)[number] → explicit exported `Channel` with Icon: LucideIcon — the data's key really is `Icon`)
+- blog/BlogCard.tsx (from BlogListSection); blog/ArticleBlock.tsx (+exports slugify), ShareRail.tsx, TableOfContents.tsx, RelatedArticles.tsx (owns SCROLL_SECONDS/wrap) — from the 707-line BlogArticle
+- work/ProjectCard.tsx (+exports premiumEase), work/ProjectSection.tsx (component still named Section; +exports premiumEase)
+- about/Counter.tsx, about/EdgeToEdgeCarousel.tsx
+- brand-strategy/SubServiceCard.tsx (component still named Card; OWNS exported STEP=190 — parent imports it for pinTop math + reserve height; exactly one definition)
+- career/QuoteCard.tsx, CarouselCard.tsx (owns exported type CarouselItem), InfiniteRow.tsx — import chain parent→InfiniteRow→CarouselCard→QuoteCard
+Conventions enforced: moved bodies byte-identical; imports parent→child only (shared consts moved child-ward and re-imported, never child→parent); "use client" iff hooks/motion/handlers (ArticleBlock deliberately server-safe with none); diagnostics parity per file group (LF-normalised vs HEAD) — every pre-existing biome finding traveled with its code, zero new findings introduced.
+ROUTING planned 5 sonnet / 4 opus / 1 driver — executed exactly as planned, zero reroutes, zero retries. Two waves (sonnet, then opus) with driver-run repo-wide tsc between waves; workers ran file-scoped checks only (repo-wide checks during concurrent edits produce false failures — bit us twice earlier this session).
+Notable in-flight judgments: step 9's parity "failure" was a STALE HEAD baseline (BlogArticle's uncommitted marquee predates the refactor; the 1 extra finding is the pre-existing useExhaustiveDependencies on [isDesktop] — verified by grep: HEAD has zero marquee code). ChannelCard's `Icon` field name verified against the data before accepting.
+Verified: tsc exit 0, next build exit 0, every in-scope parent now defines exactly 1 component, spec-verifier APPROVED (all 9 PASS; one low-confidence observation on TableOfContents spacing attributed to the user's own concurrent TOC-rail layout work, not the extraction).
+OUT OF SCOPE (documented in plan.md): garbage/, 14 unused ui/ effects, shadcn-style library files (carousel, both resizable-navbars), and the 7 duplicated service folders — extracting there would double the duplication; the real fix is de-dup (open question in the map).
+25 files touched total (9 parents edited, 15 new, plan.md rewritten). Not committed.
+
+## 2026-07-24 — "four border lines on /work hero" — SOURCE NOT FOUND, no change made
+User reports an animated blue rounded FRAME around the /work/aura-skincare hero showing 4 corner segments (wants 2: top edge L→R, bottom edge R→L). Investigated grounded against the RUNNING dev server (curl http://localhost:3000/work/aura-skincare returned 200 — it's the user's own server, not the frozen preview harness) plus full source grep. The frame is NOT in the app's rendered output on this route:
+- ProjectHero <section> is edge-to-edge `w-full ... overflow-hidden bg-[#0a0a0a]`, NO rounded/border/inset — it is not the framed element.
+- Served HTML has zero `trace`/strokeDasharray (rules out ui/TracingBorder), zero conic-gradient/animate-spin (rules out the rotating-border trick), zero createPortal/body-injection in any route component, no full-viewport bordered/fixed frame div.
+- No loading.tsx / template.tsx / global overlay; layout.tsx body is just {children}; globals.css base layer adds no border/rounded to html/body.
+- Page root `<div class="relative bg-[#0a0a0a]">`'s only children are the Header + navbar.
+Conclusion: the blue rounded frame is almost certainly the Claude in-app Browser PANE's own chrome/active-indicator (explains total absence from the DOM), not repo code. Asked the user to confirm or point to the component. NO files edited.
+
+## 2026-07-24 — TracingBorder edgeComets: settle lights top+bottom EDGES, not TR/BL corners (four→two lines)
+Corrected the prior "source not found" entry: the border IS ui/TracingBorder.tsx, the hover effect on WorkProjectShowcase cards (via the extracted work/ProjectCard.tsx, the ONLY call site passing `edgeComets`). It was absent from the /work/[slug] SSR DOM because it renders only on hover (active=isHovered) on the /work INDEX cards, not the detail hero — my earlier DOM hunt was on the wrong route.
+Cause of "four lines": edgeComets already runs 2 comets (top L→R, bottom R→L — matches the user's desired 2 lines). But the SETTLED state (Layer 2) is revealed by TWO RADIAL corner masks (mask-tr + mask-bl). On a wide card each corner glow spills onto BOTH its edges (TR → top-right + right; BL → bottom-left + left) = four partial segments. A static screenshot froze that settle.
+Fix: in the `edgeComets` branch ONLY, Layer 2 now strokes the two edge paths (topD, bottomD — the same paths the comets trace) as full lines, fading in via a motion.g opacity 0→1 delayed by HANDOFF. So the settle = exactly two clean edges. Default (single-orbit) mode keeps the corner-mask reveal unchanged.
+Scoping verified: `edgeComets ? (...) : (...)` conditional; grep confirms all 9 other TracingBorder consumers (8 ProjectShowcase copies + blog/BlogCard) do NOT pass edgeComets → they hit the untouched else-branch. The corner-mask <defs> are left in place (harmless/unreferenced in edgeComets mode) to keep the diff minimal.
+Verified: tsc ✓; lint LF-normalised vs HEAD 0/0 (file was clean); next build ✓ (33 pages). 1 file. Not committed.
+NEEDS USER'S EYES: this is a visual-timing change I can't screenshot (frozen preview; repo memory = user screenshots manually). Hover a card on /work and confirm the settled border is now two edges (top + bottom), not four corner segments.

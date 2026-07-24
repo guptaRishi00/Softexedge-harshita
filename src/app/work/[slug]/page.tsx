@@ -34,6 +34,13 @@ export default async function ProjectPage(props: {
   const currentIndex = projects.findIndex((p) => p.id === project.id);
   const nextProject = projects[(currentIndex + 1) % projects.length];
 
+  // Split the gallery so images bracket the outcomes section — the page then
+  // alternates info → images → info → images → next project.
+  const gallery = project.gallery ?? [];
+  const galleryMid = Math.ceil(gallery.length / 2);
+  const galleryA = gallery.slice(0, galleryMid);
+  const galleryB = gallery.slice(galleryMid);
+
   return (
     <div className="relative bg-[#0a0a0a]">
       {/* Header — shared site header, dark-hero variant (light links + logo) */}
@@ -43,8 +50,9 @@ export default async function ProjectPage(props: {
 
       <ProjectHero project={project} />
       <ProjectDetailsContent project={project} />
-      <ProjectGallery project={project} />
+      <ProjectGallery project={project} images={galleryA} />
       <ProjectOutcomes project={project} />
+      <ProjectGallery project={project} images={galleryB} />
       <NextProject nextProject={nextProject} />
 
       <div className="bg-white pt-24">

@@ -1,11 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { ReactNode } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import type { Project } from "@/data/projects";
-
-const premiumEase = [0.16, 1, 0.3, 1] as const;
+import Section, { premiumEase } from "./ProjectSection";
 
 export default function ProjectDetailsContent({
   project,
@@ -29,8 +27,10 @@ export default function ProjectDetailsContent({
   ];
 
   return (
-    <section className="bg-[#0a0a0a] px-6 py-24 md:px-12 md:py-32">
-      <div className="mx-auto max-w-[1400px]">
+    <section className="bg-[#0a0a0a] px-4 py-24 md:px-10 md:py-32">
+      {/* Full-width (no max-w cap) so the content's left edge lines up with the
+          FaqSection below — both then sit at the section's px-4 md:px-10. */}
+      <div className="w-full">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-24">
           {/* Sticky Sidebar */}
           <div className="lg:col-span-4">
@@ -199,29 +199,5 @@ export default function ProjectDetailsContent({
         </div>
       </div>
     </section>
-  );
-}
-
-// Animated body section wrapper — one definition of the motion config so the
-// five body sections stay consistent without repeating the motion props.
-function Section({
-  heading,
-  children,
-}: {
-  heading: string;
-  children: ReactNode;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8, ease: premiumEase }}
-    >
-      <h2 className="mb-8 text-3xl font-bold tracking-tight text-white leading-[1.2em] md:text-4xl">
-        {heading}
-      </h2>
-      {children}
-    </motion.div>
   );
 }

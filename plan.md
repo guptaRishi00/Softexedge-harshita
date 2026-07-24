@@ -1,68 +1,56 @@
-# Plan: Apply the ServiceSection header alignment to 6 sections
+# Plan: Extract in-file subcomponents into their own files
 
-## Reference (already done) — src/components/home/ServiceSection.tsx
-The eyebrow/tag sits ABOVE the flex row; the row contains ONLY the title and the
-description, and uses `md:items-center` so the description is vertically centered
-against the TITLE alone (not the tag + title block):
+## Goal
+Every rendered, non-duplicated section file that defines more than one
+component gets its subcomponents moved to sibling files (same folder — the
+codebase's flat-folder convention), imported back into the parent. **Zero
+UI/animation change** — the moved JSX/logic must be byte-identical; only
+imports/exports and (where forced) prop-type declarations may differ.
 
-```
-<div className="mb-10 w-full pb-10">          {/* outer: spacing only */}
-  <p className="mb-6 …tag classes…">What We Offer</p>   {/* hoisted above row */}
+## Hard rules (echoed into every brief)
+1. Moved component bodies byte-identical to the original (whitespace-level).
+   Only allowed deltas: `export` keyword, import lines, and prop types where
+   the original type referenced a parent value (see per-step notes).
+2. Imports point parent → child only. NEVER child → parent (cycle). If the
+   child needs a constant/type the parent also uses, MOVE it to the child
+   file and have the parent import it from there.
+3. New files: `"use client"` if the component uses hooks/motion/handlers.
+4. No renames, no reformatting of untouched code, no comment rewrites.
+5. Acceptance per step: `bunx tsc --noEmit` exit 0; biome diagnostics on the
+   changed+new files (LF-normalised) introduce nothing new vs HEAD baseline;
+   grep proves the parent no longer defines the extracted component.
 
-  <div className="flex w-full … justify-between gap-8 md:flex-row md:items-center">
-    <h2 …title… />
-    <p …description… />
-  </div>
-</div>
-```
+## Out of scope (deliberate)
+- `garbage/` (dead code — CLAUDE.md hard rule), the 14 unreferenced `ui/`
+  effects, `ui/3d-globe.tsx` (unreferenced).
+- `ui/carousel.tsx`, `ui/resizable-navbar.tsx`, `page/resizable-navbar.tsx`
+  — shadcn-style multi-export library files; that pattern is idiomatic and
+  splitting them risks the nav on every page.
+- The 7 duplicated service folders (`ai-marketing-automation` … `web-development`):
+  their `SubServices`/`ProjectShowcase`/`AgencyStats` each define 2 components,
+  but refactoring 21 byte-identical copies would double the duplication
+  problem (map: the real fix there is de-duplication, an open question).
+  Only the divergent original `brand-strategy/` is in scope.
 
-## Problem in the 6 targets (all share the identical broken shape)
-```
-<div className="…spacing… flex flex-col items-start justify-between gap-N md:flex-row md:items-end">
-  <div className="flex flex-col gap-5">        {/* ← eyebrow + title TOGETHER */}
-    <span/motion.span …eyebrow… />
-    <motion.h2 …title… />
-  </div>
-  <motion.p …description… />
-</div>
-```
-Because the row's first child is the eyebrow+title block, any items-center/end
-aligns the description against BOTH, not the title.
+## Steps
 
-## Transformation (per file)
-1. Outer div: KEEP only its spacing/layout-context classes (mb-*, md:mb-*, mx-auto,
-   w-full, px-*, etc.). REMOVE the flex row classes (flex, flex-col, items-start,
-   justify-between, gap-*, md:flex-row, md:items-end).
-2. Hoist the eyebrow OUT of the inner `flex flex-col gap-5` div to be the first
-   child of the outer div. Preserve its element type, all classes, and any motion
-   props. Since it loses the parent's `gap-5`, give it an equivalent bottom margin
-   (`mb-5`) — and if it is a `<span>` (inline), add `block` so the margin applies.
-3. Create a NEW row div holding ONLY the title and the description:
-   `flex w-full flex-col items-start justify-between gap-<original gap> md:flex-row md:items-center`
-   (keep the section's ORIGINAL mobile stacking — do NOT introduce flex-col-reverse;
-   only `md:items-end` → `md:items-center`).
-4. Delete the now-empty `<div className="flex flex-col gap-5">` wrapper.
-5. On the description, REMOVE any `md:mb-2` (it was a nudge for bottom/items-end
-   alignment and would push it off-center now). Keep every other description class.
-6. Preserve ALL framer-motion props (initial/whileInView/transition/viewport/variants)
-   on the eyebrow, title and description exactly.
+| # | File | Extract → new file(s) | route | Notes |
+|---|---|---|---|---|
+| 1 | `home/AboutSection.tsx` | `RotatingWord` → `home/RotatingWord.tsx` | sonnet | Self-contained (props-only). |
+| 2 | `blog/BlogListSection.tsx` | `BlogCard` → `blog/BlogCard.tsx` | sonnet | Move `smoothSpring` const with it if BlogCard-only; parent keeps `premiumEase`. `BlogPost` type imported from `@/data/blog` in both. |
+| 3 | `work/WorkProjectShowcase.tsx` | `ProjectCard` → `work/ProjectCard.tsx` | sonnet | Move any const used only by the card. |
+| 4 | `work/ProjectDetailsContent.tsx` | `Section` → `work/ProjectSection.tsx` | sonnet | File named `ProjectSection.tsx` to avoid a generic `Section.tsx`. Component name stays `Section`. |
+| 5 | `about/AboutHeroSection.tsx` | `Counter` → `about/Counter.tsx`, `EdgeToEdgeCarousel` → `about/EdgeToEdgeCarousel.tsx` | sonnet | Two files, one step. |
+| 6 | `home/ContactSection.tsx` | `ChannelCard` → `home/ChannelCard.tsx` | opus | Props are typed `(typeof channels)[number]` — referencing the parent's data value. Child must declare an explicit prop interface with identical fields; parent's `channels` data stays put. Move `boxyCellIds`/grid consts if card-only. Cycle-avoidance care → opus. |
+| 7 | `brand-strategy/SubServices.tsx` | `Card` → `brand-strategy/SubServiceCard.tsx` | opus | `STEP`, `contentContainer`, `contentItem` used by Card; `STEP` ALSO used by parent (tracker pinTop, reserve height). Move `STEP` into the child and export it; parent imports `{ STEP }` from the child (parent→child only). Scroll-fragile file (map) → opus. |
+| 8 | `career/CareerHeroSection.tsx` | `QuoteCard` → `career/QuoteCard.tsx`, `CarouselCard` → `career/CarouselCard.tsx`, `InfiniteRow` → `career/InfiniteRow.tsx` | opus | `CarouselItem` type shared by parent data + CarouselCard + InfiniteRow: move it into `CarouselCard.tsx`, export it; others import from there. QuoteCard carries its mask/grid consts + single-line biome-ignore comments verbatim. 3-file coherence → opus. |
+| 9 | `blog/BlogArticle.tsx` (707 lines) | `Block` → `blog/ArticleBlock.tsx`, `ShareRail` → `blog/ShareRail.tsx`, `TableOfContents` → `blog/TableOfContents.tsx`, `RelatedArticles` → `blog/RelatedArticles.tsx` | opus | Largest file. Shared consts (`premiumEase`, variants): move to the child if single-user, otherwise keep in parent AND redeclare in child only if forced — prefer moving; never child→parent import. Types from `@/data/blog`. 4-file coherence → opus. |
+| 10 | Done gate | full `next build` + `spec-verifier` over plan + diff | driver | Judgment: verifying zero-render-change claims. |
 
-## Files (6) — the two-column `md:items-end` headers
-- src/components/brand-strategy/SubServices.tsx      (~line 98)
-- src/components/brand-strategy/ProcessSection.tsx   (~line 45)
-- src/components/brand-strategy/OurTechStack.tsx     (~line 37)
-- src/components/brand-strategy/ProjectShowcase.tsx  (~line 78)
-- src/components/work/WorkProjectShowcase.tsx        (~line 40)
-- src/components/blog/BlogListSection.tsx            (~line 65)
+Routing split: 5 sonnet / 4 opus / 1 driver (the done gate) — driver ≤20% ✓.
 
-## Explicitly OUT of scope
-The web-development copies (SubServices, ProcessSection, OurTechStack,
-ProjectShowcase) use a CENTERED stacked header (`items-center text-center`, no
-two-column md:flex-row), so there is no title|description row to re-align.
-Leave them untouched and report.
-
-## Verify
-tsc, biome, next build. Each changed header: eyebrow is a sibling ABOVE the row;
-row has exactly 2 children (title, description) and `md:items-center`; no leftover
-`md:items-end` or empty wrapper div; motion props intact; no `md:mb-2` on the
-descriptions. spec-verifier gate.
+## Verify (done gate)
+- `bunx tsc --noEmit` exit 0; `npx next build` exit 0.
+- Per changed file: biome diagnostic count (LF-normalised) vs `git show HEAD:` baseline — no new findings; new files clean.
+- Grep: no parent still defines its extracted component(s); no child imports from its parent.
+- spec-verifier confirms moved bodies are byte-identical, max 3 rounds.
