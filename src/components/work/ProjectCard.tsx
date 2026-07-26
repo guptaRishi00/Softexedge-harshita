@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { MdArrowOutward } from "react-icons/md";
 import type { Project } from "@/data/projects";
-import TracingBorder from "../ui/TracingBorder";
+import StarBorder from "../ui/StarBorder";
 
 export const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -221,13 +221,7 @@ export default function ProjectCard({
             </div>
           </div>
 
-          <TracingBorder
-            active={isHovered}
-            radius={20}
-            gradientId={`work-trace-${project.id}`}
-            color="#2E5BFF"
-            edgeComets
-          />
+          <StarBorder active={isHovered} radius={20} color="#2E5BFF" />
         </div>
       </motion.div>
     </Link>

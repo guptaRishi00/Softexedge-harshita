@@ -5699,3 +5699,261 @@ So "today's changes" = 3ac115d + working tree, both relative to the 07-22 versio
 Working tree TracingBorder is now the pre-today original: single-orbit/edge comets + the full-rect corner-mask settle (the "Corner-weighted static border" — the version that showed four segments, which is what the user had before today's attempts). All 5 of today's TracingBorder session-log entries above are now moot for the live file.
 NOT committed (per constraints): the file is reverted in the working tree/index only; `git diff HEAD` shows 66 changed lines (today's committed edit undone). The user can commit the revert when ready.
 Verified: git diff HEAD~1 = 0 (matches pre-today); grep confirms zero glow-tr/glow-bl remnants; tsc ✓; next build ✓ (33 pages). 1 file. Not committed.
+
+## 2026-07-24 — TracingBorder: smooth the WorkProjectShowcase ProjectCard flow transition
+Task: refine the animation work page's WorkProjectShowcase ProjectCard TracingBorder, make the
+flow transition smoother. 1 file: `components/ui/TracingBorder.tsx` (timing constants only —
+no structural JSX change, so all 10 consumers benefit; global-id + path logic untouched).
+ProjectCard uses `<TracingBorder active={isHovered} edgeComets color="#2E5BFF" />` so the
+edgeComets mode (two open edge paths) is what runs on /work.
+DIAGNOSIS — the rough seam was at t=LAP_DURATION (2.5s), the comet→corner handoff:
+1. Comet dissolved over 0.3s while corner blooms took 0.9s (3× slower) → comet popped out
+   before the glow built up = visible gap.
+2. Corner blooms (0.9s) and edge fade (1.1s) had MISMATCHED durations → border weight arrived
+   in two waves.
+3. HANDOFF = LAP_DURATION exactly → bloom started from zero the instant the comet stopped.
+FIX — a crossfade, not stop-then-start (all in the timing constants block + 4 transition refs):
+- DISSOLVE: duration 0.3→0.7 (DISSOLVE_DURATION), delay LAP_DURATION→LAP_DURATION-0.2
+  (DISSOLVE_START) — comet begins fading BEFORE it lands, over a window that overlaps the bloom.
+- BLOOM=0.8 shared constant: rect (was 1.1), both circles (was 0.9) now all use BLOOM → edge +
+  corner weight arrive on one envelope. Second-circle stagger 0.12→0.08 (tighter, keeps it
+  inside the crossfade window).
+- HANDOFF = LAP_DURATION-0.15 — bloom begins as the comet settles, overlapping the dissolve.
+Net: continuous energy transfer from moving comet → settling glow, no pop, no gap.
+Did NOT change the lap ease (easeInOut) — it's correct for the orbit itself; the roughness was
+the handoff, now fixed by overlap. Did NOT touch path geometry, gradientIds, or stroke layering.
+Verification: tsc on source CLEAN. biome: 0 lint findings; the 1 format note is whole-file CRLF
+line-endings (pre-existing per the map — "avoid biome format --write on files you didn't
+author"; running it would rewrite all 350 lines and obscure the 4-constant change). Confirmed
+diff is pure timing constants. Animation smoothness verified by timeline reasoning, not a static
+check (no check can assert "smoothness"); the crossfade overlap is the mechanism. Not committed.
+
+## 2026-07-24 — TracingBorder: fix 4-comets/extra-corner-lines bug (edgeComets mode)
+Task: on hover 4 comets/lines appear, should be 2 — a comet TL→TR (top) and BR→BL (bottom);
+2 EXTRA lines appear at the TR and BL corners. Fix it. 1 file: `components/ui/TracingBorder.tsx`,
+Layer 2 only.
+INVESTIGATION (verified before editing): first suspected the dash math — `strokeDasharray="0.25 0.75"`
+on pathLength=1, period (TAIL+GAP)=1.0 === pathLength. Computed dash positions via bun script:
+at every offset value there is exactly ONE visible dash segment per path (offset 0.25→seg [0.75,1],
+offset 0→[0,0.25], etc.). So each edge path renders exactly ONE comet — the dash math is correct,
+2 comets total (top+bottom). NOT the cause.
+ROOT CAUSE: Layer 2 (static border revealed by the corner mask) was stroking the FULL CLOSED
+rounded-rect path `d` — which INCLUDES the corner arcs at all 4 corners. The mask's corner circles
+bloom at TR and BL, and revealing the full-rect path there shows the TR/BL CORNER ARCS as short
+curved line segments = the "2 extra lines at the corners".
+FIX: Layer 2 now strokes ONLY the two edge paths (edgePaths = topD + bottomD) via .map, not the
+full closed `d`. Halo (5.5px @0.25 opacity) + core (2.25px) double-stroke preserved per edge.
+Mask, corner circles, gradient ids, glow — all UNTOUCHED, so the side-glow effect is preserved.
+`d` is still referenced by Layer 1's closed-orbit fallback (edgeComets=false branch, lines 304/320)
+so no unused-var. The edgeComets=true path (what ProjectCard on /work uses) now shows exactly
+2 comets + 2 static edges + the corner glow, nothing at the TR/BL corner arcs.
+Verification: tsc on source CLEAN; biome 0 lint findings (only the pre-existing whole-file CRLF
+format note, per the map — not run). Diff reviewed: pure Layer 2 change, mask/glow untouched.
+Visual = 2 comets/edges + preserved glow, confirmed by the dash-position computation + the path
+analysis (edge.d has no corner-arc segments beyond the single TL→TR / BR→BL turning arc that the
+comet itself traces). Not committed.
+
+## 2026-07-24 — TracingBorder: REVERT the "4-comets/extra-corner-lines" Layer 2 fix
+Task: revert the previous task (the Layer 2 change that stroked only the 2 edge paths to remove
+the corner-arc lines). 1 file: `components/ui/TracingBorder.tsx`, Layer 2 only.
+Reverted Layer 2 back to stroking the FULL CLOSED rect `d` (halo 5.5px @0.25 + core 2.25px) as it
+was before the fix — restoring the full-border behavior. Done via surgical Edit, NOT git checkout:
+the file carries TWO uncommitted tasks (this revert's target + the timing-smoothing from 2 turns
+ago), and `git checkout` would have wiped both. Confirmed post-revert that the timing work is
+INTACT — DISSOLVE_START/DISSOLVE_DURATION/BLOOM/HANDOFF constants (lines 117-120) + their
+transition refs (253-254) all present; only Layer 2's path source changed.
+Net file state now: timing-smoothing applied, Layer 2 = original full-closed-rect (comets +
+corner arcs visible as before the fix).
+Verification: tsc on source CLEAN; diff reviewed — Layer 2 restored verbatim, timing constants
+untouched. Not committed.
+
+## 2026-07-26 — /onboard: map reconciled (2 days old, targeted update not full re-explore)
+Map was dated 07-24, under the 7-day window and structurally sound, so reconciled rather than rebuilt. Verified drift against reality: (1) component-extraction refactor (15 new sibling files, all committed/tracked; 9 parents now define 1 component each) was absent — added a "Component extraction" subsection listing every new file + which const/type each owns (STEP→SubServiceCard, slugify→ArticleBlock, CarouselItem→CarouselCard, Channel type→ChannelCard, ProjectCard = 10th TracingBorder call site). (2) Route count "16"→17 (find src/app -name page.tsx = 17; the surfaces table already listed 17). (3) ContactSection form line :263→:129 (moved after ChannelCard extraction). (4) SubServices scroll-fragile note now flags STEP lives in SubServiceCard.tsx for brand-strategy. Bumped date to 07-26.
+Verified: all 15 extracted files exist + tracked; parents grep to 1 component; CLAUDE.md still points to the map + hard rules intact; only .claude/ files edited this onboard.
+
+## 2026-07-26 — Analysed the StarBorder snippet (React Bits) — ANALYSIS ONLY, no files changed
+User pasted a StarBorder component and asked for analysis. Key findings recorded for if it is ever added:
+- Its `tailwind.config.js` block is **Tailwind v3 syntax and does nothing here** (verified: no tailwind.config.* exists; this repo is v4, CSS-configured via `@theme` in globals.css). Dropped in as-is the `animate-star-movement-*` classes resolve to nothing → both glows render static and the effect is invisible. Correct fix here = raw `@keyframes` + an `.animate-*` class in globals.css (existing precedent: the `scroll` keyframes at globals.css:33-40), or `--animate-*` tokens inside `@theme`.
+- MOTION MATCHES THE USER'S TRACINGBORDER SPEC: top glow sweeps L→R (`left-[-250%]`, translate 0→+100%), bottom sweeps R→L (`right-[-250%]`, translate 0→-100%) — exactly "comet on top L→R, bottom R→L". BUT it is `infinite alternate` (bounces forever, never lands) and has NO settle/corner-glow phase, so it is not a drop-in for the "then a side glow appears" half of that spec.
+- Would add 3 new biome findings (recommended:true is on): 2× `noExplicitAny` (`rest as any`), 1× `useButtonType` (renders `<button>` with no `type` → defaults to submit).
+- No `useReducedMotion` guard — inconsistent with the 9 components in this repo that respect it.
+
+## 2026-07-26 — WorkProjectShowcase cards: StarBorder sweep replaces TracingBorder
+Added the StarBorder hover effect (from the snippet analysed earlier) to the work project cards' border. 3 files:
+1. `src/app/globals.css` — added `@keyframes star-movement-top/bottom` + `.animate-star-movement-*` classes + a `prefers-reduced-motion` guard. Declared as RAW CSS because the snippet's `tailwind.config.js` block is v3 syntax and is inert here (v4, no JS config) — same pattern as the existing `scroll` marquee keyframes. Duration comes from an inline `animation-duration` per instance.
+2. `src/components/ui/StarBorder.tsx` (NEW) — written as an absolute `pointer-events-none` OVERLAY (identical integration shape to TracingBorder: `active` prop, AnimatePresence with the same 0.2s in / 0.4s out fade), NOT the snippet's wrapper form, which would have required restructuring the card.
+   KEY FIX (2nd pass, after user emphasised "border"): the snippet confines its glows to the border via an opaque inner box covering the middle of two `h-[50%]` glows. An overlay can't do that — the card's artwork must show through — so instead each glow is clipped by a `thickness`px (default 2) `overflow-hidden` strip pinned to the top/bottom edge. First pass used the raw `h-[50%]` glows and would have washed light across the image instead of riding the border.
+   Directions verified by arithmetic: top glow `left-[-250%]` + translate 0→+100% → centre travels -100%→+200% of card width (L→R); bottom `right-[-250%]` + translate 0→-100% → +200%→-100% (R→L). Matches the long-requested "comet top L→R, bottom R→L".
+3. `src/components/work/ProjectCard.tsx` — swapped `<TracingBorder … edgeComets />` for `<StarBorder active={isHovered} radius={20} color="#2E5BFF" />`. TracingBorder REMOVED from this card only; still used by 9 other consumers (8 ProjectShowcase copies + blog/BlogCard) so it is not orphaned. One-line revert if unwanted.
+Note vs the old TracingBorder behaviour: this loops `infinite alternate` (sweeps out and back forever while hovered) and has NO settle/corner-glow phase — the snippet has no such concept.
+Verified: tsc ✓ exit 0; biome on StarBorder 0 findings / 0 format diffs; ProjectCard + globals.css lint counts unchanged vs HEAD (1/1 and 1/1, both pre-existing); next build ✓ (33 pages). Not committed.
+NEEDS USER'S EYES (frozen preview — cannot screenshot): hover a /work card. Expect a light sweeping the top edge L→R and another the bottom edge R→L, on the border only. Levers: `thickness` (strip px), `speed` (default 6s), `color`.
+
+## 2026-07-26 — StarBorder: made the sweep prominent (5 causes, all in StarBorder.tsx)
+User: "not that much visible". Diagnosed from the code rather than guessing — five compounding limiters, all fixed:
+1. `thickness` 2 → 3 px (a 2px hairline was the dominant limiter).
+2. `opacity-70` REMOVED from the core. It compounded with the keyframes' own `opacity: 1 → 0`, so mean opacity across a sweep was only ~0.35; now ~0.5 on the core.
+3. Gradient falloff widened: single `transparent 10%` → `coreGlow` at `transparent 25%` (bigger bright core) + `haloGlow` at `transparent 45%` (broad soft light).
+4. `speed` 6s → 3s — a brief hover now catches a full pass (with `alternate`, out-and-back was 12s).
+5. NEW soft halo: each edge now renders TWO strip-clipped passes — a blurred (`blur-[6px]`, opacity-80) halo in a `thickness*6` (=18px) strip, plus the crisp core in the `thickness` strip. Same animation name + duration on both so they travel in sync. This is what makes it read as a GLOW rather than a moving line.
+Kept: strip clipping on every layer, so the bloom stays on the card's edge and never washes the artwork (the "border" constraint from the previous task). globals.css keyframes UNCHANGED — brightness was gained via opacity/size/speed, not by altering the shared star-movement keyframes.
+Verified: no stale `const glow`/`opacity-70` remain; 2 halo strips + 2 core strips present; tsc ✓; biome 0 findings / 0 format diffs; next build ✓ (33 pages). 1 file (StarBorder.tsx). Not committed.
+Tuning levers if still off: `thickness` (core px, halo auto-scales ×6), `speed`, `color`; internal `blur-[6px]` and the two `transparent %` stops.
+
+## 2026-07-26 — StarBorder: sweep now ends, then a settle glow appears on the border
+User: "after the animation ends a side glow on the border appears on the hovered card". Blocker first: the sweep was `infinite alternate`, so it NEVER ended — there was no moment for a settle to begin. Two files:
+1. `src/app/globals.css` — `.animate-star-movement-top/bottom`: `linear infinite alternate` → `linear 1 forwards`. Single pass with a defined end; `forwards` holds the last keyframe (opacity 0, travelled off) so the light doesn't reappear. These classes have exactly one consumer (StarBorder), so nothing else is affected.
+2. `src/components/ui/StarBorder.tsx` — added the SETTLE beat: two `motion.div` strips (top + bottom) that fade in with `delay = speed`, i.e. exactly as the sweep lands. Each is a linear gradient weighted toward the corner its light finished on — top `to right` (bright at top-right), bottom `to left` (bright at bottom-left) — so the glow reads as the sweep's energy coming to rest. That is the "side glow" from the old TracingBorder, but confined to the `thickness`px edge strips, so it CANNOT reproduce the "four lines" failure (no corner masks, no left/right geometry, no blur).
+   API change: `speed` is now a NUMBER of seconds (was a CSS string) so both beats sequence off one value; `animationDuration` is derived as `${speed}s`. Only call site (ProjectCard) doesn't pass it → default 3, unaffected.
+Still holds from previous tasks: zero blur filters, every layer strip-clipped to the border, white-hot gradient core for prominence.
+Verified: greped — no `infinite alternate` remains, 2 settle layers, 0 blur/filter; tsc ✓ exit 0; biome StarBorder 0 findings / 0 format diffs; globals.css lint parity 1/1 vs HEAD (pre-existing); dev server HTTP 200 on /work; `next build` ✓ exit 0 (the earlier timeout was contention with the running dev server, not a code fault). 2 files. Not committed.
+INTERPRETATION FLAGGED TO USER: "side glow" implemented as the border strips staying lit, weighted to the two landing corners. If they meant a bloom radiating from those corners instead, that is a different (and historically failure-prone) shape — ask before building it.
+
+## 2026-07-27 — About page: AboutTraditional overlaps the hero
+- `src/app/about/page.tsx` only. Hero + AboutTraditional now share a `relative z-0
+  -mb-[100vh]` wrapper; hero in `sticky top-0 z-0`, AboutTraditional's existing
+  padding div gains `relative z-10 bg-black pb-[100vh]`.
+- Coverage rule (learned on brand-strategy/OurTechStack): the overlapper must be
+  at least as tall as the pinned section or a permanent sliver of hero stays
+  visible. AboutHeroSection is min-h-screen + pb-25 + carousel, i.e. >100vh and
+  it GROWS with viewport height, while AboutTraditional's content is fixed-px —
+  so a fixed px or small-vh tail fails on tall screens. The tail is sized 100vh
+  so `content + 100vh >= 100vh + heroExtra` holds at every viewport height.
+- `-mb-[100vh]` cancels the tail in layout only, so OurValuesSection isn't pushed
+  down; it rides up over the empty tail. Both are bg-black -> seamless join.
+- `z-0` on the wrapper is the stacking context that keeps the inner `z-10` from
+  painting over the sections below (same fix as brand-strategy).
+- Verified: `bunx tsc --noEmit` clean; biome LF-normalized diagnostic-header
+  parity vs `git show HEAD:src/app/about/page.tsx` = 0 vs 0. Visual confirmation
+  pending from user (this workspace can't be screenshotted).
+
+## 2026-07-27 — About page: hero scrolls before the overlap starts
+- `src/app/about/page.tsx`, one class: hero wrapper `sticky top-0` -> `sticky -top-[20vh]`.
+- Why negative top: at `top-0` the hero is ALREADY at its stick position on load
+  (it's the first element on the page), so it pinned at scroll 0 with no lead-in.
+  Moving the stick line 20vh above the viewport gives 20vh of ordinary scroll
+  before it holds.
+- Coverage is not weakened by this. Unpin happens at scroll s > T + 20vh (was
+  s > T); AboutTraditional still needs s = H to cover. So the condition relaxes
+  from H <= T to H <= T + 20vh — the 100vh tail still satisfies it.
+- Verified: `bunx tsc --noEmit` exit 0; biome LF-normalized diagnostic-header
+  parity vs `git show HEAD:` = 0 vs 0. Visual confirmation pending from user.
+
+## 2026-07-27 — About page: longer hero lead-in before the overlap
+- `src/app/about/page.tsx`: hero wrapper `-top-[20vh]` -> `-top-[40vh]` (comment
+  updated to match). Doubles the ordinary scroll the hero gets before it pins.
+- Coverage condition relaxes further (H <= T + 40vh), so the 100vh tail is still
+  well inside it. The only cost of raising this value is that more of the hero's
+  top is above the viewport while pinned — at 40vh that starts to reach the
+  headline, which is the practical ceiling to watch.
+- Verified: `bunx tsc --noEmit` exit 0; biome diagnostic-header count 0 on the
+  edited file (LF-normalized). Visual confirmation pending from user.
+
+## 2026-07-27 — About page: hero lead-in dialed back to 30vh
+- `src/app/about/page.tsx`: hero wrapper `-top-[40vh]` -> `-top-[30vh]`.
+- Before changing the number again, VERIFIED the mechanism is live rather than
+  guessing: `grep "top:\s*-40vh" .next/dev --include=*.css` returns a hit, so the
+  arbitrary negative Tailwind class does compile. (Worth knowing: if it hadn't,
+  `top` would fall back to `auto` and a sticky element with `top: auto` never
+  sticks vertically at all — the whole overlap would silently do nothing. Check
+  this first if a sticky offset ever appears to be ignored.)
+- Interpretation note: the prior request was "a little bit MORE", which means the
+  20vh version was visibly working; so this repeat of "a little bit" reads as
+  40vh having overshot. 30vh is the midpoint.
+- The offset doubles as how much of the hero sits above the viewport while pinned,
+  so it crops the hero top -> that, not the coverage rule, is the real ceiling.
+- Verified: `bunx tsc --noEmit` exit 0; biome diagnostic-header count 0 (LF-normalized).
+
+## 2026-07-27 — About page: the hero lead-in knob was the WRONG knob
+- Root cause of four unsatisfying iterations on `-top-[Nvh]`: that offset controls
+  when the HERO STOPS MOVING, not when AboutTraditional ARRIVES. Traditional sits
+  at flow position H (hero height), so its viewport top is `H - scroll`, which is
+  completely independent of the sticky offset. It enters at `scroll >= H - 100vh`,
+  and the hero is only ~300px taller than the viewport (min-h-screen + pb-25 +
+  carousel) -> the black section always started climbing after ~300px of scroll no
+  matter what N was. 20 -> 40 -> 30 could never fix it.
+- Real lever: `pb-[50vh]` ON THE STICKY BOX (`src/app/about/page.tsx`). Padding the
+  sticky element pushes Traditional's flow position down while keeping that runway
+  pinned with the hero, so the hero holds the screen for 50vh before black arrives.
+  `bg-[#FAFAFA]` on the same div makes the runway read as the hero's own space; the
+  colour is copied from AboutHeroSection.tsx:38 (verified by grep, exact match) —
+  if the hero's bg ever changes, this must change with it.
+- Coverage still holds: unpin at s = T + 30vh, coverage at s = H + 50vh, so the
+  requirement is H + 20vh <= T; with T = content + 100vh that has ~500px of slack.
+- Two independent knobs now: `-top-[30vh]` = how far the hero scrolls before it
+  freezes (and how much of its top is cropped while pinned); `pb-[50vh]` = how long
+  the hero holds the screen before Traditional overlaps it.
+- Verified: `bunx tsc --noEmit` exit 0; biome diagnostic-header count 0 (LF-normalized).
+- Process note: `cd` into the project explicitly in every Bash call — cwd does not
+  reliably persist here, and two verification runs silently executed in the wrong
+  directory (tsc printed its help text, which is NOT a pass).
+
+## 2026-07-27 — About page: hero runway 50vh -> 80vh (tail raised to match)
+- `src/app/about/page.tsx`: hero sticky box `pb-[50vh]` -> `pb-[80vh]`; Traditional
+  tail `pb-[100vh]` -> `pb-[150vh]` with `-mb-[100vh]` -> `-mb-[150vh]`.
+- The runway is NOT independent of the tail. Constraint: `hero_pb <= tail + 500px
+  - 70vh`. At the old 100vh tail the limit is ~85vh on a 900px viewport but only
+  ~72vh at 1200px, so an 80vh runway would have left an uncovered sliver of hero on
+  tall screens. 150vh tail restores ~500px of slack at EVERY viewport height.
+  Whenever the hero runway goes up, check this before shipping.
+- Raising the tail has no visual cost: it only extends the pin (Traditional already
+  covers the screen by then), and OurValues' arrival is unchanged because the -mb
+  cancels the tail exactly — which is why -mb and pb must always be kept equal.
+- Also confirmed the runway itself is never visible: while pinned, the sticky box's
+  bottom (hero bottom ~= H - 30vh, just under the fold) and its padding sit below
+  the viewport permanently, so the runway is pure invisible scroll delay, not a
+  blank band. That makes it the right knob to tune freely.
+- Verified: `bunx tsc --noEmit` exit 0; biome diagnostic-header count 0
+  (LF-normalized); grepped the file to confirm -mb and tail pb are both 150vh.
+
+## 2026-07-27 — About page overlap: MEASURED, root cause found, fixed
+- Six prior iterations failed because the geometry was estimated. Measured on the
+  running page via Browser-pane JS (720px viewport): hero = **1104px** (assumed
+  ~1020), AboutTraditional = **1401px** (assumed ~800).
+- REAL DEFECT the numbers exposed: `-top-[30vh]` pinned the hero after only 216px —
+  less than halfway through its 1104px — and `pb-[80vh]` on the sticky box then held
+  AboutTraditional back until scroll 960. Between 216 and 960 **nothing on screen
+  moved at all**: ~744px of dead scroll. That was the actual complaint; the number I
+  kept tuning was unrelated to it.
+- Fix in `src/app/about/page.tsx`: sticky box is now
+  `sticky top-[calc(100vh-1104px)] z-0 bg-[#FAFAFA]` — runway `pb` REMOVED. The calc
+  is the stick line where the hero's bottom meets the viewport bottom, i.e. it pins
+  exactly when it has been scrolled through in full. Traditional's flow top is then
+  the hero's height, so it starts climbing the instant the hero stops. Same
+  calc-based pattern as brand-strategy's ProcessSection.
+- Verified EMPIRICALLY by scrollTo + rect sampling, not by reasoning:
+  s 0->384 hero top 0->-384 (moving), s=384 hero bottom = 720 = viewport bottom and
+  pins, s 384->1104 Traditional top 720->0 climbing over it, fully covering at 1104.
+  Something moves at every step: no dead zone. Deep scroll (1200-3200): hero bottom
+  always coincides with the black wrapper's bottom, which paints above it -> never a
+  sliver. White at the viewport bottom at s=2900 is OurTeamSection (bg-white),
+  pre-existing page content, not a seam.
+- Tail left at 150vh/-150vh (invisible; requirement is only `1401 + tail >= 100vh`).
+- NOTE FOR FUTURE SCROLL WORK: `computer{screenshot}` still fails here (pane not
+  compositing), but CSS sticky needs no scroll events, so scrollTo + rect sampling
+  reproduces it exactly. Measure before editing. Memory updated.
+- Verified: `bunx tsc --noEmit` exit 0; biome diagnostic-header count 0 (LF-normalized).
+
+## 2026-07-27 — About page: OurTeamSection overlaps OurValuesSection
+- Same pattern as the hero/AboutTraditional pair, in `src/app/about/page.tsx`:
+  new group `relative z-0 -mb-[100vh]` around OurValues + OurTeam; OurValues wrapper
+  gains `sticky top-[calc(100vh-994px)] z-0`; OurTeam wrapper gains
+  `relative z-10 bg-white pb-[100vh]`. Existing `[&>section]` padding preserved.
+- MEASURED first (720x1280): OurValues wrapper 994px, bg-black; OurTeam wrapper
+  820px, bg-white. Both opaque, and 994 > 100vh so the calc stick line is valid.
+- Tail is required, not decorative: coverage needs overlapper >= 100vh and OurTeam
+  is only 820px — fine at 720px tall, would leave a sliver on a taller window.
+  `pb-[100vh]` makes it 1540px; the white tail is invisible because the following
+  sections are also white. `-mb-[100vh]` keeps the layout position unchanged.
+- Verified EMPIRICALLY by scrollTo + rect sampling: offset 0->274 OurValues scrolls
+  (top 0->-274), at 274 its bottom = 720 = viewport bottom and it pins, 274->994
+  OurTeam climbs 719->0 and covers. Something moves at every step: no dead zone.
+  Deep scroll: OurValues unpins at ~4319 as predicted and is never exposed —
+  OurTeam's bottom reaches the viewport bottom at offset 1813 while the unpin is at
+  1814, so they release together and no gap opens (this is WHY the pattern works).
+  Also re-confirmed the hero/Traditional overlap did not regress (pins at 384,
+  Traditional covers at 1104). Black/white at various depths downstream traced to
+  CtaSection and TechLogoCarousel: normal content, not seams.
+- General rule for this page: stick line = `calc(100vh - <measured wrapper px>)`,
+  overlapper needs `pb-[100vh]` + matching `-mb-[100vh]` on the group.
+- Verified: `bunx tsc --noEmit` exit 0; biome diagnostic-header count 0 (LF-normalized).

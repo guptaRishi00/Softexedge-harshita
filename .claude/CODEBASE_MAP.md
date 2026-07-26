@@ -1,5 +1,5 @@
 # softexedge-may-2026 — Codebase Map
-_Last updated: 2026-07-24_
+_Last updated: 2026-07-26_
 
 ## Identity
 Marketing/agency website for **SoftexEdge**. Frontend-only, animation-heavy
@@ -55,8 +55,21 @@ Each route `page.tsx` composes section components and renders its own
 - `src/lib/` — `utils.ts` (`cn()`), `useIsDesktop.ts`
 - `public/assets/` (~75 files incl. 5 `.mp4`), `public/fonts/`
 
+### Component extraction (2026-07-24, committed)
+Nine long section files had their in-file subcomponents moved to sibling files
+(same folder), imported back. So a card/helper now lives in its own file — grep
+the folder, don't assume it's inline in the parent. Each parent now defines
+exactly one component. Byte-identical moves (zero UI change). New files:
+- `home/RotatingWord.tsx` (from AboutSection) · `home/ChannelCard.tsx` (from ContactSection; explicit `Channel` prop type, `Icon: LucideIcon`)
+- `blog/BlogCard.tsx` (from BlogListSection) · `blog/{ArticleBlock,ShareRail,TableOfContents,RelatedArticles}.tsx` (from the 707-line BlogArticle; `ArticleBlock` exports `slugify`, component still named `Block`)
+- `work/ProjectCard.tsx` (from WorkProjectShowcase; the **10th `TracingBorder` call site**, passes `edgeComets`) · `work/ProjectSection.tsx` (from ProjectDetailsContent; component still named `Section`, exports `premiumEase`)
+- `about/{Counter,EdgeToEdgeCarousel}.tsx` (from AboutHeroSection)
+- `brand-strategy/SubServiceCard.tsx` (from SubServices; **owns & exports `STEP=190`** — parent imports it for the pinTop math + reserve height; component still named `Card`)
+- `career/{QuoteCard,CarouselCard,InfiniteRow}.tsx` (from CareerHeroSection; `CarouselCard` owns & exports `type CarouselItem`; import chain parent→InfiniteRow→CarouselCard→QuoteCard)
+The 7 duplicated service folders were deliberately NOT extracted (would double the duplication; see open question 1).
+
 ## Surfaces
-**All 16 routes are public and static. There is no auth anywhere** — no auth
+**All 17 routes are public and static. There is no auth anywhere** — no auth
 library, no middleware, no session/cookie/token handling, no access control.
 
 | Name | Type | File:Line | Auth | Purpose |
@@ -87,8 +100,8 @@ nowhere), no `middleware.ts`, no `not-found.tsx`/`error.tsx`/`loading.tsx`, no
 ### Forms & external input
 | Surface | File:Line | Wired? |
 |---|---|---|
-| Contact form (name/email/phone/company/service/message) | `src/components/home/ContactSection.tsx:263` | **DEAD** — no `onSubmit`, no `action`, no state. Appears on `/home` and `/contact`. |
-| Newsletter subscribe | `src/components/layout/Footer.tsx:155` | **DEAD** — no handler. Appears on **all 16 routes**. |
+| Contact form (name/email/phone/company/service/message) | `src/components/home/ContactSection.tsx:129` | **DEAD** — no `onSubmit`, no `action`, no state. Appears on `/home` and `/contact`. |
+| Newsletter subscribe | `src/components/layout/Footer.tsx` (in the newsletter column) | **DEAD** — no handler. Appears on **all 17 routes**. |
 | Blog category/author filter | `src/components/blog/BlogListSection.tsx:118` | Works — client-side `useState`, via window event (below) |
 | `mailto:hello@softexedge.com`, `tel:` | `src/components/home/ContactSection.tsx:20-21,28` | Real |
 | `mailto:careers@softexedge.com` | `src/components/career/OpenPositions.tsx:312` | Real — the only working apply path |
@@ -168,7 +181,7 @@ components, so a nav change means editing both Headers.
 
 ### Scroll-fragile code (touch with care)
 1. `app/home/page.tsx:71-142` + `home/PortfolioSection.tsx:143` — a hand-tuned chain of `pinSpacing:false` pins joined by `endTrigger`, plus a magic `md:-mt-[100vh]` documented at `app/home/page.tsx:92-95`. Any height change in About/Portfolio/Stats/Service breaks the overlap. All inside `matchMedia("(min-width: 768px)")` — mobile takes a different path.
-2. `*/SubServices.tsx` — sticky card stack driven by `useScroll` + `useMotionValueEvent`. Cards share one sticky line (`top: 5vh`) and get their staircase from `translateY(i * STEP)`, so `top + height` is equal for all and they release together. **A transform reserves no layout space** — hence the explicit reserve div after the stack. The tracker's `useScroll` offset must stay unsaturated while cards are still pinning (`["start start","end start"]`, not `"end end"`).
+2. `*/SubServices.tsx` — sticky card stack driven by `useScroll` + `useMotionValueEvent`. Cards share one sticky line (`top: 5vh`) and get their staircase from `translateY(i * STEP)`, so `top + height` is equal for all and they release together. **A transform reserves no layout space** — hence the explicit reserve div after the stack. The tracker's `useScroll` offset must stay unsaturated while cards are still pinning (`["start start","end start"]`, not `"end end"`). **`STEP=190` is shared by the parent (pinTop math + reserve height) and the card** — in brand-strategy it lives in `SubServiceCard.tsx` (extracted, exported; parent imports it); the 7 service copies still inline both. Change `STEP` in one place only.
 3. `home/PortfolioSection.tsx` also carries **snap-to-panel** and **auto-advance** on the same pinned trigger. Both deliberately stop at `st.start + totalWidth` (the end of the horizontal phase) and never enter the trailing hold, which belongs to the Stats overlap. Auto-advance moves the **page scroll** via `st.scroll()`, not the track — animating the track would desync the scrub, the snap and the panel reveals. Any wheel/touch/pointer/key input cancels it.
 4. `home/ServiceSection.tsx:111` / `home/PortfolioSection.tsx:119` — cursor followers on pinned sections; `mouseleave` never fires during scroll, so hiding is manual (ticker-polled).
 5. `blog/BlogArticle.tsx:40` — document-level `useScroll` progress bar, ignores Lenis.

@@ -14,15 +14,21 @@ type Props = {};
 export default function AboutPage({}: Props) {
   return (
     <div className="bg-white">
-      <AboutHeroSection />
-      <div className="[&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-45 md:[&>section]:pb-24">
-        <AboutTraditional />
+      <div className="relative z-0 -mb-[150vh]">
+        <div className="sticky top-[calc(100vh-1104px)] z-0 bg-[#FAFAFA]">
+          <AboutHeroSection />
+        </div>
+        <div className="relative z-10 bg-black pb-[150vh] [&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-45 md:[&>section]:pb-24">
+          <AboutTraditional />
+        </div>
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:pt-16 md:[&>section]:pb-36">
-        <OurValuesSection />
-      </div>
-      <div className="[&>section]:py-16 md:[&>section]:pb-10 md:[&>section]:pt-30">
-        <OurTeamSection />
+      <div className="relative z-0 -mb-[100vh]">
+        <div className="sticky top-[calc(100vh-994px)] z-0 [&>section]:py-16 md:[&>section]:pt-16 md:[&>section]:pb-36">
+          <OurValuesSection />
+        </div>
+        <div className="relative z-10 bg-white pb-[100vh] [&>section]:py-16 md:[&>section]:pb-10 md:[&>section]:pt-30">
+          <OurTeamSection />
+        </div>
       </div>
       <div className="[&>section]:pt-16 [&>section]:pb-6 md:[&>section]:pt-24 md:[&>section]:pb-10">
         <ExperimentalTestimonials />

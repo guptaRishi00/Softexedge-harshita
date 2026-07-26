@@ -104,13 +104,20 @@ export default function TracingBorder({
   // the TR/BL corner weight reaches further along the adjacent edges.
   const glowR = Math.min(w, h) * 1.125;
 
-  // Timing: the comet stays bright through its full lap and lands crisply at
-  // the top-right corner (its start/end point) at t = LAP_DURATION. The instant
-  // it lands, the corner glows bloom and the edges fade in (HANDOFF), while the
-  // comet dissolves into that corner energy — a clean stop-then-handoff rather
-  // than a fade that dims the comet before it arrives.
+  // Timing: the comet traces its lap and lands at the top-right corner
+  // (its start/end point) at t = LAP_DURATION. The handoff into the corner
+  // glow is a CROSSFADE, not a stop-then-start — the comet begins dissolving
+  // slightly BEFORE landing (DISSOLVE_START) and over a longer window
+  // (DISSOLVE_DURATION) that overlaps the corner blooms, so energy passes
+  // continuously from the moving comet into the settling glow with no gap.
+  // The comet eases out (decelerates) into its landing point so it arrives
+  // with the same deceleration the bloom then continues — one continuous
+  // deceleration curve across the seam instead of a hard stop.
   const LAP_DURATION = 2.5;
-  const HANDOFF = LAP_DURATION;
+  const HANDOFF = LAP_DURATION - 0.15; // bloom begins as the comet settles
+  const DISSOLVE_START = LAP_DURATION - 0.2; // crossfade begins just before landing
+  const DISSOLVE_DURATION = 0.7; // overlaps the bloom → no pop
+  const BLOOM = 0.8; // corner + edge weight arrive on one shared envelope
 
   return (
     <div ref={ref} className="pointer-events-none absolute inset-0 z-30">
@@ -201,7 +208,7 @@ export default function TracingBorder({
                   initial={{ fill: "#000000" }}
                   animate={{ fill: "#2e2e2e" }}
                   transition={{
-                    duration: 1.1,
+                    duration: BLOOM,
                     delay: HANDOFF,
                     ease: "easeOut",
                   }}
@@ -213,7 +220,7 @@ export default function TracingBorder({
                   initial={{ r: 0 }}
                   animate={{ r: glowR }}
                   transition={{
-                    duration: 0.9,
+                    duration: BLOOM,
                     delay: HANDOFF,
                     ease: [0.16, 1, 0.3, 1],
                   }}
@@ -225,8 +232,8 @@ export default function TracingBorder({
                   initial={{ r: 0 }}
                   animate={{ r: glowR }}
                   transition={{
-                    duration: 0.9,
-                    delay: HANDOFF + 0.12,
+                    duration: BLOOM,
+                    delay: HANDOFF + 0.08,
                     ease: [0.16, 1, 0.3, 1],
                   }}
                 />
@@ -243,8 +250,8 @@ export default function TracingBorder({
               initial={{ opacity: 1 }}
               animate={{ opacity: 0 }}
               transition={{
-                duration: 0.3,
-                delay: LAP_DURATION,
+                duration: DISSOLVE_DURATION,
+                delay: DISSOLVE_START,
                 ease: "easeOut",
               }}
             >
