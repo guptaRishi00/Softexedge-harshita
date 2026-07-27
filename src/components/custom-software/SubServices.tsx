@@ -6,7 +6,6 @@ import { type ReactNode, useRef, useState } from "react";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
-// Card content reveals with a soft upward stagger as each card scrolls in.
 const contentContainer = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
@@ -78,8 +77,6 @@ export default function SubServices({ children }: { children?: ReactNode }) {
     offset: ["start start", "end end"],
   });
 
-  // Track the top-most card that has actually pinned (reached its sticky line).
-  // A card's image hides once the NEXT card has pinned over it (activeIndex > i).
   useMotionValueEvent(scrollYProgress, "change", () => {
     let active = 0;
     for (let j = 0; j < services.length; j++) {
@@ -94,7 +91,6 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   return (
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
-        {/* HEADER SECTION */}
         <div className="mx-auto w-full px-4 md:px-10 pt-20 pb-32">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
             What We Offer
@@ -114,7 +110,6 @@ export default function SubServices({ children }: { children?: ReactNode }) {
           </div>
         </div>
 
-        {/* STACKING CARDS WRAPPER */}
         <div ref={container} className="group/cards relative w-full">
           {services.map((service, i) => (
             <Card
@@ -129,11 +124,6 @@ export default function SubServices({ children }: { children?: ReactNode }) {
             />
           ))}
 
-          {/* OVERLAP SLOT — the next section (ProcessSection, passed as
-              children) lives INSIDE the sticky container and scrolls up over the
-              still-pinned last card. z-40 sits above the cards' z (0–3) and its
-              opaque bg covers the pinned card during the overlap. Falls back to
-              the old runway spacer when no children are provided. */}
           {children ? (
             <div className="relative z-40 w-full">{children}</div>
           ) : (
@@ -145,7 +135,6 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   );
 }
 
-// --- ISOLATED CARD COMPONENT ---
 function Card({
   i,
   isLast,
@@ -164,18 +153,13 @@ function Card({
       ref={registerRef}
       className="sticky w-full mb-[22vh]"
       style={{
-        // Each card pins 190px lower than the last so previous titles peek —
-        // EXCEPT the last card, which pins at the top (5vh) and holds there so
-        // the ProcessSection overlap slides up over it.
         top: `calc(5vh + ${(isLast ? 0 : i) * 190}px)`,
-        // Later cards stack on top; fixed desktop height keeps earlier cards from poking through
         zIndex: i,
       }}
     >
       <div
         className={`relative grid ${isLast ? "min-h-[70vh] md:h-[780px]" : "min-h-[50vh] md:h-[600px]"} w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-4 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
       >
-        {/* LEFT COLUMN: Title, Description & Tags */}
         <motion.div
           variants={contentContainer}
           initial="hidden"
@@ -202,7 +186,6 @@ function Card({
             {description}
           </motion.p>
 
-          {/* Tags Container */}
           {tags && tags.length > 0 && (
             <motion.div
               variants={contentItem}
@@ -220,8 +203,6 @@ function Card({
           )}
         </motion.div>
 
-        {/* RIGHT COLUMN: Image Container */}
-        {/* Set to a fixed height: 350px on mobile, 450px on medium screens and up */}
         <div className="relative w-full h-[350px] md:h-[450px] overflow-hidden rounded-2xl">
           {image && (
             <img

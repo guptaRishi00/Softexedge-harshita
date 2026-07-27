@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import React from "react";
-import Header from "../page/Header";
 import Counter from "./Counter";
 import EdgeToEdgeCarousel from "./EdgeToEdgeCarousel";
 
@@ -30,17 +29,11 @@ const premiumEase = [0.16, 1, 0.3, 1] as const;
 const APPEAR_DELAY = 0.1;
 const WORD_STAGGER = 0.18;
 const LINE_ONE = ["The", "minds", "behind"];
-// Split opens only after every word has appeared one by one
 const SPLIT_DELAY = 1.7;
 
 export default function AboutHeroSection() {
   return (
     <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#FAFAFA] pb-16 font-sans selection:bg-[#2E5BFF]/20 md:pb-25">
-      <div className="absolute left-0 top-0 z-50 w-full">
-        <Header />
-      </div>
-
-      {/* Changed py-32 to pt-48 pb-32 md:pt-56 to add extra space between the header and the content */}
       <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 pt-48 pb-32 md:pt-50 text-center md:px-10">
         <h1 className="text-[2.75rem] font-bold leading-[1.05] tracking-tight text-zinc-900 sm:text-6xl md:text-7xl lg:text-[6rem]">
           {LINE_ONE.map((word, i) => (
@@ -103,19 +96,6 @@ export default function AboutHeroSection() {
             </span>
           </motion.h1>
 
-          {/* <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.9,
-              delay: APPEAR_DELAY + 0.35,
-              ease: premiumEase,
-            }}
-            className="mx-auto mt-6 max-w-2xl text-base font-medium leading-[1.4em] text-zinc-600 md:text-lg"
-          >
-            Softexedge is a premier digital marketing agency driving growth,
-            innovation, and impactful brand strategies.
-          </motion.p> */}
         </div>
       </div>
 

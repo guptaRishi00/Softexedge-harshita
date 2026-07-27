@@ -70,15 +70,11 @@ export default function ContactSection() {
 
             <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[64px] lg:leading-[0.9em]">
               Let&apos;s build <br />
-              {/* px/-mx fade band at each edge (no layout shift) — sliding
-                  words dissolve at the edges, same as ExperimentalTestimonials. */}
               <span className="inline-grid overflow-hidden py-2 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
                 {isDesktop ? (
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={index}
-                      // Exactly the AboutSection rotating-word config: enter
-                      // from the left on the spring, exit right on a quick tween.
                       initial={{ x: "-100%", opacity: 0 }}
                       animate={{ x: "0%", opacity: 1 }}
                       exit={{

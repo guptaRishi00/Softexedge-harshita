@@ -10,8 +10,6 @@ export default function ProjectGallery({
   images,
 }: {
   project: Project;
-  // Render a specific subset (used to split the gallery into two blocks that
-  // sit before and after the outcomes section). Defaults to the full gallery.
   images?: string[];
 }) {
   const gallery = images ?? project.gallery ?? [];
@@ -20,12 +18,8 @@ export default function ProjectGallery({
   return (
     <section className="bg-[#0a0a0a] px-4 pb-12 md:px-10 md:pb-16">
       <div className="mx-auto max-w-[1400px]">
-        {/* Bento Grid Container */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {gallery.map((image, index) => {
-            // [wide(2 cols) + narrow(1 col)] pairs tile the 3-col grid cleanly
-            // for any count; a lonely trailing wide image (odd count) spans the
-            // full width instead of leaving an empty gap on its row.
             const wide = index % 2 === 0;
             const lonelyLast = index === gallery.length - 1 && wide;
             const gridClass = lonelyLast

@@ -1,4 +1,3 @@
-// src/components/home/FaqSection.tsx
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -43,11 +42,6 @@ export default function FaqSection() {
 
   return (
     <section className="relative overflow-hidden bg-white px-4 md:px-10 md:py-20">
-      {/* 
-        Hidden SVG to define the custom gradient. 
-        ADDED: gradientUnits="userSpaceOnUse" and x1/y1 coordinates to fix the 
-        invisible horizontal line bug.
-      */}
       <svg width="0" height="0" className="absolute pointer-events-none">
         <defs>
           <linearGradient
@@ -65,7 +59,6 @@ export default function FaqSection() {
       </svg>
 
       <div className="mx-auto flex w-full flex-col items-start gap-16 lg:flex-row lg:gap-24">
-        {/* LEFT COLUMN: Sticky Title */}
         <div className="flex w-full flex-col items-start lg:sticky lg:top-5 lg:w-[40%]">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -73,7 +66,6 @@ export default function FaqSection() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
           >
-            {/* Tag — same style as the BlogSection "Latest Insights" tag */}
             <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
               FAQs
             </p>
@@ -87,7 +79,6 @@ export default function FaqSection() {
           </motion.div>
         </div>
 
-        {/* RIGHT COLUMN: Interactive Accordion */}
         <div className="flex w-full flex-col gap-4 lg:w-[95%]">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
@@ -113,7 +104,6 @@ export default function FaqSection() {
                     {faq.question}
                   </h3>
 
-                  {/* Animated Plus/Minus Icon */}
                   <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.4, ease: premiumEase }}
@@ -131,10 +121,8 @@ export default function FaqSection() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
-                      {/* Horizontal line (always visible, becomes the minus) */}
                       <path d="M5 12h14" />
 
-                      {/* Vertical line (fades & scales down to form a minus) */}
                       <motion.path
                         d="M12 5v14"
                         initial={false}
@@ -149,7 +137,6 @@ export default function FaqSection() {
                   </motion.div>
                 </button>
 
-                {/* Expanding Answer Section */}
                 <AnimatePresence>
                   {isOpen && (
                     <motion.div

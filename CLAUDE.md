@@ -9,7 +9,7 @@ gotchas so you don't have to re-explore.
   relevant guide in `node_modules/next/dist/docs/` before writing Next.js code;
   heed deprecation notices.
 - **Lint/format with Biome** (`bun run lint`, `bun run format`) — not ESLint.
-- **Do not edit `src/components/garbage/`** — it's dead code (see map). Don't add to it.
+- **Don't create "parked" dead components** — the old `src/components/garbage/` graveyard (deleted 2026-07-24) is not a pattern to revive; unused code gets removed, not stored.
 - **Navigation is duplicated** — `layout/Header` serves `/home` only; `page/Header`
   serves every other page. Check the map before editing either.
 - **The 8 service pages have their own copies of every section** (CtaSection,

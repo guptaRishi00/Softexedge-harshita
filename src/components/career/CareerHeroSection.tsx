@@ -1,13 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Header from "../page/Header";
 import type { CarouselItem } from "./CarouselCard";
 import InfiniteRow from "./InfiniteRow";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
-// Word-by-word stagger reveal (same pattern as the brand-strategy hero)
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -56,14 +54,7 @@ const col2Items: CarouselItem[] = [
 export default function CareerHeroSection() {
   return (
     <section className="relative flex w-full flex-col overflow-hidden bg-white pt-24 pb-32 text-zinc-900 font-sans selection:bg-[#2E5BFF]/20">
-      {/* HEADER */}
-      <div className="absolute left-0 top-0 z-50 w-full">
-        <Header />
-      </div>
-
-      {/* Main Content Area */}
       <div className="relative z-10 flex w-full flex-col pt-16 md:pt-24">
-        {/* Title & Subheadline with padding */}
         <div className="px-6 md:px-12 w-full max-w-[1200px] mx-auto text-center">
           <motion.div
             variants={containerVariants}
@@ -103,7 +94,6 @@ export default function CareerHeroSection() {
           </motion.p>
         </div>
 
-        {/* Dynamic Image Carousel (Horizontal, Edge-to-Edge) */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}

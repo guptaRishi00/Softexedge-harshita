@@ -1,9 +1,7 @@
-// src/components/home/OurTechStack.tsx
 "use client";
 
 import { motion } from "framer-motion";
 
-// Update these paths to match the exact filenames in your public/assets folder
 const techStack = [
   { id: 2, name: "Next.js", image: "/assets/nextjs.png" },
   { id: 3, name: "Tailwind CSS", image: "/assets/tailwind3.png" },
@@ -74,13 +72,11 @@ export default function OurTechStack() {
               x: {
                 repeat: Infinity,
                 repeatType: "loop",
-                // Doubled duration to 50s because we doubled the track length
                 duration: 50,
                 ease: "linear",
               },
             }}
           >
-            {/* 4 tracks ensure it fills ultrawide monitors before looping */}
             <LogoTrack />
             <LogoTrack />
             <LogoTrack />
@@ -107,8 +103,6 @@ export default function OurTechStack() {
         </div>
       </div>
 
-      {/* Bottom Border — inset 16px at every breakpoint (wider than the
-          md:px-10 content gutter) so the rule runs long but never edge-to-edge. */}
       <div className="mx-auto w-full px-4">
         <div className="w-full border-b border-white/10" />
       </div>

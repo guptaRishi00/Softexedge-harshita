@@ -108,7 +108,6 @@ const jobs: Job[] = [
   },
 ];
 
-// Removed DetailList as we use custom bento cards inline
 
 export default function OpenPositions() {
   const [openId, setOpenId] = useState<string | null>(null);
@@ -120,7 +119,6 @@ export default function OpenPositions() {
   return (
     <section className="w-full bg-black px-4 md:px-10 pt-16 pb-24 md:pt-20 md:pb-32 font-sans selection:bg-[#2E5BFF]/20">
       <div className="mx-auto w-full">
-        {/* Header matching the image */}
         <div className="flex flex-col items-center mb-16 md:mb-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -146,7 +144,6 @@ export default function OpenPositions() {
           </motion.h2>
         </div>
 
-        {/* Job List with ServiceSection hover style */}
         <div className="group/list flex w-full flex-col">
           {jobs.map((job, idx) => {
             const open = openId === job.id;
@@ -163,14 +160,12 @@ export default function OpenPositions() {
                 }}
                 className="group relative flex flex-col"
               >
-                {/* Visible Row */}
                 {/* biome-ignore lint/a11y/useKeyWithClickEvents: simple expandable row */}
                 {/* biome-ignore lint/a11y/noStaticElementInteractions: simple expandable row */}
                 <div
                   onClick={() => toggle(job.id)}
                   className="flex w-full cursor-pointer items-center justify-between py-6 md:py-12"
                 >
-                  {/* Left: Tag Reveal & Title */}
                   <div className="flex items-center">
                     <div
                       className={cn(
@@ -195,7 +190,6 @@ export default function OpenPositions() {
                     </h3>
                   </div>
 
-                  {/* Right: Animated MdArrowOutward */}
                   <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 text-white transition-colors duration-300 group-hover:border-transparent group-hover:bg-[#1a1a1a] md:h-14 md:w-14">
                     <svg width="0" height="0" className="absolute">
                       <title>Arrow gradient</title>
@@ -229,7 +223,6 @@ export default function OpenPositions() {
                   </div>
                 </div>
 
-                {/* CUSTOM GRADIENT BORDER */}
                 <div
                   className={cn(
                     "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500 z-20",
@@ -237,7 +230,6 @@ export default function OpenPositions() {
                   )}
                 />
 
-                {/* Hidden Accordion Details */}
                 <AnimatePresence initial={false}>
                   {open && (
                     <motion.div
@@ -248,7 +240,6 @@ export default function OpenPositions() {
                       className="overflow-hidden"
                     >
                       <div className="flex flex-col gap-8 pt-6 pb-12 max-w-3xl">
-                        {/* ABOUT THE ROLE */}
                         <div>
                           <h4 className="text-lg font-bold text-white mb-3">
                             About the Role
@@ -258,7 +249,6 @@ export default function OpenPositions() {
                           </p>
                         </div>
 
-                        {/* KEY RESPONSIBILITIES */}
                         <div>
                           <h4 className="text-lg font-bold text-white mb-3">
                             Key Responsibilities
@@ -270,7 +260,6 @@ export default function OpenPositions() {
                           </ul>
                         </div>
 
-                        {/* REQUIREMENTS */}
                         <div>
                           <h4 className="text-lg font-bold text-white mb-3">
                             Requirements
@@ -282,7 +271,6 @@ export default function OpenPositions() {
                           </ul>
                         </div>
 
-                        {/* WHY WORK WITH US / PERKS */}
                         <div>
                           <h4 className="text-lg font-bold text-white mb-3">
                             Why Work With Us
@@ -294,7 +282,6 @@ export default function OpenPositions() {
                           </ul>
                         </div>
 
-                        {/* GOOD TO HAVE */}
                         <div>
                           <h4 className="text-lg font-bold text-white mb-3">
                             Good to Have
@@ -306,7 +293,6 @@ export default function OpenPositions() {
                           </ul>
                         </div>
 
-                        {/* APPLY BUTTON */}
                         <div className="pt-2">
                           <a
                             href={`mailto:careers@softexedge.com?subject=Application for ${job.title}`}

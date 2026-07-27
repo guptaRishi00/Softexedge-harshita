@@ -64,9 +64,6 @@ const perks: Perk[] = [
   },
 ];
 
-// Boxy-grid card background — same pattern/colors as ContactSection's
-// ChannelCard (masked cell grid revealed by a mouse-following radial mask,
-// parked at the right when idle).
 const GRID_COLUMNS = 4;
 const boxyCellIds = Array.from({ length: 80 }, (_, i) => `perk-box-${i}`);
 
@@ -196,7 +193,6 @@ export default function PerksSection() {
   return (
     <section className="w-full bg-black px-4 md:px-10 py-24 font-sans selection:bg-[#2E5BFF]/20 md:pt-20">
       <div className="mx-auto w-full">
-        {/* Header */}
         <div className="mb-14 flex flex-col items-center text-center md:mb-30">
           <motion.span
             initial={reduce ? false : { opacity: 0, y: 16 }}
@@ -222,7 +218,6 @@ export default function PerksSection() {
           </motion.h2>
         </div>
 
-        {/* Perk cards — ChannelCard-style boxy-grid cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-5">
           {perks.map((perk, idx) => (
             <motion.div

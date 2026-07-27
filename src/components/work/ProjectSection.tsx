@@ -5,8 +5,6 @@ import type { ReactNode } from "react";
 
 export const premiumEase = [0.16, 1, 0.3, 1] as const;
 
-// Animated body section wrapper — one definition of the motion config so the
-// five body sections stay consistent without repeating the motion props.
 export default function Section({
   heading,
   children,

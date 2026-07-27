@@ -1,4 +1,3 @@
-// src/components/home/PortfolioSection.tsx
 "use client";
 
 import { useGSAP } from "@gsap/react";
@@ -13,8 +12,6 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-// Seconds the auto-advance takes to cross the whole horizontal phase once the
-// section pins. With 5 panels that's ~1.5s per panel.
 const AUTO_ADVANCE_SECONDS = 6;
 
 const projects = [
@@ -97,7 +94,6 @@ export default function PortfolioSection() {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 768px)", () => {
-        // 1. CUSTOM CURSOR TRACKING
         let moveCursor: (e: MouseEvent) => void = () => {};
         const cursor = cursorRef.current;
 
@@ -128,16 +124,10 @@ export default function PortfolioSection() {
           window.addEventListener("mousemove", moveCursor);
         }
 
-        // 2. HORIZONTAL SCROLL ANIMATION
-        // Declared out here so the cleanup at the bottom can reach it.
         let cleanupAuto: () => void = () => {};
         const track = trackRef.current;
         if (track) {
           const totalWidth = track.scrollWidth - window.innerWidth;
-          // The pin holds one extra viewport AFTER the panels finish so the
-          // next section (Stats, pulled up md:-mt-[100vh] on the page) can
-          // slide over the still-pinned section — a wrapper pin would be an
-          // unsupported nested pin. Fraction of the trigger spent moving:
           const holdPx = window.innerHeight;
           const xPhase = totalWidth / (totalWidth + holdPx);
           const scrollTween = gsap
@@ -150,10 +140,6 @@ export default function PortfolioSection() {
                 scrub: 1,
                 anticipatePin: 1,
                 invalidateOnRefresh: true,
-                // Settle on one panel at a time. Only the horizontal phase
-                // snaps — past xPhase the timeline is the one-viewport hold
-                // that Stats slides over, and snapping there would fight that
-                // overlap, so those values are returned untouched.
                 snap: {
                   snapTo: (value) => {
                     if (value >= xPhase) return value;
@@ -162,8 +148,6 @@ export default function PortfolioSection() {
                       (Math.round((value / xPhase) * steps) / steps) * xPhase
                     );
                   },
-                  // Short, and delayed enough that it waits for the scrub to
-                  // settle instead of yanking mid-gesture.
                   duration: { min: 0.15, max: 0.4 },
                   delay: 0.08,
                   ease: "power1.inOut",
@@ -184,11 +168,6 @@ export default function PortfolioSection() {
             })
             .to({}, { duration: holdPx });
 
-          // 2b. AUTO-ADVANCE — once the section pins, walk the PAGE scroll
-          // through the horizontal phase on its own. It has to move the page
-          // scroll rather than the track: the timeline is scrubbed to scroll
-          // position, so animating the track directly would desync it from the
-          // panel snap and the text reveals.
           const st = scrollTween.scrollTrigger;
           let autoTween: gsap.core.Tween | null = null;
 
@@ -203,16 +182,12 @@ export default function PortfolioSection() {
               return;
             }
             const from = st.scroll();
-            // Stop at the end of the horizontal phase — never into the hold,
-            // which belongs to the Stats overlap.
             const to = st.start + totalWidth;
             if (from >= to) return;
 
             const proxy = { y: from };
             autoTween = gsap.to(proxy, {
               y: to,
-              // Pace is per-distance, so the tour runs at the same speed
-              // regardless of how far in the section was entered.
               duration: ((to - from) / totalWidth) * AUTO_ADVANCE_SECONDS,
               ease: "none",
               onUpdate: () => st.scroll(proxy.y),
@@ -220,16 +195,11 @@ export default function PortfolioSection() {
             });
           };
 
-          // Any real input hands control straight back to the user — an
-          // auto-scroll that fights the wheel is worse than none.
           const interrupts = ["wheel", "touchstart", "pointerdown", "keydown"];
           for (const evt of interrupts) {
             window.addEventListener(evt, stopAuto, { passive: true });
           }
 
-          // Separate (unpinned) trigger purely for the enter/leave events —
-          // the pinned timeline above is created first, so its callbacks
-          // cannot reference these handlers without a TDZ error.
           ScrollTrigger.create({
             trigger: containerRef.current,
             start: "top top",
@@ -246,7 +216,6 @@ export default function PortfolioSection() {
             }
           };
 
-          // 3. TEXT REVEALS ON SCROLL
           gsap.utils
             .toArray<HTMLElement>(".project-panel")
             .forEach((panel, index) => {
@@ -271,7 +240,6 @@ export default function PortfolioSection() {
             });
         }
 
-        // CLEANUP LISTENER
         return () => {
           if (moveCursor) {
             window.removeEventListener("mousemove", moveCursor);
@@ -308,7 +276,6 @@ export default function PortfolioSection() {
       onMouseLeave={handleMouseLeave}
       className="relative h-auto w-full overflow-hidden bg-[#0a0a0a] text-white md:h-screen"
     >
-      {/* TRACK */}
       <div
         ref={trackRef}
         className="flex w-full flex-col md:h-full md:w-max md:flex-row"
@@ -318,7 +285,6 @@ export default function PortfolioSection() {
             key={project.id}
             className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
           >
-            {/* FULL BLEED INTERACTIVE LINK WRAPPER */}
             <Link
               href={project.href}
               className="absolute inset-0 z-20 cursor-none max-md:cursor-pointer"
@@ -328,7 +294,6 @@ export default function PortfolioSection() {
               <span className="sr-only">View {project.title}</span>
             </Link>
 
-            {/* BACKGROUND */}
             <div className="absolute inset-0 -z-20 overflow-hidden">
               {project.type === "video" ? (
                 <video
@@ -350,27 +315,20 @@ export default function PortfolioSection() {
               <div className="absolute inset-0 bg-linear-to-t from-black/100 via-black/20 to-transparent" />
             </div>
 
-            {/* CONTENT */}
             <div className="pointer-events-none relative z-10 flex w-full items-end justify-between">
               <div className="flex w-full flex-col items-start gap-4 md:gap-5 lg:w-[80%]">
-                {/* Tag (category) — AboutSection eyebrow style, same on every card */}
                 <p className="reveal-item text-sm font-medium uppercase tracking-[0.3em] text-white">
                   {project.category}
                 </p>
 
-                {/* Title */}
-                {/* -ml compensates the huge glyphs' left side bearing so the
-                    title's INK lines up with the tag/description above/below */}
                 <h2 className="reveal-item -ml-[0.05em] text-5xl font-bold leading-[0.9] tracking-[-0.05em] md:text-7xl lg:text-[7rem]">
                   {project.title}
                 </h2>
 
-                {/* Description */}
                 <p className="reveal-item max-w-[95%] text-sm leading-[1.5] text-white/80 md:text-lg lg:max-w-[90%]">
                   {project.description}
                 </p>
 
-                {/* Tech Tags */}
                 <div className="reveal-item mt-2 flex flex-wrap gap-2 md:gap-3">
                   {project.tech.map((tag, i) => (
                     <span
@@ -387,13 +345,10 @@ export default function PortfolioSection() {
         ))}
       </div>
 
-      {/* CUSTOM CURSOR FOLLOWER */}
       <div
         ref={cursorRef}
         className={cn(
           "pointer-events-none fixed left-0 top-0 z-9999 hidden h-10 w-33 items-center justify-center rounded-lg bg-linear-to-r from-[#2E5BFF] to-[#149CCB] text-white md:flex",
-          // CSS-hidden by default so Safari never paints it before GSAP
-          // applies the inline transform/opacity (autoAlpha overrides this).
           "invisible opacity-0",
           "will-change-transform",
         )}

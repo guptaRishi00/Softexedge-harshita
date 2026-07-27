@@ -3,16 +3,9 @@
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// Background pattern + hover behaviour lifted from ContactSection's
-// ChannelCard: a grid of boxy #161616 cells under a radial mask that follows
-// the pointer, with cells near the cursor brightening by proximity.
 const QUOTE_GRID_COLUMNS = 4;
 const quoteCellIds = Array.from({ length: 32 }, (_, i) => `quote-cell-${i}`);
 
-// Port of ContactSection's ChannelCard background: boxy cell grid, a radial
-// mask that tracks the pointer and parks at 85%/50% when idle, and cells that
-// brighten by grid-distance from the hovered one. Its own component because
-// those hooks cannot live inside CarouselCard's `item.type === "quote"` branch.
 export default function QuoteCard({ text }: { text: string }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -27,8 +20,6 @@ export default function QuoteCard({ text }: { text: string }) {
     mouseY.set(el.offsetHeight / 2);
   }, [mouseX, mouseY]);
 
-  // Two rAFs so the park happens after layout — offsetWidth is 0 on the first
-  // frame inside the marquee track.
   const setCardRef = useCallback(
     (node: HTMLDivElement | null) => {
       cardRef.current = node;
@@ -66,8 +57,6 @@ export default function QuoteCard({ text }: { text: string }) {
     return distance > 3.5 ? 0 : 1 - distance / 1.79;
   };
 
-  // 140px, not the source's 280px: these tiles are only ~130-210px wide, so
-  // the original radius blanketed the card and left no visible falloff.
   const mask = useMotionTemplate`radial-gradient(140px circle at ${mouseX}px ${mouseY}px, black 0%, rgba(0,0,0,0.15) 100%)`;
 
   return (
@@ -117,8 +106,6 @@ export default function QuoteCard({ text }: { text: string }) {
         </div>
       </motion.div>
 
-      {/* Outlined quote icon — the same mark ExperimentalTestimonials uses.
-          Stroke follows currentColor. */}
       <svg
         viewBox="0 0 24 24"
         fill="none"

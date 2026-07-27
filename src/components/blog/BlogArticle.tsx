@@ -13,7 +13,6 @@ import TableOfContents from "./TableOfContents";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
-// Upgrade an unsplash card thumbnail (w=600) to a hero-sized crop.
 const wide = (url: string, w = 1600) => url.replace("w=600", `w=${w}`);
 
 const fadeUp = {
@@ -39,7 +38,6 @@ export default function BlogArticle({
     mass: 0.4,
   });
 
-  // Table of contents: derive from the article's heading blocks.
   const toc = post.content
     .filter(
       (block): block is { type: "heading"; text: string } =>
@@ -49,18 +47,15 @@ export default function BlogArticle({
 
   return (
     <main className="relative w-full bg-white font-sans selection:bg-[#2E5BFF]/20">
-      {/* Reading progress bar */}
       <motion.div
         style={{ scaleX: progress }}
         className="fixed left-0 top-0 z-[200] h-[3px] w-full origin-left bg-linear-to-r from-[#2E5BFF] to-[#149CCB]"
       />
 
-      {/* Header */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
-      {/* ---------- HERO ---------- */}
       <section className="relative w-full overflow-hidden bg-[#FAFAFA] px-6 pb-16 pt-36 md:px-10 md:pb-20 md:pt-44">
         <div className="w-full ">
           <motion.div
@@ -113,7 +108,6 @@ export default function BlogArticle({
             {post.lead}
           </motion.p>
 
-          {/* Meta row */}
           <motion.div
             initial="hidden"
             animate="visible"
@@ -151,9 +145,6 @@ export default function BlogArticle({
         </div>
       </section>
 
-      {/* ---------- COVER IMAGE ---------- */}
-      {/* Edge-to-edge with the site's standard p-3 inset + rounded-[20px],
-          same framing as the CtaSection / Footer / home hero blocks. */}
       <div className="w-full bg-white px-3">
         <motion.figure
           initial={{ opacity: 0, y: 30 }}
@@ -172,10 +163,8 @@ export default function BlogArticle({
         </motion.figure>
       </div>
 
-      {/* ---------- BODY ---------- */}
       <section className="w-full bg-white px-6 py-16 md:px-10 md:pt-24 md:pb-14">
         <div className="grid w-full  grid-cols-1 gap-12 lg:grid-cols-[380px_minmax(0,1fr)]">
-          {/* Sticky left rail: table of contents (above) + share (below) */}
           <aside className="hidden lg:block">
             <div className="sticky top-32 flex flex-col gap-6">
               <TableOfContents headings={toc} />
@@ -184,13 +173,11 @@ export default function BlogArticle({
             </div>
           </aside>
 
-          {/* Prose */}
           <article className="w-full max-w-[1000px]">
             {post.content.map((block, i) => (
               <Block key={`${block.type}-${i}`} block={block} />
             ))}
 
-            {/* Tags */}
             <div className="mt-14 flex flex-wrap gap-2 border-t border-zinc-200 pt-8">
               {post.tags.map((tag) => (
                 <span
@@ -202,7 +189,6 @@ export default function BlogArticle({
               ))}
             </div>
 
-            {/* Author bio */}
             <div className="mt-12 flex flex-col gap-5 rounded-3xl border border-zinc-200 bg-[#FAFAFA] p-6 sm:flex-row sm:items-center md:p-8">
               <Image
                 src={post.authorMeta.avatar}
@@ -229,7 +215,6 @@ export default function BlogArticle({
         </div>
       </section>
 
-      {/* ---------- RELATED ---------- */}
       {related.length > 0 && <RelatedArticles related={related} />}
     </main>
   );

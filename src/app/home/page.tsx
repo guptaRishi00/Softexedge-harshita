@@ -1,4 +1,3 @@
-// src/app/home/page.tsx
 "use client";
 
 import { useGSAP } from "@gsap/react";
@@ -49,11 +48,9 @@ export default function HomePage() {
   const aboutInnerRef = useRef<HTMLDivElement>(null);
   const portfolioRef = useRef<HTMLDivElement>(null);
 
-  // Stats pins once its scroll completes; ServiceSection slides up over it.
   const statsContainerRef = useRef<HTMLDivElement>(null);
   const serviceContainerRef = useRef<HTMLDivElement>(null);
 
-  // Testimonials + logo carousel pin as one group; ContactSection slides over.
   const testimonialsGroupRef = useRef<HTMLDivElement>(null);
   const testimonialsInnerRef = useRef<HTMLDivElement>(null);
   const contactContainerRef = useRef<HTMLDivElement>(null);
@@ -62,7 +59,6 @@ export default function HomePage() {
     const mm = gsap.matchMedia();
 
     mm.add("(min-width: 768px)", () => {
-      // 1. ABOUT SECTION ANIMATION
       if (
         aboutContainerRef.current &&
         aboutInnerRef.current &&
@@ -91,16 +87,7 @@ export default function HomePage() {
         });
       }
 
-      // (The Portfolio → Stats overlap lives inside PortfolioSection: its
-      // horizontal-scroll pin holds one extra viewport, and the Stats block
-      // below is pulled up md:-mt-[100vh] so it slides over the held pin —
-      // a second pin on the wrapper here would be an unsupported nested pin.)
 
-      // 2. STATS → SERVICES OVERLAP: once StatsSection has fully scrolled
-      // through (its bottom reaches the viewport bottom — pinning earlier
-      // would freeze its row animations with the lower rows still hidden),
-      // pin it and let ServiceSection slide up over it (same pattern as
-      // About → Portfolio above).
       if (statsContainerRef.current && serviceContainerRef.current) {
         ScrollTrigger.create({
           trigger: statsContainerRef.current,
@@ -112,10 +99,6 @@ export default function HomePage() {
         });
       }
 
-      // 3. TESTIMONIALS+CAROUSEL → CONTACT OVERLAP: pin the testimonials/logo
-      // group once it has fully scrolled through (bottom bottom, since the
-      // pair is taller than the viewport) and let ContactSection slide up
-      // over it — same mechanism as the two overlaps above.
       if (testimonialsGroupRef.current && contactContainerRef.current) {
         ScrollTrigger.create({
           trigger: testimonialsGroupRef.current,
@@ -126,8 +109,6 @@ export default function HomePage() {
           pinSpacing: false,
         });
 
-        // Shrink the pinned group as ContactSection slides over it — same
-        // scale-down as the About → Portfolio overlap above.
         if (testimonialsInnerRef.current) {
           gsap.to(testimonialsInnerRef.current, {
             scale: 0.85,

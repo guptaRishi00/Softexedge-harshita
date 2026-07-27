@@ -2,8 +2,6 @@
 
 import QuoteCard from "./QuoteCard";
 
-// Each carousel slot is one of three things — an image, an autoplaying video,
-// or a quote card — mixed within a row. Card dimensions are unchanged.
 export type CarouselItem =
   | { type: "image"; src: string }
   | { type: "video"; src: string }

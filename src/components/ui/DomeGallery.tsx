@@ -6,16 +6,11 @@ type ImageItem = string | { src: string; alt?: string };
 
 type DomeGalleryProps = {
   images?: ImageItem[];
-  // The single gap (px) used everywhere: between columns, between cards in a
-  // column, and at the loop seam.
   gap?: number;
   grayscale?: boolean;
-  // Kept from the dome era: a slow ambient drift, now a horizontal marquee.
   autoRotate?: boolean;
   autoRotateSpeed?: number;
   imageBorderRadius?: string;
-  // Light black veil on every card (a whole-wall dim) that fades away on the
-  // hovered card, leaving it fully clear.
   cardOverlay?: boolean;
 };
 
@@ -46,12 +41,8 @@ const DEFAULT_IMAGES: ImageItem[] = [
   },
 ];
 
-// Deterministic "uneven" patterns (no randomness — stable across SSR/renders).
-// Column widths in px; card heights as fractions of the container height.
 const WIDTH_PATTERN = [300, 180, 250, 205, 290, 225];
 const HEIGHT_PATTERN = [0.34, 0.22, 0.29, 0.19, 0.31, 0.25];
-// How far above the top edge each column starts (fraction of height) — offsets
-// the rows so horizontal seams never align across columns.
 const OFFSET_PATTERN = [0.14, 0.05, 0.22, 0.09, 0.17, 0.02];
 const COLUMNS = 18;
 
@@ -64,13 +55,6 @@ type Card = {
   alt: string;
 };
 
-/**
- * Flat 2D gallery wall (formerly a 3D dome — the sphere, drag and enlarge
- * interactions are gone). Masonry-style: uneven card widths per column and
- * uneven card heights per row, with ONE constant gap everywhere. Renders as an
- * ambient background; `autoRotate` drifts the wall horizontally in a seamless
- * loop. Reduced-motion users get a static wall.
- */
 export default function DomeGallery({
   images = DEFAULT_IMAGES,
   gap = 16,
@@ -107,9 +91,6 @@ export default function DomeGallery({
     [images],
   );
 
-  // One strip of COLUMNS masonry columns; the strip is tiled horizontally to
-  // cover the viewport and loop. stripPitch includes a trailing gap so the
-  // seam between copies equals every other gap.
   const { cards, stripPitch, copies } = useMemo(() => {
     const { w, h } = dims;
     if (w === 0 || h === 0 || pool.length === 0) {
@@ -120,15 +101,11 @@ export default function DomeGallery({
     let x = 0;
     for (let c = 0; c < COLUMNS; c++) {
       const colW = WIDTH_PATTERN[c % WIDTH_PATTERN.length];
-      // 5 is coprime with the pattern lengths, so every column gets a
-      // different phase of the height/offset cycles.
       let hIdx = (c * 5) % HEIGHT_PATTERN.length;
       let y = -OFFSET_PATTERN[(c * 5 + 2) % OFFSET_PATTERN.length] * h;
       let r = 0;
       while (y < h && r < 12) {
         const cardH = HEIGHT_PATTERN[hIdx] * h;
-        // Step 2 across columns keeps horizontal neighbours on different
-        // images; step 1 down a column does the same vertically.
         const img = pool[(r + 2 * c) % pool.length];
         built.push({ x, y, w: colW, h: cardH, src: img.src, alt: img.alt });
         y += cardH + gap;
@@ -138,7 +115,7 @@ export default function DomeGallery({
       x += colW + gap;
     }
 
-    const pitch = x; // sum of widths + a gap per column (incl. the seam)
+    const pitch = x; 
     return {
       cards: built,
       stripPitch: pitch,
@@ -146,7 +123,6 @@ export default function DomeGallery({
     };
   }, [dims, pool, gap]);
 
-  // Ambient horizontal drift, looping over exactly one strip pitch.
   useEffect(() => {
     if (!autoRotate || stripPitch === 0) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -175,7 +151,6 @@ export default function DomeGallery({
         {Array.from({ length: copies }).map((_, copy) =>
           cards.map((card, i) => (
             <div
-              // Layout is deterministic: a card is identified by its copy+slot.
               key={`${copy}-${
                 // biome-ignore lint/suspicious/noArrayIndexKey: static layout, never reorders
                 i

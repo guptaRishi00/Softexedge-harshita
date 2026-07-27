@@ -4,7 +4,6 @@ import { Check, Link2 } from "lucide-react";
 import { useState } from "react";
 import { FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
 
-// ---------- Share rail ----------
 export default function ShareRail({ title }: { title: string }) {
   const [copied, setCopied] = useState(false);
 

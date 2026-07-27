@@ -190,11 +190,8 @@ function ProjectCard({
 
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-30 transition-opacity duration-700 group-hover:opacity-60" />
 
-      {/* Default Border (Fades out when hovered) */}
       <div className="pointer-events-none absolute inset-0 z-10 rounded-[20px] border border-white/10 transition-opacity duration-500 group-hover:opacity-0" />
 
-      {/* Moving comet border — same TracingBorder effect as WorkProjectShowcase
-          (traces the border on hover, then settles into TR/BL corner glows). */}
       <TracingBorder
         active={isHovered}
         radius={20}

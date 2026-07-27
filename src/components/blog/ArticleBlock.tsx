@@ -1,8 +1,6 @@
 import Image from "next/image";
 import type { ContentBlock } from "@/data/blog";
 
-// URL-safe id for a heading. Matches the id we stamp onto the rendered <h2>
-// so TOC links and anchors stay in sync from one source (the heading text).
 export const slugify = (text: string) =>
   text
     .toLowerCase()
@@ -11,7 +9,6 @@ export const slugify = (text: string) =>
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 
-// ---------- Block renderer ----------
 export default function Block({ block }: { block: ContentBlock }) {
   switch (block.type) {
     case "heading":

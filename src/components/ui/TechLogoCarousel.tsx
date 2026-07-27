@@ -35,8 +35,6 @@ const techLogos = [
   { node: <SiVercel />, title: "Vercel", href: "https://vercel.com" },
 ];
 
-// Tech-stack logo marquee shown directly below ExperimentalTestimonials
-// (matching the about page). Same markup + spacing everywhere it's used.
 export default function TechLogoCarousel() {
   return (
     <section className="w-full overflow-hidden bg-white py-16 md:pb-32">

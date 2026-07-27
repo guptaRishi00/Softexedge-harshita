@@ -76,7 +76,6 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   return (
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
-        {/* HEADER SECTION */}
         <div className="mx-auto w-full px-4 md:px-10 pt-30 pb-32">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
             What We Offer
@@ -96,7 +95,6 @@ export default function SubServices({ children }: { children?: ReactNode }) {
           </div>
         </div>
 
-        {/* STACKING CARDS WRAPPER */}
         <div ref={container} className="group/cards relative w-full">
           {services.map((service, i) => (
             <Card
@@ -110,22 +108,11 @@ export default function SubServices({ children }: { children?: ReactNode }) {
             />
           ))}
 
-          {/* OVERLAP SLOT — a section passed as children lives INSIDE the
-              sticky container and scrolls up over the still-pinned last card
-              (z-40 sits above the cards' z 0–3). Nothing is rendered without
-              children: the container ends with the last card, so once the
-              stack is complete it immediately scrolls away rather than
-              holding through a runway spacer. */}
           {children ? (
             <div className="relative z-40 w-full">{children}</div>
           ) : null}
         </div>
 
-        {/* TRANSFORM RESERVE — the last card is PAINTED (services.length-1)
-            STEPs below its layout box by its translateY, and a transform
-            reserves no layout space. Without this the card spills over the
-            section that follows. Sits OUTSIDE the sticky container so it does
-            not extend the cards' containing block and delay their release. */}
         <div
           aria-hidden
           className="pointer-events-none w-full"

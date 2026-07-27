@@ -10,8 +10,6 @@ import ProjectShowcase from "@/components/web-development/ProjectShowcase";
 import StrategyHeroSection from "@/components/web-development/StrategyHeroSection";
 import SubServices from "@/components/web-development/SubServices";
 
-// Mirror of /brand-strategy with its own component copies under
-// components/web-development/ so this page can diverge independently.
 export default function WebDevelopmentPage() {
   return (
     <div>

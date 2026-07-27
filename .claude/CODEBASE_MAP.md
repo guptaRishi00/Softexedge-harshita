@@ -46,11 +46,9 @@ Each route `page.tsx` composes section components and renders its own
 - `src/app/` — App Router routes, `layout.tsx`, `globals.css`
 - `src/components/<page>/` — page-specific sections (`home`, `about`, `blog`, `career`, `contact`, `work`)
 - `src/components/<service>/` — **8 near-identical service-page component sets** (see Duplication)
-- `src/components/ui/` — shared primitives + WebGL effects (25 files, **14 unreferenced**)
+- `src/components/ui/` — shared primitives + effects (13 files, all referenced)
 - `src/components/layout/` — Header, Footer, SmoothScroll
 - `src/components/page/` — **second** Header + its own resizable-navbar copy
-- `src/components/shared/` — 3 ConnectButton variants, **all unreferenced**
-- `src/components/garbage/` — **dead code, 25 files, zero external imports**
 - `src/data/` — `blog.ts`, `projects.ts` (all site content)
 - `src/lib/` — `utils.ts` (`cn()`), `useIsDesktop.ts`
 - `public/assets/` (~75 files incl. 5 `.mp4`), `public/fonts/`
@@ -156,8 +154,7 @@ video-production, web-development):
 | `SubServices`, `ProcessSection`, `OurTechStack`, `ProjectShowcase`, `FaqSection`, `CtaSection` | the **7** copies | `brand-strategy/*` |
 
 Editing one service page's section changes **only** that page. A site-wide
-change to these means editing 8 files. `garbage/CtaSection.tsx` is a third,
-older CTA variant — **do not use it as a dedupe base**.
+change to these means editing 8 files.
 
 Page composition also differs in one real way:
 - `brand-strategy/page.tsx:21-22` — `<SubServices />` then `<ProcessSection />` as **siblings** (no overlap)
@@ -170,8 +167,7 @@ Page composition also differs in one real way:
 | `page/Header.tsx` | `page/resizable-navbar` | **everything else** — 15 hero components + `work/[slug]/page.tsx:3` directly |
 
 `page/resizable-navbar.tsx` and `ui/resizable-navbar.tsx` are a near-duplicate
-pair. `work/WorkHeader.tsx` is a third, orphaned variant. `page/Header.tsx`
-takes `onDark` for light links over dark heroes.
+pair. `page/Header.tsx` takes `onDark` for light links over dark heroes.
 **There is no header in `layout.tsx`** — the site nav is nested inside hero
 components, so a nav change means editing both Headers.
 
@@ -200,10 +196,8 @@ components, so a nav change means editing both Headers.
 - Loose types: `type Props = {}`, `ContactPage({}: any)`.
 
 ### Dead weight
-- `src/components/garbage/` — 25 files, **zero imports from outside** (verified). Safe to delete.
-- `src/components/ui/` — **14 unreferenced effect components**, several 300–500 lines of WebGL: `BorderGlow`, `CardSwap`, `ColorBends`, `DotGrid`, `Galaxy`, `Grainient`, `GridDistortion`, `ImageTrail`, `LaserFlow`, `PixelBlast`, `PixelTrail`, `SplashCursor`, `Strands`, `VariableProximity`.
-- `src/components/3d-globe-demo.tsx`, `shared/ConnectButton{,Two,Three}.tsx`, `work/WorkHeader.tsx`, `career/CareerValues.tsx` — all orphaned.
-- Both `lenis` and legacy `@studio-freight/lenis` installed. `prettier` + plugin installed with no config.
+- **Dead source files removed 2026-07-24** (47 files: `garbage/` ×25, `shared/ConnectButton*` ×3, 15 unused `ui/` effects, `3d-globe-demo`, `about/AboutOverview`, `career/CareerValues`, `work/WorkHeader`). Verified by import-reachability BFS from all `src/app` entries + before/after HTML snapshots of all 29 routes (identical visible markup). `src` is now 149 files, all reachable.
+- **Unused deps still installed** (not removed — lockfile change needs sign-off): `prettier` + `prettier-plugin-tailwindcss` (no config), legacy `@studio-freight/lenis` (live code uses `lenis`), and — after the dead-file removal — the entire `three` stack (`three`, `@react-three/fiber`, `@react-three/drei`, `postprocessing`, `@types/three`): **zero imports in live src** (verified 2026-07-24). `ogl` IS still used, by `ui/Particles.tsx` only.
 
 ### Mobile gotchas (carried forward, still applicable)
 - **Homepage animation is desktop-only by design** — everything is inside `matchMedia("(min-width: 768px)")`. On mobile PortfolioSection is a plain vertical stack.
@@ -221,7 +215,7 @@ tests, no PR workflow.
 1. **Is the duplication intentional?** 64 near-identical service files is the single biggest maintenance cost. Should the 7 copies collapse into one parameterised set (content in `src/data/services.ts`), keeping brand-strategy separate?
 2. **Should the dead forms be wired?** Contact + newsletter are decorative; the site currently has no lead capture. Needs a form service or an API route.
 3. **`hello@youragency.com`** — replace with `hello@softexedge.com` across the 8 CtaSections? (Looks like an oversight, not a decision.)
-4. **Is `garbage/` + the 14 unused `ui/` effects intentionally kept** as a reference library, or safe to delete?
+4. ~~Is `garbage/` + the unused `ui/` effects intentionally kept~~ — resolved 2026-07-24: user asked for removal; all 47 dead files deleted. Remaining: may we also uninstall the dead deps (three stack, prettier, @studio-freight/lenis)?
 5. **Should nav be unified** into one Header in `layout.tsx` instead of two nested in hero components?
 6. **SEO:** real metadata/OG/sitemap and a production domain?
 7. `.claude/` holds three finished plan files (`plan.md`, `plan-subservices-overlap.md`, `plan-tracingborder-handoff.md`) and a 378 KB `SESSION_LOG.md` — prune/rotate?

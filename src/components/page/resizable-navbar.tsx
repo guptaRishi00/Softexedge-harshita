@@ -43,7 +43,6 @@ interface NavItemsProps {
   className?: string;
   onItemClick?: () => void;
   visible?: boolean;
-  // Force the light (over-dark-hero) link treatment even before scroll.
   onDark?: boolean;
 }
 
@@ -158,7 +157,6 @@ export const NavItems = ({
 }: NavItemsProps) => {
   const [hovered, setHovered] = useState<number | null>(null);
 
-  // CHANGED: Added a check to see if the currently hovered item actually has a dropdown
   const hoveredItemHasDropdown =
     hovered !== null &&
     ((items[hovered].subItems && items[hovered].subItems.length > 0) ||
@@ -174,9 +172,7 @@ export const NavItems = ({
         className,
       )}
     >
-      {/* CINEMATIC BACKDROP BLUR */}
       <AnimatePresence>
-        {/* CHANGED: Now only triggers if the hovered item has a dropdown */}
         {hoveredItemHasDropdown && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -215,9 +211,6 @@ export const NavItems = ({
               {hovered === idx && (
                 <motion.div
                   layoutId="hovered"
-                  // shadow-md's two layers are both +Y (0 4px / 0 2px), so it
-                  // only ever casts downward. Those exact layers are kept and
-                  // mirrored to -Y so the pill is shadowed on top as well.
                   className="absolute inset-0 h-full w-full rounded-lg bg-white shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1),0_2px_4px_-2px_rgb(0_0_0_/_0.1),0_-4px_6px_-1px_rgb(0_0_0_/_0.1),0_-2px_4px_-2px_rgb(0_0_0_/_0.1)]"
                 />
               )}
@@ -255,7 +248,7 @@ export const NavItems = ({
                   className={cn(
                     "absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 z-[110]",
                     item.dropdownItems
-                      ? "w-[90vw] max-w-[1400px]" // Perfect Mega Menu Width
+                      ? "w-[90vw] max-w-[1400px]" 
                       : item.sections
                         ? item.sections.length > 1
                           ? "w-[650px]"
@@ -263,7 +256,6 @@ export const NavItems = ({
                         : "w-64",
                   )}
                 >
-                  {/* FULL WIDTH WHITE THEME GRID */}
                   {item.dropdownItems ? (
                     <div className="bg-white border border-black/5 rounded-[2rem] overflow-hidden p-3 shadow-[0_40px_100px_rgba(0,0,0,0.15)] grid grid-cols-2 md:grid-cols-4 gap-2">
                       {item.dropdownItems.map((sub, sIdx) => (
@@ -273,7 +265,6 @@ export const NavItems = ({
                           onClick={onItemClick}
                           className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-zinc-50 border border-black/5 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
                         >
-                          {/* Hover Image */}
                           {sub.image && (
                             <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
                               <img
@@ -284,12 +275,8 @@ export const NavItems = ({
                             </div>
                           )}
 
-                          {/* Top gradient scrim over the hover image — strongest
-                              at the top where the title sits, fading to clear so
-                              the image stays visible. */}
                           <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/70 via-black/20 to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
 
-                          {/* Content Layer */}
                           <div className="relative z-10 flex h-full flex-col justify-between text-zinc-900 transition-colors duration-400 group-hover:text-white">
                             <div className="flex justify-between items-start w-full">
                               <span className="relative inline-block max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1">
@@ -299,7 +286,6 @@ export const NavItems = ({
                               </span>
                             </div>
 
-                            {/* Hover Arrow Indicator */}
                             <div className="flex justify-start">
                               <span className="relative inline-flex opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-[#149CCB]">
                                 <svg
@@ -322,7 +308,6 @@ export const NavItems = ({
                       ))}
                     </div>
                   ) : (
-                    /* STANDARD LIGHT THEME DROPDOWN */
                     <div className="bg-white border border-black/5 rounded-2xl overflow-hidden p-6 shadow-2xl">
                       {item.sections ? (
                         <div

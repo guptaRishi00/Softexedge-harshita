@@ -8,17 +8,8 @@ import { MdArrowOutward } from "react-icons/md";
 import { RiInstagramLine } from "react-icons/ri";
 import Particles from "@/components/ui/Particles";
 
-// Anything without a page of its own points at that section's anchor on the
-// page that owns it. Home anchors use /home rather than /#… because / is a
-// redirect to /home and a fragment is not guaranteed to survive the hop.
-// Every href resolves to a real route or to a section anchor on the page
-// that owns it. Order is Services → Explore → Pages (Services first, as the
-// primary offering; Pages last). Rendered flex at lg so each column sizes to
-// its own content (see the flex comment at the render site below).
 const footerLinkGroups = [
   {
-    // All eight service routes, in the same order as the homepage
-    // ServiceSection and the header dropdown.
     title: "Services",
     links: [
       { name: "Digital Marketing & Growth", href: "/digital-marketing" },
@@ -32,8 +23,6 @@ const footerLinkGroups = [
     ],
   },
   {
-    // Sections that have no page of their own — each points at the anchor on
-    // the page that owns it.
     title: "Explore",
     links: [
       { name: "Our Services", href: "/home#services" },
@@ -64,7 +53,6 @@ const socialLinks = [
   { icon: <FaLinkedinIn size={14} />, href: "#" },
 ];
 
-// Pre-keyed letters (avoids array-index keys) for the staggered brand reveal.
 const brandLetters = "Softexedge"
   .split("")
   .map((char, i) => ({ char, id: `brand-${char}${i}` }));
@@ -112,23 +100,10 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay" />
 
       <div className="relative z-10 mx-auto w-full flex flex-col px-6 md:px-10 lg:px-16">
-        {/* items-start so the links block and the newsletter block each size to
-            their own content and sit at the top, instead of the grid's default
-            stretch making them equal height. */}
         <div className="grid grid-cols-1 items-start gap-12 pb-16 lg:grid-cols-12 md:pb-20">
-          {/* FLEX at lg, not a 3-track grid. Equal-width grid tracks made the
-              spacing look uneven: "Pages" tops out at ~70px inside a ~226px
-              track, so ~156px of dead space sat before the gap, while
-              "Services" nearly filled its track. Flex sizes each column to its
-              content, so the gap is the ONLY spacing and all three read equal.
-              Mobile keeps the 2-col grid.
-              A FIXED gap, not justify-between: that distributed all the
-              leftover space and forced ~183px between columns regardless of
-              the gap value. gap-28 sets the spacing explicitly instead. */}
           <div className="grid grid-cols-2 gap-x-10 gap-y-12 lg:col-span-7 lg:flex lg:gap-28">
             {footerLinkGroups.map(({ title, links }) => (
               <div key={title} className="flex flex-col gap-2.5">
-                {/* Column heading — same tag style the page sections use. */}
                 <p className="mb-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
                   {title}
                 </p>
@@ -139,7 +114,6 @@ export default function Footer() {
                     className="group relative w-fit text-[0.95rem] font-medium tracking-tight text-white/90 transition-colors hover:text-white"
                   >
                     {link.name}
-                    {/* UPDATED: Follow-through underline animation */}
                     <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
                   </Link>
                 ))}
@@ -165,7 +139,6 @@ export default function Footer() {
                 className="group flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white text-black transition-transform hover:scale-105"
               >
                 <div className="relative flex h-6 w-6 items-center justify-center overflow-hidden">
-                  {/* Same diagonal-swap arrow as the ExperimentalTestimonials CTA */}
                   <svg width="0" height="0" className="absolute">
                     <title>Subscribe arrow gradient</title>
                     <defs>
@@ -199,8 +172,6 @@ export default function Footer() {
                 >
                   {social.icon}
                   <div className="relative flex h-4 w-4 items-center justify-center overflow-hidden">
-                    {/* Same diagonal-swap arrow as the ExperimentalTestimonials CTA
-                        (reuses the footer-arrow-grad gradient defined above). */}
                     <MdArrowOutward className="absolute z-10 h-full w-full transition-transform duration-300 group-hover:-translate-y-6 group-hover:translate-x-6" />
                     <MdArrowOutward
                       className="absolute z-10 h-full w-full -translate-x-6 translate-y-6 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
@@ -213,7 +184,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* MIDDLE SECTION: Giant Brand Name */}
         <div className="relative flex w-full justify-center pt-8 pb-16 md:pt-10 md:pb-20 overflow-hidden">
           <motion.h1
             variants={brandContainer}
@@ -221,18 +191,18 @@ export default function Footer() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
             aria-label="Softexedge"
-            className="relative z-10 flex select-none text-[17vw] font-medium leading-[0.85] tracking-normal text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
+            className="relative z-10 flex select-none text-[18vw] font-medium leading-[0.85] text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
           >
-            {/* Each letter rises out of its own clip, staggered left→right.
-                pb keeps descenders (g) inside the clip — Satoshi's descender
-                reaches ~0.2em below the baseline, and leading-[0.85] shrinks
-                the line box, so the allowance must be generous; -mb cancels
-                the extra height so the tight layout is unchanged. */}
             {brandLetters.map(({ char, id }) => (
               <span
                 key={id}
                 aria-hidden="true"
-                className="inline-block overflow-hidden pb-[0.3em] -mb-[0.3em]"
+                // Letter-tightening lives in the MARGINS, never in letter-spacing:
+                // spacing applies inside this overflow-hidden box, shrinking it
+                // below the glyph's ink and shearing the right of x/f/t. Instead
+                // px gives the ink room, -ml cancels it so the S stays flush
+                // left, and -mr does the tightening (net advance − 0.04em).
+                className="inline-block overflow-hidden px-[0.06em] ml-[-0.06em] mr-[-0.1em] pb-[0.3em] -mb-[0.3em]"
               >
                 <motion.span variants={brandLetter} className="inline-block">
                   {char}
@@ -242,7 +212,6 @@ export default function Footer() {
           </motion.h1>
         </div>
 
-        {/* BOTTOM SECTION: Timezones & Legal */}
         <div className="flex flex-col gap-16 pt-12 md:gap-24">
           <div className="grid grid-cols-2 justify-items-center gap-x-8 gap-y-12 text-xs font-semibold uppercase tracking-widest md:grid-cols-4">
             <div className="flex flex-col items-start gap-3">

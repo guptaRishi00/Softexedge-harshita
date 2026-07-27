@@ -13,23 +13,15 @@ import { MdArrowOutward } from "react-icons/md";
 import type { BlogPost } from "@/data/blog";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 
-// Related-articles marquee (same mechanism as the home BlogSection): seconds to
-// travel one track width, and a wrap helper that keeps the loop seamless in
-// both directions (auto-scroll and drag).
 const SCROLL_SECONDS = 22;
 const wrap = (min: number, max: number, v: number) => {
   const range = max - min;
   return ((((v - min) % range) + range) % range) + min;
 };
 
-// ---------- Related card ----------
-// Related articles rendered as the home BlogSection's draggable auto-scroll
-// marquee (mobile stacks vertically), fed by this article's related posts.
 export default function RelatedArticles({ related }: { related: BlogPost[] }) {
   const isDesktop = useIsDesktop();
 
-  // Motion-value driven so drag + auto-scroll share the same x without the
-  // framer keyframe/drag transform conflict.
   const x = useMotionValue(0);
   const trackRef = useRef<HTMLDivElement>(null);
   const [loopWidth, setLoopWidth] = useState(0);
@@ -38,7 +30,6 @@ export default function RelatedArticles({ related }: { related: BlogPost[] }) {
   const isPanning = useRef(false);
   const startPointerX = useRef(0);
 
-  // Seamless loop width = one CardTrack's width + the gap before the next copy.
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -65,8 +56,6 @@ export default function RelatedArticles({ related }: { related: BlogPost[] }) {
     x.set(wrap(-loopWidth, 0, x.get() - step));
   });
 
-  // Drag vs click: only capture the pointer once movement passes a threshold,
-  // so a clean press+release still reaches the card's <Link>.
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDesktop) return;
     dragging.current = true;
@@ -107,7 +96,6 @@ export default function RelatedArticles({ related }: { related: BlogPost[] }) {
         >
           <Link href={post.href} draggable={false} className="block h-full">
             <article className="group flex h-full flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
-              {/* IMAGE CONTAINER — grows taller on hover (desktop) */}
               <div className="relative aspect-square w-full overflow-hidden rounded-[1.25rem] bg-zinc-100 transition-[aspect-ratio] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:aspect-[3/4]">
                 <Image
                   src={post.image}
@@ -117,11 +105,9 @@ export default function RelatedArticles({ related }: { related: BlogPost[] }) {
                   className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:scale-105"
                   draggable={false}
                 />
-                {/* Scrim so the info stays legible once it slides over the image */}
                 <div className="pointer-events-none absolute inset-0 rounded-[1.25rem] bg-gradient-to-t from-black/75 via-black/15 to-transparent opacity-0 transition-opacity duration-500 md:group-hover:opacity-100" />
               </div>
 
-              {/* CARD CONTENT — slides up inside the card, over the image, on hover */}
               <div className="relative z-10 mt-4 flex flex-1 flex-col px-2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:-mt-32 md:group-hover:px-4 md:group-hover:pb-4">
                 <div className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 transition-colors duration-500 md:group-hover:text-white/70">
                   <span className="text-zinc-800 transition-colors duration-500 md:group-hover:text-white">
@@ -155,7 +141,6 @@ export default function RelatedArticles({ related }: { related: BlogPost[] }) {
             </h2>
           </div>
 
-          {/* Same CTA button as the BlogSection / ExperimentalTestimonials */}
           <div className="flex w-full items-center justify-end md:w-auto">
             <Link
               href="/blog"
@@ -192,8 +177,6 @@ export default function RelatedArticles({ related }: { related: BlogPost[] }) {
           </div>
         </div>
 
-        {/* CONTAINER — clip only horizontally; vertical stays visible so the
-            card's hover growth isn't cut at the bottom mid-transition. */}
         <div className="relative w-full overflow-x-clip">
           <motion.div
             ref={trackRef}

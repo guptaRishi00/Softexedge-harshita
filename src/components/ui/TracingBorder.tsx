@@ -3,9 +3,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
-// Tracing border: a comet orbits the card once, then dissolves — its energy
-// gathers into two glowing corners (left blue, right cyan) while
-// the connecting edges softly fade in.
 export default function TracingBorder({
   active,
   radius = 20,
@@ -16,13 +13,7 @@ export default function TracingBorder({
   active: boolean;
   radius?: number;
   gradientId: string;
-  // When set, the comet + border render as this solid color instead of the
-  // default blue→cyan gradient.
   color?: string;
-  // Swap the single orbiting comet for two edge comets: one runs the TOP edge
-  // left→right into the top-right corner, one runs the BOTTOM edge right→left
-  // into the bottom-left corner — landing exactly on the two corners whose
-  // glow then blooms, so each comet visibly "becomes" its side glow.
   edgeComets?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -45,15 +36,10 @@ export default function TracingBorder({
   const r = Math.max(0, Math.min(radius - inset, W / 2, H / 2));
   const f = (n: number) => n.toFixed(2);
 
-  // Where the comet's LEADING edge comes to rest: on the top edge, a short
-  // distance before the top-right radius begins. (Clamped to the top-left
-  // tangent so narrow cards can't push it past the opposite corner.)
   const STOP_SHORT = 100;
   const sx = f(Math.max(inset + r, inset + W - r - STOP_SHORT));
   const sy = f(inset);
 
-  // NOTE: `d` also draws the static corner-weighted border, so it must stay a
-  // complete rounded rect — only the start/stop point moves along the top edge.
   const d =
     W > 0 && H > 0
       ? `M ${sx} ${sy}` +
@@ -68,11 +54,6 @@ export default function TracingBorder({
         ` L ${sx} ${sy} Z`
       : "";
 
-  // Edge-comet paths (edgeComets mode). Each runs along one edge and finishes
-  // ON the corner whose glow blooms next, so the comet reads as feeding it:
-  //   top    — TL tangent → right along the top → through the TR arc
-  //   bottom — BR tangent → left  along the bottom → through the BL arc
-  // Same direction/sweep as the corresponding segments of `d`.
   const topD =
     W > 0 && H > 0
       ? `M ${f(inset + r)} ${f(inset)}` +
@@ -90,34 +71,21 @@ export default function TracingBorder({
     { id: "bottom", d: bottomD },
   ];
 
-  // Comet animation constants
   const TAIL = 0.25;
   const GAP = 0.75;
 
-  // Corner pixel positions
   const blX = inset;
   const blY = inset + H;
   const trX = inset + W;
   const trY = inset;
 
-  // Glow radius — how far the bright corner spot extends (in pixels). Larger =
-  // the TR/BL corner weight reaches further along the adjacent edges.
   const glowR = Math.min(w, h) * 1.125;
 
-  // Timing: the comet traces its lap and lands at the top-right corner
-  // (its start/end point) at t = LAP_DURATION. The handoff into the corner
-  // glow is a CROSSFADE, not a stop-then-start — the comet begins dissolving
-  // slightly BEFORE landing (DISSOLVE_START) and over a longer window
-  // (DISSOLVE_DURATION) that overlaps the corner blooms, so energy passes
-  // continuously from the moving comet into the settling glow with no gap.
-  // The comet eases out (decelerates) into its landing point so it arrives
-  // with the same deceleration the bloom then continues — one continuous
-  // deceleration curve across the seam instead of a hard stop.
   const LAP_DURATION = 2.5;
-  const HANDOFF = LAP_DURATION - 0.15; // bloom begins as the comet settles
-  const DISSOLVE_START = LAP_DURATION - 0.2; // crossfade begins just before landing
-  const DISSOLVE_DURATION = 0.7; // overlaps the bloom → no pop
-  const BLOOM = 0.8; // corner + edge weight arrive on one shared envelope
+  const HANDOFF = LAP_DURATION - 0.15; 
+  const DISSOLVE_START = LAP_DURATION - 0.2; 
+  const DISSOLVE_DURATION = 0.7; 
+  const BLOOM = 0.8; 
 
   return (
     <div ref={ref} className="pointer-events-none absolute inset-0 z-30">
@@ -139,7 +107,6 @@ export default function TracingBorder({
           >
             <title>Animated card border</title>
             <defs>
-              {/* ── Comet gradient (for the revolving animation) ── */}
               <linearGradient
                 id={`comet-${gradientId}`}
                 x1="0%"
@@ -151,7 +118,6 @@ export default function TracingBorder({
                 <stop stopColor="#149CCB" offset="100%" />
               </linearGradient>
 
-              {/* ── Static border color (blue left → cyan right) ── */}
               <linearGradient
                 id={`border-color-${gradientId}`}
                 x1="0%"
@@ -163,7 +129,6 @@ export default function TracingBorder({
                 <stop stopColor="#149CCB" offset="100%" />
               </linearGradient>
 
-              {/* ── Corner mask gradients (white = visible, black = hidden) ── */}
               <radialGradient
                 id={`mask-bl-${gradientId}`}
                 cx={blX}
@@ -190,15 +155,6 @@ export default function TracingBorder({
                 <stop stopColor="black" offset="100%" />
               </radialGradient>
 
-              {/*
-                Luminance mask — this is what actually creates the "weight
-                shift":
-                - base rect starts fully hidden (black) and fades up to the
-                  faint #2e2e2e edge level → edges fade in
-                - the two corner circles grow from r:0 to glowR, staggered
-                  slightly (top-right first, since that's where the comet
-                  lands) → weight visibly gathers into the corners
-              */}
               <mask id={`corner-mask-${gradientId}`}>
                 <motion.rect
                   x="0"
@@ -240,12 +196,6 @@ export default function TracingBorder({
               </mask>
             </defs>
 
-            {/* ═══ Layer 1: the comet(s) — full brightness for the whole run,
-                 then a quick dissolve that fires only once they land (delay =
-                 LAP_DURATION) so the handoff to the corner glow is instant.
-                 Glow = a wide soft halo stroke under the crisp core stroke
-                 (layered strokes animate cheaply; an feGaussianBlur filter
-                 would re-rasterize every frame and stutter). ═══ */}
             <motion.g
               initial={{ opacity: 1 }}
               animate={{ opacity: 0 }}
@@ -256,13 +206,9 @@ export default function TracingBorder({
               }}
             >
               {edgeComets
-                ? // Two open edge paths. Unlike the closed orbit, the head has
-                  // to travel from path start (0) to path end (1): the dash
-                  // spans [-offset, -offset+TAIL], so the head sits at
-                  // -offset+TAIL and the offset runs TAIL → TAIL-1.
+                ? 
                   edgePaths.map((edge) => (
                     <g key={edge.id}>
-                      {/* Halo */}
                       <motion.path
                         d={edge.d}
                         pathLength={1}
@@ -278,7 +224,6 @@ export default function TracingBorder({
                           ease: "easeInOut",
                         }}
                       />
-                      {/* Core */}
                       <motion.path
                         d={edge.d}
                         pathLength={1}
@@ -296,10 +241,7 @@ export default function TracingBorder({
                     </g>
                   ))
                 : [
-                    // Single comet orbiting the full rounded rect (closed loop,
-                    // so the head lands back on the path's start point).
                     <g key="orbit">
-                      {/* Halo */}
                       <motion.path
                         d={d}
                         pathLength={1}
@@ -315,7 +257,6 @@ export default function TracingBorder({
                           ease: "easeInOut",
                         }}
                       />
-                      {/* Core */}
                       <motion.path
                         d={d}
                         pathLength={1}
@@ -334,8 +275,6 @@ export default function TracingBorder({
                   ]}
             </motion.g>
 
-            {/* ═══ Layer 2: Corner-weighted static border, revealed entirely
-                 by the animated mask above — same layered-stroke glow ═══ */}
             <g mask={`url(#corner-mask-${gradientId})`}>
               <path
                 d={d}

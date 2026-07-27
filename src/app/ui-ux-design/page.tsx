@@ -10,8 +10,6 @@ import ProjectShowcase from "@/components/ui-ux-design/ProjectShowcase";
 import StrategyHeroSection from "@/components/ui-ux-design/StrategyHeroSection";
 import SubServices from "@/components/ui-ux-design/SubServices";
 
-// Mirror of /brand-strategy with its own component copies under
-// components/ui-ux-design/ so this page can diverge independently.
 export default function UiUxDesignPage() {
   return (
     <div>

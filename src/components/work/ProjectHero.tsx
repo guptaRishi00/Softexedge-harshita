@@ -22,7 +22,6 @@ export default function ProjectHero({ project }: { project: Project }) {
       ref={containerRef}
       className="relative flex h-[80vh] min-h-[600px] w-full items-end justify-center overflow-hidden bg-[#0a0a0a] md:h-screen"
     >
-      {/* Parallax Background */}
       <motion.div
         style={{ y, scale }}
         className="absolute inset-0 h-full w-full"
@@ -46,14 +45,12 @@ export default function ProjectHero({ project }: { project: Project }) {
         )}
       </motion.div>
 
-      {/* Overlays */}
       <div className="absolute inset-0 bg-black/40" />
       <motion.div
         style={{ opacity }}
         className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent"
       />
 
-      {/* Content */}
       <div className="relative z-10 w-full px-4 pb-24 md:px-10 md:pb-32">
         <div className="flex flex-col gap-6">
           <motion.div

@@ -17,9 +17,6 @@ export default function InfiniteRow({
       <motion.div
         className="flex w-max"
         animate={{
-          // Translate by exactly one copy-width (1/6 of the 6-copy track) so
-          // the loop reset is seamless. Fewer copies = far lighter DOM + video
-          // decode load than the old 12, with no visible change.
           x:
             direction === "left"
               ? ["0%", "-16.666667%"]

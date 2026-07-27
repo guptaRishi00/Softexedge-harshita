@@ -21,10 +21,8 @@ export default function WorkProjectShowcase() {
 
   return (
     <section className="relative overflow-hidden bg-black px-4 py-24 font-sans text-white md:px-10 md:py-32">
-      {/* Subtle noise overlay */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 
-      {/* Section Header */}
       <div className="relative mx-auto mb-16 w-full md:mb-24">
         <motion.span
           initial={{ opacity: 0, y: 10 }}
@@ -63,7 +61,6 @@ export default function WorkProjectShowcase() {
         </div>
       </div>
 
-      {/* Category Filter Tabs */}
       <div className="relative mx-auto mb-12 flex w-full md:mb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -78,7 +75,6 @@ export default function WorkProjectShowcase() {
               onClick={() => setActiveCategory(category)}
               className="relative rounded-full px-5 py-2.5 text-sm font-medium transition-colors duration-300"
             >
-              {/* Active pill background with layoutId animation */}
               {activeCategory === category && (
                 <motion.div
                   layoutId="activeCategory"
@@ -100,7 +96,6 @@ export default function WorkProjectShowcase() {
         </motion.div>
       </div>
 
-      {/* Project Grid */}
       <div className="relative mx-auto w-full">
         <AnimatePresence mode="wait">
           <motion.div

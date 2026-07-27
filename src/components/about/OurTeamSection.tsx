@@ -68,17 +68,11 @@ export default function OurTeamSection() {
   const reduce = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
 
-  // Position-linked parallax: the card row's horizontal offset tracks the
-  // section's scroll progress directly (not scroll *velocity*), so it moves in
-  // lockstep with the scroll — scrolling down drifts the cards one way,
-  // scrolling up reverses — with no laggy velocity spring settling back to rest.
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
   });
-  // Over-width wrapper has a 7% edge buffer, so keep the ±6% travel under it.
   const xRaw = useTransform(scrollYProgress, [0, 1], ["6%", "-6%"]);
-  // Gentle spring smooths the pixel steps without the velocity-model lag.
   const xSmooth = useSpring(xRaw, {
     stiffness: 90,
     damping: 22,

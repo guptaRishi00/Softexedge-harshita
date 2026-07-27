@@ -10,8 +10,6 @@ import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials
 import Footer from "@/components/layout/Footer";
 import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
 
-// Mirror of /brand-strategy with its own component copies under
-// components/app-development/ so this page can diverge independently.
 export default function AppDevelopmentPage() {
   return (
     <div>

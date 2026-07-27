@@ -1,4 +1,3 @@
-// src/components/home/ServiceSection.tsx
 "use client";
 
 import { useGSAP } from "@gsap/react";
@@ -8,8 +7,6 @@ import { createPortal } from "react-dom";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { cn } from "@/lib/utils";
 
-// Mirrors the Header "Services" dropdown (page/Header.tsx) — same names, links,
-// and imagery.
 const services = [
   {
     title: "Digital Marketing & Growth",
@@ -66,7 +63,6 @@ export default function ServiceSection() {
   const cursorRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Ensure portal only renders on the client side to avoid Next.js hydration errors
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -75,7 +71,6 @@ export default function ServiceSection() {
     () => {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 768px)", () => {
-        // 1. CUSTOM CURSOR TRACKING
         const cursor = cursorRef.current;
         if (cursor) {
           gsap.set(cursor, {
@@ -113,21 +108,11 @@ export default function ServiceSection() {
             lastY = e.clientY;
             xTo(e.clientX);
             yTo(e.clientY);
-            // Scrolling never fires mouseleave, so the follower can stay
-            // "active" after the section scrolls away and then trail over
-            // other sections on the next move (worst on Safari). Force-hide
-            // it whenever the pointer isn't actually over this section.
             if (!containerRef.current?.contains(e.target as Node)) {
               hideCursor();
             }
           };
 
-          // Scrolling with a stationary mouse fires neither mouseleave nor
-          // mousemove, so the fixed pill would keep floating over whatever
-          // section scrolls under the cursor. Scroll events are unreliable
-          // here (Lenis drives the scroll, and pinned sections move via
-          // transforms without any scroll event), so poll on GSAP's ticker
-          // instead — it only does real work while the pill is visible.
           const guardTick = () => {
             const el = containerRef.current;
             if (!el || lastX < 0) return;
@@ -184,11 +169,7 @@ export default function ServiceSection() {
       className="relative w-full overflow-hidden bg-black py-16 md:pt-32 md:pb-24 text-white"
     >
       <div className="w-full px-4 md:px-10">
-        {/* HEADER SECTION */}
         <div className="mb-10 w-full pb-10">
-          {/* Tag sits ABOVE the row (not inside the title column), so the row's
-              md:items-center aligns the description with the TITLE alone
-              instead of with the combined tag + title block. */}
           <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
             What We Offer
           </p>
@@ -207,7 +188,6 @@ export default function ServiceSection() {
           </div>
         </div>
 
-        {/* SERVICES LIST */}
         <div className="group/list flex w-full flex-col max-md:gap-4">
           {services.map((service, index) => (
             <a
@@ -218,7 +198,6 @@ export default function ServiceSection() {
               className="group relative flex w-full cursor-none items-center justify-between py-6 md:py-12 max-md:cursor-pointer max-md:rounded-2xl max-md:border max-md:border-white/10 max-md:bg-white/5 max-md:p-5 max-md:shadow-sm"
             >
               <div className="flex items-center">
-                {/* IMAGE REVEAL CONTAINER */}
                 <div
                   className={cn(
                     "relative h-[50px] shrink-0 overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
@@ -233,7 +212,6 @@ export default function ServiceSection() {
                   />
                 </div>
 
-                {/* TITLE */}
                 <h3
                   className={cn(
                     "text-3xl font-medium leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-5xl md:text-[clamp(2.5rem,5vw,5rem)]",
@@ -244,7 +222,6 @@ export default function ServiceSection() {
                 </h3>
               </div>
 
-              {/* CUSTOM GRADIENT BORDER */}
               {index !== services.length - 1 && (
                 <div
                   className={cn(
@@ -258,15 +235,12 @@ export default function ServiceSection() {
         </div>
       </div>
 
-      {/* CUSTOM CURSOR FOLLOWER - TELEPORTED TO DOCUMENT BODY */}
       {mounted && typeof document !== "undefined"
         ? createPortal(
             <div
               ref={cursorRef}
               className={cn(
                 "pointer-events-none fixed left-0 top-0 z-[9999] hidden h-10 w-40 items-center justify-center rounded-lg bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white md:flex",
-                // CSS-hidden by default so Safari never paints it before GSAP
-                // applies the inline transform/opacity (autoAlpha overrides this).
                 "invisible opacity-0",
                 "will-change-transform",
               )}

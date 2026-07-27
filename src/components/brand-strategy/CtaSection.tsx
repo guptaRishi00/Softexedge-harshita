@@ -1,4 +1,3 @@
-// src/components/home/CtaSection.tsx
 "use client";
 
 import { motion } from "framer-motion";
@@ -7,7 +6,6 @@ import SpotlightGrid from "../ui/SpotlightGrid";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
-// Helper array for the realistic avatars
 const avatars = [
   "https://i.pravatar.cc/150?img=11",
   "https://i.pravatar.cc/150?img=12",
@@ -21,14 +19,7 @@ export default function CtaSection() {
   return (
     <section className="relative w-full bg-white px-0 md:px-0 md:pt-0">
       <div className="mx-auto w-full">
-        {/* Main CTA Container - Reduced height to 45vh */}
         <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black">
-          {/* Auto-moving spotlight pattern background */}
-          {/* speed 0.3 → ~1.8 cells/sec, so a box holds for a little over half
-              a second and a full 80-box pass takes ~47s. */}
-          {/* The light travels a rectangle inset from the card edges: from the
-              3rd box in from the left and 3rd row down, ending on the 3rd row
-              up from the bottom (the grid is 8 rows, so that's row index 5). */}
           <SpotlightGrid
             speed={0.15}
             sweep
@@ -40,21 +31,11 @@ export default function CtaSection() {
             sweepRowEnd={5}
           />
 
-          {/* TEXT BLOCK-OUT LAYERS (Z-5) — permanent black gradients above the
-              spotlight grid but below the text, keeping typography legible.
-              Kept as separate siblings rather than one wrapper so the left
-              fade can run at full strength while the bottom one stays dimmed. */}
 
-          {/* Left fade for the heading — full strength: the largest type sits
-              on it and needs the contrast. */}
           <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent" />
 
-          {/* Bottom fade for the footer/CTA row — held at 50% so the sweeping
-              grid still reads through on the right of the card. */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50" />
 
-          {/* Top Content: Massive Typography & Social Proof */}
-          {/* x-padding (px-4 md:px-10) matches ExperimentalTestimonials; y kept. */}
           <div className="pointer-events-none relative z-10 px-4 py-8 pt-12 md:px-10 md:py-12 lg:py-16 lg:pb-0">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -62,7 +43,6 @@ export default function CtaSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: premiumEase }}
             >
-              {/* Main Heading */}
               <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl lg:text-[5rem]">
                 Let's build something <br className="hidden md:block" />
                 <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-4 text-transparent">
@@ -70,17 +50,14 @@ export default function CtaSection() {
                 </span>
               </h2>
 
-              {/* Subtext describing the offer/value */}
               <p className="mt-6 max-w-2xl text-lg font-light leading-[1.25em] text-white md:text-xl">
                 Join the waitlist and be the first one to experience
                 photorealism at scale. Get additional 50% discount on the first
                 100 people.
               </p>
 
-              {/* Avatar Stack and Ratings Area */}
               <div className="mt-10 flex w-fit pointer-events-auto flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-4">
-                  {/* Overlapping Avatars */}
                   <div className="flex -space-x-3">
                     {avatars.map((src, i) => (
                       <div
@@ -96,7 +73,6 @@ export default function CtaSection() {
                     ))}
                   </div>
 
-                  {/* 5-Star Rating */}
                   <div className="flex items-center gap-1 text-[#FFC107]">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <svg
@@ -111,7 +87,6 @@ export default function CtaSection() {
                   </div>
                 </div>
 
-                {/* Trust Text */}
                 <p className="mt-1 text-base font-medium text-zinc-400">
                   Trusted by 27,000+ creators
                 </p>
@@ -119,8 +94,6 @@ export default function CtaSection() {
             </motion.div>
           </div>
 
-          {/* Bottom Content: Actions & Meta Info */}
-          {/* x-padding (px-4 md:px-10) matches ExperimentalTestimonials; y kept. */}
           <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -163,7 +136,6 @@ export default function CtaSection() {
               </button>
             </motion.div>
 
-            {/* Drop us a line */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -183,7 +155,6 @@ export default function CtaSection() {
               </a>
             </motion.div>
 
-            {/* Give us a call */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}

@@ -35,7 +35,6 @@ const CustomLogo = ({
   </Link>
 );
 
-// UPDATED: Used dropdownItems for the new grid layout with images
 const navItems: NavItem[] = [
   {
     name: "Services",
@@ -140,7 +139,6 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
 
   if (pathname.startsWith("/leads")) return null;
 
-  // Light gray border on the CTA for about/career/contact/blog/brand-strategy.
   const ctaBorder =
     pathname.startsWith("/about") ||
     pathname.startsWith("/career") ||
@@ -155,7 +153,6 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
       <AceternityNavbar className="z-[100]">
         <NavBody>
           <CustomLogo onDark={onDark} />
-          {/* 2. Remove the hardcoded text-white from here so resizable-navbar can handle it */}
           <NavItems
             items={navItems}
             onDark={onDark}
@@ -223,7 +220,6 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden w-full flex flex-col items-center bg-white/5 rounded-2xl mt-2 py-2 gap-2"
                           >
-                            {/* NEW: Handle grid dropdown items for Mobile */}
                             {item.dropdownItems ? (
                               <div className="w-full flex flex-col items-center gap-1 pb-2 pt-2">
                                 {item.dropdownItems.map((sub, ssIdx) => (
@@ -238,7 +234,6 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
                                 ))}
                               </div>
                             ) : (
-                              /* ORIGINAL: Handle standard sections for Mobile */
                               item.sections?.map((section, sIdx) => {
                                 const sectionLabel =
                                   section.title ||

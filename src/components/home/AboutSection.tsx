@@ -107,7 +107,6 @@ export default function AboutSection() {
 
       <div className="relative z-10 mx-auto">
         <div className="grid items-center gap-16 lg:grid-cols-[1fr_0.9fr]">
-          {/* LEFT CONTENT */}
           <div className="relative mt-20 max-md:mt-0 max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
             <motion.p
               variants={textReveal}
@@ -198,7 +197,6 @@ export default function AboutSection() {
             </motion.div>
           </div>
 
-          {/* RIGHT VISUAL */}
           <motion.div
             initial={isDesktop ? { opacity: 0, scale: 0.95, y: 40 } : false}
             whileInView={isDesktop ? { opacity: 1, scale: 1, y: 0 } : undefined}
@@ -206,7 +204,6 @@ export default function AboutSection() {
             viewport={{ once: false }}
             className="relative flex items-center justify-center pt-10"
           >
-            {/* RINGS */}
             <motion.div
               animate={isDesktop ? { rotate: 360 } : undefined}
               transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
@@ -218,7 +215,6 @@ export default function AboutSection() {
               className="absolute h-[260px] w-[260px] md:h-[420px] md:w-[420px] rounded-full border border-black/[0.06]"
             />
 
-            {/* CARD STACK ANIMATION */}
             <div className="relative w-full max-w-[600px]">
               <div className="perspective-[1200px] relative h-[420px] w-full md:h-[560px]">
                 {isDesktop ? (
@@ -246,12 +242,8 @@ export default function AboutSection() {
                           opacity: 1,
                           scale: 1,
                           zIndex: 50,
-                          // The leaving card glides off on its own clean tween.
                           transition: { duration: 1.1, ease: exitEase },
                         }}
-                        // Gentle overdamped spring — the stacked cards reposition
-                        // and the new card settles in smoothly (a little slow, no
-                        // harsh ease-out stop), so the change flows like butter.
                         transition={{
                           type: "spring",
                           stiffness: 60,
@@ -281,7 +273,6 @@ export default function AboutSection() {
                 )}
               </div>
 
-              {/* GLOW */}
               <motion.div
                 animate={
                   isDesktop

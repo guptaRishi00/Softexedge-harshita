@@ -4,10 +4,8 @@ import { motion } from "framer-motion";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 
-// How much lower each card sits than the one before it in the finished stack.
 export const STEP = 190;
 
-// Card content reveals with a soft upward stagger as each card scrolls in.
 const contentContainer = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
@@ -22,7 +20,6 @@ const contentItem = {
   },
 } as const;
 
-// --- ISOLATED CARD COMPONENT ---
 export default function Card({
   i,
   imageHidden,
@@ -40,28 +37,15 @@ export default function Card({
       ref={registerRef}
       className="sticky w-full"
       style={{
-        // Every card shares ONE sticky line and gets its 190px staircase
-        // offset from a transform instead of from `top`. Sticky release
-        // depends on `top + height`, so making that identical for every card
-        // means they all unstick at the same scroll position: the finished
-        // stack scrolls away as one rigid block instead of peeling apart from
-        // the top card down.
         top: "5vh",
         transform: `translateY(${i * STEP}px)`,
-        // The transform already pushes each card a STEP further down than the
-        // one before, so the flow gap gives back that same STEP to keep the
-        // original spacing and pin cadence. Clamped at 0 because 22vh is
-        // under a STEP on short viewports, and a negative margin would drag
-        // the cards into each other.
         marginBottom: `max(0px, calc(22vh - ${STEP}px))`,
-        // Later cards stack on top; fixed desktop height keeps earlier cards from poking through
         zIndex: i,
       }}
     >
       <div
         className={`relative grid min-h-[50vh] md:h-[600px] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-4 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
       >
-        {/* LEFT COLUMN: Title, Description & Tags */}
         <motion.div
           variants={contentContainer}
           initial="hidden"
@@ -88,7 +72,6 @@ export default function Card({
             {description}
           </motion.p>
 
-          {/* Tags Container */}
           {tags && tags.length > 0 && (
             <motion.div
               variants={contentItem}
@@ -106,8 +89,6 @@ export default function Card({
           )}
         </motion.div>
 
-        {/* RIGHT COLUMN: Image Container */}
-        {/* Set to a fixed height: 350px on mobile, 450px on medium screens and up */}
         <div className="relative w-full h-[350px] md:h-[450px] overflow-hidden rounded-2xl">
           {image && (
             <img

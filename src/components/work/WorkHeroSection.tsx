@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Header from "../page/Header";
 import DomeGallery from "../ui/DomeGallery";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -56,14 +55,7 @@ const GALLERY_MEDIA = [
 export default function WorkHeroSection() {
   return (
     <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-black font-sans selection:bg-[#2E5BFF]/20">
-      <div className="absolute left-0 top-0 z-50 w-full">
-        <Header onDark />
-      </div>
-
       <div className="absolute left-0 top-[-20vh] z-0 h-[140vh] w-full">
-        {/* cardOverlay: a light black veil dims every card (whole-wall dim);
-            hovering a card clears its veil so that card shows fully clear.
-            Replaces the old elliptical scrim behind the title. */}
         <DomeGallery
           images={GALLERY_MEDIA}
           autoRotate

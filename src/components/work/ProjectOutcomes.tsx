@@ -5,13 +5,7 @@ import type { Project } from "@/data/projects";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
-// Post-gallery content: closes the case-study narrative with a client
-// testimonial and the engagement timeline, before the "Next Project" CTA.
-// Narrative arc: hero (what) → details (how) → gallery (showcase) → here
-// (impact + how-it-ran) → next project.
 export default function ProjectOutcomes({ project }: { project: Project }) {
-  // Three-phase engagement timeline. Illustrative — the phase shape is
-  // consistent across projects; the per-project touch is the category label.
   const phases = [
     {
       step: "01",
@@ -33,10 +27,7 @@ export default function ProjectOutcomes({ project }: { project: Project }) {
   return (
     <section className="bg-[#0a0a0a] px-4 py-24 md:px-10 md:pb-32 md:pt-20">
       <div className="mx-auto max-w-[1400px]">
-        {/* Testimonial and engagement timeline sit side by side on desktop,
-            stacking on mobile. */}
         <div className="flex flex-col gap-16 lg:flex-row lg:items-start lg:gap-24">
-          {/* ---------- Testimonial ---------- */}
           <motion.figure
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -67,7 +58,6 @@ export default function ProjectOutcomes({ project }: { project: Project }) {
             </figcaption>
           </motion.figure>
 
-          {/* ---------- Engagement timeline ---------- */}
           <div className="lg:w-1/2">
             <motion.h2
               initial={{ opacity: 0, y: 30 }}

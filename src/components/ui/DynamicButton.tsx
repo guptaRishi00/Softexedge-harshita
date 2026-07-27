@@ -1,4 +1,3 @@
-// src/components/ui/DynamicButton.tsx
 "use client";
 
 import Link from "next/link";
@@ -13,7 +12,6 @@ interface DynamicButtonProps {
   textClassName?: string;
   iconClassName?: string;
   showIcon?: boolean;
-  // When true, the hover effect happens instantly (no transition duration).
   instantHover?: boolean;
 
   glowColors?: {
@@ -54,7 +52,6 @@ export default function DynamicButton({
         className,
       )}
     >
-      {/* Animated Gradient Background */}
       <div
         className={cn(
           "absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100",
@@ -68,7 +65,6 @@ export default function DynamicButton({
           }}
         />
 
-        {/* Glow */}
         <div
           className="absolute inset-0 opacity-60 blur-2xl"
           style={{
@@ -77,7 +73,6 @@ export default function DynamicButton({
         />
       </div>
 
-      {/* Shine Sweep */}
       <div className="absolute inset-0 overflow-hidden rounded-lg">
         <div
           className={cn(
@@ -87,12 +82,7 @@ export default function DynamicButton({
         />
       </div>
 
-      {/* TYPEWRITER TEXT ANIMATION.
-          No overflow-hidden here: the per-letter hover text (no kerning,
-          nbsp spaces) renders a hair wider than the kerned default string,
-          and clipping would cut the last glyph's tail on hover. */}
       <span className={cn("relative z-10 flex font-bold", textClassName)}>
-        {/* Default Text (disappears quickly on hover) */}
         <span
           className={cn(
             "opacity-100 transition-opacity group-hover:opacity-0",
@@ -102,7 +92,6 @@ export default function DynamicButton({
           {text}
         </span>
 
-        {/* Hover Text (appears letter by letter) */}
         <span
           className="absolute left-0 top-0 flex text-white"
           aria-hidden="true"
@@ -124,7 +113,6 @@ export default function DynamicButton({
         </span>
       </span>
 
-      {/* ICON WITH ARROW ANIMATION */}
       {showIcon && (
         <span
           className={cn(
@@ -132,7 +120,6 @@ export default function DynamicButton({
             iconClassName,
           )}
         >
-          {/* Outgoing Arrow */}
           <MdKeyboardArrowRight
             size={24}
             className={cn(
@@ -141,7 +128,6 @@ export default function DynamicButton({
             )}
           />
 
-          {/* Incoming Arrow */}
           <MdKeyboardArrowRight
             size={24}
             className={cn(

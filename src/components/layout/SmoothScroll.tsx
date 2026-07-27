@@ -7,10 +7,8 @@ import { type ReactNode, useEffect } from "react";
 
 export default function SmoothScroll({ children }: { children: ReactNode }) {
   useEffect(() => {
-    // Register the ScrollTrigger plugin
     gsap.registerPlugin(ScrollTrigger);
 
-    // Native scrolling on mobile — no smooth-scroll hijack.
     if (window.matchMedia("(max-width: 767px)").matches) {
       const timer = setTimeout(() => {
         ScrollTrigger.refresh();
@@ -27,12 +25,10 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       wheelMultiplier: 1,
     });
 
-    // Synchronize Lenis with ScrollTrigger
     lenis.on("scroll", () => {
       ScrollTrigger.update();
     });
 
-    // Drive Lenis's animation frame updates using GSAP's ticker
     const update = (time: number) => {
       lenis.raf(time * 1000);
     };
@@ -40,7 +36,6 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     gsap.ticker.add(update);
     gsap.ticker.lagSmoothing(0);
 
-    // Initial ScrollTrigger refresh after components mount
     const timer = setTimeout(() => {
       ScrollTrigger.refresh();
     }, 100);

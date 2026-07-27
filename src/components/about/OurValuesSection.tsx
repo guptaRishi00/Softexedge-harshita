@@ -30,7 +30,6 @@ const quotes = [
 ];
 
 export default function OurValuesSection() {
-  // Quote-card carousel: same card, three quotes cycling in place.
   const [quoteIndex, setQuoteIndex] = useState(0);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: quoteIndex re-arms the timer so a manual dot click gets a full 6s dwell
@@ -45,10 +44,8 @@ export default function OurValuesSection() {
       id="culture"
       className="relative flex w-full flex-col overflow-hidden bg-black font-sans py-20 md:py-32"
     >
-      {/* Content Container */}
       <div className="relative z-10 mx-auto w-full px-4 md:px-10">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-stretch">
-          {/* Left Column: Image */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -68,7 +65,6 @@ export default function OurValuesSection() {
             </div>
           </motion.div>
 
-          {/* Right Column: Content */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -76,14 +72,12 @@ export default function OurValuesSection() {
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
             className="w-full lg:w-7/12 flex flex-col justify-center py-6 lg:py-12"
           >
-            {/* Eyebrow */}
             <div className="mb-8">
               <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
                 Our Culture
               </span>
             </div>
 
-            {/* Headline */}
             <h2 className="text-5xl md:text-7xl lg:text-[80px] font-bold tracking-tighter leading-[0.9em] mb-8 text-white">
               We've built a culture of
               <span className="pl-5 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
@@ -91,7 +85,6 @@ export default function OurValuesSection() {
               </span>
             </h2>
 
-            {/* Paragraph */}
             <p className="max-w-2xl text-lg font-light leading-[1.25em] text-white md:text-xl">
               We produce good work for good people, and with the idea that staff
               and the client will be happy throughout the full process. This in
@@ -99,8 +92,6 @@ export default function OurValuesSection() {
               recommendation or further work from that client.
             </p>
 
-            {/* Quote Card carousel — static shell, three quotes cycling in
-                place (same placement, next card swaps in the same spot) */}
             <div className="mt-12 relative flex flex-col rounded-3xl border border-white/[0.06] bg-[#100f0f] p-8 md:p-10">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -116,7 +107,6 @@ export default function OurValuesSection() {
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mt-4">
-                    {/* Profile */}
                     <div className="flex items-center gap-4">
                       <div className="relative h-14 w-14 overflow-hidden rounded-full bg-zinc-800">
                         <Image
@@ -136,7 +126,6 @@ export default function OurValuesSection() {
                       </div>
                     </div>
 
-                    {/* CTA Button (same style as CtaSection) */}
                     <Link href="/about" className="shrink-0 w-full sm:w-auto">
                       <button
                         type="button"
@@ -175,7 +164,6 @@ export default function OurValuesSection() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Carousel dots */}
               <div className="mt-8 flex items-center gap-2">
                 {quotes.map((q, i) => (
                   <button

@@ -5,7 +5,6 @@ import CtaSection from "@/components/brand-strategy/CtaSection";
 import Footer from "@/components/layout/Footer";
 import { blogPosts, getPostBySlug, getRelatedPosts } from "@/data/blog";
 
-// Only the known slugs are valid — anything else 404s.
 export const dynamicParams = false;
 
 export function generateStaticParams() {

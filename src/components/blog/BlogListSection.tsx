@@ -16,8 +16,6 @@ export default function BlogListSection() {
   const [activeAuthor, setActiveAuthor] = useState<string>("All");
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
-  // The hero's "By Category" / "By Author" dropdowns drive this list via a
-  // window event (the two components are siblings with no shared parent state).
   useEffect(() => {
     const onFilter = (e: Event) => {
       const { type, value } = (
@@ -35,8 +33,6 @@ export default function BlogListSection() {
     return () => window.removeEventListener("blog:filter", onFilter);
   }, []);
 
-  // The featured post opens the page (BlogFeaturedSection), so keep it out of
-  // the list to avoid showing it twice.
   const listPosts = blogPosts.filter((p) => !p.featured);
   const filteredPosts = listPosts.filter(
     (p) =>
@@ -47,14 +43,10 @@ export default function BlogListSection() {
   return (
     <section
       id="blog-list"
-      // No px here — the gutter lives on the inner wrappers as px-4 md:px-10,
-      // matching ExperimentalTestimonials.
       className="relative overflow-hidden bg-[#0a0a0a] py-24 font-sans text-white md:py-32"
     >
-      {/* Subtle noise overlay */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 
-      {/* Section Header */}
       <div className="relative mx-auto mb-16 w-full px-4 md:mb-24 md:px-10">
         <motion.span
           initial={{ opacity: 0, y: 10 }}
@@ -93,7 +85,6 @@ export default function BlogListSection() {
         </div>
       </div>
 
-      {/* Category Filter Tabs */}
       <div className="relative mx-auto mb-12 flex w-full px-4 md:mb-16 md:px-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -111,7 +102,6 @@ export default function BlogListSection() {
               }}
               className="relative rounded-full px-5 py-2.5 text-sm font-medium transition-colors duration-300"
             >
-              {/* Active pill background with layoutId animation */}
               {activeCategory === category && (
                 <motion.div
                   layoutId="blogCategory"
@@ -133,7 +123,6 @@ export default function BlogListSection() {
         </motion.div>
       </div>
 
-      {/* Blog Grid */}
       <div className="relative mx-auto w-full px-4 md:px-10">
         <AnimatePresence mode="wait">
           <motion.div

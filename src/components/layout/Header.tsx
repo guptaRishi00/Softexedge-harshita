@@ -29,7 +29,6 @@ const CustomLogo = () => (
   </Link>
 );
 
-// UPDATED: Used dropdownItems for the new grid layout with images
 const navItems: NavItem[] = [
   {
     name: "Services",
@@ -204,7 +203,6 @@ export default function Header() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden w-full flex flex-col items-center bg-white/5 rounded-2xl mt-2 py-2 gap-2"
                           >
-                            {/* NEW: Handle grid dropdown items for Mobile */}
                             {item.dropdownItems ? (
                               <div className="w-full flex flex-col items-center gap-1 pb-2 pt-2">
                                 {item.dropdownItems.map((sub, ssIdx) => (
@@ -219,7 +217,6 @@ export default function Header() {
                                 ))}
                               </div>
                             ) : (
-                              /* ORIGINAL: Handle standard sections for Mobile */
                               item.sections?.map((section, sIdx) => {
                                 const sectionLabel =
                                   section.title ||

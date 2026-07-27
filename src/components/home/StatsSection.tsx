@@ -1,4 +1,3 @@
-// src/components/home/StatsSection.tsx
 "use client";
 
 import { useGSAP } from "@gsap/react";
@@ -100,8 +99,6 @@ export default function StatsSection() {
             )}
           >
             {index !== stats.length - 1 && (
-              // Inset md:10 (40px) to match the ServiceSection row borders,
-              // which span w-full inside its px-4 md:px-10 wrapper.
               <div className="absolute bottom-0 left-4 right-4 h-px bg-black/10 max-md:hidden md:left-10 md:right-10" />
             )}
 

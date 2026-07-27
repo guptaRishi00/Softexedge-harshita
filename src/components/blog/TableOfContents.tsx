@@ -2,7 +2,6 @@
 
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 
-// ---------- Table of contents ----------
 export default function TableOfContents({
   headings,
 }: {
@@ -12,7 +11,6 @@ export default function TableOfContents({
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
-    // No headings — nothing to observe. Keeps the effect a no-op on SSR/prerender.
     if (headings.length === 0) return;
 
     const targets = headings
@@ -23,7 +21,6 @@ export default function TableOfContents({
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        // Pick the topmost intersecting heading as the active section.
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
@@ -31,8 +28,6 @@ export default function TableOfContents({
           setActiveId(visible[0].target.id);
         }
       },
-      // Trigger near the top: a heading counts as "active" once its top
-      // crosses ~25% of the viewport, leaving room for the fixed header.
       { rootMargin: "-25% 0px -65% 0px", threshold: 0 },
     );
 
@@ -49,7 +44,6 @@ export default function TableOfContents({
     e.preventDefault();
     const el = document.getElementById(id);
     if (el) {
-      // Keep the URL hash in sync without an instant jump, then smooth-scroll.
       history.replaceState(null, "", `#${id}`);
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     }

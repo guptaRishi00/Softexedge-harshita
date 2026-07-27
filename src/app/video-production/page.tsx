@@ -10,8 +10,6 @@ import ProjectShowcase from "@/components/video-production/ProjectShowcase";
 import StrategyHeroSection from "@/components/video-production/StrategyHeroSection";
 import SubServices from "@/components/video-production/SubServices";
 
-// Mirror of /brand-strategy with its own component copies under
-// components/video-production/ so this page can diverge independently.
 export default function VideoProductionPage() {
   return (
     <div>

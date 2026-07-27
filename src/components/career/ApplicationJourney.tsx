@@ -50,7 +50,6 @@ export default function ApplicationJourney() {
   return (
     <section className="relative w-full bg-white px-6 py-24 text-zinc-900 md:py-32">
       <div className="mx-auto w-full">
-        {/* Title Area */}
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center mb-16 md:mb-35">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -87,7 +86,6 @@ export default function ApplicationJourney() {
           </motion.p>
         </div>
 
-        {/* Image-based Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {steps.map((step, index) => (
             <motion.div
@@ -109,10 +107,8 @@ export default function ApplicationJourney() {
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
               />
 
-              {/* Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500" />
 
-              {/* Content */}
               <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-10">
                 <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 backdrop-blur-md">
                   <span className="text-sm font-bold text-white">

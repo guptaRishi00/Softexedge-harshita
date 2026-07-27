@@ -1,5 +1,3 @@
-// Single source of truth for blog content — consumed by the blog list
-// (`BlogListSection`) and the article pages (`/blog/[slug]`).
 
 export const categories = [
   "All",
@@ -18,7 +16,6 @@ export interface Author {
   avatar: string;
 }
 
-// Discriminated union of renderable article blocks.
 export type ContentBlock =
   | { type: "heading"; text: string }
   | { type: "paragraph"; text: string }
@@ -38,7 +35,6 @@ export interface BlogPost {
   href: string;
   excerpt: string;
   featured?: boolean;
-  // Article-detail fields:
   date: string;
   authorMeta: Author;
   lead: string;
@@ -46,7 +42,6 @@ export interface BlogPost {
   content: ContentBlock[];
 }
 
-// Portrait helpers (randomuser.me is allow-listed in next.config).
 const portrait = (g: "men" | "women", n: number) =>
   `https://randomuser.me/api/portraits/${g}/${n}.jpg`;
 
@@ -571,7 +566,6 @@ export function getPostBySlug(slug: string): BlogPost | undefined {
   return blogPosts.find((post) => post.slug === slug);
 }
 
-// Related posts: same category first, then fill from the rest, excluding self.
 export function getRelatedPosts(slug: string, count = 3): BlogPost[] {
   const current = getPostBySlug(slug);
   if (!current) return blogPosts.slice(0, count);

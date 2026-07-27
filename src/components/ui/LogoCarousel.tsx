@@ -13,17 +13,11 @@ export type LogoCarouselItem = {
 
 export interface LogoCarouselProps {
   logos: LogoCarouselItem[];
-  /** Seconds for one full loop — lower is faster. */
   speed?: number;
   className?: string;
   ariaLabel?: string;
 }
 
-/**
- * Each logo sits inside its own card/container, and the whole row scrolls
- * infinitely (left → right). The set is duplicated so the `x: -50% → 0%`
- * loop is seamless.
- */
 export default function LogoCarousel({
   logos,
   speed = 28,
@@ -37,7 +31,6 @@ export default function LogoCarousel({
       aria-label={ariaLabel}
       className={cn("relative w-full overflow-hidden", className)}
     >
-      {/* Subtle white edge fades so the marquee dissolves at the sides */}
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent md:w-24" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white to-transparent md:w-24" />
       <motion.div

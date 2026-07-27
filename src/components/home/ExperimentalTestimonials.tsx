@@ -1,4 +1,3 @@
-// src/components/home/ExperimentalTestimonials.tsx
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -38,7 +37,6 @@ const testimonials = [
   },
 ];
 
-// Duplicate so the arrow-driven row always has cards to reveal
 const duplicatedTestimonials = [...testimonials, ...testimonials];
 
 const rotatingWords = ["Collective", "Visionaries", "Innovators", "Future"];
@@ -49,14 +47,9 @@ export default function ExperimentalTestimonials() {
   const isDesktop = useIsDesktop();
   const [wordIndex, setWordIndex] = useState(0);
   const [active, setActive] = useState(0);
-  // Step = card width + gap (per breakpoint) so the arrows move exactly one card.
   const [step, setStep] = useState(452);
 
-  // Cycle through the headline words every 2.5 seconds
   useEffect(() => {
-    // 4.5s (was 2.5s): with the 0.35s exit + ~2s spring settle, a 2.5s cycle
-    // kept the word perpetually mid-animation — too fast and reading as lag.
-    // Matching the AboutSection cadence gives it time to settle and rest.
     const id = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % rotatingWords.length);
     }, 6000);
@@ -83,7 +76,6 @@ export default function ExperimentalTestimonials() {
       className="relative overflow-hidden bg-white pt-16 pb-8 text-zinc-900 md:pt-32"
     >
       <div className="mx-auto flex w-full flex-col gap-10 px-4 md:px-10 lg:flex-row lg:items-stretch lg:gap-10">
-        {/* LEFT COLUMN: title + description + CTA on top, arrows pinned to the bottom */}
         <motion.div
           initial={isDesktop ? { opacity: 0, x: -30 } : false}
           whileInView={isDesktop ? { opacity: 1, x: 0 } : undefined}
@@ -91,36 +83,24 @@ export default function ExperimentalTestimonials() {
           viewport={{ once: true, margin: "-50px" }}
           className="flex w-full shrink-0 flex-col justify-between lg:w-1/3"
         >
-          {/* TOP */}
           <div>
             <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
               Testimonials
             </p>
             <h2 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl lg:leading-[0.95em]">
               Voices of the <br />
-              {/* px/-mx gives the mask a fade band at each edge without
-                  shifting layout — sliding words dissolve at the edges
-                  instead of hard-clipping; the resting word sits fully in
-                  the opaque zone. */}
               <span className="inline-grid overflow-hidden py-2 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
                 {isDesktop ? (
-                  // mode="wait": the current word finishes sliding out (right)
-                  // and disappears BEFORE the next word enters — sequential,
-                  // matching the AboutSection rotating word.
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={wordIndex}
                       initial={{ x: "-100%", opacity: 0 }}
                       animate={{ x: "0%", opacity: 1 }}
                       exit={{
-                        // Slide out right and vanish there, then the next
-                        // word slides in. Long easeInOut so the exit glides
-                        // instead of darting (easeIn accelerated away too fast).
                         x: "100%",
                         opacity: 0,
                         transition: { duration: 1.5, ease: "easeInOut" },
                       }}
-                      // Exactly the AboutSection rotating-word config.
                       transition={{
                         type: "spring",
                         stiffness: 22,
@@ -181,7 +161,6 @@ export default function ExperimentalTestimonials() {
             </div>
           </div>
 
-          {/* BOTTOM: navigation arrows + counter */}
           <div className="mt-12 flex items-center gap-4 max-md:hidden">
             <button
               type="button"
@@ -202,7 +181,6 @@ export default function ExperimentalTestimonials() {
           </div>
         </motion.div>
 
-        {/* RIGHT COLUMN: card row, navigated by the arrows */}
         <div className="relative -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1 max-md:h-auto max-md:overflow-visible">
           <motion.div
             animate={isDesktop ? { x: -active * step } : undefined}
@@ -215,7 +193,6 @@ export default function ExperimentalTestimonials() {
                   key={`${item.name}-${i}`}
                   className="group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors sm:w-[360px] md:min-h-[440px] md:w-[440px] md:py-10"
                 >
-                  {/* Outlined Quote Icon (Top Right) */}
                   <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
                     <svg
                       width="48"
@@ -233,12 +210,10 @@ export default function ExperimentalTestimonials() {
                     </svg>
                   </div>
 
-                  {/* Quote Text */}
                   <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.5em] tracking-tight text-zinc-900 md:mt-14 md:text-xl lg:text-2xl">
                     "{item.quote}"
                   </p>
 
-                  {/* Bottom Profile */}
                   <div className="mt-8 flex items-center gap-4 md:mt-10">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-black/10 bg-black text-sm font-bold text-white md:h-14 md:w-14 md:text-base">
                       {item.initials}

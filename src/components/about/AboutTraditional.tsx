@@ -5,11 +5,9 @@ import { motion } from "framer-motion";
 export default function AboutTraditional() {
   return (
     <section className="relative w-full bg-black py-12 md:py-20 font-sans overflow-hidden text-white">
-      {/* Background Noise for texture */}
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay pointer-events-none" />
 
       <div className="mx-auto flex flex-col items-center">
-        {/* --- PART 1: Massive Centered Typography --- */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -38,7 +36,6 @@ export default function AboutTraditional() {
           </p>
         </motion.div>
 
-        {/* --- PART 2: Cinematic Video --- */}
         <div className="relative z-10 mt-20 w-full max-w-[96rem] px-4 md:mt-28 md:px-10">
           <motion.div
             initial={{ opacity: 0, y: 90, scale: 0.93 }}
@@ -56,10 +53,8 @@ export default function AboutTraditional() {
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
             />
 
-            {/* Gradient veil for depth + caption legibility */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
-            {/* Caption */}
             <div className="absolute bottom-0 left-0 p-6 md:p-10">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">
                 Our studio in motion

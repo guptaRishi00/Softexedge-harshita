@@ -38,13 +38,11 @@ function BentoCard({
       }}
       className={`relative flex flex-col justify-end overflow-hidden rounded-[24px] bg-[#0a0a0a] min-h-[360px] md:min-h-[420px] lg:min-h-[480px] p-8 md:p-10 shadow-sm ${className}`}
     >
-      {/* BACKGROUND IMAGE & OVERLAY */}
       <div className="absolute inset-0 overflow-hidden">
         <img src={image} alt={title} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
       </div>
 
-      {/* CONTENT */}
       <div className="pointer-events-none relative z-10 flex w-full flex-col items-start gap-4 md:gap-5">
         <div className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-2xl border border-white/20 bg-black/20 backdrop-blur-md shadow-sm">
           <Icon

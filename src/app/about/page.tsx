@@ -2,11 +2,13 @@ import AboutHeroSection from "@/components/about/AboutHeroSection";
 import AboutTraditional from "@/components/about/AboutTraditional";
 import OurTeamSection from "@/components/about/OurTeamSection";
 import OurValuesSection from "@/components/about/OurValuesSection";
+import ShrinkOnOverlap from "@/components/ui/ShrinkOnOverlap";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import FaqSection from "@/components/brand-strategy/FaqSection";
 import BlogSection from "@/components/home/BlogSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
+import Header from "@/components/page/Header";
 import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
 
 type Props = {};
@@ -14,19 +16,33 @@ type Props = {};
 export default function AboutPage({}: Props) {
   return (
     <div className="bg-white">
-      <div className="relative z-0 -mb-[150vh]">
+      <Header />
+ <div className="relative z-0 -mb-[150vh]">
         <div className="sticky top-[calc(100vh-1104px)] z-0 bg-[#FAFAFA]">
-          <AboutHeroSection />
+          <ShrinkOnOverlap endSelector="#about-traditional">
+            <AboutHeroSection />
+          </ShrinkOnOverlap>
         </div>
-        <div className="relative z-10 bg-black pb-[150vh] [&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-45 md:[&>section]:pb-24">
+        <div
+          id="about-traditional"
+          className="relative z-10 bg-black pb-[150vh] [&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-45 md:[&>section]:pb-24"
+        >
           <AboutTraditional />
         </div>
       </div>
       <div className="relative z-0 -mb-[100vh]">
-        <div className="sticky top-[calc(100vh-994px)] z-0 [&>section]:py-16 md:[&>section]:pt-16 md:[&>section]:pb-36">
-          <OurValuesSection />
+        <div className="sticky top-[calc(100vh-994px)] z-0 bg-black">
+          <ShrinkOnOverlap
+            endSelector="#our-team"
+            className="[&>section]:py-16 md:[&>section]:pt-16 md:[&>section]:pb-36"
+          >
+            <OurValuesSection />
+          </ShrinkOnOverlap>
         </div>
-        <div className="relative z-10 bg-white pb-[100vh] [&>section]:py-16 md:[&>section]:pb-10 md:[&>section]:pt-30">
+        <div
+          id="our-team"
+          className="relative z-10 bg-white pb-[100vh] [&>section]:py-16 md:[&>section]:pb-10 md:[&>section]:pt-30"
+        >
           <OurTeamSection />
         </div>
       </div>

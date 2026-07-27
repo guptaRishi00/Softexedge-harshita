@@ -72,9 +72,6 @@ export const projects: Project[] = [
     ],
   },
   {
-    // Sits right after Finova so the two share a row in the "All" grid (the
-    // featured Lumina card below spans both columns — without this card the
-    // slot beside Finova stayed empty).
     id: 10,
     title: "Orbit CRM",
     subtitle: "Sales Automation Platform",

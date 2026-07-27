@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 export function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(false); // SSR + first paint = mobile-safe
+  const [isDesktop, setIsDesktop] = useState(false); 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
     const update = () => setIsDesktop(mq.matches);

@@ -25,13 +25,10 @@ export default function RotatingWord({
 
   return (
     <span className="relative flex items-center justify-center overflow-hidden px-6 -mx-6 py-2 -my-2 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
-      {/* mode="wait": the current word finishes sliding out (right) and
-          disappears BEFORE the next word enters — sequential, not overlapping. */}
       <AnimatePresence mode="wait">
         <motion.span
           key={index}
           initial={{
-            // Enter from the left of the visible area
             x: "-100%",
             opacity: 0,
           }}
@@ -40,13 +37,10 @@ export default function RotatingWord({
             opacity: 1,
           }}
           exit={{
-            // Slide out right and glide away — same slow easeInOut exit as
-            // the ExperimentalTestimonials rotating word.
             x: "100%",
             opacity: 0,
             transition: { duration: 1.5, ease: "easeInOut" },
           }}
-          // Same slow spring as the ExperimentalTestimonials rotating word.
           transition={{
             type: "spring",
             stiffness: 22,

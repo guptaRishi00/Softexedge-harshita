@@ -12,7 +12,6 @@ import { getProjectBySlug, projects } from "@/data/projects";
 
 export async function generateStaticParams() {
   return projects.map((project) => {
-    // Extract slug from href (e.g. "/work/aura-skincare" -> "aura-skincare")
     const slug = project.href.split("/").pop();
     return {
       slug,
@@ -30,12 +29,9 @@ export default async function ProjectPage(props: {
     notFound();
   }
 
-  // Find next project
   const currentIndex = projects.findIndex((p) => p.id === project.id);
   const nextProject = projects[(currentIndex + 1) % projects.length];
 
-  // Split the gallery so images bracket the outcomes section — the page then
-  // alternates info → images → info → images → next project.
   const gallery = project.gallery ?? [];
   const galleryMid = Math.ceil(gallery.length / 2);
   const galleryA = gallery.slice(0, galleryMid);
@@ -43,7 +39,6 @@ export default async function ProjectPage(props: {
 
   return (
     <div className="relative bg-[#0a0a0a]">
-      {/* Header — shared site header, dark-hero variant (light links + logo) */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header onDark />
       </div>

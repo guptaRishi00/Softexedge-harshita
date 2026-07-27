@@ -10,16 +10,12 @@ export default function ProjectDetailsContent({
 }: {
   project: Project;
 }) {
-  // Illustrative headline metrics — placeholders flagged inline so they can be
-  // swapped for verified figures per project.
   const results = [
     { value: "140%", label: "Engagement lift" },
     { value: "2.4×", label: "Faster delivery" },
     { value: "98", label: "Performance score" },
   ];
 
-  // Per-project deliverables derived from the stack + category so each project
-  // lists something specific rather than identical copy across all eight.
   const deliverables = [
     `${project.category} strategy & art direction`,
     ...project.tech.map((t) => `${t} engineering & integration`),
@@ -28,11 +24,8 @@ export default function ProjectDetailsContent({
 
   return (
     <section className="bg-[#0a0a0a] px-4 py-24 md:px-10 md:py-32">
-      {/* Full-width (no max-w cap) so the content's left edge lines up with the
-          FaqSection below — both then sit at the section's px-4 md:px-10. */}
       <div className="w-full">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-24">
-          {/* Sticky Sidebar */}
           <div className="lg:col-span-4">
             <div className="sticky top-32 flex flex-col gap-12 rounded-2xl border border-white/5 bg-[#100F0F] p-8 md:p-10">
               <motion.div
@@ -129,8 +122,6 @@ export default function ProjectDetailsContent({
             </div>
           </div>
 
-          {/* Main Content — capped to a readable measure so long lines don't
-              stretch edge-to-edge at xl widths. */}
           <div className="lg:col-span-8">
             <div className="flex max-w-3xl flex-col gap-24">
               <Section heading="Overview">

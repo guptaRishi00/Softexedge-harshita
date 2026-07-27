@@ -1,7 +1,6 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import Header from "../page/Header";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -40,19 +39,13 @@ export default function ContactHeroSectionTwo() {
         className="absolute inset-0 z-0 h-full w-full object-cover"
       />
 
-      {/* Slight left→right black scrim: enough weight behind the headline for
-          legibility, fading to fully clear so the footage reads on the right. */}
       <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
 
-      {/* Header — overlays the video, light variant like WorkHeroSection */}
-      <div className="absolute left-0 top-0 z-50 w-full">
-        <Header onDark />
-      </div>
-
-      <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center gap-10 px-6 py-28 md:flex-row md:justify-between md:gap-6 md:px-12 lg:gap-12 lg:px-10 lg:mt-14">
-        {/* Content */}
+      <div
+        id="contact-hero-copy"
+        className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center gap-10 px-6 py-28 md:flex-row md:justify-between md:gap-6 md:px-12 lg:gap-12 lg:px-10 lg:mt-14"
+      >
         <div className="relative z-10 flex w-full flex-col items-start text-left md:w-[70%]">
-          {/* Headline — wraps to fill the 70% column */}
           <motion.h1
             variants={headlineContainer}
             initial={reduce ? false : "hidden"}

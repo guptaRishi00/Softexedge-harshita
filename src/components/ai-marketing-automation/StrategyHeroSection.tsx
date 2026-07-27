@@ -13,7 +13,6 @@ const ROTATING_IMAGES = [
   "https://images.unsplash.com/photo-1776602191233-154cbc983f0c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDcyfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
 ];
 
-// Framer Motion Variants for staggering the words
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -50,17 +49,14 @@ export default function StrategyHeroSection() {
 
   return (
     <section className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden bg-white pt-24 pb-12 text-zinc-900">
-      {/* Background glow */}
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-60">
         <div className="h-[600px] w-[600px] rounded-full bg-zinc-100 blur-[120px]"></div>
       </div>
 
-      {/* Header */}
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header />
       </div>
 
-      {/* Center Wrapper: flex-1 dynamically centers the content between Header and Stats */}
       <div className="relative z-10 flex flex-1 w-full max-w-7xl flex-col items-center justify-center text-center lg:mt-30 px-6 md:px-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -71,22 +67,19 @@ export default function StrategyHeroSection() {
           How we do it
         </motion.div>
 
-        {/* Title Container */}
         <motion.h1
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          onAnimationComplete={() => setIsExpanded(true)} // Split triggers only AFTER words finish
+          onAnimationComplete={() => setIsExpanded(true)} 
           className="mb-6 flex flex-col items-center text-5xl font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-[95px] lg:text-[118px] xl:text-[135px]"
         >
-          {/* Line 1 */}
           <span className="flex items-center justify-center whitespace-nowrap">
             <motion.span variants={wordVariants}>We</motion.span>
             <motion.span variants={wordVariants} className="ml-3 md:ml-6">
               Build
             </motion.span>
 
-            {/* Split Image Span */}
             <span
               className={`relative mx-1.5 inline-block h-[1em] shrink-0 overflow-hidden rounded-2xl align-middle shadow-sm transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] md:mx-2.5 ${
                 isExpanded
@@ -111,7 +104,6 @@ export default function StrategyHeroSection() {
             <motion.span variants={wordVariants}>Brands</motion.span>
           </span>
 
-          {/* Line 2 */}
           <span className="mt-2 flex space-x-3 md:mt-4 md:space-x-6">
             <motion.span variants={wordVariants}>That</motion.span>
             <motion.span variants={wordVariants}>People</motion.span>
@@ -120,7 +112,6 @@ export default function StrategyHeroSection() {
         </motion.h1>
       </div>
 
-      {/* Bottom Stats */}
       <div className="relative z-20 w-full mt-16 md:mt-24">
         <AgencyStats />
       </div>

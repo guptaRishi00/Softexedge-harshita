@@ -44,7 +44,6 @@ export default function ProcessSection() {
       className="w-full bg-black font-sans pt-20 md:pt-20 md:pb-35"
     >
       <div className="mx-auto w-full px-4 md:px-10">
-        {/* Header Section */}
         <div className="mb-16 md:mb-35">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
             How We Work
@@ -78,7 +77,6 @@ export default function ProcessSection() {
           </div>
         </div>
 
-        {/* Process Grid */}
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {processSteps.map((step, index) => (
             <motion.div
@@ -92,7 +90,6 @@ export default function ProcessSection() {
               viewport={{ once: true }}
               className="group flex cursor-pointer flex-col"
             >
-              {/* Image Container */}
               <div className="relative mb-6 flex aspect-[4/4.5] w-full items-center justify-center overflow-hidden rounded-[20px] bg-zinc-900">
                 <img
                   src={step.image}
@@ -101,7 +98,6 @@ export default function ProcessSection() {
                 />
               </div>
 
-              {/* Text Content */}
               <div className="flex flex-grow flex-col">
                 <h3 className="mb-2 text-xl font-extrabold tracking-tight text-white">
                   {step.title}
@@ -115,8 +111,6 @@ export default function ProcessSection() {
           ))}
         </div>
 
-        {/* NON-EDGE-TO-EDGE BOTTOM BORDER — pulled out past the md:px-10
-            gutter so the rule sits 16px from each edge, matching OurTechStack. */}
         <div className="mt-16 w-full border-b border-white/10 md:-mx-6 md:mt-35 md:w-[calc(100%_+_3rem)]" />
       </div>
     </section>

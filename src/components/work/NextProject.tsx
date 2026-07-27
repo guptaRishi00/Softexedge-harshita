@@ -27,7 +27,6 @@ export default function NextProject({ nextProject }: { nextProject: Project }) {
           style={{ y, scale }}
           className="relative mx-auto flex min-h-[500px] w-full max-w-7xl cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[40px] bg-white/5 md:min-h-[600px]"
         >
-          {/* Background Media (Always visible, no hover effects) */}
           <div className="absolute inset-0 z-0 overflow-hidden">
             <div className="h-full w-full opacity-40">
               {nextProject.type === "video" && nextProject.video ? (
@@ -52,7 +51,6 @@ export default function NextProject({ nextProject }: { nextProject: Project }) {
 
           <div className="absolute inset-0 z-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-          {/* Content */}
           <div className="relative z-10 flex flex-col items-center justify-center text-center">
             <span className="mb-6 text-sm font-bold uppercase tracking-[0.25em] text-white/60">
               Next Project
@@ -62,7 +60,6 @@ export default function NextProject({ nextProject }: { nextProject: Project }) {
               {nextProject.title}
             </h2>
 
-            {/* CTA Button Style - replacing the old View Case Study button */}
             <div className="mt-12 pointer-events-auto">
               <div className="group relative flex h-14 w-fit items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100">
                 <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">

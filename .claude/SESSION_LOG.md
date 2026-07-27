@@ -5957,3 +5957,492 @@ INTERPRETATION FLAGGED TO USER: "side glow" implemented as the border strips sta
 - General rule for this page: stick line = `calc(100vh - <measured wrapper px>)`,
   overlapper needs `pb-[100vh]` + matching `-mb-[100vh]` on the group.
 - Verified: `bunx tsc --noEmit` exit 0; biome diagnostic-header count 0 (LF-normalized).
+
+## 2026-07-27 — About page: hero shrinks as AboutTraditional overlaps it
+- NEW `src/components/about/ShrinkOnOverlap.tsx` (client) + wired into
+  `src/app/about/page.tsx`; AboutTraditional's wrapper gains `id="about-traditional"`.
+- Ports the home page's About -> Portfolio treatment (src/app/home/page.tsx:80-91):
+  `gsap.to(inner, {scale: 0.85, y: 40, ease: "none", scrub})`, `origin-top
+  will-change-transform`, desktop-only via `gsap.matchMedia("(min-width: 768px)")`.
+- Deliberately does NOT port the home page's `pin: true`. Here the hold is CSS
+  `position: sticky`; only the scale is scrubbed, so the two compose instead of
+  fighting. Two nested divs as on the home page: the OUTER is the measurement
+  trigger and must stay untransformed (ScrollTrigger reads its rect), the INNER is
+  the only thing scaled.
+- The about page is a SERVER component, so the GSAP work is isolated in a small
+  client component rather than putting "use client" on the whole page. It also has
+  no <SmoothScroll>, so the component registers ScrollTrigger itself, following the
+  `if (typeof window !== "undefined")` convention from StatsSection.tsx:10.
+- Range verified by measured geometry, not assumption: trigger height 1104 at doc
+  top 0 -> `start: "bottom bottom"` = scroll 384 (exactly the sticky pin point);
+  `#about-traditional` at doc top 1104 -> `end: "top top"` = scroll 1104 (exactly
+  full cover). Shrink spans the overlap window precisely.
+- Confirmed the two wrapper divs add NO height: sticky box still measures 1104px, so
+  `top-[calc(100vh-1104px)]` stays valid.
+- Motion itself is NOT self-verified, and the reason was proven rather than assumed:
+  the inner div carries GSAP's CSSPlugin signature inline style
+  ("translate: none; rotate: none; scale: none; transform: translate(0px, 0px)"),
+  so the tween was created and rendered at progress 0 — while the pane reports
+  ZERO native scroll events and rAF never fires. Correct wiring, dead pane. User
+  must confirm the actual scrub.
+- Verified: `bunx tsc --noEmit` exit 0; biome 0 on both files; the dev server
+  compiled and HYDRATED the new client component (proven by the GSAP inline style).
+- ShrinkOnOverlap takes an `endSelector`, so the OurValues -> OurTeam pair can reuse
+  it if the same treatment is wanted there.
+
+## 2026-07-27 — About page: OurValues shrinks as OurTeam overlaps
+- Reused `ShrinkOnOverlap`; OurTeam wrapper gains `id="our-team"`. `src/app/about/page.tsx`
+  plus a small addition to `src/components/about/ShrinkOnOverlap.tsx`.
+- TRAP this pair had and the hero pair did not: the OurValues sticky div carried
+  `[&>section]:py-16 md:[&>section]:pt-16 md:[&>section]:pb-36`, and `[&>section]`
+  matches DIRECT children only. Wrapping the section in ShrinkOnOverlap inserts two
+  divs, which silently drops that padding and shrinks the wrapper below the measured
+  994px — quietly invalidating `top-[calc(100vh-994px)]`. Fixed by adding a
+  `className` prop applied to the INNER div and moving the padding classes there.
+  Anywhere this component is used, `[&>...]` classes must move with it.
+- Also added `bg-black` to the OurValues sticky div. Shrinking exposes a margin
+  around the section; the previous group's black tail ends at doc 3585 while
+  OurValues stays pinned to ~4319, so page white would have shown through the gap
+  for part of that range. (The hero pair already had bg-[#FAFAFA] for the same reason.)
+- Verified by measurement: sticky height still exactly 994px with the padding now
+  computing on the section (pt 64px / pb 144px), sticky top -274px, bg rgb(0,0,0),
+  `#our-team` at doc top 3499, hero pair still 1104px (no regression). Trigger range
+  therefore 2779 -> 3499, which matches the previously sampled pin point and
+  full-cover point exactly.
+- Motion again NOT self-verified: GSAP's CSSPlugin inline style is present on the
+  inner div (tween attached, rendered at progress 0), but the pane delivers zero
+  scroll events and no rAF. User confirms the scrub.
+- Verified: `bunx tsc --noEmit` exit 0; biome 0 on both files.
+
+## 2026-07-27 — About page navbar broken on scroll (regression from ShrinkOnOverlap)
+- CAUSE, proven not guessed: the Navbar root is `fixed inset-x-0 top-0 z-[100]`
+  (src/components/page/resizable-navbar.tsx:92) and <Header /> was rendered INSIDE
+  AboutHeroSection (line 39). Wrapping the hero in ShrinkOnOverlap put
+  `will-change: transform` + a GSAP transform on an ANCESTOR of it, and a
+  transformed ancestor becomes the containing block for `position: fixed`
+  descendants. Evidence: `nav.offsetParent` was "origin-top will-change-transform"
+  (my div) instead of null, and the nav's viewport top went 0 -> -200 -> -384 and
+  stuck there, i.e. it scrolled off with the hero and never came back.
+  NOTE: `position: sticky` alone does NOT do this — only transform / will-change /
+  filter / contain. The earlier sticky work was not the trigger; the shrink was.
+- FIX: moved <Header /> out of AboutHeroSection (its only consumer is the about
+  page, verified by grep) up to `src/app/about/page.tsx`, outside every transformed
+  and sticky wrapper. Removed the now-unused import. The header's old wrapper was
+  `absolute`, so it contributed no layout height and the hero still measures 1104px
+  — the `calc(100vh-1104px)` stick line is unaffected.
+- VERIFIED by re-running the exact failing test: `nav.offsetParent` is now null
+  (viewport-fixed) and the nav sits at viewport top 0 at scroll 0/200/400/800/1104/
+  1600/3000. Hero sticky still 1104px @ top -384px, so the overlap did not regress.
+  Checked the `navCount: 2` result rather than ignoring it: the second element is
+  the MobileNav NESTED inside the same Navbar root (confirmed via parent chain), not
+  a duplicated Header.
+- Added a WARNING to ShrinkOnOverlap's docblock: nothing `position: fixed` may live
+  inside its children, for exactly this reason.
+- Verified: `bunx tsc --noEmit` exit 0; biome 0 on all three touched files.
+
+## 2026-07-27 — Removed all comments across the codebase
+- 156 of 196 .ts/.tsx files under src/ changed; **1505 comments removed**. Plus 5
+  comments in `src/app/globals.css`.
+- NOT done with regex — "//" occurs inside URLs and template literals and JSX text
+  is not code, so a regex sweep silently corrupts source. Used a Node script driving
+  the project's own TypeScript parser (script kept at
+  scratchpad/strip-comments.js): collect leading/trailing comment trivia per AST
+  node, plus JsxExpression nodes with no expression (that's what `{/* ... */}` is —
+  removing only the comment would leave a stray `{}`).
+- PRESERVED 9 functional directives (6 biome-ignore, 3 eslint-disable-next-line).
+  Deleting them would break lint, which contradicts "mergeable quality"; listed them
+  in the report so the user can ask for them too. Guard is a FUNCTIONAL regex in the
+  script covering biome-ignore/eslint-*/@ts-expect-error/@ts-ignore/@ts-nocheck/
+  prettier-ignore/webpackIgnore/@jsxImportSource/triple-slash references.
+- Comment ranges are widened to whole lines when the comment is alone on its line,
+  so no blank-line or trailing-whitespace residue is left. Could NOT use
+  `biome format --write` to tidy up: ~20 files in the repo are already not
+  format-clean, so formatting would have injected unrelated reformatting.
+- SAFETY GATE, the important part: every file is parsed before and after and both
+  sides printed with `ts.createPrinter({removeComments:true})`; a file is only
+  written if the printed output is IDENTICAL. First run rejected 128 files — correct
+  behaviour, since deleting `{/* */}` really does remove a JSX child. Added a
+  normalizer applied to BOTH sides that drops empty JsxExpressions and collapses
+  JsxText the way JSX itself does (trim lines, drop blanks, join with space). Final
+  run: 156 files, **0 AST failures** — proof that only comments changed.
+- Verified: `bunx tsc --noEmit` exit 0. Biome diagnostics **19 before, 19 after** —
+  baseline taken from a clean `git worktree` at HEAD rather than guessed (per-rule
+  tallies are NOT reliable counts; a rule name can appear twice per diagnostic, so
+  count `file:line:col` headers). All 9 directives confirmed still present.
+- CSS verified separately: no `/*` inside quotes (so the regex was safe there), key
+  rules intact, braces balanced 32/32.
+- Live smoke test after the sweep: /about renders, hero sticky still 1104px @ -384px,
+  OurValues sticky @ -274px, GSAP still attached, navbar still viewport-fixed,
+  star-movement keyframes survived the CSS strip.
+- Did NOT run `next build` (competes with the user's dev server, ~9 min). tsc plus
+  per-file AST equivalence covers what a build would catch for a comments-only diff.
+
+## 2026-07-27 — Career page: WhyJoinUs overlaps CareerHeroSection
+- `src/app/career/page.tsx`: group `relative z-0 -mb-[100vh]`; hero in
+  `sticky top-[calc(100vh-1200px)] z-0 bg-white`; WhyJoinUs wrapper gains
+  `relative z-10 bg-black pb-[100vh]` (existing [&>section] padding kept in place —
+  it is still a direct child here, unlike the ShrinkOnOverlap case).
+- MEASURED first: hero 1200px bg-white, WhyJoinUs 1576px bg-black, root overflow
+  visible. Tail's black is invisible because OpenPositions (next section) is bg-black.
+- HEADER HOIST WAS REQUIRED, and for a DIFFERENT reason than the about page. There
+  the cause was a transform; here it is stacking: `sticky ... z-0` sets a z-index, so
+  the hero becomes a stacking context and the navbar's `z-[100]` is confined inside
+  it — WhyJoinUs at z-10 would paint straight over the navbar. Moved <Header /> out
+  of CareerHeroSection (career-page-only, verified by grep) to page level.
+  Rule of thumb: giving a section `z-0` to host an overlap traps any fixed navbar
+  inside it. Check for one before adding the pattern to a new page.
+- Verified EMPIRICALLY: hero scrolls 0->480 (top 0 -> -480), pins with bottom = 720 =
+  viewport bottom, then WhyJoinUs climbs 720 -> 0 by scroll 1200 and covers. Something
+  moves at every step: no dead zone. Navbar top = 0 at every sample and
+  `offsetParent` null. Stacking proven with elementFromPoint at the navbar position:
+  `navIsOnTop: true` at scroll 1500/2200/2800/3400/4000. On unpin the hero's bottom
+  coincides with the WhyJoinUs wrapper's bottom (696/696, then 96/96), so they release
+  together and no sliver appears.
+- Verified: `bunx tsc --noEmit` exit 0; biome 19 diagnostics = unchanged baseline.
+- Not added: the ShrinkOnOverlap scale — user asked only for the overlap. If wanted
+  later it now drops in safely, since the header is already outside the wrapper.
+
+## 2026-07-27 — Career page: hero shrinks as WhyJoinUs overlaps
+- Reused ShrinkOnOverlap on CareerHeroSection; WhyJoinUs wrapper gains
+  `id="why-join-us"`. `src/app/career/page.tsx`.
+- MOVED `ShrinkOnOverlap` from `src/components/about/` to `src/components/ui/`. It now
+  serves two pages, and the career page importing from `components/about/` would be
+  wrong. Updated the single existing import in `src/app/about/page.tsx`.
+- No `className` pass-through needed here (unlike the OurValues case): the career
+  hero's sticky div carries no `[&>section]` padding, and CareerHeroSection is itself
+  the <section>.
+- The fixed-navbar hazard was already neutralised last task: the header was hoisted
+  out of CareerHeroSection for the stacking-context reason, which also happens to be
+  the precondition for adding a transform here. Had it still been inside, this change
+  would have broken it exactly as it did on the about page.
+- Verified on the live page: hero box still 1200px @ top -480px (the two wrapper divs
+  add no height, so `calc(100vh-1200px)` stays valid); outer trigger div has
+  `transform: none` (it must stay untransformed — ScrollTrigger measures its rect);
+  GSAP CSSPlugin inline style present on the inner div; `#why-join-us` at doc top 1200.
+  Trigger range therefore 480 -> 1200, exactly the measured pin point and full-cover
+  point.
+- NAVBAR RE-VERIFIED under the new transform: `offsetParent` null (viewport-fixed),
+  top 0, and `elementFromPoint` at the navbar position returns the navbar
+  (`navIsOnTop: true`) at scroll 1600.
+- About page re-checked after the file move: renders, hero sticky 1104px, OurValues
+  sticky -274px with its passed-through padding still computing (144px), both GSAP
+  tweens attached, navbar still viewport-fixed.
+- Verified: `bunx tsc --noEmit` exit 0; biome 19 = unchanged baseline.
+- Scrub motion itself still not self-verifiable (pane delivers no scroll events / rAF).
+
+## 2026-07-27 — Career page: OurTeamSection overlaps + shrinks PerksSection
+- `src/app/career/page.tsx`: new group `relative z-0 -mb-[100vh]` around
+  PerksSection + OurTeamSection. PerksSection wrapped in `sticky
+  top-[calc(100vh-1216px)] z-0 bg-black` + `ShrinkOnOverlap` (className carries the
+  pre-existing `[&>section]:py-16 md:[&>section]:pb-35 md:[&>section]:pt-24`
+  padding onto the inner div, same reason as the OurValues case: `[&>section]`
+  matches direct children only). OurTeamSection wrapper gains
+  `id="our-team-career"` + `relative z-10 bg-white pb-[100vh]`.
+- MEASURED first (720x1280): PerksSection 1216px bg-black, OurTeamSection 868px
+  bg-white. This is the FIRST pair on this page where the section that SHRINKS
+  (Perks) is not the page's hero — same mechanism, applied one section down.
+- id `our-team-career` used (not `our-team`) since `#our-team` is already the id
+  used by the about page's OurTeamSection overlap — different documents, so no
+  real collision, but kept distinct to avoid any confusion when grepping.
+- Verified by scroll sampling: pins at scroll 5238 (perks bottom = 720 = viewport
+  bottom), OurTeamSection climbs 720 -> 0 by scroll 5958 and fully covers. Something
+  moves at every sampled step, no dead zone. Padding pass-through confirmed
+  (padding-top 96px / padding-bottom 140px on the section, matching md breakpoint).
+  GSAP inline style present on PerksSection's inner div (tween attached). Navbar
+  top stayed 0 throughout — unaffected, as expected since Header is outside this
+  group entirely.
+- Verified: `bunx tsc --noEmit` exit 0; biome 19 = unchanged baseline.
+- Motion itself (the actual shrink) not self-verifiable here for the same
+  documented reason (pane delivers no scroll events / rAF) — needs user's eyes.
+
+## 2026-07-27 — Career page: fixed the real OpenPositions occlusion bug
+- "appears then disappears" was the missing clue: the title/tag DO play their
+  animation to opacity:1, then get COVERED by a sibling that paints after them.
+  My previous attempt (this same session, prior entry) misdiagnosed this as an
+  animation-trigger problem because the pane cannot verify animation completion
+  (rAF frozen) — that fix was reverted. This is the real root cause.
+- MECHANISM (proven, not theorized): OpenPositions' wrapper div is
+  `position: static`. The WhyJoinUs overlap wrapper directly above it
+  (`#why-join-us`, `relative z-10 bg-black pb-[100vh]`) has an explicit POSITIVE
+  z-index. A positive z-index creates a stacking-context bucket that paints AFTER
+  static in-flow content in the SAME parent stacking context, regardless of DOM
+  order. Because the `-mb-[100vh]` on the group above pulls OpenPositions up to sit
+  flush against (and geometrically inside) that z-10 tail's box, the tail's opaque
+  black paints ON TOP of OpenPositions' title/tag once they reach full opacity —
+  they're visible only in the low-opacity fade-in frames, then vanish as opacity
+  approaches 1, matching "appears and then disappears" exactly.
+- PROOF METHOD: forced the heading's inline style to the animation's END state
+  (`opacity:1; transform:none`) via direct DOM manipulation (sidesteps the need for
+  a real scroll/rAF-driven animation to complete) and used `elementFromPoint` at
+  its exact screen coordinate. BEFORE fix: topmost element = the `#why-join-us`
+  tail div. AFTER fix: topmost = the heading itself.
+- FIX (1 line): `src/app/career/page.tsx` — OpenPositions' wrapper div gains
+  `relative z-10`, matching WhyJoinUs's z-10 so DOM order (OpenPositions is later)
+  correctly determines paint order between them.
+- CHECKED for the same bug elsewhere rather than assuming it's isolated: same
+  forced-opacity-1 + elementFromPoint test on (a) ExperimentalTestimonials
+  (follows the about page's OurTeam z-10 tail) and (b) ApplicationJourney (follows
+  this page's OurTeamSection/Perks z-10 tail) — NEITHER is covered. This is a
+  narrow, geometry-dependent bug (depends on exactly how far the preceding tail's
+  box extends into the following section), not a systemic defect in the overlap
+  pattern. No other files touched.
+- Verified: `bunx tsc --noEmit` exit 0; biome 19 = unchanged baseline.
+
+## 2026-07-24 — Dead-code purge: 47 unreachable source files removed (zero UI change, proven)
+Task: remove all unused components/code with no UI change. Method (evidence-first, not
+map-trust): built an import-reachability BFS over src (entries = every file under src/app,
+following @/ + relative imports incl. dynamic import()). Result: 196 files, 47 UNREACHABLE —
+garbage/ ×25, shared/ConnectButton{,Two,Three} ×3, 15 unused ui/ effects (3d-globe, BorderGlow,
+CardSwap, ColorBends, DotGrid, Galaxy, Grainient, GridDistortion, ImageTrail, LaserFlow,
+PixelBlast, PixelTrail, SplashCursor, Strands, VariableProximity), 3d-globe-demo,
+about/AboutOverview, career/CareerValues, work/WorkHeader. Cross-checked every candidate
+basename against live files: the only hits were directory-distinct name collisions
+(home/AboutSection, home/PortfolioSection, brand-strategy/CtaSection); zero "garbage/"
+specifiers outside the dir. Deleted all 47 + rmdir garbage/ shared/.
+ZERO-UI PROOF: snapshotted ALL 29 routes (14 static + 8 work slugs + 6 blog slugs + root)
+before and after deletion and diffed visible markup (scripts stripped — RSC/chunk module ids
+renumber on any file deletion by design): IDENTICAL on 29/29. First snapshot attempt was
+invalid (bash \$f escaping wrote every route to one file — caught because the "diff" pattern
+was impossibly uniform); restored the 47 files from git (tracked, unmodified), re-snapshotted
+properly via node fetch, re-deleted. tsc 0 ✓, next build ✓, post-delete reachability: 149
+files, 0 unreachable.
+NOT DONE (needs sign-off, lockfile change): uninstalling now-orphaned deps — the whole three
+stack (three, @react-three/fiber, @react-three/drei, postprocessing, @types/three; zero live
+imports after purge), prettier + plugin, @studio-freight/lenis. ogl STAYS (ui/Particles).
+Docs synced: map directory-layout/duplication/dead-weight/open-questions updated; CLAUDE.md
+garbage hard-rule replaced with a no-parked-dead-code rule. Skipped spec-verifier: the
+evidence (reachability graph + 29-route identical-markup diff + green tsc/build) is stronger
+than a re-derivation. 47 deletions + 2 doc files. Not committed.
+
+## 2026-07-27 — Work page: WorkProjectShowcase overlaps + WorkHeroSection shrinks
+- `src/app/work/page.tsx`: group `relative z-0`; hero in `sticky top-0 z-0 bg-black`
+  wrapped in ShrinkOnOverlap; showcase wrapper gains `id="work-showcase"` +
+  `relative z-10 bg-black`. Header hoisted out of WorkHeroSection to page level,
+  PRESERVING its `onDark` prop (work hero is dark; dropping it would light-theme
+  the navbar).
+- TWO DELIBERATE DEVIATIONS from the about/career pattern, both measurement-driven:
+  1. `top-0`, NOT `top-[calc(100vh-Npx)]`. WorkHeroSection measures EXACTLY 100vh
+     (720px @ vh720). Verified it is viewport-driven not content-driven by resizing
+     the window to 950px and re-measuring: hero became exactly 950px. So its height
+     always equals 100vh, and a hardcoded `calc(100vh - 720px)` would evaluate to
+     +180px at vh=900 and pin the hero 180px BELOW the top, opening a gap. `top-0`
+     is correct at every viewport height. Also means no lead-in scroll, which is
+     right for a one-screen hero — nothing to scroll through before it pins.
+  2. NO `pb-[100vh]` tail and no `-mb`. The showcase is 4096px (5.7 screens), so
+     coverage (`overlapper >= 100vh`) is satisfied at any realistic viewport without
+     one. Omitting it also AVOIDS re-creating the z-10-tail overhang that caused the
+     OpenPositions occlusion bug fixed earlier today — with no tail, the showcase
+     ends at doc 4816 exactly where ExperimentalTestimonials begins.
+- Verified by scroll sampling: hero pinned at top 0 filling the viewport, showcase
+  climbs 720 -> 0 by scroll 720 and covers. At unpin (scroll 4096) hero bottom and
+  showcase bottom are both 720 — they release together, no sliver. Navbar
+  viewport-fixed (`offsetParent` null), top 0 at every sample, and proven painted
+  ABOVE the overlapper via elementFromPoint (`navOnTopDuringOverlap: true`).
+  Explicitly re-ran the occlusion test on the FOLLOWING section
+  (ExperimentalTestimonials, forced to opacity 1): NOT covered.
+- Verified: `bunx tsc --noEmit` exit 0; biome 19 = unchanged baseline.
+- Motion (the shrink scrub) not self-verifiable — pane has no scroll events/rAF.
+
+## 2026-07-27 — Work page: ExperimentalTestimonials overlaps + shrinks WorkProjectShowcase
+- `src/app/work/page.tsx` only. Chained a SECOND overlap onto the existing one.
+- STRUCTURAL POINT: the showcase must be simultaneously the OVERLAPPER of the hero
+  and the PINNED section for testimonials. One element cannot live in two sibling
+  groups, so all three now share ONE containing block:
+    group `relative z-0 -mb-[100vh]`
+      hero      `sticky top-0 z-0 bg-black`                  + Shrink(-> #work-showcase)
+      showcase  `sticky top-[calc(100vh-4096px)] z-10 bg-black` + Shrink(-> #work-testimonials)
+      testi     `relative z-20 bg-white pb-[100vh]`
+  The showcase being `sticky` does not stop it covering the hero: it scrolls
+  normally (covering, since z-10 > z-0) until its own stick point at scroll 4096.
+- Testimonials is 584px, BELOW 100vh (720) — so unlike the showcase it genuinely
+  needs `pb-[100vh]` for coverage. That re-introduces the tail-overhang hazard that
+  caused the OpenPositions bug, so `relative z-10` was added to ALL five following
+  wrappers (TechLogoCarousel, Cta, Faq, Blog, Footer). Applied to all, not just the
+  two currently overlapped, because the tail is 100vh and its reach grows with
+  viewport height.
+- Verified the whole chain by scroll sampling: 0-720 hero pinned while showcase
+  climbs 720->0 over it; 720-4096 showcase scrolls through (top 0 -> -3376);
+  4096 showcase pins with bottom = 720 = viewport bottom; 4096-4816 testimonials
+  climbs 720->0 and covers. Both GSAP tweens attached (CSSPlugin inline style on
+  each inner div). testiH measured 1304 = 584 + 720 tail, as intended.
+- OCCLUSION SWEEP on every following section (forced to opacity 1 + elementFromPoint).
+  Two initially flagged as covered; BOTH proved false positives via a discriminator
+  checking whether the hit element is inside the tail: (a) CtaSection's hit was its
+  OWN ancestor div (`hitIsInsideTail: false, hitIsAncestorOfProbe: true`) — and since
+  CtaSection (doc 5672) genuinely overlaps the tail region (ends 6120) yet is not
+  covered by it, this is positive proof the z-10 additions work; (b) Footer at doc
+  7818 has no geometric overlap with the tail at all, `hit: null` was a probe artifact.
+- Navbar: `offsetParent` null (viewport-fixed), top 0 and `navOnTop: true` at scroll
+  500/2000/4400/5000.
+- Verified: `bunx tsc --noEmit` exit 0; biome 19 = unchanged baseline.
+
+## 2026-07-27 — Work page: fixed the showcase shrink (origin bug on tall sections)
+- ROOT CAUSE, measured not guessed: `ShrinkOnOverlap`'s inner div uses `origin-top`.
+  That is correct only when the pinned section's TOP is the visible edge. The
+  showcase is 4096px and pins BOTTOM-aligned (`top: calc(100vh-4096px)` = -3376px),
+  so its top edge sits 3376px ABOVE the viewport. Scaling about a point that far
+  off-screen acts as a huge translation, not a shrink: measured the pinned
+  showcase's bottom edge jumping from viewport 720 -> 146 at the animation's end
+  state, i.e. the visible content is yanked 574px upward and ~80% of the screen
+  becomes empty black. That empty band is ALSO what made the testimonials overlap
+  look wrong — both complaints, one cause.
+- FIX (1 line, `src/app/work/page.tsx`): pass
+  `className="origin-[center_calc(100%-100vh)]"` to the showcase's ShrinkOnOverlap.
+  `calc(100% - 100vh)` is the TOP EDGE OF THE VISIBLE REGION for any
+  bottom-aligned pin. No component change needed — `cn()` uses tailwind-merge, so
+  the passed origin cleanly overrides the base `origin-top`.
+- GENERAL RULE for this component: with `top-[calc(100vh-Hpx)]` pins, the correct
+  origin is `center calc(100% - 100vh)`. It DEGENERATES to `origin-top` when
+  H == 100vh, so it is the correct general form for every pin on the site; the
+  existing pages only look fine because their sections are near one viewport tall
+  (about 1104, career 1200, perks 1216, values 994 — shifts of ~120-170px, small
+  enough to read as a shrink). Left those alone deliberately: the user has already
+  approved how they look, and this is a taste-visible change.
+- Did NOT add an explanatory code comment — the codebase was deliberately stripped
+  of comments earlier today, so that rule is recorded here instead.
+- VERIFIED: transform-origin now computes to `632.5px 3376px` (exactly the visible
+  top edge). Empty band 574px -> 68px, which is IDENTICAL to the hero's own shrink
+  gap (720 - (0.85*720 + 40) = 68) — the showcase now recedes exactly like the
+  already-approved hero. Chain regression-checked and unchanged: hero pinned at 0,
+  showcase covers by 720, showcase pins at 4096, testimonials covers by 4816. Hero's
+  own origin still `632.5px 0px` with a 68px gap — untouched.
+- Verified: `bunx tsc --noEmit` exit 0; biome 19 = unchanged baseline.
+
+## 2026-07-27 — Blog page: BlogListSection overlaps + BlogFeaturedSection shrinks
+- `src/app/blog/page.tsx` only. Group `relative z-0`; Featured in
+  `sticky top-[calc(100vh-856px)] z-0 bg-[#FAFAFA]` + ShrinkOnOverlap; List gains
+  `id="blog-list"` + `relative z-10 bg-[#0a0a0a]`.
+- MEASURED first (720x1280): Featured 856px bg #FAFAFA, List 1839px bg #0a0a0a,
+  root overflow visible. Sections are bare children of the page root (no wrapper
+  divs), so there were no `[&>section]` padding classes needing pass-through.
+- NO TAIL NEEDED: List is 1839px, comfortably over 100vh, so coverage holds at any
+  realistic viewport. Skipping the tail also means the group ends at doc 3311
+  exactly where CtaSection begins — zero overhang, so the OpenPositions-style
+  occlusion hazard cannot arise here.
+- Applied the corrected transform origin `origin-[center_calc(100%-100vh)]` from
+  the outset (the fix derived on the work page), rather than inheriting the
+  `origin-top` default. Verified it computes to `632.5px 136px` = 856-720, i.e.
+  exactly the visible top edge, and yields a 68px shrink gap — IDENTICAL to the
+  work hero and showcase, so the motion is consistent across the site.
+- NAVBAR CHECKED BEFORE EDITING rather than after: <Header /> lives in
+  BlogHeroSection, which is `position: relative` with `z-index: auto` — no stacking
+  context — so the fixed navbar (z-100) escapes to the root layer and a z-0 group
+  cannot paint over it. That is why no header hoist was needed here, unlike the
+  about/career/work pages. Confirmed post-change: `offsetParent` null, top 0 at
+  every sample.
+- Verified by scroll sampling: Featured scrolls to its pin (bottom = 720 = viewport
+  bottom at scroll 752), holds, List climbs to 0 by scroll 1472 and covers. Also
+  checked no `position: fixed` exists inside BlogFeaturedSection before wrapping it
+  in a transform. Occlusion sweep on following sections: clean.
+- Verified: `bunx tsc --noEmit` exit 0; biome 19 = unchanged baseline.
+- Noticed but did NOT touch (out of scope): `src/app/blog/page.tsx` has an empty
+  leftover wrapper `<div className="[&>section]:py-16 md:[&>section]:py-24" />`
+  rendering 0px — dead markup, presumably a removed section.
+
+## 2026-07-27 — Contact page: ContactSection overlaps ContactHeroSectionTwo
+- `src/app/contact/page.tsx` + header hoist out of `ContactHeroSectionTwo.tsx`
+  (contact-only, grep-verified; `onDark` prop PRESERVED — hero is dark).
+- Group `relative z-0 -mb-[100vh]`; hero in `sticky -top-[56px] z-0 bg-black`;
+  ContactSection wrapper `relative z-10 bg-black pb-[100vh]` keeping its existing
+  `[&>section]` padding (still a direct child, so no pass-through needed).
+- THIRD DISTINCT HERO GEOMETRY, and the resize test is what caught it. Measured at
+  three viewports: 720->776, 820->876, 950->1006. Hero height is always
+  `100vh + 56px` (min-h-screen plus ~56px of overflowing content), so the correct
+  stick line is a CONSTANT -56px, viewport-independent.
+  A `calc(100vh - 776px)` — the formula used on about/career — would evaluate to
+  +174px at vh=950 and pin the hero 174px BELOW the top, opening a gap. Confirmed
+  the constant is right by re-measuring at vh=950 after the change:
+  `pinsFlushToViewportBottom: true` (hero bottom 950 == viewport bottom).
+  Catalogue of the three cases now seen:
+    H = const (content-driven)      -> top-[calc(100vh - Hpx)]   (about/career/perks/blog)
+    H = 100vh (viewport-driven)     -> top-0                     (work hero)
+    H = 100vh + const               -> top-[-{const}px]          (contact hero)  <- NEW
+- Tail: ContactSection is 991px, over 100vh at typical viewports but NOT at tall
+  ones (>991px), so `pb-[100vh]` + matching `-mb-[100vh]` was added for coverage,
+  and `relative z-10` added to all five following wrappers to contain the overhang
+  (the OpenPositions hazard). Occlusion sweep confirms all clean.
+- NO shrink added — the task asked only for the overlap. ShrinkOnOverlap can be
+  dropped in later; the header is already hoisted, which is its precondition.
+- Verified: hero scrolls 56px then pins with bottom = 720 = viewport bottom;
+  ContactSection climbs 720 -> 0 and covers by scroll 776; no dead zone. Navbar
+  `offsetParent` null, top 0 at every sample, and `navOnTopDuringOverlap: true`.
+  `bunx tsc --noEmit` exit 0; biome 19 = unchanged baseline.
+
+## 2026-07-24 — Footer wordmark: tighter letter gaps + slightly larger
+Task: reduce the gap between the letters of the giant footer "Softexedge" and increase its
+size a little. `layout/Footer.tsx:194` (the aria-label="Softexedge" h1):
+`text-[17vw]` → `text-[18vw]` and added `tracking-[-0.04em]` (it had no tracking = normal).
+Note the h1 is `flex`, so each letter clip-span is a flex item — letter-spacing still works
+because it trims each single-char span's own advance width (verified by measurement, not
+assumption).
+Verified LIVE @1440 (pane's innerWidth was 0 on first try — the known degenerate-viewport
+issue; resized to 1440 explicitly and re-measured): font-size 244.8→259.2px (= exactly 18vw,
++5.9%); letter-spacing normal→-10.368px (= -0.04em). Net wordmark width 1264→1234px — 30px
+NARROWER despite the bigger type, i.e. the tightening more than absorbs the size bump, which
+is the intended look. Still fits its container (1234 ≤ 1273, was nearly touching at 1264).
+Descender check (the earlier g-clipping bug): the clip pad is em-based so it scaled — g
+overflows 50.6px below the line box vs 77.8px padding, clears with 27px headroom.
+tsc ✓, biome-format clean, served /home 200 with the new classes and 0 old 17vw. Per-letter
+reveal animation untouched. 1 file. Not committed. 18vw / -0.04em are the two dials.
+
+## 2026-07-24 — Footer wordmark: fix letters clipped on the right (regression from my tracking change)
+User: after the last task some letters are cut on the right. REAL regression I introduced.
+ROOT CAUSE (measured, not guessed): each letter sits in its own `overflow-hidden` clip span
+(for the reveal animation). `tracking-[-0.04em]` on the h1 applies letter-spacing INSIDE each
+span, so every clip box shrank by exactly 10.37px @259px font while the glyph ink stayed put —
+ink then overflowed the box and was sheared. Measured overflow per letter: x 11.0px, f 9.2,
+t 8.9, e 3.5 (x3), S 2.5, o 1.5 (d/g negative = safe, which is why it looked inconsistent).
+FIX: move the tightening out of the clip box into MARGINS. h1: dropped `tracking-[-0.04em]`.
+Clip span: `px-[0.06em] ml-[-0.06em] mr-[-0.1em]` (added to the existing pb/-mb descender
+fix). Math: clip window = advance + 0.12em (ink headroom both sides); layout width =
+advance + 0.12 − 0.06 − 0.10 = advance − 0.04em, i.e. the SAME −0.04em tightening; ml cancels
+padding-left so the S still sits flush at the container's left edge.
+Verified live @1440 after HMR reload: anyClipped=false — every letter's ink now inside its box
+with 14.9px (x, the worst before) to 33.4px headroom; wordmark width 1234px = IDENTICAL to the
+tracking version, so tightening fully preserved; letter-spacing back to `normal`; font-size
+still 259.2px (18vw); first-letter offset 3.8px = the S's natural sidebearing, not a shift.
+Added a comment at the clip span explaining why tightening must never be letter-spacing here.
+tsc ✓, biome-format clean, served /home 200: 10 margin-class spans, 0 old tracking, 18vw kept,
+0 errors. 1 file. Not committed.
+
+## 2026-07-27 — Contact hero: copy shrinks (not the whole section) as ContactSection overlaps
+- `ShrinkOnOverlap` gained optional props: `targetSelector` (animate an EXISTING
+  element instead of the component's own inner div), plus `scale`, `y`,
+  `transformOrigin` overrides. Defaults unchanged (0.85 / 40 / origin-top), so no
+  existing usage is affected.
+- WHY targetSelector rather than wrapping: the contact hero layers a full-bleed
+  <video> at z-0 and a gradient at z-[1] behind the copy at z-10. Wrapping the whole
+  section would scale the VIDEO too. And the copy wrapper cannot simply be wrapped
+  either — it carries `flex-1` inside the section's flex column, so inserting divs
+  would break its sizing. Animating it in place avoids both problems: zero DOM change.
+- `src/components/contact/ContactHeroSectionTwo.tsx`: added `id="contact-hero-copy"`
+  to the existing z-10 copy wrapper (attribute only, no structural change).
+  `src/app/contact/page.tsx`: hero wrapped in ShrinkOnOverlap with
+  targetSelector="#contact-hero-copy", scale 0.94, y 16, transformOrigin 50% 50%
+  ("a little bit" -> gentler than the 0.85 used elsewhere; centre origin because the
+  copy is vertically centred, so it stays centred while shrinking).
+  ContactSection wrapper gained `id="contact-overlap"` as the end trigger.
+- VERIFIED the tween is bound where intended: GSAP's signature inline props appear on
+  #contact-hero-copy while the ShrinkOnOverlap inner div has NO inline style at all
+  (proving the targetSelector redirect works, not just that "something" animated).
+  Forcing the end state: copy 720 -> 677 tall and 76px narrower; background video
+  776 -> 776, i.e. completely unaffected.
+- Verified: `bunx tsc --noEmit` exit 0. Per-file biome comparison vs HEAD for every
+  touched file: contact/page.tsx identical rule set (same 5, only line numbers moved),
+  ContactHeroSectionTwo 0, ShrinkOnOverlap 0.
+
+### CORRECTION — the "biome 19 = unchanged baseline" figure used all session was WRONG
+- Biome's DEFAULT `--max-diagnostics` is 20. Every "biome N" number recorded in this
+  log was reading that CAP, not the real total. With `--max-diagnostics=5000` the
+  actual figure is **145 errors + 115 warnings = 260**. A capped count cannot detect
+  new diagnostics beyond the cap, so those "unchanged baseline" claims were far weaker
+  evidence than stated. No regression has actually been found — per-file comparisons
+  against HEAD keep coming back identical — but the method was not sound.
+- CORRECT METHOD from now on: `bunx biome lint <path> --max-diagnostics=5000` and read
+  the `Found N errors/warnings` summary, or compare PER-FILE against
+  `git worktree add --detach <tmp> HEAD`.
+- Also discovered while checking this: the working tree has **47 deleted files** that
+  I did not delete (src/components/garbage/*, 3d-globe-demo.tsx, AboutOverview.tsx,
+  unused ui/ effects) — 196 files at HEAD vs 150 now. Left untouched: `tsc --noEmit`
+  passes, so nothing still imports them. Note this makes whole-tree HEAD-vs-now lint
+  comparisons invalid; compare per-file instead.

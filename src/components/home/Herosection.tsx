@@ -1,14 +1,12 @@
-"use client"; // Required for hooks
+"use client"; 
 
 import { useEffect, useRef } from "react";
 import Header from "../layout/Header";
 
 export default function Herosection({}: any) {
-  // 1. Create refs for both the main video and the canvas
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // 2. Use an effect to sync the video frames to the canvas
   useEffect(() => {
     const video = mainVideoRef.current;
     const canvas = canvasRef.current;
@@ -22,24 +20,19 @@ export default function Herosection({}: any) {
 
     const drawFrame = () => {
       if (!video.paused && !video.ended) {
-        // Match the canvas internal resolution to the video for sharp quality
         if (canvas.width !== video.videoWidth && video.videoWidth > 0) {
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
         }
 
-        // Draw the current video frame onto the canvas
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       }
 
-      // Loop this function for every frame the browser renders
       animationFrameId = requestAnimationFrame(drawFrame);
     };
 
-    // Start drawing when the main video starts playing
     video.addEventListener("play", drawFrame);
 
-    // Cleanup listener on unmount
     return () => {
       video.removeEventListener("play", drawFrame);
       cancelAnimationFrame(animationFrameId);
@@ -48,7 +41,6 @@ export default function Herosection({}: any) {
 
   return (
     <div className="relative min-h-[100svh] rounded-[20px] overflow-hidden bg-zinc-950 lg:min-h-[96.5vh]">
-      {/* 3. Attach the ref to the main background video */}
       <video
         ref={mainVideoRef}
         src="/assets/hero.mp4"
@@ -61,10 +53,6 @@ export default function Herosection({}: any) {
 
       <div className="absolute inset-0 z-10 backdrop-blur-xl" />
 
-      {/* Header lives OUTSIDE the z-20 overlay: its navbar is fixed z-[100],
-          and nesting it inside a z-indexed positioned ancestor traps it in
-          that stacking context — page.tsx's later z-20/z-30 section wrappers
-          (Stats onward) would paint over it. */}
       <Header />
 
       <div className="absolute z-20 p-5 w-full flex flex-col items-center justify-center gap-10 h-full">
