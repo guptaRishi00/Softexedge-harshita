@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import BlogSection from "@/components/home/BlogSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
@@ -9,6 +10,12 @@ import ProcessSection from "@/components/video-production/ProcessSection";
 import ProjectShowcase from "@/components/video-production/ProjectShowcase";
 import StrategyHeroSection from "@/components/video-production/StrategyHeroSection";
 import SubServices from "@/components/video-production/SubServices";
+
+export const metadata: Metadata = {
+  title: "Video Production",
+  description:
+    "Video production carried from discovery and concept architecture through production to a fully deployed final cut.",
+};
 
 export default function VideoProductionPage() {
   return (

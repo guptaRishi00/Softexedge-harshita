@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import CtaSection from "@/components/custom-software/CtaSection";
 import FaqSection from "@/components/custom-software/FaqSection";
 import OurTechStack from "@/components/custom-software/OurTechStack";
@@ -9,6 +10,12 @@ import BlogSection from "@/components/home/BlogSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
 import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
+
+export const metadata: Metadata = {
+  title: "Custom Software",
+  description:
+    "Custom software built with Next.js, TypeScript, and PostgreSQL, following our process from discovery through deployment.",
+};
 
 export default function CustomSoftwarePage() {
   return (

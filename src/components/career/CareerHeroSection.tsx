@@ -55,7 +55,10 @@ export default function CareerHeroSection() {
   return (
     <section className="relative flex w-full flex-col overflow-hidden bg-white pt-24 pb-32 text-zinc-900 font-sans selection:bg-[#2E5BFF]/20">
       <div className="relative z-10 flex w-full flex-col pt-16 md:pt-24">
-        <div className="px-6 md:px-12 w-full max-w-[1200px] mx-auto text-center">
+        <div
+          id="career-hero-copy"
+          className="px-6 md:px-12 w-full max-w-[1200px] mx-auto text-center"
+        >
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -98,10 +101,15 @@ export default function CareerHeroSection() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 0.2, ease: premiumEase }}
-          className="w-full flex flex-col gap-3"
+          className="w-full"
         >
-          <InfiniteRow items={col1Items} direction="left" speed={40} />
-          <InfiniteRow items={col2Items} direction="right" speed={45} />
+          <div
+            id="career-hero-carousel"
+            className="w-[117.65%] -ml-[8.82%] flex flex-col gap-3"
+          >
+            <InfiniteRow items={col1Items} direction="left" speed={40} />
+            <InfiniteRow items={col2Items} direction="right" speed={45} />
+          </div>
         </motion.div>
       </div>
     </section>

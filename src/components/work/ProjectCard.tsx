@@ -2,11 +2,15 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import type { Project } from "@/data/projects";
+import { cn } from "@/lib/utils";
 import StarBorder from "../ui/StarBorder";
 
 export const premiumEase = [0.16, 1, 0.3, 1] as const;
+
+const CTA_ACTIVATE_DELAY = 450;
 
 const smoothSpring = {
   type: "spring",
@@ -28,6 +32,17 @@ export default function ProjectCard({
   onHoverStart: () => void;
   onHoverEnd: () => void;
 }) {
+  const [ctaActive, setCtaActive] = useState(false);
+
+  useEffect(() => {
+    if (!isHovered) {
+      setCtaActive(false);
+      return;
+    }
+    const timer = setTimeout(() => setCtaActive(true), CTA_ACTIVATE_DELAY);
+    return () => clearTimeout(timer);
+  }, [isHovered]);
+
   return (
     <Link href={project.href}>
       <motion.div
@@ -158,12 +173,27 @@ export default function ProjectCard({
                     </div>
 
                     <div className="mt-6">
-                      <span className="group/cta relative inline-flex h-12 w-fit cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:pl-5 hover:pr-2 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100">
-                        <span className="relative z-10 text-sm font-bold tracking-tight text-white transition-colors duration-300 group-hover/cta:text-black">
+                      <span
+                        className={cn(
+                          "group/cta relative inline-flex h-12 w-fit cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:pl-5 hover:pr-2 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100",
+                          ctaActive && "pl-5 pr-2 before:scale-x-100",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "relative z-10 text-sm font-bold tracking-tight text-white transition-colors duration-300 group-hover/cta:text-black",
+                            ctaActive && "text-black",
+                          )}
+                        >
                           View Project
                         </span>
 
-                        <span className="relative z-10 flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white text-black transition-colors duration-300 group-hover/cta:bg-black">
+                        <span
+                          className={cn(
+                            "relative z-10 flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white text-black transition-colors duration-300 group-hover/cta:bg-black",
+                            ctaActive && "bg-black",
+                          )}
+                        >
                           <svg width="0" height="0" className="absolute">
                             <title>View project arrow gradient</title>
                             <defs>
@@ -180,9 +210,17 @@ export default function ProjectCard({
                             </defs>
                           </svg>
 
-                          <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover/cta:-translate-y-8 group-hover/cta:translate-x-8" />
                           <MdArrowOutward
-                            className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover/cta:translate-x-0 group-hover/cta:translate-y-0"
+                            className={cn(
+                              "absolute z-10 h-4 w-4 transition-transform duration-300 group-hover/cta:-translate-y-8 group-hover/cta:translate-x-8",
+                              ctaActive && "-translate-y-8 translate-x-8",
+                            )}
+                          />
+                          <MdArrowOutward
+                            className={cn(
+                              "absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover/cta:translate-x-0 group-hover/cta:translate-y-0",
+                              ctaActive && "translate-x-0 translate-y-0",
+                            )}
                             style={{
                               fill: `url(#cta-icon-grad-${project.id})`,
                             }}

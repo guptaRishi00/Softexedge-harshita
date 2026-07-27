@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import OurTeamSection from "@/components/about/OurTeamSection";
 import OurValuesSection from "@/components/about/OurValuesSection";
 import ApplicationJourney from "@/components/career/ApplicationJourney";
@@ -9,6 +10,12 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/page/Header";
 import ShrinkOnOverlap from "@/components/ui/ShrinkOnOverlap";
 
+export const metadata: Metadata = {
+  title: "Careers",
+  description:
+    "Think. Create. Do. Grow with us — join Softexedge as we create impactful digital solutions.",
+};
+
 export default function CareerPage() {
   return (
     <main className="bg-white min-h-screen">
@@ -16,7 +23,11 @@ export default function CareerPage() {
 
       <div className="relative z-0 -mb-[100vh]">
         <div className="sticky top-[calc(100vh-1200px)] z-0 bg-white">
-          <ShrinkOnOverlap endSelector="#why-join-us">
+          <ShrinkOnOverlap
+            endSelector="#why-join-us"
+            targetSelector="#career-hero-copy, #career-hero-carousel"
+            transformOrigin="50% 0%"
+          >
             <CareerHeroSection />
           </ShrinkOnOverlap>
         </div>

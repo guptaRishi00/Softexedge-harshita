@@ -33,7 +33,11 @@ const SPLIT_DELAY = 1.7;
 
 export default function AboutHeroSection() {
   return (
-    <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#FAFAFA] pb-16 font-sans selection:bg-[#2E5BFF]/20 md:pb-25">
+    <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-[#FAFAFA] font-sans selection:bg-[#2E5BFF]/20">
+      <div
+        id="about-hero-inner"
+        className="flex w-full flex-1 flex-col pb-16 md:pb-25 origin-[center_calc(100%-100vh)]"
+      >
       <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 pt-48 pb-32 md:pt-50 text-center md:px-10">
         <h1 className="text-[2.75rem] font-bold leading-[1.05] tracking-tight text-zinc-900 sm:text-6xl md:text-7xl lg:text-[6rem]">
           {LINE_ONE.map((word, i) => (
@@ -64,7 +68,7 @@ export default function AboutHeroSection() {
               ease: "easeOut",
             },
           }}
-          className="w-screen overflow-hidden"
+          className="w-[117.65vw] overflow-hidden"
         >
           <motion.div
             initial={{ y: 24, scale: 0.96 }}
@@ -125,6 +129,7 @@ export default function AboutHeroSection() {
           </div>
         ))}
       </motion.div>
+      </div>
     </main>
   );
 }

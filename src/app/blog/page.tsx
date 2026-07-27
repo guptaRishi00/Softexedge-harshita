@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import BlogHeroSection from "@/components/blog/BlogHeroSection";
 import BlogFeaturedSection from "@/components/blog/BlogFeaturedSection";
 import BlogListSection from "@/components/blog/BlogListSection";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import Footer from "@/components/layout/Footer";
 import ShrinkOnOverlap from "@/components/ui/ShrinkOnOverlap";
+
+export const metadata: Metadata = {
+  title: "Blog",
+  description: "News, views, and everything else from Softexedge.",
+};
 
 export default function BlogPage() {
   return (

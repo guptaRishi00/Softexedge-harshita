@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import FaqSection from "@/components/brand-strategy/FaqSection";
 import BlogSection from "@/components/home/BlogSection";
@@ -9,6 +10,11 @@ import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
 import WorkHeroSection from "@/components/work/WorkHeroSection";
 import WorkProjectShowcase from "@/components/work/WorkProjectShowcase";
 
+export const metadata: Metadata = {
+  title: "Our Work",
+  description: "Our creative portfolio, showcasing work from Softexedge.",
+};
+
 export default function WorkPage() {
   return (
     <div className="bg-white">
@@ -16,7 +22,10 @@ export default function WorkPage() {
 
       <div className="relative z-0 -mb-[100vh]">
         <div className="sticky top-0 z-0 bg-black">
-          <ShrinkOnOverlap endSelector="#work-showcase">
+          <ShrinkOnOverlap
+            endSelector="#work-showcase"
+            targetSelector="#work-hero-copy, #work-hero-dome"
+          >
             <WorkHeroSection />
           </ShrinkOnOverlap>
         </div>

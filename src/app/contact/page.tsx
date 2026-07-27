@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import React from "react";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import ContactFaqSection from "@/components/contact/ContactFaqSection";
@@ -8,6 +9,11 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/page/Header";
 import ShrinkOnOverlap from "@/components/ui/ShrinkOnOverlap";
 import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
+
+export const metadata: Metadata = {
+  title: "Contact",
+  description: "Let's build something worth talking about with Softexedge.",
+};
 
 type Props = {};
 
@@ -42,7 +48,7 @@ export default function ContactPage({}: any) {
       <div className="relative z-10 md:[&>section]:pb-20">
         <TechLogoCarousel />
       </div>
-      <div className="relative z-10 [&>section]:py-12 md:[&>section]:pb-5 md:[&>section]:pt-3">
+      <div className="relative z-10 [&>section]:py-12 md:[&>section]:pb-5 md:[&>section]:pt-10">
         <ContactFaqSection />
       </div>
       <div className="relative z-10 px-3 [&>section]:py-12 md:[&>section]:pb-16 md:[&>section]:pt-0">

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import CtaSection from "@/components/ai-marketing-automation/CtaSection";
 import FaqSection from "@/components/ai-marketing-automation/FaqSection";
 import OurTechStack from "@/components/ai-marketing-automation/OurTechStack";
@@ -9,6 +10,12 @@ import BlogSection from "@/components/home/BlogSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
 import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
+
+export const metadata: Metadata = {
+  title: "AI Marketing Automation",
+  description:
+    "AI-driven marketing automation designed through our discovery, architecture, and deployment process to help your business grow.",
+};
 
 export default function AiMarketingAutomationPage() {
   return (

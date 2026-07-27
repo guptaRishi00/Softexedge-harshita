@@ -55,7 +55,10 @@ const GALLERY_MEDIA = [
 export default function WorkHeroSection() {
   return (
     <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-black font-sans selection:bg-[#2E5BFF]/20">
-      <div className="absolute left-0 top-[-20vh] z-0 h-[140vh] w-full">
+      <div
+        id="work-hero-dome"
+        className="absolute left-0 top-[-20vh] z-0 h-[140vh] w-[117.65%] -ml-[8.82%] origin-center"
+      >
         <DomeGallery
           images={GALLERY_MEDIA}
           autoRotate
@@ -65,7 +68,10 @@ export default function WorkHeroSection() {
         />
       </div>
 
-      <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 text-center md:px-10 pointer-events-none">
+      <div
+        id="work-hero-copy"
+        className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 text-center md:px-10 pointer-events-none origin-top"
+      >
         <motion.h1
           variants={containerVariants}
           initial="hidden"

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import BlogSection from "@/components/home/BlogSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
@@ -9,6 +10,12 @@ import ProcessSection from "@/components/ui-ux-design/ProcessSection";
 import ProjectShowcase from "@/components/ui-ux-design/ProjectShowcase";
 import StrategyHeroSection from "@/components/ui-ux-design/StrategyHeroSection";
 import SubServices from "@/components/ui-ux-design/SubServices";
+
+export const metadata: Metadata = {
+  title: "UI/UX Design",
+  description:
+    "UI/UX design and motion work developed from wireframed architecture through to a polished, deployed interface.",
+};
 
 export default function UiUxDesignPage() {
   return (

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import CtaSection from "@/components/app-development/CtaSection";
 import FaqSection from "@/components/app-development/FaqSection";
 import OurTechStack from "@/components/app-development/OurTechStack";
@@ -9,6 +10,12 @@ import BlogSection from "@/components/home/BlogSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
 import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
+
+export const metadata: Metadata = {
+  title: "App Development",
+  description:
+    "Mobile and app development taken from discovery and UX architecture through engineering and global deployment.",
+};
 
 export default function AppDevelopmentPage() {
   return (

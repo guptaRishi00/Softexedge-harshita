@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import AboutHeroSection from "@/components/about/AboutHeroSection";
 import AboutTraditional from "@/components/about/AboutTraditional";
 import OurTeamSection from "@/components/about/OurTeamSection";
@@ -11,6 +12,11 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/page/Header";
 import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
 
+export const metadata: Metadata = {
+  title: "About",
+  description: "The minds behind digital excellence at Softexedge.",
+};
+
 type Props = {};
 
 export default function AboutPage({}: Props) {
@@ -19,7 +25,10 @@ export default function AboutPage({}: Props) {
       <Header />
  <div className="relative z-0 -mb-[150vh]">
         <div className="sticky top-[calc(100vh-1104px)] z-0 bg-[#FAFAFA]">
-          <ShrinkOnOverlap endSelector="#about-traditional">
+          <ShrinkOnOverlap
+            endSelector="#about-traditional"
+            targetSelector="#about-hero-inner"
+          >
             <AboutHeroSection />
           </ShrinkOnOverlap>
         </div>

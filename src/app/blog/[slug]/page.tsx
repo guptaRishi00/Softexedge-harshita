@@ -18,10 +18,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const post = getPostBySlug(slug);
-  if (!post) return { title: "Article not found — Softexedge" };
+  if (!post) return { title: "Article not found" };
 
   return {
-    title: `${post.title} — Softexedge`,
+    title: post.title,
     description: post.excerpt,
     openGraph: {
       title: post.title,

@@ -38,9 +38,9 @@ export default function ShrinkOnOverlap({
       if (!containerRef.current || !innerRef.current || !endTrigger) return;
 
       const target = targetSelector
-        ? document.querySelector(targetSelector)
+        ? gsap.utils.toArray<HTMLElement>(targetSelector)
         : innerRef.current;
-      if (!target) return;
+      if (Array.isArray(target) ? target.length === 0 : !target) return;
 
       gsap.to(target, {
         scale,

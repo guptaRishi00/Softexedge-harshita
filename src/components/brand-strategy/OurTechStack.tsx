@@ -30,7 +30,7 @@ export default function OurTechStack() {
   );
 
   return (
-    <section className="relative w-full overflow-hidden bg-black pt-10 text-white">
+    <section className="relative w-full overflow-hidden bg-black pt-0 text-white">
       <div className="mx-auto w-full md:pb-25">
         <div className="mx-auto mb-20 px-4 md:px-10">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">

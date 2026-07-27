@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { MdArrowOutward } from "react-icons/md";
 import { RiInstagramLine } from "react-icons/ri";
-import Particles from "@/components/ui/Particles";
 
 const footerLinkGroups = [
   {

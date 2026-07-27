@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import BlogSection from "@/components/home/BlogSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
@@ -9,6 +10,12 @@ import ProcessSection from "@/components/web-development/ProcessSection";
 import ProjectShowcase from "@/components/web-development/ProjectShowcase";
 import StrategyHeroSection from "@/components/web-development/StrategyHeroSection";
 import SubServices from "@/components/web-development/SubServices";
+
+export const metadata: Metadata = {
+  title: "Web Development",
+  description:
+    "Web development built with Next.js and Tailwind CSS, following our process from discovery through global deployment.",
+};
 
 export default function WebDevelopmentPage() {
   return (

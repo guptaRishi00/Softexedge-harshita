@@ -49,6 +49,7 @@ export default function HomePage() {
   const portfolioRef = useRef<HTMLDivElement>(null);
 
   const statsContainerRef = useRef<HTMLDivElement>(null);
+  const statsInnerRef = useRef<HTMLDivElement>(null);
   const serviceContainerRef = useRef<HTMLDivElement>(null);
 
   const testimonialsGroupRef = useRef<HTMLDivElement>(null);
@@ -97,6 +98,21 @@ export default function HomePage() {
           pin: true,
           pinSpacing: false,
         });
+
+        if (statsInnerRef.current) {
+          gsap.to(statsInnerRef.current, {
+            scale: 0.85,
+            y: 40,
+            ease: "none",
+            scrollTrigger: {
+              trigger: statsContainerRef.current,
+              start: "bottom bottom",
+              endTrigger: serviceContainerRef.current,
+              end: "top top",
+              scrub: true,
+            },
+          });
+        }
       }
 
       if (testimonialsGroupRef.current && contactContainerRef.current) {
@@ -181,7 +197,12 @@ export default function HomePage() {
               ref={statsContainerRef}
               className="relative z-0 bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
             >
-              <StatsSection />
+              <div
+                ref={statsInnerRef}
+                className="origin-[center_calc(100%-100vh)] will-change-transform bg-white"
+              >
+                <StatsSection />
+              </div>
             </div>
 
             <div

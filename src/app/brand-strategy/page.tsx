@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import FaqSection from "@/components/brand-strategy/FaqSection";
 import OurTechStack from "@/components/brand-strategy/OurTechStack";
@@ -12,7 +13,14 @@ import BlogSection from "@/components/home/BlogSection";
 
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Footer from "@/components/layout/Footer";
+import Header from "@/components/page/Header";
 import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
+
+export const metadata: Metadata = {
+  title: "Brand Strategy",
+  description:
+    "Brand strategy shaped by deep discovery and conversion-focused architecture, turning positioning into a defined identity.",
+};
 
 type Props = {};
 
@@ -20,10 +28,19 @@ export default function BrandStrategyPage({}: Props) {
   return (
     <div>
       <div className="overflow-x-clip w-full">
-        <StrategyHeroSection />
+        <Header />
         <div className="relative z-0">
+          <div className="sticky top-[min(0px,calc(100vh-992px))] z-0 bg-white">
+            <ShrinkOnOverlap
+              endSelector="#subservices-overlap"
+              className="origin-[center_calc(100%-100vh)]"
+            >
+              <StrategyHeroSection />
+            </ShrinkOnOverlap>
+          </div>
           <div
-            className="sticky z-0 bg-black"
+            id="subservices-overlap"
+            className="sticky z-10 bg-black"
             style={{ top: SUBSERVICES_STICK_TOP }}
           >
             <ShrinkOnOverlap
@@ -35,7 +52,7 @@ export default function BrandStrategyPage({}: Props) {
               <SubServices />
             </ShrinkOnOverlap>
           </div>
-          <div id="process-overlap" className="relative z-10 bg-black">
+          <div id="process-overlap" className="relative z-20 bg-black">
             <ProcessSection />
           </div>
         </div>
