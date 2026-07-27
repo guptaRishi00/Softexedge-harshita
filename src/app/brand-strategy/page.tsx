@@ -4,7 +4,10 @@ import OurTechStack from "@/components/brand-strategy/OurTechStack";
 import ProcessSection from "@/components/brand-strategy/ProcessSection";
 import ProjectShowcase from "@/components/brand-strategy/ProjectShowcase";
 import StrategyHeroSection from "@/components/brand-strategy/StrategyHeroSection";
-import SubServices from "@/components/brand-strategy/SubServices";
+import SubServices, {
+  SUBSERVICES_STICK_TOP,
+} from "@/components/brand-strategy/SubServices";
+import ShrinkOnOverlap from "@/components/ui/ShrinkOnOverlap";
 import BlogSection from "@/components/home/BlogSection";
 
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
@@ -18,15 +21,25 @@ export default function BrandStrategyPage({}: Props) {
     <div>
       <div className="overflow-x-clip w-full">
         <StrategyHeroSection />
-        <SubServices />
-        <div className="relative z-0 -mb-[35vh]">
-          <div className="sticky top-[calc(100vh-1040px)] z-0">
+        <div className="relative z-0">
+          <div
+            className="sticky z-0 bg-black"
+            style={{ top: SUBSERVICES_STICK_TOP }}
+          >
+            <ShrinkOnOverlap
+              endSelector="#process-overlap"
+              scale={0.96}
+              y={12}
+              className="origin-[center_calc(100%-100vh)]"
+            >
+              <SubServices />
+            </ShrinkOnOverlap>
+          </div>
+          <div id="process-overlap" className="relative z-10 bg-black">
             <ProcessSection />
           </div>
-          <div className="relative z-10 bg-black pb-[35vh]">
-            <OurTechStack />
-          </div>
         </div>
+        <OurTechStack />
         <ProjectShowcase />
         <ExperimentalTestimonials />
         <TechLogoCarousel />

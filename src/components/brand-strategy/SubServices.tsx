@@ -5,6 +5,15 @@ import { ReactLenis } from "lenis/react";
 import { type ReactNode, useRef, useState } from "react";
 import Card, { STEP } from "./SubServiceCard";
 
+const BASE_HEIGHT = 3330;
+const EXTRA_TAIL = 400;
+const POST_STACK_SCROLL = 450;
+
+const CARD_MARGIN = "max(0px, 22vh - 190px)";
+const STACK_HOLD = `max(0px, calc(${1170 + EXTRA_TAIL - POST_STACK_SCROLL}px + ${CARD_MARGIN} - 95vh))`;
+
+export const SUBSERVICES_STICK_TOP = `calc(100vh - ${BASE_HEIGHT + EXTRA_TAIL}px - 4 * ${CARD_MARGIN})`;
+
 const services = [
   {
     title1: "Brand",
@@ -111,12 +120,20 @@ export default function SubServices({ children }: { children?: ReactNode }) {
           {children ? (
             <div className="relative z-40 w-full">{children}</div>
           ) : null}
+
+          <div
+            aria-hidden
+            className="pointer-events-none w-full"
+            style={{ height: STACK_HOLD }}
+          />
         </div>
 
         <div
           aria-hidden
           className="pointer-events-none w-full"
-          style={{ height: (services.length - 1) * STEP }}
+          style={{
+            height: `calc(${(services.length - 1) * STEP + EXTRA_TAIL}px - ${STACK_HOLD})`,
+          }}
         />
       </section>
     </ReactLenis>

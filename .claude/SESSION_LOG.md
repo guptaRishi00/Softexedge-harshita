@@ -6446,3 +6446,163 @@ tsc ✓, biome-format clean, served /home 200: 10 margin-class spans, 0 old trac
   unused ui/ effects) — 196 files at HEAD vs 150 now. Left untouched: `tsc --noEmit`
   passes, so nothing still imports them. Note this makes whole-tree HEAD-vs-now lint
   comparisons invalid; compare per-file instead.
+
+## 2026-07-27 — Brand strategy: removed the ProcessSection/OurTechStack overlap
+- `src/app/brand-strategy/page.tsx`: deleted the three-div overlap structure
+  (`relative z-0 -mb-[35vh]` group, `sticky top-[calc(100vh-1040px)] z-0` pin,
+  `relative z-10 bg-black pb-[35vh]` overlapper) and replaced it with plain
+  `<ProcessSection />` + `<OurTechStack />`. 8 lines -> 2.
+- Checked history first rather than hand-rolling the "before" markup: the overlap is
+  present in HEAD (repo has a single commit, `6b41cbe first commit`, found via
+  `git log -S`), so there was no earlier revision to restore from.
+- Confirmed the wrapper's `bg-black` was redundant before dropping it — OurTechStack's
+  own root section is already `bg-black`, so removing it changes nothing visually.
+  The `pb-[35vh]` / `-mb-[35vh]` pair existed solely to serve the overlap (coverage
+  tail + its layout cancellation), so both go with it; earlier in the session the user
+  had complained that pb-[35vh] caused a big space above ProjectShowcase, and it is
+  now gone entirely.
+- VERIFIED on the live page: zero sticky children and zero negative margins remain in
+  the page wrapper. ProcessSection sits at doc 4322 (h 1075) and OurTechStack begins
+  at doc 5396 — exactly adjacent, so no overlap AND no leftover gap. Downstream
+  sections follow contiguously (ProjectShowcase 6329 = 5396 + 933).
+- Verified: `bunx tsc --noEmit` exit 0; per-file biome vs a HEAD worktree using the
+  corrected method (`--max-diagnostics=5000`): 2 before, 2 after — unchanged.
+
+## 2026-07-27 — Brand strategy: ProcessSection overlaps SubServices once cards are stacked
+- Two files. `src/components/brand-strategy/SubServices.tsx`: moved the aria-hidden
+  transform-reserve div INSIDE the `group/cards` container (it was a sibling after
+  it). `src/app/brand-strategy/page.tsx`: group `relative z-0`, SubServices in
+  `sticky top-[calc(100vh-3330px-4*max(0px,22vh-190px))] z-0 bg-black`,
+  ProcessSection in `relative z-10 bg-black`.
+- WHY THE RESERVE HAD TO MOVE (the actual blocker, found by measuring):
+  the cards are sticky within `group/cards`, which ended at doc 3752, while the
+  section ran to 4322. Sticky releases at its containing block's end, so the stack
+  came apart ~486px BEFORE the section bottom. Measured card tops at scroll 3600 were
+  [-448,-258,-68,122] — i.e. a bottom-aligned pin would have frozen a stack that had
+  already scrolled off. Moving the 570px reserve inside extends the containing block
+  to the section bottom; cards now hold at [36,226,416,606] right through the pin.
+  Total section height is UNCHANGED (2400+570 sibling -> 2970 container), so the
+  stick-line maths is unaffected.
+  Checked before moving it: `container` is only the `useScroll` target driving
+  `activeIndex`, and that handler decides from live `getBoundingClientRect()`, not
+  from the progress value — so a taller container just fires the callback over a
+  longer range with identical logic.
+- STICK LINE IS NOT A PLAIN CONSTANT. First tried `calc(100vh-3330px)`; the resize
+  test showed the section is 3330 at vh720 but 3406 at vh950. Traced the growth to
+  `SubServiceCard.tsx:42` `marginBottom: max(0px, calc(22vh - 190px))` — zero below
+  vh=864, then 19px per card x 4 = exactly the observed 76px. Hence
+  `calc(100vh - 3330px - 4*max(0px,22vh-190px))`, verified to compute the IDEAL value
+  at both viewports (720 -> -2610, 950 -> -2456, `pinsFlush: true` at both).
+- NO TAIL, deliberately: ProcessSection is 1075px (> 100vh) so coverage holds, and
+  the three sections after the group (ProjectShowcase, ExperimentalTestimonials,
+  TechLogoCarousel) are rendered BARE with no wrapper divs — a tail would have forced
+  wrapping all of them just to contain the overhang. Verified OurTechStack directly
+  below is not occluded (`hitInsideGroup: false`).
+- Verified at vh 720 and 950: cards stacked at the pin, SubServices pins flush to the
+  viewport bottom, ProcessSection's top is exactly at the viewport bottom at that same
+  instant (so no dead zone by construction), then climbs 720 -> 0 and covers.
+- Verified: `bunx tsc --noEmit` exit 0; per-file biome vs HEAD worktree
+  (`--max-diagnostics=5000`): page.tsx 2/2, SubServices.tsx 1/1 — unchanged.
+
+## 2026-07-27 — SubServices: added post-stack scroll before ProcessSection overlaps
+- `src/components/brand-strategy/SubServices.tsx` only (page unchanged).
+- PROBLEM measured first: after the previous change the cards were pinned all the way
+  to the section pin, so between stack-completion (scroll 3116) and the pin (3602)
+  the card tops sat frozen at [36,226,416,606] while ProcessSection was still below
+  the fold — 486px of scrolling with NOTHING moving on screen. That dead zone is what
+  "let it scroll for a bit" was describing.
+- FIX: split the 570px transform-reserve into a part INSIDE the cards container
+  (how long the stack holds) and the remainder OUTSIDE (how far it then slides before
+  the pin). Total stays 570px, so section height and the page's stick-line calc are
+  untouched.
+- THE SPLIT CANNOT BE A CONSTANT. First tried `STEP * 1.5` (285px): gave a 201px
+  slide at vh720 but only **2px** at vh950, because the post-stack gap SHRINKS as the
+  viewport grows. Derived the relation from measurements:
+      gap = 1170px + m - 0.95*100vh,  where m = max(0px, 22vh - 190px)
+  (per-card margin from SubServiceCard.tsx:42). Verified: 486 @vh720, 286.5 @vh950,
+  matching measured 3448 - 3161.5 exactly.
+  So the hold is `max(0px, calc(970px + max(0px,22vh-190px) - 95vh))`, i.e.
+  `gap - POST_STACK_SCROLL`, exposed as `const POST_STACK_SCROLL = 200`.
+- VERIFIED at both viewports the slide is now consistent: **200px @vh720, 201px
+  @vh950** (previously 201 / 2). Cards at the pin: [-164,26,216,406] @720 and
+  [-153,37,227,417] @950 — three of four still visible as the overlap begins.
+  Section height unchanged (3330 @720), pin still flush to the viewport bottom, and
+  ProcessSection's top is exactly at the viewport bottom at the pin, so the handoff
+  still has no dead zone.
+- Sequence now: cards stack -> brief hold -> stack scrolls up 200px -> SubServices
+  pins as ProcessSection reaches the viewport bottom -> ProcessSection climbs to 0.
+- ONE KNOB: `POST_STACK_SCROLL` (px of scroll after stacking before the overlap).
+- Verified: `bunx tsc --noEmit` exit 0; per-file biome vs HEAD worktree: 1/1 unchanged.
+
+## 2026-07-27 — SubServices: post-stack scroll 200 -> 280
+- `src/components/brand-strategy/SubServices.tsx`, one line: `POST_STACK_SCROLL`
+  200 -> 280. Section height unchanged (3330 @vh720), so the page's stick-line calc
+  is untouched and no other file changed.
+- Verified the slide actually tracks the constant at BOTH viewports: 280px @vh720,
+  281px @vh950 (the vh-aware hold formula holds up). Pin still flush to the viewport
+  bottom and ProcessSection's top still exactly at the viewport bottom at the pin, so
+  the handoff remains dead-zone free. Cards at the overlap: [-244,-54,136,326] @720
+  and [-233,-43,147,337] @950 — the lower two cards still on screen.
+- CEILING WORTH KNOWING: the available post-stack gap SHRINKS as the viewport grows
+  (`gap = 1170px + m - 0.95*100vh`): ~486px @vh720, ~286px @vh950, ~104px @vh1200.
+  `POST_STACK_SCROLL` is clamped by `max(0px, ...)` to that gap, so 280 is close to
+  the @vh950 limit and will silently cap on taller screens. Going meaningfully beyond
+  this requires LENGTHENING the section (extra reserve outside the cards container),
+  and the page's `top-[calc(100vh-3330px-4*max(0px,22vh-190px))]` must be increased by
+  the same amount or the pin desynchronises. Those two numbers are currently coupled
+  across two files — worth exporting a single shared value if this is tuned again.
+- Verified: `bunx tsc --noEmit` exit 0; per-file biome vs HEAD worktree: 1/1 unchanged.
+
+## 2026-07-27 — SubServices: post-stack scroll 280 -> 450 (section lengthened, geometry deduplicated)
+- Hit the ceiling flagged last entry: the post-stack gap was only ~286px @vh950, so
+  bumping the constant alone would have silently capped. Did the proper fix instead.
+- `src/components/brand-strategy/SubServices.tsx`:
+    BASE_HEIGHT 3330, EXTRA_TAIL 400, POST_STACK_SCROLL 450
+    CARD_MARGIN = "max(0px, 22vh - 190px)"  (shared sub-expression)
+    STACK_HOLD  = max(0px, calc(1120px + CARD_MARGIN - 95vh))   // 1170 + EXTRA - POST
+    export SUBSERVICES_STICK_TOP = calc(100vh - 3730px - 4 * CARD_MARGIN)
+  EXTRA_TAIL is added to the OUTSIDE reserve, lengthening the section by 400px so the
+  gap has room for a 450px slide at every viewport (gap becomes ~886 @720, ~686 @950,
+  ~504 @1200).
+- DEDUPLICATED THE COUPLING (the latent bug called out last entry): the page no longer
+  hardcodes `top-[calc(100vh-3330px-4*max(...))]`. It imports SUBSERVICES_STICK_TOP and
+  applies it via `style={{ top }}`. Section height and stick line are now derived from
+  ONE set of constants, so changing EXTRA_TAIL can no longer desynchronise the pin.
+- VERIFIED at both viewports: height 3730 @720 / 3806 @950; computed stick top equals
+  the ideal `vh - H` at both (-3010 / -2856, `stickCorrect: true`); slide 450 / 451;
+  pin flush; ProcessSection top exactly at the viewport bottom at the pin (no dead
+  zone); coverage reached at scroll 4722 @720, well before unpin (~5077).
+- TRADE-OFF NOW VISIBLE AND WORTH KNOWING: more post-stack scroll means the stack has
+  travelled further when the overlap starts. At 450 the card tops at the pin are
+  [-414,-224,-34,156] @720 and [-403,-213,-23,167] @950 — only the LAST card is still
+  on screen (at 280 it was the last two; at 200, three). Slide and "stack still
+  visible" trade directly against each other; POST_STACK_SCROLL is the single knob.
+- Verified: `bunx tsc --noEmit` exit 0; per-file biome vs HEAD worktree:
+  SubServices 1/1, page 2/2 — unchanged.
+
+## 2026-07-27 — SubServices shrinks subtly as ProcessSection overlaps
+- `src/app/brand-strategy/page.tsx` only: SubServices wrapped in ShrinkOnOverlap
+  (`endSelector="#process-overlap"`, `scale={0.96}`, `y={12}`,
+  `className="origin-[center_calc(100%-100vh)]"`); ProcessSection wrapper gains
+  `id="process-overlap"`.
+- Values chosen for "subtle": 0.96/12 rather than the 0.85/40 default. Measured
+  result is a 17px empty band at the viewport bottom at full shrink (@vh720) vs the
+  ~68px the default produces — clearly present but understated.
+- RISK CHECKED RATHER THAN ASSUMED: ShrinkOnOverlap puts `will-change: transform` on
+  an ANCESTOR of SubServices' sticky stacking cards. A transformed ancestor breaks
+  `position: fixed` descendants (proved earlier today on the about page navbar), so
+  it was reasonable to fear it would break sticky too. It does NOT — verified after
+  wiring: all four cards still compute `position: sticky`, still stack at
+  [36,226,416,606], and the 450px post-stack slide is unchanged
+  ([-414,-224,-34,156] at the pin). Transform/will-change creates a containing block
+  for FIXED descendants but does not create a scrollport, so STICKY is unaffected.
+- Section height still 3730 @vh720 (the two ShrinkOnOverlap divs add no height), so
+  the exported SUBSERVICES_STICK_TOP still matches the ideal `vh - H` — confirmed
+  `stickStillCorrect: true`.
+- Origin verified to adapt with viewport: computed `632.5px 3009.59px` @vh720 and
+  `632.5px 2855.59px` @vh950, i.e. exactly `height - 100vh` (3010 / 2856) at both —
+  the visible top edge, per the rule derived on the work page. Empty band 17px @720,
+  26px @950.
+- Verified: `bunx tsc --noEmit` exit 0; per-file biome vs HEAD worktree: page 2/2.
+- Motion itself (the scrub) still not self-verifiable in this pane — no scroll events
+  or rAF; the tween is confirmed attached via GSAP's inline style.
