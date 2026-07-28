@@ -1,5 +1,10 @@
+"use client";
+
+import { motion } from "framer-motion";
 import Image from "next/image";
 import type { ContentBlock } from "@/data/blog";
+
+const premiumEase = [0.16, 1, 0.3, 1] as const;
 
 export const slugify = (text: string) =>
   text
@@ -13,22 +18,38 @@ export default function Block({ block }: { block: ContentBlock }) {
   switch (block.type) {
     case "heading":
       return (
-        <h2
+        <motion.h2
           id={slugify(block.text)}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, ease: premiumEase }}
           className="mt-14 mb-5 scroll-mt-28 text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl"
         >
           {block.text}
-        </h2>
+        </motion.h2>
       );
     case "paragraph":
       return (
-        <p className="mb-6 text-lg leading-[1.25em] text-zinc-600">
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, ease: premiumEase }}
+          className="mb-6 text-lg leading-[1.25em] text-zinc-600"
+        >
           {block.text}
-        </p>
+        </motion.p>
       );
     case "quote":
       return (
-        <blockquote className="my-10 border-l-2 border-[#2E5BFF] pl-6 md:pl-8">
+        <motion.blockquote
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, ease: premiumEase }}
+          className="my-10 border-l-2 border-[#2E5BFF] pl-6 md:pl-8"
+        >
           <p className="text-xl font-medium italic leading-[1.2em] text-zinc-800 md:text-2xl">
             “{block.text}”
           </p>
@@ -37,11 +58,17 @@ export default function Block({ block }: { block: ContentBlock }) {
               — {block.cite}
             </cite>
           )}
-        </blockquote>
+        </motion.blockquote>
       );
     case "list":
       return (
-        <ul className="my-8 flex flex-col gap-4">
+        <motion.ul
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, ease: premiumEase }}
+          className="my-8 flex flex-col gap-4"
+        >
           {block.items.map((item) => (
             <li key={item} className="flex items-start gap-3">
               <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]" />
@@ -50,11 +77,17 @@ export default function Block({ block }: { block: ContentBlock }) {
               </span>
             </li>
           ))}
-        </ul>
+        </motion.ul>
       );
     case "callout":
       return (
-        <div className="my-10 rounded-3xl border border-zinc-200 bg-[#F7F9FF] p-6 md:p-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, ease: premiumEase }}
+          className="my-10 rounded-3xl border border-zinc-200 bg-[#F7F9FF] p-6 md:p-8"
+        >
           <span className="text-xs font-bold uppercase tracking-[0.2em]">
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               {block.label}
@@ -66,11 +99,17 @@ export default function Block({ block }: { block: ContentBlock }) {
           <p className="mt-3 text-lg leading-[1.25em] text-zinc-600">
             {block.text}
           </p>
-        </div>
+        </motion.div>
       );
     case "image":
       return (
-        <figure className="my-10">
+        <motion.figure
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, ease: premiumEase }}
+          className="my-10"
+        >
           <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-zinc-100">
             <Image
               src={block.src}
@@ -85,7 +124,7 @@ export default function Block({ block }: { block: ContentBlock }) {
               {block.caption}
             </figcaption>
           )}
-        </figure>
+        </motion.figure>
       );
     default:
       return null;

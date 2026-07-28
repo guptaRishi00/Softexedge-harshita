@@ -64,11 +64,23 @@ export default function ContactSection() {
             transition={{ duration: 0.8, ease: premiumEase }}
             className="flex flex-col lg:col-span-5 lg:pr-8"
           >
-            <div className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, ease: premiumEase }}
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
+            >
               Get in touch
-            </div>
+            </motion.div>
 
-            <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[64px] lg:leading-[0.9em]">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
+              className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[64px] lg:leading-[0.9em]"
+            >
               Let&apos;s build <br />
               <span className="inline-grid overflow-hidden py-2 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
                 {isDesktop ? (
@@ -99,13 +111,19 @@ export default function ContactSection() {
                   </span>
                 )}
               </span>
-            </h2>
+            </motion.h2>
 
-            <p className="mt-6 text-lg font-light leading-[1.25em] text-white">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
+              className="mt-6 text-lg font-light leading-[1.25em] text-white"
+            >
               Ready to redefine the standard? Whether you have a specific
               project in mind or just want to explore possibilities, our team is
               ready to collaborate
-            </p>
+            </motion.p>
 
             <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {channels.map((channel) => (

@@ -6982,3 +6982,320 @@ tsc ✓, biome-format clean, served /home 200: 10 margin-class spans, 0 old trac
   pane delivers no scroll events and ScrollTrigger never advances here. The fix is
   the standard remedy for this exact symptom and is verified to be wired and torn down
   correctly; the behaviour needs the user's scroll.
+
+## 2026-07-27 — Career hero quote card: lightened the mask veil
+- `src/components/career/QuoteCard.tsx` only. New constant `MASK_EDGE_ALPHA = 0.4`;
+  the radial mask's outer stop went `rgba(0,0,0,0.15)` -> `rgba(0,0,0,0.4)`.
+- WHAT THE "black overlay / mask effect" ACTUALLY IS (checked, not assumed): there is
+  no separate overlay div. The card is `bg-black` and the grid pattern above it is
+  masked by `radial-gradient(140px circle at cursor, black 0%, rgba(0,0,0,0.15) 100%)`.
+  Mask alpha controls how much of the PATTERN shows, so a low outer alpha means the
+  black card shows through — that is the dark veil. Lowering the veil's opacity
+  therefore means RAISING the mask's outer alpha (0.15 -> 0.4), which is the opposite
+  direction to what the wording literally suggests; stating it explicitly in case the
+  intent was inverted.
+- Measured context that explains why THIS card looks darker than the ContactSection
+  card it was copied from: same 0.15 outer stop, but ChannelCard uses a 280px radius
+  while QuoteCard uses 140px, and the quote card measures only 208x260. With the mask
+  parked at (0.85w, h/2), the far corners sit well beyond 140px, so most of the card
+  was rendering at 15%. Radius is the alternative lever if 0.4 is not enough.
+- SCOPE: QuoteCard is only reached via career/CarouselCard, so nothing else changes.
+  Explicitly confirmed the two sibling masks were left at 0.15 —
+  home/ChannelCard.tsx:76 and career/PerksSection.tsx:121 — since they were not part
+  of the request.
+- VERIFIED live: computed maskImage on all 12 rendered quote cards is now
+  `radial-gradient(140px at ..., rgb(0, 0, 0) 0%, rgba(0, 0, 0, 0.4) 100%)`; centre
+  stop still fully opaque so the cursor spotlight is unchanged.
+  `bunx tsc --noEmit` exit 0; biome 0/0 vs HEAD.
+
+## 2026-07-27 — Career quote card: pattern made visible (mask alpha + radius)
+- Follow-up to the previous entry; the screenshot showed 0.4 was still too dark.
+- `src/components/career/QuoteCard.tsx` only: `MASK_EDGE_ALPHA` 0.4 -> 0.75 and new
+  `MASK_RADIUS` 140 -> 220 (both named constants).
+- KEY ARITHMETIC that explains why alpha alone was never going to be enough: the tiles
+  are `rgb(22,22,22)` composited over a black card, so effective brightness is
+  `22 * maskAlpha`. That caps the pattern at rgb(22) even at FULL alpha:
+  0.15 -> 3.3 (invisible), 0.4 -> 8.8 (barely), now 16.5 of a possible 22.
+- Compared against the reference implementations before touching anything: home/
+  ChannelCard.tsx and career/PerksSection.tsx use the IDENTICAL tile palette
+  (base rgb(22), gaps #161616), so the darkness is not unique to this card. The real
+  difference is geometry — the reference cards pair a 280px radius with a much larger
+  card, so most of their area sits near the mask's bright centre, while this 208x260
+  card paired 140px with a small card and sat almost entirely at the outer stop.
+  Fixing the mask geometry therefore matches the reference LOOK without touching the
+  shared palette (which would have desynced the three cards when lit).
+- VERIFIED live on all 12 rendered cards: computed mask is now
+  `radial-gradient(220px at ..., rgb(0,0,0) 0%, rgba(0,0,0,0.75) 100%)`; the farthest
+  corner from the parked mask centre is 219px, now just INSIDE the 220px radius, so no
+  part of the card is clamped to the darkest stop any more. Centre stop still fully
+  opaque, so the cursor spotlight survives.
+- Siblings deliberately unchanged and re-confirmed at 280px/0.15: home/ChannelCard.tsx
+  and career/PerksSection.tsx.
+- If the pattern still needs to be brighter, the remaining lever is the tile palette
+  (`22 + 14 * intensity` and `#161616`) — but that one is shared by all three cards.
+- `bunx tsc --noEmit` exit 0; biome 0/0 vs HEAD.
+
+## 2026-07-27 — Career quote card: veil dialled back to 0.6
+- `src/components/career/QuoteCard.tsx`, one constant: `MASK_EDGE_ALPHA` 0.75 -> 0.6.
+  `MASK_RADIUS` left at 220 (the complaint was about opacity, not the falloff size).
+- DIRECTION NOTE: throughout this thread "opacity" has meant the BLACK OVERLAY's
+  opacity, which is the INVERSE of the mask's edge alpha. "Lowered too much, increase
+  it a little" therefore means bring the veil back, i.e. mask alpha DOWN from 0.75 —
+  not up. 0.6 sits between the 0.4 the user called too dark and the 0.75 called too
+  light. Black veil is now 40% (was 25% at 0.75, 60% at 0.4).
+- Effective tile brightness (tiles are rgb(22) over a black card, so brightness =
+  22 * alpha): 8.8 at 0.4 -> 13.2 now -> 16.5 at 0.75, ceiling 22.
+- VERIFIED live on all 12 cards: computed mask
+  `radial-gradient(220px at ..., rgb(0,0,0) 0%, rgba(0,0,0,0.6) 100%)`; centre stop
+  still fully opaque so the cursor spotlight is intact; radius confirmed still 220.
+  Siblings re-confirmed untouched (ChannelCard + PerksSection still 280px/0.15).
+- `bunx tsc --noEmit` exit 0; biome 0/0 vs HEAD.
+
+## 2026-07-27 — Site-wide audit: added the scroll-entry animation where genuinely missing
+- AUDIT FIRST (plan.md rewritten with the findings). 68 component files ALREADY use
+  `whileInView`, so the convention was well established; the job was finding real gaps,
+  not blanket-applying motion.
+- DELIBERATELY EXEMPT after checking each (documented in plan.md so this isn't
+  re-litigated): all 10 *HeroSection/ProjectHero files (above the fold, already animate
+  on MOUNT — scroll-entry is wrong there); PortfolioSection/ServiceSection/StatsSection
+  (GSAP/ScrollTrigger-driven, 8-16 gsap refs each); NextProject/BlogArticle/
+  OurTeamSection carousel/RelatedArticles marquee (already scroll-driven via
+  useScroll/useTransform); cards & sub-parts (animated by parent or hover); Header,
+  navbar, ui/ primitives.
+- GAPS FIXED (13 files):
+  * ProjectShowcase x8 service dirs — section header (eyebrow span, h2, p) were plain
+    elements. Converted in place to motion.* with the canonical pattern, staggered
+    0 / 0.1 / 0.2.
+  * about/OurTeamSection + blog/RelatedArticles — heading + eyebrow, staggered 0 / 0.1.
+  * blog/ArticleBlock, ShareRail, TableOfContents — had NO framer-motion at all.
+- CANONICAL PATTERN sampled from existing code rather than invented:
+  `initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}}
+   viewport={{once:true,margin:"-50px"}} transition={{duration:0.6,ease:premiumEase}}`
+  with `premiumEase = [0.16, 1, 0.3, 1]`. (`viewport={{once:true}}` is the most common
+  form site-wide at 88 uses, with -50px next at 31.)
+- JUDGEMENT CALL by the G4 worker, accepted: ShareRail and TableOfContents live inside
+  `<div className="sticky top-32">` in BlogArticle — sticky sidebar chrome. Applying
+  whileInView to something pinned on screen while the page scrolls under it would look
+  broken, so they got a one-time MOUNT animation instead. Correct call.
+- CONSTRAINT ENFORCED IN EVERY BRIEF: convert tags in place, NEVER add wrapper divs —
+  several pages derive sticky offsets from measured pixel heights, so a stray div could
+  desync them. Verified: no wrappers added.
+- VERIFIED at driver level, not trusted from worker reports (two workers hit transient
+  syntax errors from CONCURRENT edits to the same tree and reported conflicting tsc
+  results): final `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; all 8
+  ProjectShowcase at 3 whileInView each; OurTeam/RelatedArticles at 2 each; the 3 blog
+  files carry "use client" (ArticleBlock needed it added); zero duplicate `premiumEase`
+  definitions; per-file biome vs HEAD worktree — NO regressions on any of the 13 files.
+- RUNTIME PROOF: on /brand-strategy the new header elements sit at
+  `opacity:0; transform:translateY(20px)` below the fold, i.e. correctly held in their
+  pre-entry state. Article blocks likewise opacity 0 off-screen.
+- FALSE ALARM RESOLVED PROPERLY: the TOC nav also read opacity 0 and stayed there. Ran
+  a CONTROL on pre-existing untouched code (AboutHeroSection's headline words, which
+  the user has long since approved) — those are ALSO stuck at opacity 0, with
+  `rafFired: false`. So it is this pane's frozen rAF, not the new code. Did not report
+  it as a defect and did not "fix" working code.
+- FLAGGED, NOT DONE (needs approval): `home/Herosection.tsx` has NO entry animation at
+  all — no framer, no GSAP. It is the homepage hero, above the fold, so the correct fix
+  is a MOUNT animation like the other heroes, not scroll-entry. That is a prominent
+  visual change to the first thing visitors see, so it is left for the user to decide.
+
+## 2026-07-27 — Static sections animated (correcting the previous audit's misses)
+- USER WAS RIGHT, and my previous audit was measured at the wrong granularity: I had
+  checked whether a FILE contained `whileInView` anywhere, which passes a file whose
+  cards animate but whose section HEADING is static. Re-audited at runtime instead —
+  for every h1/h2 on every page, walk ancestors looking for framer's inline style.
+  That produced an objective, evidence-based gap list.
+- ALSO CORRECTED: I had exempted ServiceSection/PortfolioSection as "GSAP-animated".
+  True for PortfolioSection (its `.reveal-item` headings get a real GSAP scroll reveal,
+  PortfolioSection.tsx:223) but FALSE for ServiceSection — its GSAP only drives pinning
+  and scale, and its heading never animated. And "Voices of the Collective" appeared
+  animated on /home only because the GSAP shrink tween puts a transform on an ancestor;
+  it was static on all four other pages that render it.
+- GAPS FIXED (6 shared components, so all pages benefit):
+  * home/Herosection — homepage hero had NO animation at all. Added a MOUNT animation
+    (not whileInView; it is above the fold) matching AboutHeroSection's feel:
+    opacity/y/blur, 5 line-level beats staggered 0.1->0.82, total 1.52s.
+  * home/ServiceSection, ExperimentalTestimonials, ContactSection, BlogSection —
+    section headers (eyebrow / h2 / description / CTA) staggered 0 / 0.1 / 0.2.
+  * layout/Footer — link columns, newsletter column, timezone grid and bottom bar
+    animated as GROUPS (not 21 individual links, which would look busy). The existing
+    letter-by-letter wordmark reveal was left untouched.
+- DISCLOSED BEHAVIOUR CHANGE from the worker, accepted: BlogSection's h2 already had an
+  `isDesktop`-gated whileInView (x:-20). It was retargeted in place to the standard
+  spec rather than nesting a second animation, so the heading now animates on MOBILE
+  too, consistent with the other three.
+- VERIFIED at driver level: `bunx tsc --noEmit` exit 0; `bunx next build` exit 0;
+  per-file biome vs HEAD worktree — NO regressions on any of the 6 files. Runtime
+  re-probe of /home confirms "We Engineer", "Our Services", "Let's build the future"
+  and "Thoughts & Perspectives" now carry framer inline styles.
+- TWO PROBE FALSE-NEGATIVES CHASED DOWN rather than "fixed": the footer wordmark reads
+  static at h1 level but its child spans carry `transform:translateY(110%)` from the
+  existing letter-reveal; and PortfolioSection's heading reads static only because
+  GSAP's rAF does not run in this pane. Both are genuinely animated — left alone.
+- Remaining limitation unchanged: motion cannot be behaviourally verified here (no
+  rAF, no scroll events); needs the user's eyes.
+
+## 2026-07-27 — Homepage Stats: dividers keep their 1px thickness through the shrink
+- `src/components/home/StatsSection.tsx` + `src/app/home/page.tsx`.
+- WHAT THE "borders" ACTUALLY ARE (checked, not assumed): StatsSection has no CSS
+  border on desktop — its only `border` classes are `max-md:` (mobile-only), while the
+  shrink is gated to `min-width: 768px`. The desktop lines are 1px-high divider DIVs:
+  `absolute bottom-0 left-4 right-4 h-px bg-black/10`, one per row except the last
+  (3 rendered). Under the 0.85 scale they render at 0.85px, hence thinner and fainter.
+- FIX: gave the divider a stable `stat-divider` class plus `origin-bottom`, and added a
+  SECOND scrubbed tween over the identical ScrollTrigger range animating those
+  dividers to `scaleY: 1 / 0.85`. Nested transforms multiply, so 0.85 x 1.1765 = 1 —
+  the rendered thickness stays exactly 1px for the whole scrub. Extracted
+  `STATS_SHRINK_SCALE = 0.85` so the shrink and its inverse cannot drift apart.
+- VERIFIED by measuring the divider's rendered height at the end state:
+  1.000px at rest -> 0.850px shrunk WITHOUT the fix -> 1.000px shrunk WITH it.
+  `thicknessPreserved: true`. Divider transform-origin computes to `592.5px 1px`
+  (bottom edge), so counter-scaling grows it upward from the line's own baseline and
+  it does not drift off `bottom-0`.
+- DELIBERATELY NOT counter-scaled: the divider's WIDTH (1185px -> 1007px). That
+  shrinks with the section, which is correct — the line should track the layout it
+  underlines; only its THICKNESS was the artefact.
+- `bunx tsc --noEmit` exit 0; per-file biome vs HEAD unchanged on both files.
+
+## 2026-07-27 — Reverted the Stats divider counter-scale
+- Reverted ONLY the previous entry ("borders shouldn't scale down"). The Stats shrink
+  itself came from an earlier, separate task and was deliberately kept.
+- `src/components/home/StatsSection.tsx`: divider className restored to exactly
+  `absolute bottom-0 left-4 right-4 h-px bg-black/10 max-md:hidden md:left-10 md:right-10`
+  — byte-compared against the HEAD worktree copy, identical.
+- `src/app/home/page.tsx`: removed the second `.stat-divider` scaleY tween, removed the
+  `STATS_SHRINK_SCALE` constant, and restored the literal `scale: 0.85` on the Stats
+  shrink tween.
+- VERIFIED the revert is complete AND correctly scoped: grep for
+  `stat-divider|STATS_SHRINK_SCALE|origin-bottom` across both files returns nothing;
+  the 3 hairline dividers still render; divider height measures 1.000px at rest and
+  0.850px under the 0.85 shrink again, i.e. the original (pre-fix) behaviour is back.
+  `statsInnerRef` and its shrink tween are still present at page.tsx:102-103.
+- FALSE ALARM CHECKED, NOT ASSUMED: immediately after the edits the Stats inner div
+  showed an EMPTY inline style, which would have meant the shrink tween had stopped
+  attaching. Hard-reloaded and compared against a control (the pre-existing
+  About->Portfolio shrink, untouched): after reload BOTH carry GSAP's CSSPlugin
+  signature style and 4 pin-spacers exist. It was the HMR artifact (the useGSAP effect
+  not re-running after a hot update), the same one previously diagnosed on
+  brand-strategy — not a regression from the revert.
+- `bunx tsc --noEmit` exit 0; per-file biome vs HEAD unchanged (StatsSection 1/1,
+  page 0/0).
+
+## 2026-07-27 — Analysis only: SpecularButton (WebGL SDF border) vs current StarBorder
+- User pasted a SpecularButton component and asked for ANALYSIS of it against the
+  WorkProjectShowcase card hover. No files changed (same pattern as the earlier
+  StarBorder "analyze the code" request, which was followed by a separate "add it").
+- Grounded findings (verified against the repo, not assumed):
+  * `ogl` IS already a dependency (package.json:25) and its ONLY importer is
+    Particles.tsx, which is dead code since the Footer import was removed. So adopting
+    this needs NO new dependency — and it would give ogl a live consumer again.
+  * WorkProjectShowcase renders 9 project cards (src/data/projects.ts). This component
+    creates ONE WebGL context per instance -> 9 contexts. Browsers cap concurrent
+    WebGL contexts around 8-16 and silently drop the oldest. Hard blocker as written.
+  * Each instance also adds a `window` pointermove listener that calls
+    getBoundingClientRect() on every move (9 listeners x every pointer event =
+    layout thrashing) and runs an unconditional rAF render loop even when idle
+    (bright decays to 0 but rendering continues).
+  * Current StarBorder is 78 lines, ZERO canvas/rAF/WebGL — pure CSS + framer. So this
+    swap trades a near-free effect for 9 always-on GL loops.
+  * ProjectCard's container is `overflow-hidden rounded-[20px]` (line 58) while the
+    effect deliberately overdraws `-inset-5` (PAD=20) so the glow can bleed outside the
+    shape. Inside that container the bloom would be clipped exactly at the border.
+  * It is a <button>; the project card is a <Link> wrapping a div. Adopting it means
+    extracting the canvas/shader layer, not the button.
+  * `propsRef.current = {...}` executes during render. This repo has
+    `reactCompiler: true` (next.config.ts:5) — render-phase ref mutation is exactly the
+    pattern the compiler's rules-of-react checks flag.
+  * `dpr` is captured once at mount; dragging the window to a different-DPI display
+    leaves the canvas mis-scaled (Particles.tsx has the same limitation, so it is at
+    least consistent with existing code).
+- No plan.md written and nothing implemented — awaiting the user's decision on whether
+  to adopt it, and if so at what scope (e.g. featured card only, to stay within the
+  WebGL context budget).
+
+## 2026-07-27 — SpecularBorder: WebGL SDF border on the work cards (replaces StarBorder)
+- NEW `src/components/ui/SpecularBorder.tsx`; `src/components/work/ProjectCard.tsx`
+  swaps StarBorder for it. No new dependency — `ogl` was already in package.json and
+  this gives it a live importer again (its only other importer, Particles.tsx, is dead
+  code since the Footer import was removed).
+- ADAPTED, not copy-pasted. Three changes driven by the analysis:
+  1. **One WebGL context, not nine.** The source creates a context per instance;
+     WorkProjectShowcase renders 9 cards and browsers cap concurrent contexts around
+     8-16. Mounted as `{isHovered && <SpecularBorder />}` so at most ONE exists.
+     Verified: 0 canvases at rest.
+  2. **Escapes the clip.** The effect deliberately overdraws `-inset-5` (PAD 20) so the
+     bloom bleeds past the shape, but the card's inner div is
+     `overflow-hidden rounded-[20px]`. Mounted it in the OUTER wrapper instead
+     (`group relative w-full cursor-pointer`) — verified `overflow: visible` there,
+     and its box matches the card exactly (1185x600), so `inset-0` aligns the SDF.
+  3. **No render-phase ref mutation.** The source assigns `propsRef.current` during
+     render; this repo has `reactCompiler: true`, which flags exactly that. Moved the
+     sync into a `useEffect`.
+  Also dropped the button chrome/`SIZES`/tint vars (not a button here) and added a
+  `prefers-reduced-motion` path that renders ONE static frame instead of running the
+  rAF loop.
+- MEASUREMENT TRAP HIT AND IDENTIFIED: every element in the card chain — grid, link,
+  card, even the <img> — measured width 0, which looked like a real layout bug. Root
+  cause was `window.innerWidth === 0` (also innerHeight/clientWidth 0), the documented
+  intermittent pane degradation. After `resize_window` the card box reads a correct
+  1185x600. ALWAYS log innerWidth beside width measurements here.
+- VERIFIED: `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome on both files
+  shows only the 1 pre-existing noImgElement; WebGL2 confirmed available in-browser
+  ("WebGL 2.0 (OpenGL ES 3.0 Chromium)"); mount point overflow visible; inner card
+  overflow hidden; 0 canvases until hover.
+- NOT verifiable here: the effect itself. It needs a real cursor (CSS/JS hover) AND a
+  live rAF loop, and this pane provides neither. Needs the user's mouse.
+- CONSEQUENCE TO DECIDE: `src/components/ui/StarBorder.tsx` now has ZERO importers.
+  Left in place rather than deleted, since reverting is then a one-line import swap.
+  Its keyframes in globals.css (`star-movement-top/bottom`) are likewise now unused.
+
+## 2026-07-27 — SpecularBorder: fixed misalignment, dead-still light, and themed it
+- `src/components/ui/SpecularBorder.tsx` only. Three separate reported faults, three
+  separate causes — each diagnosed before editing.
+- (1) "out of place on bigger cards" — MEASURED CAUSE: ProjectCard's wrapper animates
+  `scale: isHovered ? 1.01 : 1`, and SpecularBorder sits inside it. The SDF was sized
+  from `getBoundingClientRect()`, which ALREADY includes that scale, while the canvas
+  is itself scaled by the same ancestor — so the scale applied twice. Measured at
+  1.01: big card rect 606px vs layout 600px (6px drift), width 1196.85 vs 1185
+  (11.85px); error grows with card size, exactly matching "bigger cards". FIX: size
+  from `offsetWidth`/`offsetHeight`, which are layout values and transform-independent.
+  Pointer math still uses getBoundingClientRect, which is correct there because
+  pointer coords are screen-space.
+- (2) "doesn't move an inch" — CAUSE: because the component only mounts on hover,
+  `proximityT` started at 0 and is only ever set inside `onPointerMove`. If the cursor
+  entered the card and stopped, no further pointermove fired, so `bright` stayed 0 and
+  NOTHING rendered at all. FIX: seed `proximityT = 1` at mount (mount implies hovered),
+  so brightness eases up immediately. Also added a continuous `Math.sin(idleAngle) *
+  SWAY` (0.35 rad) around the pointer direction so the light keeps breathing even when
+  the cursor is perfectly still, instead of easing to a fixed angle and freezing.
+- (3) "make it our theme like the gradient" — added a second colour uniform
+  `uLineColor2` and mixed it across the shape
+  (`g = 0.5 + 0.5 * p.x / uHalfSize.x`), defaulting to the site gradient
+  `#2E5BFF -> #149CCB` (the exact pair used in 109 places across src/components).
+- VERIFIED THE SHADER BY RUNNING IT, not by reading it: compiled the real GLSL in a
+  headless WebGL2 context, linked it, and read pixels along the top edge with a wide
+  shine window. Green/blue ratio rises monotonically left->right —
+  0.376 / 0.455 / 0.544 / 0.633 / 0.739, i.e. (36,76,202) blue blending to
+  (17,122,165) cyan. Gradient direction and endpoints confirmed correct.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome clean on the file.
+- Still needs the user's cursor for the felt result (this pane has no real hover and
+  no rAF). Knobs if it needs tuning: `SWAY` (how much it drifts when still),
+  `speed` (drift rate), `intensity`, `shineSize`/`shineFade` (how much of the
+  perimeter lights up).
+
+## 2026-07-27 — SpecularBorder: made the effect thicker
+- `src/components/ui/SpecularBorder.tsx`, two lines: `thickness` default 1 -> 3, and
+  the shader's `edgeClamp` upper bound `3.0 * uPx` -> `max(3.0 * uPx, 3.0 * uThickness)`.
+- WHY BOTH WERE NEEDED — raising `thickness` alone would have done almost nothing.
+  `edgeClamp` hard-limits the highlight to ~3 device px from the border regardless of
+  the Gaussian sigma. Proved it by compiling the shader headlessly and counting lit
+  pixels across the border with the ORIGINAL clamp:
+      thickness 1 -> 2px, thickness 4 -> 4px, thickness 8 -> 4px  (saturated)
+  With the widened clamp: 1 -> 2px, 4 -> 9px, 8 -> 19px. At thickness 1 both versions
+  give 2px, so the change is backwards compatible for any caller passing the old value.
+- VERIFIED the shipped values by running the real GLSL again: 2px before ->
+  **7 device px** now at dpr 1, and 15 at dpr 2 (correctly doubling for the same CSS
+  thickness, since uThickness is multiplied by dpr before upload).
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome clean.
+- `thickness` is a prop, so ProjectCard can override per-card if 3 is too heavy on the
+  smaller cards; the shader now scales the clamp with whatever value is passed.

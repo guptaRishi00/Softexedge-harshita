@@ -11,6 +11,8 @@ const smoothSpring = {
   mass: 1,
 } as const;
 
+const premiumEase = [0.16, 1, 0.3, 1] as const;
+
 const projects = [
   {
     id: 0,
@@ -76,23 +78,41 @@ export default function ProjectShowcase() {
 
       <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">
         <div className="mb-34 w-full">
-          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: premiumEase, delay: 0 }}
+            className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60"
+          >
             Selected Work
-          </span>
+          </motion.span>
 
           <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-            <h2 className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[5rem]">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, ease: premiumEase, delay: 0.1 }}
+              className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[5rem]"
+            >
               Our{" "}
               <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
                 Projects
               </span>
-            </h2>
+            </motion.h2>
 
-            <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, ease: premiumEase, delay: 0.2 }}
+              className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+            >
               Delivering scalable, high-performance solutions that elevate
               brands and drive revenue. Delivering scalable, high-performance
               solutions that elevate brands and drive revenue.
-            </p>
+            </motion.p>
           </div>
         </div>
 

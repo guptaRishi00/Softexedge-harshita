@@ -13,6 +13,8 @@ import { MdArrowOutward } from "react-icons/md";
 import type { BlogPost } from "@/data/blog";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 
+const premiumEase = [0.16, 1, 0.3, 1] as const;
+
 const SCROLL_SECONDS = 22;
 const wrap = (min: number, max: number, v: number) => {
   const range = max - min;
@@ -133,12 +135,24 @@ export default function RelatedArticles({ related }: { related: BlogPost[] }) {
       <div className="w-full">
         <div className="mb-12 flex w-full flex-col items-start justify-between gap-8 px-4 md:mb-20 md:flex-row md:items-center md:px-10">
           <div className="flex flex-col items-start">
-            <p className="mb-3 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, ease: premiumEase }}
+              className="mb-3 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500"
+            >
               Related articles
-            </p>
-            <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-6xl lg:leading-[1.05]">
+            </motion.p>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
+              className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-6xl lg:leading-[1.05]"
+            >
               Continue reading
-            </h2>
+            </motion.h2>
           </div>
 
           <div className="flex w-full items-center justify-end md:w-auto">

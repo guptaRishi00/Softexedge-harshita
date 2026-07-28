@@ -1,8 +1,11 @@
 "use client";
 
 import { Check, Link2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
+
+const premiumEase = [0.16, 1, 0.3, 1] as const;
 
 export default function ShareRail({ title }: { title: string }) {
   const [copied, setCopied] = useState(false);
@@ -31,10 +34,20 @@ export default function ShareRail({ title }: { title: string }) {
 
   return (
     <>
-      <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">
+      <motion.span
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: premiumEase }}
+        className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400"
+      >
         Share
-      </span>
-      <div className="flex gap-2.5">
+      </motion.span>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: premiumEase }}
+        className="flex gap-2.5"
+      >
         <button
           type="button"
           aria-label="Share on X"
@@ -75,7 +88,7 @@ export default function ShareRail({ title }: { title: string }) {
             <Link2 className="h-3.5 w-3.5" />
           )}
         </button>
-      </div>
+      </motion.div>
     </>
   );
 }

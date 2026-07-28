@@ -69,6 +69,8 @@ const brandLetter: Variants = {
   },
 };
 
+const premiumEase = [0.16, 1, 0.3, 1] as const;
+
 export default function Footer() {
   const [mounted, setMounted] = useState(false);
   const [time, setTime] = useState(new Date());
@@ -101,8 +103,19 @@ export default function Footer() {
       <div className="relative z-10 mx-auto w-full flex flex-col px-6 md:px-10 lg:px-16">
         <div className="grid grid-cols-1 items-start gap-12 pb-16 lg:grid-cols-12 md:pb-20">
           <div className="grid grid-cols-2 gap-x-10 gap-y-12 lg:col-span-7 lg:flex lg:gap-28">
-            {footerLinkGroups.map(({ title, links }) => (
-              <div key={title} className="flex flex-col gap-2.5">
+            {footerLinkGroups.map(({ title, links }, groupIndex) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{
+                  duration: 0.6,
+                  ease: premiumEase,
+                  delay: groupIndex * 0.05,
+                }}
+                className="flex flex-col gap-2.5"
+              >
                 <p className="mb-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
                   {title}
                 </p>
@@ -116,11 +129,17 @@ export default function Footer() {
                     <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
                   </Link>
                 ))}
-              </div>
+              </motion.div>
             ))}
           </div>
 
-          <div className="flex flex-col items-start lg:col-span-5 lg:pl-12 lg:-mt-1">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: premiumEase, delay: 0.15 }}
+            className="flex flex-col items-start lg:col-span-5 lg:pl-12 lg:-mt-1"
+          >
             <h3 className="mb-8 text-[2rem] font-semibold leading-tight tracking-[-0.04em] text-white">
               Stay updated with Softexedge news
             </h3>
@@ -180,7 +199,7 @@ export default function Footer() {
                 </a>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
 
         <div className="relative flex w-full justify-center pt-8 pb-16 md:pt-10 md:pb-20 overflow-hidden">
@@ -212,7 +231,13 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col gap-16 pt-12 md:gap-24">
-          <div className="grid grid-cols-2 justify-items-center gap-x-8 gap-y-12 text-xs font-semibold uppercase tracking-widest md:grid-cols-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: premiumEase }}
+            className="grid grid-cols-2 justify-items-center gap-x-8 gap-y-12 text-xs font-semibold uppercase tracking-widest md:grid-cols-4"
+          >
             <div className="flex flex-col items-start gap-3">
               <div className="flex items-center gap-2">
                 <span className="block h-1.5 w-1.5 rounded-full bg-white" />
@@ -260,9 +285,15 @@ export default function Footer() {
                 {formatTime("Europe/Paris")}
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 md:flex-row md:items-end">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: premiumEase, delay: 0.05 }}
+            className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 md:flex-row md:items-end"
+          >
             <p className="tracking-wide">© Made By Softexedge</p>
 
             <div className="flex flex-wrap items-center gap-6">
@@ -271,7 +302,7 @@ export default function Footer() {
                 Privacy Policy ( peek responsibly )
               </a>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </footer>

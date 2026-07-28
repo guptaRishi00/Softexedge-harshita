@@ -1,11 +1,14 @@
 "use client";
 
 import { useGSAP } from "@gsap/react";
+import { motion } from "framer-motion";
 import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { cn } from "@/lib/utils";
+
+const premiumEase = [0.16, 1, 0.3, 1] as const;
 
 const services = [
   {
@@ -170,21 +173,39 @@ export default function ServiceSection() {
     >
       <div className="w-full px-4 md:px-10">
         <div className="mb-10 w-full pb-10">
-          <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: premiumEase }}
+            className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
+          >
             What We Offer
-          </p>
+          </motion.p>
 
           <div className="flex w-full flex-col-reverse items-start justify-between gap-8 md:flex-row md:items-center">
-            <h2 className="text-5xl font-bold tracking-tight text-white md:text-[80px]">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
+              className="text-5xl font-bold tracking-tight text-white md:text-[80px]"
+            >
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Services
               </span>
-            </h2>
-            <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
+              className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+            >
               We merge strategic thinking with bold creative execution to
               deliver scalable digital experiences that elevate your brand
-            </p>
+            </motion.p>
           </div>
         </div>
 

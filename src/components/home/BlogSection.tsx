@@ -15,6 +15,8 @@ import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const SCROLL_SECONDS = 22;
 
+const premiumEase = [0.16, 1, 0.3, 1] as const;
+
 const wrap = (min: number, max: number, v: number) => {
   const range = max - min;
   return ((((v - min) % range) + range) % range) + min;
@@ -192,16 +194,22 @@ export default function BlogSection() {
     <section className="w-full overflow-hidden bg-white text-black pb-16 md:pb-32">
       <div className="mx-auto w-full ">
         <div className="mb-12 w-full px-4 md:mb-20 md:px-10">
-          <p className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: premiumEase }}
+            className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
+          >
             Latest Insights
-          </p>
+          </motion.p>
 
           <div className="flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-center">
             <motion.div
-              initial={isDesktop ? { opacity: 0, x: -20 } : false}
-              whileInView={isDesktop ? { opacity: 1, x: 0 } : undefined}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
               className="flex flex-col items-start"
             >
               <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-6xl lg:leading-[1.05]">
@@ -238,7 +246,13 @@ export default function BlogSection() {
               </h2>
             </motion.div>
 
-            <div className="flex w-full items-center justify-end md:w-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
+              className="flex w-full items-center justify-end md:w-auto"
+            >
               <Link
                 href="/blog"
                 className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
@@ -271,7 +285,7 @@ export default function BlogSection() {
                   />
                 </div>
               </Link>
-            </div>
+            </motion.div>
           </div>
         </div>
 

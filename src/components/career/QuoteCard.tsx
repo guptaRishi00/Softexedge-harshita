@@ -4,6 +4,8 @@ import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const QUOTE_GRID_COLUMNS = 4;
+const MASK_EDGE_ALPHA = 0.6;
+const MASK_RADIUS = 220;
 const quoteCellIds = Array.from({ length: 32 }, (_, i) => `quote-cell-${i}`);
 
 export default function QuoteCard({ text }: { text: string }) {
@@ -57,7 +59,7 @@ export default function QuoteCard({ text }: { text: string }) {
     return distance > 3.5 ? 0 : 1 - distance / 1.79;
   };
 
-  const mask = useMotionTemplate`radial-gradient(140px circle at ${mouseX}px ${mouseY}px, black 0%, rgba(0,0,0,0.15) 100%)`;
+  const mask = useMotionTemplate`radial-gradient(${MASK_RADIUS}px circle at ${mouseX}px ${mouseY}px, black 0%, rgba(0,0,0,${MASK_EDGE_ALPHA}) 100%)`;
 
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: decorative card — pointer only drives the background mask

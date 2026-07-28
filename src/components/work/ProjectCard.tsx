@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import type { Project } from "@/data/projects";
 import { cn } from "@/lib/utils";
-import StarBorder from "../ui/StarBorder";
+import SpecularBorder from "../ui/SpecularBorder";
 
 export const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -234,8 +234,9 @@ export default function ProjectCard({
             </div>
           </div>
 
-          <StarBorder active={isHovered} radius={20} color="#2E5BFF" />
         </div>
+
+        {isHovered && <SpecularBorder radius={20} />}
       </motion.div>
     </Link>
   );

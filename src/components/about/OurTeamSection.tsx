@@ -25,6 +25,8 @@ interface TeamMember {
   image: string;
 }
 
+const premiumEase = [0.16, 1, 0.3, 1] as const;
+
 const teamMembers: TeamMember[] = [
   {
     id: 1,
@@ -123,16 +125,28 @@ export default function OurTeamSection() {
         >
           <div className="mb-12 flex flex-col items-start justify-between gap-6 px-4 md:px-10 md:mb-20 md:flex-row md:items-end">
             <div className="mb-3">
-              <p className="mb-4 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, ease: premiumEase }}
+                className="mb-4 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500"
+              >
                 The Minds Behind the Craft
-              </p>
+              </motion.p>
 
-              <h2 className="text-5xl font-bold tracking-tight text-zinc-900 md:text-6xl lg:text-6xl lg:leading-[1.05]">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
+                className="text-5xl font-bold tracking-tight text-zinc-900 md:text-6xl lg:text-6xl lg:leading-[1.05]"
+              >
                 Meet Our{" "}
                 <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                   Collective
                 </span>
-              </h2>
+              </motion.h2>
             </div>
 
             <div className="relative hidden gap-4 md:flex items-center min-w-24 min-h-12">

@@ -84,10 +84,22 @@ export default function ExperimentalTestimonials() {
           className="flex w-full shrink-0 flex-col justify-between lg:w-1/3"
         >
           <div>
-            <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, ease: premiumEase }}
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
+            >
               Testimonials
-            </p>
-            <h2 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl lg:leading-[0.95em]">
+            </motion.p>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
+              className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl lg:leading-[0.95em]"
+            >
               Voices of the <br />
               <span className="inline-grid overflow-hidden py-2 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
                 {isDesktop ? (
@@ -118,14 +130,26 @@ export default function ExperimentalTestimonials() {
                   </span>
                 )}
               </span>
-            </h2>
+            </motion.h2>
 
-            <p className="mt-5 max-w-sm text-lg leading-[1.25em] text-zinc-600 font-regular">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
+              className="mt-5 max-w-sm text-lg leading-[1.25em] text-zinc-600 font-regular"
+            >
               Don't just take our word for it. Hear from the visionaries
               building our future every day
-            </p>
+            </motion.p>
 
-            <div className="mt-8 flex items-start">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
+              className="mt-8 flex items-start"
+            >
               <Link
                 href="/contact"
                 className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
@@ -158,7 +182,7 @@ export default function ExperimentalTestimonials() {
                   />
                 </div>
               </Link>
-            </div>
+            </motion.div>
           </div>
 
           <div className="mt-12 flex items-center gap-4 max-md:hidden">
