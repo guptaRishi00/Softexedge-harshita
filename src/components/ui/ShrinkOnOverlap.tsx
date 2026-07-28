@@ -57,7 +57,22 @@ export default function ShrinkOnOverlap({
       });
     });
 
-    return () => mm.revert();
+    const refresh = () => ScrollTrigger.refresh();
+    const frame = requestAnimationFrame(refresh);
+    const timer = setTimeout(refresh, 400);
+    window.addEventListener("load", refresh);
+    let fontsPending = true;
+    document.fonts?.ready.then(() => {
+      if (fontsPending) refresh();
+    });
+
+    return () => {
+      fontsPending = false;
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+      window.removeEventListener("load", refresh);
+      mm.revert();
+    };
   });
 
   return (

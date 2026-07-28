@@ -6945,3 +6945,40 @@ tsc ✓, biome-format clean, served /home 200: 10 margin-class spans, 0 old trac
   file.
 - `bunx tsc --noEmit` exit 0; per-file biome vs HEAD unchanged (1 pre-existing
   noImgElement).
+
+## 2026-07-27 — Hero shrink needed a manual refresh on first load — fixed
+- `src/components/ui/ShrinkOnOverlap.tsx` only. Fixes about/career/work and, by the
+  same code path, blog/brand-strategy/contact (which have the identical defect but
+  were not reported).
+- ROOT CAUSE, found structurally rather than by guessing at values: ScrollTrigger
+  computes each trigger's start/end ONCE at creation and only recomputes on its
+  autoRefreshEvents (DOMContentLoaded, load, resize, visibilitychange). The home page
+  survives this because it wraps in <SmoothScroll>, which calls
+  `ScrollTrigger.refresh()` after mount (SmoothScroll.tsx). The six ShrinkOnOverlap
+  pages have NO SmoothScroll and the component never refreshed — verified by grep:
+  SmoothScroll appears only in home/page.tsx, and ShrinkOnOverlap contained no
+  `refresh` call at all. A hard reload fires `load` so ScrollTrigger self-corrects,
+  which is exactly why "it needs a refresh every time".
+- RULED OUT FIRST (so the fix targets the real failure): the tween is NOT missing on
+  first load. Reproduced a genuine client-side navigation (/home -> click <a href="/about">)
+  and confirmed GSAP's CSSPlugin style was already present on the target, so creation
+  works and only the MEASUREMENTS were stale. Also sampled doc height / element
+  positions over 5s and saw no post-mount layout shift on a warm load — i.e. the shift
+  window is the cold/first paint, which is what the added hooks cover.
+- FIX: after creating the tween, `ScrollTrigger.refresh()` is scheduled on
+  requestAnimationFrame, on a 400ms fallback timer, on `window load`, and on
+  `document.fonts.ready` (the headings are 7rem self-hosted Satoshi, so font swap is a
+  real source of position shift). All hooks are torn down in the cleanup alongside
+  `mm.revert()`, and the fonts callback is guarded by a flag so it cannot fire after
+  unmount.
+- VERIFIED after the change, via real soft navigations: /about, /career and /work all
+  land with every shrink target present AND carrying GSAP's inline style
+  (#about-hero-inner, #career-hero-copy + #career-hero-carousel, #work-hero-copy +
+  #work-hero-dome). Geometry unchanged on arrival (about sticky 1104px @ -384px,
+  origin 632.4px 384px = height-100vh). The end-trigger elements correctly have NO
+  gsap style, confirming targets and end triggers are not conflated.
+- `bunx tsc --noEmit` exit 0; biome clean on the file.
+- STILL NOT PROVABLE IN THIS PANE: whether the scrub now runs correctly, because the
+  pane delivers no scroll events and ScrollTrigger never advances here. The fix is
+  the standard remedy for this exact symptom and is verified to be wired and torn down
+  correctly; the behaviour needs the user's scroll.
