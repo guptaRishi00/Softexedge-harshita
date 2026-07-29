@@ -51,7 +51,7 @@ export default function ContactPage({}: any) {
       <div className="relative z-10 [&>section]:py-12 md:[&>section]:pb-5 md:[&>section]:pt-10">
         <ContactFaqSection />
       </div>
-      <div className="relative z-10 px-3 [&>section]:py-12 md:[&>section]:pb-16 md:[&>section]:pt-0">
+      <div className="relative z-10 px-3 [&>section]:py-12 md:[&>section]:pb-14 md:[&>section]:pt-0">
         <CtaSection />
       </div>
       <div className="relative z-10 px-3 pt-16 pb-3 md:pt-8 ">

@@ -100,9 +100,8 @@ export default function HomePage() {
         });
 
         if (statsInnerRef.current) {
-          gsap.to(statsInnerRef.current, {
+          gsap.to(statsInnerRef.current.querySelectorAll(".stat-inner"), {
             scale: 0.85,
-            y: 40,
             ease: "none",
             scrollTrigger: {
               trigger: statsContainerRef.current,
@@ -197,10 +196,7 @@ export default function HomePage() {
               ref={statsContainerRef}
               className="relative z-0 bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
             >
-              <div
-                ref={statsInnerRef}
-                className="origin-[center_calc(100%-100vh)] will-change-transform bg-white"
-              >
+              <div ref={statsInnerRef} className="bg-white">
                 <StatsSection />
               </div>
             </div>

@@ -13,11 +13,11 @@ export const metadata: Metadata = {
 
 export default function BlogPage() {
   return (
-    <div className="bg-[#FAFAFA]">
+    <div className="">
       <BlogHeroSection />
 
       <div className="relative z-0">
-        <div className="sticky top-[calc(100vh-856px)] z-0 bg-[#FAFAFA]">
+        <div className="sticky top-[calc(100vh-856px)] z-0 bg-white">
           <ShrinkOnOverlap
             endSelector="#blog-list"
             className="origin-[center_calc(100%-100vh)]"
@@ -29,11 +29,10 @@ export default function BlogPage() {
           <BlogListSection />
         </div>
       </div>
-      <div className="px-3 [&>section]:pt-16 [&>section]:pb-8 md:[&>section]:pt-24 md:[&>section]:pb-12">
+      <div className="px-3 [&>section]:pt-16 [&>section]:pb-8 md:[&>section]:pt-24 md:[&>section]:pb-8">
         <CtaSection />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:py-24">
-      </div>
+      <div className="[&>section]:py-16 md:[&>section]:py-24"></div>
       <div className="px-3 pt-8 pb-3 md:pt-12">
         <Footer />
       </div>

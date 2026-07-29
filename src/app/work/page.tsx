@@ -51,13 +51,13 @@ export default function WorkPage() {
       <div className="relative z-10 md:[&>section]:pb-24">
         <TechLogoCarousel />
       </div>
-      <div className="relative z-10 px-3 [&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-0">
+      <div className="relative z-10 px-3 [&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-10">
         <CtaSection />
       </div>
-      <div className="relative z-10 [&>section]:py-16 md:[&>section]:pb-30 md:[&>section]:pt-0">
+      <div className="relative z-10 [&>section]:py-16 md:[&>section]:pb-30 md:[&>section]:pt-5">
         <FaqSection />
       </div>
-      <div className="relative z-10 [&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-0">
+      <div className="relative z-10 [&>section]:py-16 md:[&>section]:pb-14 md:[&>section]:pt-0">
         <BlogSection />
       </div>
       <div className="relative z-10 px-3 pt-16 pb-3 md:pt-24">

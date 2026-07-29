@@ -4,7 +4,7 @@ import { Color, Mesh, Program, Renderer, Triangle } from "ogl";
 import { useEffect, useRef } from "react";
 
 const PAD = 20;
-const SWAY = 0.35;
+const SWAY = 0.55;
 
 const VERT = `#version 300 es
 in vec2 position;
@@ -86,11 +86,11 @@ export default function SpecularBorder({
   lineColor = "#2E5BFF",
   lineColor2 = "#2E5BFF",
   baseColor = "#525252",
-  intensity = 1,
+  intensity = 2.5,
   shineSize = 10,
   shineFade = 40,
   thickness = 3,
-  speed = 0.35,
+  speed = 1.2,
   proximity = 320,
 }: Partial<ShaderProps>) {
   const hostRef = useRef<HTMLSpanElement>(null);

@@ -64,7 +64,7 @@ export default function CareerPage() {
         </div>
       </div>
 
-      <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-10">
+      <div className="[&>section]:py-16 md:[&>section]:pb-14 md:[&>section]:pt-10">
         <ApplicationJourney />
       </div>
 

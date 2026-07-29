@@ -41,7 +41,7 @@ export default function ProcessSection() {
   return (
     <section
       id="process"
-      className="w-full bg-black font-sans pt-20 md:pt-20 md:pb-35"
+      className="w-full bg-black font-sans pt-20 md:pt-20 md:pb-30"
     >
       <div className="mx-auto w-full px-4 md:px-10">
         <div className="mb-16 md:mb-35">
@@ -111,7 +111,7 @@ export default function ProcessSection() {
           ))}
         </div>
 
-        <div className="mt-16 w-full border-b border-white/10 md:-mx-6 md:mt-35 md:w-[calc(100%_+_3rem)]" />
+        <div className="mt-16 w-full border-b border-white/10 md:-mx-6 md:mt-30 md:w-[calc(100%_+_3rem)]" />
       </div>
     </section>
   );

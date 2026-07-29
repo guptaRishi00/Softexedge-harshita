@@ -23,7 +23,7 @@ export default function AboutPage({}: Props) {
   return (
     <div className="bg-white">
       <Header />
- <div className="relative z-0 -mb-[150vh]">
+      <div className="relative z-0 -mb-[150vh]">
         <div className="sticky top-[calc(100vh-1104px)] z-0 bg-[#FAFAFA]">
           <ShrinkOnOverlap
             endSelector="#about-traditional"
@@ -65,7 +65,7 @@ export default function AboutPage({}: Props) {
       <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-3">
         <FaqSection />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-10">
+      <div className="[&>section]:py-16 md:[&>section]:pb-14 md:[&>section]:pt-10">
         <BlogSection />
       </div>
       <div className="px-3 pt-16 pb-3 md:pt-24">

@@ -149,10 +149,6 @@ export default function ProjectCard({
                     }}
                     className="absolute bottom-8 left-8 right-8 md:bottom-10 md:left-10 md:right-10"
                   >
-                    <p className="mb-3 inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-[0.3em] text-xs font-medium uppercase tracking-[0.3em] text-transparent">
-                      {project.subtitle}
-                    </p>
-
                     <h3 className="text-4xl font-semibold tracking-tight text-white md:text-5xl lg:text-6xl">
                       {project.title}
                     </h3>
@@ -233,7 +229,6 @@ export default function ProjectCard({
               </AnimatePresence>
             </div>
           </div>
-
         </div>
 
         {isHovered && <SpecularBorder radius={20} />}

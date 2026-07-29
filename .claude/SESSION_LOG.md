@@ -7299,3 +7299,95 @@ tsc ✓, biome-format clean, served /home 200: 10 margin-class spans, 0 old trac
 - `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome clean.
 - `thickness` is a prop, so ProjectCard can override per-card if 3 is too heavy on the
   smaller cards; the shader now scales the clamp with whatever value is passed.
+
+## 2026-07-27 — StatsSection: only the content shrinks, dividers stay put
+- Re-request of an earlier task the user reverted, but with a DIFFERENT requirement:
+  previously I counter-scaled the divider so its THICKNESS stayed 1px (it still moved
+  and narrowed); now the divider must not change at all — only text/numbers shrink.
+- BETTER APPROACH, using structure that already existed: the divider is a SIBLING of
+  `.stat-inner`, and `.stat-inner` already carried `will-change-transform` — the
+  original markup clearly anticipated that element being the scaled one. So instead of
+  scaling the whole wrapper and then fighting the side effects, the tween now targets
+  `.stat-inner` directly. The dividers are outside it, so they are untouched BY
+  CONSTRUCTION rather than by compensation.
+- `src/app/home/page.tsx`: tween target `statsInnerRef.current` ->
+  `statsInnerRef.current.querySelectorAll(".stat-inner")`; dropped `y: 40` (with
+  per-row scaling about each row's own centre, a shared y would shove every row's
+  content down and collide with the dividers); simplified the wrapper className to
+  `bg-white` since it is no longer transformed (its `origin-[...]`/`will-change`
+  classes were dead once it stopped being the tween target).
+- VERIFIED at the end state by applying the tween's exact transform and re-measuring:
+  divider box IDENTICAL before/after — {l:40, r:1225, w:1185, h:1, t:8031} both times,
+  and true for all 3 dividers. Content shrank 1265x248 -> 1075x210.8.
+  Also confirmed GSAP attaches to all 4 `.stat-inner` and to NONE of the 3 dividers.
+- HMR FALSE ALARM AGAIN: first measurement showed no inline styles anywhere, implying
+  the tween never attached. Hard reload + comparing against the untouched
+  About->Portfolio control (which also showed none pre-reload, and its signature style
+  post-reload) confirmed it was the stale-effect artifact, not a wiring bug.
+  4 pin-spacers present, so the pins are intact.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome 0 on page.tsx (unchanged
+  from its HEAD baseline).
+
+## 2026-07-27 — SpecularBorder: raised glow intensity
+- `src/components/ui/SpecularBorder.tsx`, one value: `intensity` 1 -> 2.5.
+- CHECKED FOR A CEILING FIRST, because the previous "thicker" task showed this shader
+  has one (edgeClamp capped thickness at ~4px no matter the value). Intensity does NOT
+  saturate early — swept 1/1.5/2/3/5 in a headless WebGL2 context and peak luminance
+  rose 255 -> 383 -> 484 -> 549 -> 659 against a 765 ceiling, so it is a genuine knob
+  across the whole range. Picked 2.5 rather than something larger to stay clear of
+  blow-out.
+- VERIFIED at the shipped value, measured with the REAL current colours (both stops
+  #2E5BFF, see note below): average luminance of lit pixels 25 -> 60 (**2.4x**), peak
+  255 -> 478, pixels above a "bright" threshold 0 -> 176, and `saturated: false` so
+  there is still headroom if it needs to go further.
+- NOTED, NOT CHANGED: `lineColor2` is currently "#2E5BFF", identical to `lineColor`, so
+  the gradient added earlier is presently flat blue. That value was changed outside
+  this task, so it was left alone — but it is why the border reads as one colour rather
+  than the #2E5BFF -> #149CCB blend. Restoring the blend is a one-word change if wanted.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome 0 on the file.
+- Knobs, in order of effect on perceived glow: `intensity` (brightness, headroom left),
+  `thickness` (band width, now scales the clamp with it), `shineSize`/`shineFade` (how
+  much of the perimeter lights up at once).
+
+## 2026-07-27 — SpecularBorder: sped up the glow's travel
+- `src/components/ui/SpecularBorder.tsx`, one value: `speed` 0.35 -> 0.7.
+- WHAT `speed` DRIVES HERE (worth recording, since it changed meaning): it advances
+  `idleAngle`, which since the earlier "doesn't move" fix feeds the continuous sway
+  `target = pointerAngle + sin(idleAngle) * SWAY`. So it sets the FREQUENCY of the
+  light's drift around the border, not the pointer-chase responsiveness (that is the
+  separate `1 - exp(-dt * 7)` easing) and not the fade-in (`exp(-dt * 8)`).
+- QUANTIFIED BEFORE CHOOSING, by simulating the actual update loop at 60fps rather
+  than guessing: at 0.35 one full sway cycle took **17.95 s** with a peak angular
+  velocity of just **7 deg/s** — which is why it read as nearly static even after the
+  earlier fix. Swept candidates:
+      0.35 -> 17.95s / 7 deg/s      (before)
+      0.50 -> 12.57s / 10 deg/s
+      0.70 ->  8.97s / 14 deg/s     (chosen — "a little bit" = ~2x, not jumpy)
+      0.90 ->  6.98s / 17.9 deg/s
+      1.20 ->  5.23s / 23.7 deg/s
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome 0 on the file.
+- If it still feels slow, the table above maps values to real numbers; `SWAY` (0.35 rad)
+  is the companion knob — it sets how FAR the light travels each cycle, whereas `speed`
+  sets how OFTEN. Increasing SWAY may read as "faster" more convincingly than raising
+  speed further, since a wider arc covers more of the border per pass.
+
+## 2026-07-27 — SpecularBorder: sped up again (frequency AND amplitude)
+- `src/components/ui/SpecularBorder.tsx`: `speed` 0.7 -> 1.2 and `SWAY` 0.35 -> 0.55.
+- WHY BOTH — second request in a row, so instead of doubling `speed` again I checked
+  what actually limits perceived motion. Peak angular velocity is `SWAY * speed`, so
+  amplitude counts as much as frequency, and simulation showed raising speed ALONE
+  leaves the travel arc pinned at ~40 deg: the glow wiggles in place instead of
+  travelling, which is very likely why the previous doubling did not land.
+      speed 1.0, sway 0.35 -> 19.9 deg/s, arc 39.7 deg
+      speed 1.2, sway 0.35 -> 23.7 deg/s, arc 39.5 deg   (arc unchanged)
+      speed 1.2, sway 0.55 -> 37.3 deg/s, arc 62.1 deg   (chosen)
+- VERIFIED by re-simulating the shipped values against both prior settings:
+      original (0.35/0.35): 17.95s period,  7.0 deg/s, 40.1 deg arc
+      previous (0.70/0.35):  8.98s period, 14.0 deg/s, 39.9 deg arc
+      shipped  (1.20/0.55):  5.24s period, 37.3 deg/s, 62.1 deg arc
+  = 2.66x faster than the previous setting, 5.33x faster than the original.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome 0 on the file.
+- If it STILL reads slow, the remaining lever is not these two: the light's response to
+  cursor movement is the separate `1 - Math.exp(-dt * 7)` chase term, and how much of
+  the perimeter lights up at once is `shineSize`/`shineFade`. Widening the lit region
+  makes the same angular motion far more legible than raising velocity further.
