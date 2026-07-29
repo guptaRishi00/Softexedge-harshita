@@ -7391,3 +7391,32 @@ tsc ✓, biome-format clean, served /home 200: 10 margin-class spans, 0 old trac
   cursor movement is the separate `1 - Math.exp(-dt * 7)` chase term, and how much of
   the perimeter lights up at once is `shineSize`/`shineFade`. Widening the lit region
   makes the same angular motion far more legible than raising velocity further.
+
+## 2026-07-27 — Footer bottom bar invisible — my bug from the scroll-animation task
+- `src/components/layout/Footer.tsx`, one option: the copyright/rights bar's
+  `viewport={{ once: true, margin: "-50px" }}` -> `viewport={{ once: true }}`.
+- ROOT CAUSE, measured not guessed: `margin: "-50px"` SHRINKS the IntersectionObserver
+  root by 50px on every side. That bar is the last content on the page, so even at
+  MAXIMUM scroll it cannot rise above the shrunken bottom edge:
+      viewport height        720
+      bar top at max scroll  676
+      detection line (720-50) 670
+      -> bar top sits 6px BELOW the line, so it never intersects, whileInView never
+         fires, and it stays pinned at its initial `opacity:0; translateY(20px)`.
+  Confirmed the stuck state directly: computed opacity 0 with that exact inline style.
+  6px is the entire margin of error — which is why it looked like a mystery.
+- SCOPED THE FIX rather than blanket-removing the margin: re-measured all 6 animated
+  footer groups at max scroll. Only this one has `top > vh - 50`; the other five sit
+  at -194..540 and are comfortably inside the shrunken root, so their `-50px` margins
+  were left untouched (3 remain, at lines 111/139/237).
+- VERIFICATION NOTE (honest): the fix cannot be observed running in this pane —
+  everything in the footer reads opacity 0 here, including groups at top -194 that are
+  plainly inside the viewport, because framer's rAF-driven animations and IO callbacks
+  do not run (both IntersectionObserver probes returned "no callback"). The proof is
+  therefore geometric and exact: with -50px the detection bottom is 670 and the bar top
+  is 676 (misses); with no margin the detection bottom is 720 and 676 < 720 (reaches).
+- GENERAL RULE for this repo: never use a negative `viewport.margin` on the LAST
+  element of a page — it can become unreachable. 88 usages site-wide already use the
+  bare `viewport={{ once: true }}`, which is the safe default here.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome 3 on Footer = unchanged
+  from its HEAD baseline.

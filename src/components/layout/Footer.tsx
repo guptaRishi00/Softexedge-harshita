@@ -290,7 +290,7 @@ export default function Footer() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
+            viewport={{ once: true }}
             transition={{ duration: 0.6, ease: premiumEase, delay: 0.05 }}
             className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 md:flex-row md:items-end"
           >
