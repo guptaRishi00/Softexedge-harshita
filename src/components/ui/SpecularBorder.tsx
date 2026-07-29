@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 
 const PAD = 20;
 const SWAY = 0.55;
+const REST_ANGLE = 2.4;
 
 const VERT = `#version 300 es
 in vec2 position;
@@ -242,7 +243,7 @@ export default function SpecularBorder({
     };
 
     if (reduced) {
-      applyUniforms(2.4, 1);
+      applyUniforms(REST_ANGLE, 1);
       return () => {
         ro.disconnect();
         if (gl.canvas.parentNode === fx) fx.removeChild(gl.canvas);
@@ -252,8 +253,8 @@ export default function SpecularBorder({
 
     window.addEventListener("pointermove", onPointerMove);
 
-    let angle = 2.4;
-    let idleAngle = 2.4;
+    let angle = REST_ANGLE;
+    let idleAngle = REST_ANGLE;
     let bright = 0;
     let last = performance.now();
     let raf = 0;
@@ -265,10 +266,8 @@ export default function SpecularBorder({
       const p = propsRef.current;
 
       idleAngle += p.speed * dt;
-      const target =
-        pointerAngle != null
-          ? pointerAngle + Math.sin(idleAngle) * SWAY
-          : idleAngle;
+      const base = pointerAngle != null ? pointerAngle : REST_ANGLE;
+      const target = base + Math.sin(idleAngle) * SWAY;
       const diff = ((target - angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
       angle += diff * (1 - Math.exp(-dt * 7));
       bright += (proximityT - bright) * (1 - Math.exp(-dt * 8));

@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useState } from "react";
-import TracingBorder from "../ui/TracingBorder";
+import SpecularBorder from "../ui/SpecularBorder";
 
 const smoothSpring = {
   type: "spring",
@@ -183,95 +183,92 @@ function ProjectCard({
         scale: isHovered ? 1.01 : 1,
       }}
       transition={smoothSpring}
-      className="group relative h-full min-h-[300px] w-full cursor-pointer overflow-hidden rounded-[20px]"
+      className="group relative h-full min-h-[300px] w-full cursor-pointer"
     >
-      <motion.img
-        src={project.image}
-        alt={project.title}
-        loading="lazy"
-        animate={{
-          scale: isHovered ? 1.06 : 1.02,
-          filter:
-            isAnyHovered && !isHovered
-              ? "brightness(0.3) grayscale(80%)"
-              : "brightness(0.85)",
-        }}
-        transition={smoothSpring}
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-
-      <motion.div
-        animate={{
-          opacity: isHovered ? 1 : 0.6,
-        }}
-        transition={{ duration: 0.5 }}
-        className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent"
-      />
-
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-30 transition-opacity duration-700 group-hover:opacity-60" />
-
-      <div className="pointer-events-none absolute inset-0 z-10 rounded-[20px] border border-white/10 transition-opacity duration-500 group-hover:opacity-0" />
-
-      <TracingBorder
-        active={isHovered}
-        radius={20}
-        gradientId={`bs-trace-${project.id}`}
-        color="#2E5BFF"
-      />
-
-      <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-10">
-        <motion.div
+      <div className="relative h-full w-full overflow-hidden rounded-[20px]">
+        <motion.img
+          src={project.image}
+          alt={project.title}
+          loading="lazy"
           animate={{
-            opacity: isHovered ? 0 : 1,
-            y: isHovered ? -10 : 0,
+            scale: isHovered ? 1.06 : 1.02,
+            filter:
+              isAnyHovered && !isHovered
+                ? "brightness(0.3) grayscale(80%)"
+                : "brightness(0.85)",
           }}
           transition={smoothSpring}
-          className="flex items-start justify-between"
-        >
-          <div>
-            <h3 className="text-2xl font-medium tracking-tight text-white md:text-3xl">
-              {project.title}
-            </h3>
-          </div>
-        </motion.div>
+          className="absolute inset-0 h-full w-full object-cover"
+        />
 
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 30,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                y: 15,
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 120,
-                damping: 20,
-              }}
-              className="max-w-md"
-            >
-              <p className="mb-4 inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-[0.3em] text-xs font-medium uppercase tracking-[0.3em] text-transparent">
-                Featured Case
-              </p>
+        <motion.div
+          animate={{
+            opacity: isHovered ? 1 : 0.6,
+          }}
+          transition={{ duration: 0.5 }}
+          className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent"
+        />
 
-              <h3 className="text-4xl font-semibold tracking-tight text-white md:text-5xl lg:text-6xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-30 transition-opacity duration-700 group-hover:opacity-60" />
+
+        <div className="pointer-events-none absolute inset-0 z-10 rounded-[20px] border border-white/10 transition-opacity duration-500 group-hover:opacity-0" />
+
+        <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-10">
+          <motion.div
+            animate={{
+              opacity: isHovered ? 0 : 1,
+              y: isHovered ? -10 : 0,
+            }}
+            transition={smoothSpring}
+            className="flex items-start justify-between"
+          >
+            <div>
+              <h3 className="text-2xl font-medium tracking-tight text-white md:text-3xl">
                 {project.title}
               </h3>
+            </div>
+          </motion.div>
 
-              <p className="mt-5 text-sm font-light leading-relaxed text-zinc-300 md:text-base">
-                {project.description}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <AnimatePresence>
+            {isHovered && (
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  y: 30,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: 15,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 120,
+                  damping: 20,
+                }}
+                className="max-w-md"
+              >
+                <p className="mb-4 inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-[0.3em] text-xs font-medium uppercase tracking-[0.3em] text-transparent">
+                  Featured Case
+                </p>
+
+                <h3 className="text-4xl font-semibold tracking-tight text-white md:text-5xl lg:text-6xl">
+                  {project.title}
+                </h3>
+
+                <p className="mt-5 text-sm font-light leading-relaxed text-zinc-300 md:text-base">
+                  {project.description}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
+
+      {isHovered && <SpecularBorder radius={20} />}
     </motion.div>
   );
 }

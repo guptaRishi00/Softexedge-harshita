@@ -7420,3 +7420,90 @@ tsc ✓, biome-format clean, served /home 200: 10 margin-class spans, 0 old trac
   bare `viewport={{ once: true }}`, which is the safe default here.
 - `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome 3 on Footer = unchanged
   from its HEAD baseline.
+
+## 2026-07-27 — SpecularBorder: removed the "round and round" circling
+- `src/components/ui/SpecularBorder.tsx`: the update loop's fallback branch
+  `: idleAngle` replaced with a fixed `REST_ANGLE` base, so the target is now always
+  `base + sin(idleAngle) * SWAY`. Added `const REST_ANGLE = 2.4` and reused it for the
+  initial angle/idleAngle and the reduced-motion frame (it was a magic 2.4 in three
+  places).
+- CAUSE, proven by simulating the loop rather than eyeballing: when `pointerAngle` is
+  still null (no pointermove since mount — and the component MOUNTS on hover), the
+  target was the free-running `idleAngle`, which increments forever. At the current
+  speed 1.2 that swept **1235 deg in 20s = 3.43 full revolutions** — literally round and
+  round. `idleAngle` is now only the sway PHASE, never the target itself.
+- MY OWN EARLIER CHANGES MADE IT WORSE: raising `speed` 0.35 -> 0.7 -> 1.2 across the
+  two "increase the speed" tasks tripled the revolution rate of exactly this branch.
+- VERIFIED against the shipped code, both branches: stationary pointer 62.1 deg swept
+  (0.17 rev) and pointer held at 1.0 rad 62.1 deg (0.17 rev) — identical and bounded,
+  matching the sway amplitude of 63 deg peak-to-peak. Unbounded rotation is now
+  impossible because the only term that grew without limit is no longer the target.
+- KEPT AS-IS per the request ("apart from that all the movement and effect is good"):
+  pointer following, the sway, `speed` 1.2, `SWAY` 0.55, intensity 2.5, thickness 3.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome 0 on the file.
+
+## SpecularBorder on blog cards (BlogListSection)
+- REQUEST: same border hover effect as WorkProjectShowcase's project cards, on
+  `BlogListSection`'s cards -> `src/components/blog/BlogCard.tsx` (its only consumer).
+- STRUCTURAL DIFFERENCE from ProjectCard, the reason this wasn't a one-line import
+  swap: BlogCard's scaling `motion.div` WAS the `overflow-hidden rounded-[20px]` card,
+  so there was no unclipped mount point — a SpecularBorder dropped in there would have
+  had its `-inset-5` bloom cut off exactly at the border it is drawing. Split it the
+  same way ProjectCard is: outer `motion.div` keeps scale + hover handlers + `group`
+  and is `overflow: visible`; a new inner div carries the clip, radius, bg, border.
+- `hover:bg-zinc-900` -> `group-hover:bg-zinc-900` since the hover target moved out.
+- REPLACED `TracingBorder` (its 8 other importers are untouched).
+- Mounted as `{isHovered && <SpecularBorder radius={20} />}`, matching ProjectCard, so
+  only the hovered card holds a WebGL context — BlogListSection renders up to 6 cards
+  and browsers cap concurrent contexts at ~8-16.
+- VERIFIED in-pane at 1280px, /blog: card box 374x600 and radius 20px UNCHANGED by the
+  split, new wrapper is `overflow: visible` and exactly the same 374x600 box. Real
+  pointer hover (ref-based; coordinate hover needs a screenshot, which this pane can't
+  take) -> host span 374x600 = the card box exactly, canvas 414x640 = card + 2*20px PAD,
+  live webgl2, and exactly 1 canvas on the page. Moving to another card moved the
+  context with it, still 1 total — no leak.
+- Bloom fits the layout: grid gap is 24px (32px md) vs a 20px bloom, so neighbouring
+  cards can't clip it. Section `overflow-hidden` with `px-4` clips ~4px of the outer
+  glow on the outermost cards at mobile widths only (desktop `px-10` is clear); the
+  border line itself is unaffected. Left alone as out of scope.
+- Console showed parse errors for BlogCard — buffered from the intermediate state
+  between the two structural edits (they cite a 134-line file; current is 136). No
+  build-error overlay after reload, cards render, hover works.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome on the file: 0 errors,
+  1 pre-existing `noImgElement` warning on the untouched `<img>`.
+- NOT verified in-pane (unchanged limitation): the motion itself — rAF is frozen here.
+
+## SpecularBorder on brand-strategy ProjectShowcase cards
+- REQUEST: same border hover effect as WorkProjectShowcase's cards, on the brand-strategy
+  page's `ProjectShowcase` -> `src/components/brand-strategy/ProjectShowcase.tsx` (the
+  card is a local `ProjectCard` at the bottom of that same file).
+- SAME CLIP PROBLEM as BlogCard, plus one extra: the card root was BOTH the
+  `overflow-hidden rounded-[20px]` box AND the flex item whose `flex` framer animates
+  (1.4/1.7/2 -> 4 on hover). Split it: outer `motion.div` keeps `flex` + `scale` + hover
+  handlers + `group`, is `overflow: visible`, and stays the flex item; new inner
+  `relative h-full w-full overflow-hidden rounded-[20px]` carries the clip.
+- REPLACED `TracingBorder` with `{isHovered && <SpecularBorder radius={20} />}`.
+- The pre-existing `border-white/10` overlay with `group-hover:opacity-0` still fades
+  correctly with `group` moved to the wrapper — VERIFIED by killing the transition and
+  reading the target value: hovered card 0, idle card 1. (Reading it live gives 1 on
+  both because CSS transitions are frozen in this pane — do not trust the live value.)
+- VERIFIED in-pane at 1280px, /brand-strategy: all 5 cards have wrapper box == inner box
+  exactly, wrapper `overflow: visible`, radius 20px. Real pointer hover -> host span ==
+  card box (379x300), canvas 419x340 = card + 2*20px PAD, live webgl2, exactly 1 canvas.
+  Hovering a wider card (580x300) moved the context with it, canvas 620x340, still 1
+  total — sizing is per-card, no leak.
+- NOT VERIFIED, AND THE ONE THING TO EYEBALL: that the border TRACKS the card while its
+  flex width animates 1.4 -> 4. This is the first card where layout width (not just
+  transform) changes while the border is mounted, so it depends on SpecularBorder's
+  ResizeObserver. Tried to test it; canvas stayed 620 while the host was forced to 900.
+  PROVED that is a pane artifact, not a defect, with a CONTROL: a plain ResizeObserver
+  on a plain div never fired here either — not even its initial delivery — and rAF never
+  ran, because the pane isn't compositing frames. RO delivery is part of the rendering
+  steps, so it cannot be exercised here at all.
+  (Note ogl's `setSize` writes INLINE px on the canvas, which beats the `[&_canvas]:w-full`
+  class — so canvas size is JS-driven and RO is genuinely load-bearing here.)
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome on the file: 0 errors,
+  2 PRE-EXISTING warnings (unused `React` import, `<img>`) left untouched.
+- LEFT ALONE: 7 sibling `*/ProjectShowcase.tsx` (ai-marketing-automation, app-development,
+  custom-software, digital-marketing, ui-ux-design, video-production, web-development)
+  are near-identical copies still on TracingBorder. Only brand-strategy was requested.
