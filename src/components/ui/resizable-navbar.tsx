@@ -7,6 +7,7 @@ import {
   useMotionValueEvent,
   useScroll,
 } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -254,9 +255,11 @@ export const NavItems = ({
                         >
                           {sub.image && (
                             <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
-                              <img
+                              <Image
                                 src={sub.image}
                                 alt={sub.name}
+                                fill
+                                sizes="(max-width: 768px) 50vw, 25vw"
                                 className="h-full w-full object-cover  scale-105 transition-transform duration-700 ease-out group-hover:scale-100"
                               />
                             </div>
@@ -360,8 +363,8 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
   return (
     <div
       className={cn(
-        "relative z-50 mx-auto flex w-full flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden transition-all duration-300",
-        visible && "bg-white/90 backdrop-blur-md",
+        "relative z-50 mx-auto flex w-full flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden transition-colors duration-300",
+        visible && "bg-white",
         className,
       )}
     >
@@ -387,14 +390,31 @@ export const MobileNavHeader = ({
   return (
     <div
       className={cn(
-        "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4 transition-all duration-300",
+        // Opaque instead of translucent+blurred, and transition-colors instead
+        // of transition-all. This bar is `fixed`, so a backdrop-filter forces
+        // the browser to re-sample and re-blur whatever scrolls beneath it on
+        // every frame — and on /home what sits beneath is the hero's own
+        // full-screen backdrop-blur over a playing video, so the two nest.
+        "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4 transition-colors duration-300",
         visible
-          ? "bg-white/90 backdrop-blur-md border-b border-black/5 shadow-xl"
+          ? "bg-white border-b border-black/5 shadow-xl"
           : "bg-transparent",
         className,
       )}
     >
-      {children}
+      {/* Same clone pattern MobileNav uses: hand `visible` to child components
+          (never to plain DOM elements, which would emit an unknown-attribute
+          warning) so the logo and the toggle can react to the white background. */}
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? typeof child.type === "string"
+            ? child
+            : React.cloneElement(
+                child as React.ReactElement<{ visible?: boolean }>,
+                { visible },
+              )
+          : child,
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { MdArrowOutward } from "react-icons/md";
 import type { BlogPost } from "@/data/blog";
@@ -58,10 +59,12 @@ export default function BlogCard({
               transition={{ ...smoothSpring, duration: 0.8 }}
               className="absolute inset-0 h-full w-full"
             >
-              <img
+              <Image
                 src={post.image}
                 alt={post.title}
                 loading="lazy"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="h-full w-full object-cover"
               />
             </motion.div>

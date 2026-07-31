@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type ImageItem = string | { src: string; alt?: string };
@@ -167,9 +168,11 @@ export default function DomeGallery({
               }}
               aria-hidden={copy > 0}
             >
-              <img
+              <Image
                 src={card.src}
                 alt={copy === 0 ? card.alt : ""}
+                fill
+                sizes="300px"
                 draggable={false}
                 className="h-full w-full object-cover"
                 style={{ filter: grayscale ? "grayscale(1)" : undefined }}

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
+import Image from "next/image";
 import { useRef } from "react";
 import type { Project } from "@/data/projects";
 
@@ -37,9 +38,12 @@ export default function ProjectHero({ project }: { project: Project }) {
             <source src={project.video} type="video/mp4" />
           </video>
         ) : (
-          <img
+          <Image
             src={project.image}
             alt={project.title}
+            fill
+            sizes="100vw"
+            priority
             className="h-full w-full object-cover"
           />
         )}

@@ -7507,3 +7507,609 @@ tsc ✓, biome-format clean, served /home 200: 10 margin-class spans, 0 old trac
 - LEFT ALONE: 7 sibling `*/ProjectShowcase.tsx` (ai-marketing-automation, app-development,
   custom-software, digital-marketing, ui-ux-design, video-production, web-development)
   are near-identical copies still on TracingBorder. Only brand-strategy was requested.
+
+## 2026-07-30 — Onboard: verify + patch map (3.03 days old, under threshold)
+Onboard. Map was 3.03 days old (stamp 2026-07-26, mtime 2026-07-27) — under 7-day threshold, so
+read + confirm vs live tree (no re-exploration). All load-bearing claims verified accurate:
+17 routes, no backend (no middleware/route.ts/"use server"), deps exact (Next 16.2.5/React
+19.2.4/Biome 2.2.0/Tailwind ^4), 8 service folders, garbage/ deleted, the 2026-07-24 component
+extraction + dead-file removal happened. Found my session's ProjectOutcomes.tsx committed + wired.
+3 DRIFT ITEMS found + PATCHED (4 edits to CODEBASE_MAP.md):
+1. WorkProjectPage row was stale — another session split the gallery: page now renders
+   <ProjectGallery galleryA> → <ProjectOutcomes> → <ProjectGallery galleryB> (gallery split at
+   :51-54, takes `images` prop not `project`). Updated the row with the real render order + the
+   new generateMetadata:23.
+2. "No per-page metadata except /blog/[slug]" was FALSE — /work/[slug] now has generateMetadata
+   too (title/description). Corrected the defect bullet.
+3. ProjectOutcomes.tsx missing from the extraction note — added. Also: file count 149→156,
+   "working tree clean"→"sometimes carries small WIP" (a 2-line WhyJoinUs tweak + stray
+   public/assets PNGs were uncommitted today).
+Stamp bumped 2026-07-26 → 2026-07-30. No source changes. Map edits only.
+
+## Perf investigation: "why does this whole project lag so much" (analysis only, no code changed)
+- MEASURED, not guessed. Caveat stated up front: the pane cannot composite frames, so
+  FPS / long tasks were NOT measurable. Diagnosis is built on measured COSTS (pixels
+  decoded per frame, blur area, byte weights, oversample factors).
+- ROOT CAUSE #1 — SIMULTANEOUS VIDEO DECODE. `career/InfiniteRow.tsx:32` wraps the row
+  items in `Array.from({length: 6})` for the marquee, and two of those items are videos.
+  Runtime on /career: **12 <video> elements, all 12 playing at once**, 6 of them
+  4096x2160 => **64.6 megapixels decoded per frame** (~1.9 Gpx/s at 30fps). Each <video>
+  gets its own decoder; 6 concurrent 4K decoders exceed most hardware decoders and fall
+  back to software => pegged CPU => everything in the tab janks.
+- ROOT CAUSE #2 — ASSET WEIGHT. `public/` is **225 MB**. `assets/video1.mp4` is
+  **49.8 MB @ 4096x2160**, used on BOTH /about and /career, displayed at 1102x620
+  (13x oversample). video5 29.6 MB (/contact), video4 10.3 MB, hero.mp4 7 MB (/home).
+  **No `poster` and no `preload` attribute anywhere in the codebase** (grep: 0 hits), so
+  they download eagerly and first paint waits on video data.
+- ROOT CAUSE #3 — HOMEPAGE HERO does two expensive things at once, both permanent:
+  * `home/Herosection.tsx:60` `absolute inset-0 z-10 backdrop-blur-xl` = blur(24px) over
+    a MEASURED 862,243 px^2 (0.94 of the viewport) sitting directly on top of an
+    autoplaying looping video => full-viewport backdrop re-blur every video frame.
+  * `home/Herosection.tsx:27-37` a rAF loop calling `ctx.drawImage(video,0,0,1920,1080)`
+    EVERY frame forever, into a canvas that `:116-121` displays at 220x118 — ~100x more
+    pixels than needed. Also `video.addEventListener("play", drawFrame)` starts a NEW
+    rAF loop on every `play` event while cleanup cancels only the last id => loops stack.
+- CONTRIBUTING — IMAGES: 66 `<img>`/`motion.img` vs only 8 files using next/image.
+  Measured on /home: `ux-store-...jpg` natural **7952x5304 (42 MP)** shown at 1280x720
+  (6.2x oversample, ~168 MB decoded RAM); `zyro-...jpg` 4284x2860; 88x55 thumbnails
+  loading 600-800px sources (9x). Local `b2.png` 8.4 MB, `b1.png` 7.7 MB.
+- CONTRIBUTING — SCROLL/PAINT: pages are 11.8-12.5 viewports tall (8.5-9k px) from the
+  `pb-[100vh]`/`-mb-[100vh]` overlap pattern; 19 backdrop-filter elements on /home;
+  33 `filter:` usages incl. brightness/grayscale animated over large images on card
+  hover (large repaints); 115 files import framer-motion; 5 use ScrollTrigger.
+- MINOR BUT PERMANENT: `layout/Footer.tsx:80` `setInterval(..., 1000)` re-renders a
+  MEASURED 150-node framer-motion subtree every second on EVERY page, building 4 fresh
+  `Intl.DateTimeFormat` per tick (measured ~1.0 ms/tick) instead of hoisting them.
+  14 `setInterval` rotators exist across the codebase.
+- DEV-vs-PROD HONESTY: the 21 MB decoded JS / 6.4 MB CSS I first measured is DEV-ONLY
+  inflation and NOT a production number — production is 3.8 MB raw JS across 47 chunks
+  in `.next/static`. If lag is being judged from `bun run dev`, part of it is dev
+  overhead. All the video/image/DOM/blur findings above are markup-level and apply to
+  production equally.
+- NO FILES CHANGED. Fix list offered to the user, ranked; awaiting go-ahead.
+
+## Pause videos when offscreen (site-wide)
+- APPROACH: ONE observer mounted once, not 8 per-component edits. `<video>` lives in 8
+  components and several are rendered many times over (career `InfiniteRow` duplicates
+  its items 6x, so 12 video elements on /career), so per-call-site wiring would have
+  meant callback refs inside `.map()`s in 8 files. Instead:
+  NEW `src/components/ui/VideoViewportPause.tsx` — one IntersectionObserver
+  (`rootMargin: 200px` so it resumes just before becoming visible) + a MutationObserver
+  on `document.body` to pick up videos mounted later (AnimatePresence, marquee copies).
+  Mounted once in `src/app/layout.tsx`, so it covers every page and every copy.
+- SAFETY RULE: only videos this component paused are ever resumed (`pausedByUs` WeakSet),
+  so a video paused for any other reason stays paused.
+- SECOND EDIT, REQUIRED TO AVOID A REGRESSION I WOULD HAVE CAUSED: `home/Herosection.tsx`
+  attached the canvas draw loop directly as the `play` listener, and cleanup cancelled
+  only the LAST rAF id. Pausing/resuming on scroll fires `play` repeatedly, so every
+  resume would have left ANOTHER concurrent 1920x1080 `drawImage` loop running. Now a
+  `startLoop` wrapper cancels any in-flight frame first, and `drawFrame` returns early
+  when paused instead of spinning a no-op frame forever.
+- VERIFIED (logic, against the REAL 12 video elements on /career):
+  discovery 12/12 from `document`; finds a video nested in a newly-added subtree (1) and
+  when the added node IS the video (1); ignores text nodes (0). Offscreen entries ->
+  playing 12 -> 0. Back onscreen -> 0 -> 12. Externally-paused video: stays paused while
+  the other 11 resume (11, victim.paused === true).
+  Hero loop, with a stubbed rAF: OLD pattern 3 play events -> **3 concurrent loops**;
+  NEW pattern -> **1**, and 0 remaining after pause. The hazard was real and is fixed.
+- VERIFIED (shipped): `rootMargin:"200px"` present in 2 production chunks under
+  `.next/static`; layout imports and renders it at :3 and :25. `bunx tsc --noEmit` exit 0;
+  `bunx next build` exit 0; biome on the 3 files: only 2 PRE-EXISTING diagnostics, both on
+  `Herosection.tsx:12` `({}: any)` — proved pre-existing via `git show HEAD:` (byte
+  identical) and the diff never touches line 12.
+- NOT VERIFIED — END-TO-END SCROLL BEHAVIOUR, and why (three independent blockers, each
+  proven, not assumed): (1) the Browser pane delivers **ZERO** IntersectionObserver
+  callbacks — control: a plain IO on a plain div fired 0 times, not even initial delivery,
+  because the pane is not compositing frames; (2) the only connected real Chrome is a
+  REMOTE macOS device (`isLocal: false`) which cannot reach this Windows localhost;
+  (3) no Playwright/Puppeteer installed anywhere, and adding one needs the user's OK.
+  So what is unverified is only that the browser DELIVERS the callbacks — standard
+  browser behaviour — not the decision logic, which is tested above.
+- EXPECTED WIN (unmeasured for the reason above): /career should drop from 12 videos
+  playing / 64.6 MP decoded per frame to only the copies actually visible. IO clips
+  against ancestor overflow per spec, so marquee copies translated outside the strip
+  count as non-intersecting.
+
+## InfiniteRow: duplicate the wrapper, not the video
+- REQUEST: the career marquee repeated its whole item list 6x, so the video was rendered
+  6x per row (12 <video> elements site-page-wide). Wanted shape per row:
+  [video, image, image, image, image, image] — real video in the first copy only.
+- WHY THE 6 COPIES MUST STAY: `InfiniteRow` animates x by exactly `-16.666667%` (= 1/6 of
+  the track), so a seamless loop REQUIRES 6 copies of identical width. Dropping the video
+  from the repeats is only safe because `CarouselCard` is a fixed box
+  (`h-[160px] sm:h-[200px] md:h-[260px] aspect-[4/5]`) for EVERY item type — swapping a
+  video for an image cannot change a copy's width. VERIFIED below, not assumed.
+- CHANGED (3 files):
+  * `CarouselCard.tsx` — video variant gains optional `still`; new `stillOnly` prop renders
+    `<img src={still}>` instead of the `<video>`. Falls back to the video when `still` is
+    missing, so a forgotten `still` degrades to old behaviour, not a blank card. Extracted
+    `IMAGE_CLASS` so the two <img> branches share one class string.
+  * `InfiniteRow.tsx` — one line: `stillOnly={loopIndex > 0}`.
+  * `CareerHeroSection.tsx` — hoisted each row's existing Unsplash URL to `col1Still` /
+    `col2Still` and reused it as the video's `still` (no new remote URL invented, so it is
+    guaranteed to resolve). NOTE: no ffmpeg on this machine, so a real poster frame of the
+    videos could not be extracted — comment in the file says to swap these in later.
+- VERIFIED at runtime on /career (DOM counting needs no rAF/IO, so the pane CAN prove this):
+  * `videosPerCopy: [1,0,0,0,0,0]` on BOTH tracks — literally the requested shape.
+  * <video> elements 12 -> **2** (one video1.mp4, one video2.mp4). Playing: 2.
+  * Video megapixels decoded per frame **64.6 -> 10.8** (6x less). The residual 8.8 is
+    video1's untouched 4K encode.
+  * SEAMLESS LOOP INTACT: all 6 copies exactly 660px, track 3960 = 660*6, so
+    `oneCopyIsExactlyOneSixth: true` — the -16.666667% shift still lands exactly one copy
+    over. All 18 cards in a track measure an identical 208x260.
+  * Stills all decode: 22 marquee <img>, 0 broken, col1Still x11 + col2Still x11.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0.
+- LINT, HONESTLY: biome exits 1 on `InfiniteRow.tsx:33` `noArrayIndexKey` — PRE-EXISTING,
+  proved byte-identical at `git show HEAD:` and my only diff there is the `stillOnly` prop.
+  I DID add one NEW `noImgElement` WARNING (CarouselCard <img> count 1 -> 2), matching the
+  file's existing idiom and the codebase's 59 `<img>` convention.
+
+## Replace raw <img> with next/image site-wide
+- SCOPE: 65 files, 67 image elements (59 `<img>` + 8 `<motion.img>`). 64 files converted;
+  ONE deliberately left (see below). Specialists: 8 parallel `frontend-developer` agents,
+  batched BY COMPONENT TYPE (not by directory) because the 8 service dirs are near-identical
+  copies — so one recipe applied consistently to all 8 copies of each component. Disjoint
+  file sets, so no edit conflicts. I did the risk analysis, the config, and all verification.
+- PREREQUISITE FOUND BEFORE EDITING ANYTHING: `i.pravatar.cc` (48 avatar uses across the 8
+  CtaSection files) was NOT in `next.config.ts` remotePatterns — converting those would have
+  thrown at runtime. Added it. Other checks cleared: no `.svg` srcs (optimizer rejects SVG
+  without `dangerouslyAllowSVG`); the vendor-domain hits (nextjs.org, tailwindcss.com, ...)
+  are bare origins used as LINKS, not image srcs; `sharp` 0.34.5 already installed, so NO
+  new dependency was needed.
+- RECIPE: FILL mode (`fill` + `sizes`) where the img filled its parent, FIXED mode
+  (`width`/`height`) where it had fixed pixel sizing. Agents had to verify a positioned
+  ancestor for every `fill`; only ONE `relative` was added anywhere (work/NextProject.tsx).
+  `priority` added ONLY to genuinely above-the-fold heroes: the 8 StrategyHeroSection
+  rotators (`priority={index === 0}` — index 0 is the initially-visible one) and
+  work/ProjectHero. Everything else stays lazy.
+- `motion.img` -> `const MotionImage = motion.create(Image)` (framer-motion 12.38 supports it)
+  in the 8 ProjectShowcase files, preserving the animated `scale` + `filter` props.
+- LEFT AS `<img>` — `src/components/ui/LogoLoop.tsx:385`, deliberately. It measures
+  `seqRef.getBoundingClientRect().width` to derive loop distance AND copy count, and
+  re-measures on every image `load`; its images are `h-[var(--logoloop-logoHeight)] w-auto`
+  so there is no fixed pixel width to supply, making FIXED mode inexpressible and bare
+  `fill` actively wrong (unpositioned auto-width `<li>` would collapse to 0). The `<img>`
+  branch is also currently dead code — the only caller passes `node`-based items — so
+  converting would have turned dead code into a runtime throw. Correct call.
+- VERIFIED — BUILD/TYPES/LINT: `bunx tsc --noEmit` exit 0. `bunx next build` exit 0 from a
+  CLEAN `.next` (I deleted the whole dir and rebuilt twice). Biome: errors **145, UNCHANGED**
+  from the session baseline; warnings **115 -> 49**, and 115 - 66 = 49 exactly, i.e. the drop
+  is precisely the 66 eliminated `noImgElement` warnings. Exactly 1 `noImgElement` remains
+  (LogoLoop). Only 1 raw `<img>` left in the whole codebase.
+- VERIFIED — UI UNCHANGED, by comparing a rendered-geometry frequency map (box size +
+  object-fit per image) captured BEFORE the change against AFTER, at a pinned 1280x800:
+  * /home: 26 images, ALL buckets identical.
+  * /career: 44 images, ALL 9 buckets identical.
+  * /brand-strategy: 82 images, 7 of 10 buckets identical; 3 differ by <=1px (52->53,
+    561->560, 581->580) in percentage-sized elements — sub-pixel rounding, NOT verified
+    further (see below).
+- VERIFIED — PIPELINE ACTUALLY WORKS: on /career all 44 images loaded, **0 failed**, and all
+  44 were served through `/_next/image`. Optimizer probed directly per host: i.pravatar.cc
+  (the newly allowlisted one) 200, images.unsplash.com 200, plus.unsplash.com 200, local
+  asset 200.
+- MEASURED WIN on the heaviest assets from the earlier perf audit, at w=1920 q=75:
+  ux-store...jpg 4.21MB -> 131KB (**33x**), zyro...jpg 1.38MB -> 135KB (10x),
+  b1.png 7.71MB -> 518KB (15x).
+- TWO FALSE ALARMS, both diagnosed rather than assumed: (1) a build failure in
+  `.next/dev/types/validator.ts` ("Cannot find name 'ore'") was a CORRUPTED generated file
+  written by the running dev server mid-build — cleared and rebuilt clean; (2) `/` and
+  `/home` 404ing on the dev server was stale dev state after I removed `.next/dev/types`
+  under a live server — a from-scratch `next build` lists both routes, exit 0.
+- I KILLED THE DEV SERVER during verification by forcing 82 images eager at once, making
+  sharp resize dozens of multi-megapixel sources simultaneously. Worth knowing: first-hit
+  optimization of these oversized originals is genuinely expensive. Restarted; unrelated to
+  correctness of the change, but a real signal that the SOURCE assets are still far too big.
+- NOT VERIFIED, stated plainly: (a) hover animation of the `motion.create(Image)` cards —
+  needs real frames, and this pane does not composite; (b) the <=1px /brand-strategy deltas —
+  the pane navigated away mid-check twice. Note the same page's logo measured 90x32 -> 90x35
+  -> 90x32 across three reads purely from load state, which is direct evidence that
+  sub-pixel readings here fluctuate; (c) native lazy loading never triggers in this pane at
+  all (every `currentSrc` was empty until forced eager), so lazy behaviour itself is untested.
+- ONE THING TO WATCH: `home/PortfolioSection.tsx:311` got `src={project.image as string}`
+  because the `projects` literal widens `image` to `string | undefined`. I checked the data:
+  all 4 non-video entries have an image and the only video entry takes the `<video>` branch,
+  so it is safe TODAY — but the cast is a latent trap (`<img>` silently rendered nothing with
+  an undefined src; `<Image>` throws). A typed `Project` union would be the real fix.
+
+## AboutSection (homepage) — mobile-only refinements, desktop frozen
+- CONSTRAINT: desktop must not change at all. Every edit is therefore a `max-md:` addition
+  (mobile-only), with ONE exception: the h1's base `text-4xl` -> `text-3xl`, which is safe
+  because `md:text-6xl lg:text-[3.5rem]` already override it at >=768px. Verified, not assumed.
+- CHANGES (all in `src/components/home/AboutSection.tsx`, mobile only):
+  * top margin: section `py-10` + `max-md:pt-4` (40px -> 16px)
+  * x padding: `max-md:px-3` AND removed the inner card's `max-md:p-5` — together the
+    effective inset goes 36px (16 section + 20 card) -> **12px, exactly matching the hero**
+    (hero wrapper is `px-3 pt-3` in `src/app/home/page.tsx:149`). Measured both.
+  * border: removed `max-md:border max-md:border-black/10`. Also removed the rest of the
+    mobile card chrome — `max-md:rounded-2xl` and `max-md:shadow-sm` — because with the
+    border and padding gone, a full-bleed rounded+shadowed block reads as a broken card.
+    Kept `max-md:bg-white` (identical to the section bg, so visually inert). FLAGGED: this
+    is slightly beyond the literal "remove the border" ask.
+  * tag `max-md:text-xs` (14->12) + `max-md:mb-4`; title base `text-3xl` (36->30) +
+    `max-md:gap-x-2.5`; description `max-md:text-base` (20->16) + `max-md:mt-6/space-y-4`
+  * image column: `max-md:pt-0` (40->0) and grid `max-md:gap-8` (64->32) — the grid row-gap
+    was the dominant contributor to the image's top offset on mobile, not the padding
+  * CTA: `max-md:h-12` (64->48), `max-md:gap-3`, `max-md:pr-2`, label `max-md:text-base`
+    (18->16), icon box `max-md:h-9 max-md:w-9 max-md:rounded-lg` (44->36)
+- VERIFIED by computed-style diff against a BEFORE baseline captured at both widths:
+  * DESKTOP (fresh load, 1280, `matchMedia('(min-width: 768px)')` true): **16/16 fields
+    identical**, including section height 680px. Zero differences.
+  * MOBILE (390): padTop 40->16, tag 14->12, h1 36->30, desc 20->16, border 1px->0,
+    effective x-pad 36->12 (= hero's 12, asserted equal), grid gap 64->32, image padTop
+    40->0, CTA 64->48 / text 18->16 / icon 44->36, section height 977->821.
+- TWO PANE ARTIFACTS DIAGNOSED, NOT GUESSED (both initially looked like real bugs):
+  1. The CTA's `max-md:` classes appeared not to apply at all. Cause: STALE dev CSS — the
+     classes were in the DOM and the media query was active, but no rule existed. A
+     cache-busted reload made all three apply (48px/12px/8px). Same HMR staleness pattern
+     seen earlier this session.
+  2. After resizing 390 -> 1280 the desktop CTA measured 48px/12px, i.e. mobile values
+     apparently leaking to desktop. Cause: the CTA has `transition-all duration-300`, and
+     CSS transitions never advance in this non-compositing pane, so the property stays
+     FROZEN at its pre-resize value. Setting `transition: none` returned the true target,
+     64px/20px. Confirmed independently by a fresh desktop-width load (16/16 identical).
+     LESSON for future measuring here: never trust a computed value on a transitioned
+     property after a viewport resize — disable the transition or load fresh at the width.
+- `bunx tsc --noEmit` exit 0. Biome on the file: 1 error, `noArrayIndexKey` at the
+  `.split(" ").map((word, index) => key={index})` block — PRE-EXISTING, byte-identical at
+  `git show HEAD:` (line 137 there), untouched by this change.
+
+## LogoLoop — the last remaining <img> converted (completes the next/image migration)
+- CONTEXT: this task repeats an earlier one. Checked state first instead of redoing it:
+  66 of 67 image elements were already converted; exactly ONE raw `<img>` remained —
+  `src/components/ui/LogoLoop.tsx:385` — which I had deliberately skipped last time.
+- WHY IT WAS SKIPPED, AND WHAT CHANGED: the earlier reasoning was (a) the component
+  measures widths, (b) `width`/`height` were OPTIONAL so next/image would throw at runtime.
+  Re-examined: (a) is a NON-issue — its image-load hook uses `querySelectorAll("img")`, and
+  next/image renders a real `<img>`, so it still matches. (b) was the actual blocker, and is
+  fixable by tightening the type rather than by avoiding the conversion.
+- CHANGED: `<img>` -> `<Image>`; `width`/`height` made REQUIRED on the `src` variant of
+  `LogoItem` (next/image needs intrinsic dimensions; `fill` is wrong here because the `<li>`
+  is auto-width and unpositioned, which would collapse the logo and zero the measured
+  sequence width); dropped `srcSet` from the type and the element since next/image generates
+  its own srcset and does not accept the prop. `sizes`, `alt`, `title`, `loading`,
+  `decoding`, `draggable` and the full `className` are unchanged.
+- NO UI CHANGE IS POSSIBLE HERE, and this is measured rather than argued: the `src` branch is
+  DEAD CODE. The only caller is `src/app/home/page.tsx:161` passing `node`-based items
+  (react-icons). Runtime on /home: LogoLoop mounts, `--logoloop-logoHeight` 28px, sequence
+  width 472px (non-zero, so measurement still works), 4 copies x 4 items, and **16 SVGs with
+  0 `<img>` inside the loop** — the converted branch never renders.
+- Making width/height required is a compile-time-enforced API tightening, not a silent
+  break: no current caller uses the `src` variant, and `tsc` passes.
+- VERIFIED: `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome `noImgElement`
+  warnings **1 -> 0**; biome errors **145, unchanged** from baseline; warnings 49 -> 47.
+  `grep -rn "<img\|motion\.img" src` now returns **NOTHING** — zero raw img tags in the
+  codebase. Homepage image count at desktop is 26, matching the pre-migration baseline.
+- FALSE ALARM diagnosed: /home first showed 19 images instead of the 26 baseline. Cause —
+  the pane was still at 390px from the previous task, and AboutSection conditionally renders
+  desktop-only nodes behind an `isDesktop` check. At 1280 it is 26, exactly the baseline.
+- CAVEAT for future use of this component (not a problem today): a `src`-variant logo on a
+  host outside `next.config.ts` remotePatterns will now throw at runtime, where a raw
+  `<img>` would simply have loaded. Add the host, or pass `unoptimized`, if that path is
+  ever used.
+
+## LogoLoop — remove the white edge fades on mobile only (homepage)
+- REQUEST: homepage LogoLoop, mobile only — drop the white fade at the edges. Desktop frozen.
+- The fade is two `aria-hidden` gradient overlays rendered when `fadeOut` is set. Homepage
+  passes `fadeOut` + `fadeOutColor="#ffffff"` (`src/app/home/page.tsx:161`) and
+  `direction="left"`, so it is the HORIZONTAL pair (left/right) that renders — the vertical
+  pair is a dead branch here and was left untouched.
+- CHANGE: added `"max-md:hidden"` to those two overlays in `src/components/ui/LogoLoop.tsx`.
+  Two lines. No API change, no prop added.
+- SCOPE NOTE: LogoLoop is a shared `ui/` primitive, but `src/app/home/page.tsx` is its ONLY
+  consumer (verified by grep), so hiding the fades below `md` cannot affect any other page.
+  Flagged because a future consumer would inherit this behaviour.
+- VERIFIED at 390px (cache-busted load, since stale dev CSS has bitten this session):
+  both overlays `display: none`, 0x0, `max-md:hidden` present on both.
+- VERIFIED at 1280px (fresh load): both overlays still `display: block`, **87px wide**, white
+  `linear-gradient(to right/left, rgb(255,255,255) 0%…)` — width, display and gradient all
+  identical to the pre-change baseline.
+- ONE APPARENT DESKTOP DELTA, PROVEN NOT MINE: fade height read 38 -> 37. The overlays are
+  `absolute inset-y-0`, so their height is just the container's. Ran the decisive test —
+  toggled the overlays' display off and back on at desktop: container height stayed
+  **36.8px in all three states** (with / hidden / restored). Absolutely-positioned children
+  are out of flow and cannot contribute to their container's height, so this change is
+  provably not the cause; the container itself measured ~37.5 earlier and 36.8 now, i.e. a
+  load-state/sub-pixel difference in the logo row, same artifact family logged earlier.
+- Marquee intact: sequence width 472px, unchanged.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; biome on the file exit 0.
+
+## 2026-07-31 — Hero canvas: draw at display size, not 1920x1080 (perf)
+Task: the hero pill canvas was doing a full-resolution drawImage every frame. Confirmed at
+`home/Herosection.tsx:32-37` — it set `canvas.width = video.videoWidth` (1920x1080) then
+`drawImage(video,0,0,canvas.width,canvas.height)`, i.e. ~2.07M destination pixels/frame
+scaled down to a <=220px pill.
+FIX (1 file): added `sizeCanvas()` — backing store = 220 CSS px (the xl max) x DPR (capped 2),
+height DERIVED from the video so the store keeps the video's aspect ratio. drawFrame now calls
+it then draws at the small size.
+TWO DELIBERATE DEVIATIONS from the request's literal numbers, both to satisfy its own
+"same appearance" requirement:
+ (a) height 124, not 118. The canvas element has FIVE different aspect ratios across
+     breakpoints (80x48, 112x64, 150x80, 200x106, 220x118) and CSS `object-cover` does the
+     cropping against a 16:9 backing store. Hard-coding 220x118 (1.864) would have STRETCHED
+     the 16:9 frame ~5%. Deriving height (220/1.7778 = 124) keeps the intrinsic aspect, so
+     object-cover crops exactly as before at EVERY breakpoint = provably no visual change.
+ (b) x devicePixelRatio (capped 2). A flat 220px store on a retina screen would be upscaled
+     and look soft — today's 1920 store was effectively supersampled. DPR keeps it crisp.
+VERIFIED (numbers, not vibes) by running the exact formula against the live 1920x1080 video in
+the browser: backing store 220x124, 27,280 px/frame vs 2,073,600 = **76x fewer**; backingAspect
+1.7742 vs videoAspect 1.7778 -> aspectPreserved true; drewRealFrame true (luma range 0-255, so
+it painted a real frame, not blank). tsc 0 ✓; biome format clean; `bun run build` ✓.
+The 2 biome lint findings in this file (noExplicitAny / noEmptyPattern, line 12 `({}: any)`)
+are PRE-EXISTING — confirmed byte-identical to `git show HEAD:` line 12; the map already lists
+them under "Loose types".
+ENV LIMIT hit: could not observe the live loop — rAF never fires in the Browser pane (video
+reached paused:false + readyState:4 yet the backing store stayed at the 300x150 default across
+a 1.5s poll), consistent with the frozen-renderer note in memory. So the draw loop's *execution*
+is unverified in-browser; the formula, the aspect math and drawImage itself are verified.
+Worth a real-browser glance at the hero pill. 1 file. Not committed.
+
+## 2026-07-24 — Home hero: backdrop-blur over 4K video → filter-blur on the video layer
+home/Herosection.tsx: the frosted hero backdrop was a full-viewport `backdrop-blur-xl` div
+(absolute inset-0 z-10) over the autoplaying hero.mp4 — backdrop-filter re-captures + re-blurs
+the whole viewport every frame over the moving video (the reported GPU cost). The overlay sat
+over ONLY the video (nothing else between them), so blurring the video directly = same pixels.
+FIX: removed the backdrop-blur overlay; put `blur-xl` (filter: blur(24px), same radius as
+backdrop-blur-xl) + `scale-110` on the <video>. filter is a single-layer post-process on the
+video's own compositor layer — no per-frame full-scene backdrop readback. scale-110 pushes the
+~24px filter edge-bleed under the container's rounded overflow-hidden clip (else the fade-to-
+transparent edges would show a dark vignette). Chose blurring the one video over a duplicated
+2nd <video> to avoid a second decode; the canvas pill stays sharp because ctx.drawImage reads
+raw decoded frames, which CSS filters never touch.
+Verified live /home (computed styles): video filter=blur(24px), backdrop-filter=none,
+scale=1.1; canvas filter=none (pill sharp); container overflow hidden / radius 20px; video
+overhangs container 62px x / 35px y each side > 24px bleed = no vignette. Only remaining
+backdrop-blur on the page = the small PortfolioSection tag <span> pills (blur 12px) — tiny
+regions, not over moving video, explicitly in-scope-to-keep. tsc 0; biome 1 error/1 warning
+both pre-existing on line 12 (({}: any)). Frosted appearance itself needs user's eyes (pane
+screenshots time out on the video page). Not committed.
+
+## PortfolioSection — black panel backgrounds on mobile (regression from my own img->Image migration)
+- SYMPTOM (user screenshot, mobile): project panels render as flat black; the project image
+  is missing. Desktop fine.
+- ROOT CAUSE, and it was MINE: the img->next/image migration changed
+  `<img className="h-full w-full object-cover">` (no `loading` attribute, i.e. EAGER) into
+  `<Image fill sizes="100vw">`, and **next/image defaults to `loading="lazy"`**. The panel
+  background is the panel's entire visual, so a deferred load renders a black box. Confirmed
+  by diffing against HEAD: the loading attribute is the ONLY behavioural difference.
+- RULED OUT, with evidence, before changing anything: the boxes are correct (holder and img
+  both 390x591, position absolute, z-index -20 — layout is fine); the URLs are healthy —
+  `/_next/image?...&w=640&q=75` returns **200 / ~25KB in 118-580ms** for all three sources;
+  and inside the page a brand-new `new Image()` with the SAME url loaded fine (640x427),
+  as did `fetch()` (200, 27235 bytes). So neither the optimizer, the allowlist, the `as
+  string` cast, nor the layout was at fault — only the deferral.
+- FIX: `loading="eager"` on that Image. One line + comment.
+- HONEST SCOPE NOTE — this is NOT mobile-only, and it cannot be: `loading` is an HTML
+  attribute, not a CSS breakpoint, so it has no `max-md:` form. The component's
+  `useIsDesktop()` starts `false` and only flips in an effect, so `loading={isDesktop ?
+  "lazy" : "eager"}` would still emit `eager` in the SSR HTML for desktop — buying nothing
+  over the simple fix while adding a hook dependency. Crucially, eager is exactly what
+  desktop had BEFORE my migration, so this restores desktop's original loading behaviour
+  rather than changing it, and desktop RENDERING is verified untouched.
+- VERIFIED, mobile 390px (cache-busted load, no forcing):
+  BEFORE the fix 0/4 panel images loaded — and they stayed unloaded even after being forced
+  to `eager` via JS for 12s. AFTER the fix **4/4 load unprompted**, natural sizes present
+  (390x260 / 390x292), boxes 390x591. `loading` attribute now `eager` on all four.
+- VERIFIED, desktop 1280px (fresh load): 5 panels at 1280x800, track `flex-direction: row`,
+  `scrollWidth 6400` (= 5 x 1280, so the horizontal scroller geometry is intact), images
+  4/4 loaded, img box 1280x800, `object-fit: cover`, `position: absolute`, holder
+  `z-index: -20`. Identical to before.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0. Biome on the file: 4 diagnostics
+  (noUnusedVariables x2 at :91/:92 — `activeIndex` and `isDesktop` are both unused,
+  pre-existing; noStaticElementInteractions :274; noArrayIndexKey :343). ALL pre-existing —
+  my diff only touches the import line and the image block (`git diff` hunks: @@ +6, @@ +310).
+- WATCH ITEM (not fixed, out of scope): `sizes="100vw"` is width-based, but these panels are
+  tall (591px high at 390 wide) with `object-cover`, so the selected candidate is chosen from
+  viewport WIDTH and can be upscaled vertically. On a DPR-3 phone it resolves to a ~1200px
+  candidate, which is fine; worth revisiting if the backgrounds ever look soft.
+
+## 2026-07-24 — Hero backdrop-blur task re-sent → confirmed already done (no change)
+Same task text as the prior entry. Re-scanned: home/Herosection.tsx already carries the
+option-1 fix (blur-xl scale-110 on the <video>, backdrop-blur-xl overlay removed); no other
+full-viewport backdrop-blur-xl over moving 4K video exists. Remaining backdrop-blur are only
+small backdrop-blur-md chip/tag pills (PortfolioSection index pill, work ProjectCard/ProjectHero
+tags) — tiny regions the task explicitly treats as fine. Flagged the nuance that filter:blur on
+a *playing* video is still per-frame (cheaper than backdrop-filter, not free) and offered to go
+further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No edit made.
+
+## CORRECTION to the previous entry — the black PortfolioSection panels were NOT my regression
+- The user pushed back on my attribution. They were right; the previous entry's root-cause
+  claim is WRONG and is corrected here.
+- WHY MY EVIDENCE WAS BAD: I concluded "next/image defaults to lazy, HEAD's <img> was eager,
+  therefore my conversion caused it" from an IN-PANE observation. But this pane never fires
+  native lazy loading AT ALL (proven earlier this session with a control: zero IO callbacks,
+  every `currentSrc` empty until forced). That is a SYSTEMATIC BIAS which makes ANY lazy
+  image look broken here regardless of how it behaves in a real browser. I mistook a known
+  pane artifact for a regression — the exact failure mode I had already logged twice.
+- WHAT I ACTUALLY TESTED THIS TIME: checked out HEAD's original file and ran it. In-pane at
+  390px it loads 4/4 with the FULL originals (natural 4284x2860 and 7952x5304). That only
+  shows eager images load in this pane; it says nothing about a real device, so it does not
+  support the regression claim either.
+- THE LIKELY REAL, PRE-EXISTING CAUSE (mobile-only, matches the report exactly): at HEAD the
+  four panel backgrounds were raw <img> loading the FULL-SIZE originals, all eager:
+    zyro  1.38 MB  4284x2860  12.3 MP  ~49 MB decoded
+    0d3a  0.10 MB  1504x1128   1.7 MP   ~7 MB decoded
+    ux-store 4.21 MB 7952x5304 42.2 MP ~169 MB decoded   <-- 42 megapixels
+    f1a3  0.11 MB  1504x1128   1.7 MP   ~7 MB decoded
+    TOTAL 5.8 MB, 57.8 MP, **~231 MB of decoded bitmap RAM**
+  Mobile browsers cap per-image megapixels and total decode memory; a 42.2 MP image is over
+  common iOS/Android limits, and ~231 MB of bitmaps across four panels invites eviction.
+  Failed/evicted decode renders as a BLACK panel — on mobile only, with desktop fine because
+  it has the headroom. That is pre-existing and predates every change I made.
+- SO THE CONVERSION HELPS, IT DID NOT HURT: with next/image the same four panels now decode
+  **0.4 MP total** (measured: natural 390x260 / 390x292, all four served via `/_next/image`)
+  versus 57.8 MP at HEAD — a ~145x reduction in decode memory, which removes the mobile
+  decode-limit failure entirely.
+- The `loading="eager"` line is KEPT, but its justification changes: not "undoing my
+  regression" — rather, a full-bleed panel background should not be deferred, and it is now
+  cheap (~25 KB per variant instead of a 4.21 MB original).
+- STATE: HEAD checkout was temporary; working file restored from scratchpad and re-verified.
+  `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; `git diff --stat` shows the intended
+  10 insertions / 2 deletions. Mobile re-checked after restore: 4/4 loaded via the optimizer.
+- LESSON, worth remembering: in this pane, "image did not load" is NEVER by itself evidence
+  of a code defect — check whether the element is lazy first.
+
+## AboutSection title — tighter line spacing on mobile only
+- MEASURED FIRST, because the obvious lever was the wrong one: the title is not a normal
+  text block, it is a `flex flex-wrap items-baseline` container of per-word `<span>`s. So the
+  visible gap between wrapped lines is **`gap-y` (row-gap)**, not `leading`. `leading-[0.9em]`
+  only sets the line box inside each span, and it was already tight (27px box at 30px text).
+  Mobile before: line boxes 27px, row-gap 8px, row-to-row 39/35px, h1 121px tall.
+- CHANGE (one class, mobile only): added `max-md:gap-y-0.5` to the h1 in
+  `src/components/home/AboutSection.tsx`. `gap-y-2` (8px) is retained for md+.
+  Left `leading-[0.9em]` alone — tightening it further at 30px would start colliding
+  descenders, and row-gap is what actually reads as the line spacing here.
+- VERIFIED mobile 390px (cache-busted load): row-gap **8px -> 2px**, row-to-row deltas
+  **39/35 -> 33/29**, h1 height **121 -> 109px**, while `font-size` (30px) and `line-height`
+  (27px) are UNCHANGED — i.e. only the inter-line spacing moved, not the type size.
+- VERIFIED desktop 1280px (fresh load): font-size 56px, line-height 50.4px, **row-gap 8px**,
+  column-gap 16px, 5 visual rows, h1 height 249.6px — all identical to the pre-change
+  baseline, and `matchMedia('(max-width: 767.98px)')` is false so the new class is inert.
+  One integer row-delta read 63 -> 62; chased it fractionally: the deltas are 62.4/58.4/58.4
+  and the height is 249.6 (baseline rounded to 250), so it is a rounding boundary landing
+  differently at a different scroll offset, not a layout change. Row-gap being provably
+  still 8px is the decisive check.
+- `bunx tsc --noEmit` exit 0. Biome on the file: 1 error, `noArrayIndexKey` at :138 — the
+  pre-existing `.split(" ").map((word, index) => key={index})` block, untouched.
+
+## AboutSection title — reduce leading on mobile (round 2)
+- First checked whether the previous round had actually reached the browser: it had
+  (live rowGap was 2px), so this was a genuine "still too loose", not stale CSS.
+- Previous round tightened `gap-y` only. This round tightens the ACTUAL leading:
+  added `max-md:leading-[0.8em]` (base stays `leading-[0.9em]`) and took
+  `max-md:gap-y-0.5` -> `max-md:gap-y-0` -> back to `max-md:gap-y-0.5` (see below).
+- MOBILE RESULT (390px): line-height **27px -> 24px**, row gap 2px, line-to-line pitch
+  **29 -> 26px**, title height **109 -> 100px**. Font size unchanged at 30px.
+  Cumulative across both rounds: pitch 35 -> 26, title 121 -> 100px.
+- OVERSHOT ONCE, AND CAUGHT IT BY MEASURING RATHER THAN EYEBALLING: `leading-[0.8em]` +
+  `gap-y-0` gave pitch 24 against an ink height of 31px (canvas
+  `actualBoundingBoxAscent 23` + `Descent 8`) = **7px of vertical overlap**. Then checked
+  whether that band actually collides by intersecting the x-ranges of descender-bearing
+  words with ascender-bearing words on the next row: "Building"(g) over "products"(d,t)
+  overlapped by **105px** horizontally, and "digital"(g) over "next"(t) by 27px — i.e. a
+  visible smash, not a theoretical one. Backed off to `gap-y-0.5`, landing at pitch 26 /
+  5px overlap. NOTE some overlap is inherent to sub-1em leading: the original design at
+  pitch 35 had none, and last round's pitch 29 already had 2px.
+- DESKTOP VERIFIED UNCHANGED (fresh 1280px load): font-size 56px, line-height 50.4px,
+  row-gap 8px, column-gap 16px, h1 height 249.6px — 5/5 identical to baseline, and
+  `matchMedia('(max-width: 767.98px)')` false so both new classes are inert.
+- DIALS, if the user wants to move it again: tighter -> `max-md:gap-y-0` (pitch 24, but
+  that is the 105px collision above); looser -> `max-md:leading-[0.85em]` (pitch ~27.5)
+  or drop the leading override to return to pitch 29.
+- `bunx tsc --noEmit` exit 0. Biome: 1 error, pre-existing `noArrayIndexKey` at :138.
+
+## LogoLoop — carousel flush to the left edge on mobile
+- SYMPTOM: on mobile the marquee started ~24px in from the left, which read as a
+  misalignment (more noticeable now that the white edge fades are hidden on mobile).
+- CAUSE, measured not guessed: the inset is exactly the wrapping section's `px-6` (24px)
+  in `src/app/home/page.tsx`. Right side was already flush because the wrapper is
+  content-width (1888px) and the section's `overflow-hidden` clips it at the viewport —
+  so only the left edge showed the padding.
+- FIX: `max-sm:-ml-6` on the LogoLoop wrapper div — cancels the section's left padding
+  in the stacked layout only. One class.
+- IMPORTANT BREAKPOINT CHOICE, and why NOT `max-md:`: this section is
+  `flex-col ... sm:flex-row`, i.e. it becomes a ROW at 640px with the "Trusted by" label
+  beside the carousel. A `max-md:` negative margin would still be active across 640-767px
+  and would drag the carousel back UNDER that label. Scoped to `max-sm` (< 640px), which
+  is exactly the stacked layout.
+- VERIFIED at three widths:
+  * 390px (stacked): left inset **24px -> 0px**, flush left, reaches the right edge (390),
+    margin-left -24px applied, and `document.scrollWidth - clientWidth = 0` so it
+    introduces NO horizontal page scroll.
+  * 700px (the sm row band — the case the breakpoint choice protects): margin-left `0px`,
+    `max-sm` inactive, carousel still starts at x=126 which is after the label ending at
+    x=94. Unchanged.
+  * 1280px (desktop): margin-left `0px`, layout row, wrapper left 159 / width 1082,
+    both edge fades still `display: block` at 87px, marquee sequence width 472. Unchanged.
+- `bunx tsc --noEmit` exit 0; biome on `src/app/home/page.tsx`: clean, 0 diagnostics.
+
+## Homepage navbar — mobile scroll jank
+- SCOPE CHECK FIRST: `ui/resizable-navbar.tsx` is imported ONLY by `layout/Header.tsx`,
+  which per CLAUDE.md serves `/home` only. So this file IS the homepage navbar and nothing
+  else — matches the user's "in homepage". (`page/resizable-navbar.tsx` is the other pages'
+  copy and was NOT touched.)
+- CAUSE: the mobile bar (`MobileNavHeader`) is `fixed inset-x-0 top-0` and, once scrolled,
+  got `bg-white/90 backdrop-blur-md`. A backdrop-filter on a FIXED element forces the
+  browser to re-sample and re-blur whatever scrolls beneath it every frame. On /home what
+  sits beneath is `home/Herosection.tsx:88` — a full-viewport `backdrop-blur-xl` over an
+  autoplaying video — so the two backdrop filters NEST over moving content. `MobileNav`
+  added a second `backdrop-blur-md` on top. Both also used `transition-all duration-300`,
+  which transitions box-shadow and the filter itself.
+- CHANGED (3 edits, all mobile-only by construction — both components are `lg:hidden`):
+  * `MobileNav`: `bg-white/90 backdrop-blur-md` -> `bg-white`; `transition-all` ->
+    `transition-colors`.
+  * `MobileNavHeader`: same, plus an explanatory comment.
+  * `layout/Header.tsx:155` — **the edit that made the others actually take effect**: the
+    caller passes `className="px-8 py-8 transition-all duration-300"`, and since `cn()` is
+    tailwind-merge, the CALLER's `transition-all` was overriding the component's
+    `transition-colors`. Changed to `transition-colors duration-300`. Without this the fix
+    would have been silently defeated — caught by reading the SSR HTML, not by assuming.
+- VERIFIED:
+  * SSR HTML now serves the merged class `... px-8 py-8 transition-colors duration-300`
+    (was `transition-all`) — i.e. what the browser actually receives, immune to pane caching.
+  * No `backdrop-blur` remains in either mobile component (source grep).
+  * DESKTOP UNTOUCHED, structurally: at 1280 `MobileNav`'s parent computes
+    `display: none`, so the edited components are not rendered on desktop at all. Desktop
+    `NavBody` (`hidden lg:flex`) is unmodified and still carries `backdrop-blur-2xl` at
+    :132; the 300vh x 300vw mega-menu blur overlay in `NavItems` is desktop-only and was
+    deliberately left alone.
+  * `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; repo-wide biome **145 errors /
+    47 warnings — identical to the session baseline**, so no new diagnostics (the 17 in
+    these two files are pre-existing a11y/array-key rules on lines I never touched).
+- NOT MEASURED, stated plainly: no FPS/profiling. This pane fires no scroll events, so the
+  `visible` (scrolled) state cannot even be reached here, let alone benchmarked. The fix is
+  structural — removing a per-frame backdrop re-sample on a fixed element — not benchmarked.
+- VISUAL DELTAS ON MOBILE (small, worth knowing): the scrolled bar is now solid white
+  instead of 90% white + blur, and its shadow appears immediately rather than fading in.
+- BIGGEST REMAINING COST ON /home, deliberately out of scope because it would change
+  desktop too: the hero's own full-screen `backdrop-blur-xl` over a playing video, plus the
+  rAF canvas draw loop. Those were logged in the earlier perf audit.
+
+## Homepage navbar — blue logo + black menu icon when the mobile bar turns white
+- FOUND ALREADY-WRITTEN-BUT-DEAD CODE: `MobileNavToggle` already had
+  `visible ? "text-black" : "text-white"`. It never fired because `MobileNavHeader`
+  rendered `{children}` verbatim, unlike `MobileNav`/`NavBody` which clone children with
+  `visible`. So the icon half was a plumbing bug, not a missing feature.
+- CHANGED: (1) `MobileNavHeader` now clones children with `visible`, mirroring the existing
+  pattern (guarding `typeof child.type === "string"` so DOM children don't get an unknown
+  attribute). (2) `CustomLogo` takes `visible` + `swapOnScroll` and renders logoBlue.png
+  only when both are set. (3) the mobile call site passes `swapOnScroll`.
+- THE GATE IS THE WHOLE POINT — caught by inspecting the DESKTOP fiber, not by assuming:
+  `NavBody` ALSO clones `visible` into its children, so keying the swap on `visible` alone
+  would have swapped the DESKTOP logo too — and the desktop bar goes DARK on scroll
+  (`bg-black/60`), where a blue wordmark would be wrong. `swapOnScroll` is opted into by the
+  mobile call site only.
+- VERIFIED via React fiber props at both widths:
+  * 390px: CustomLogo `{visible, swapOnScroll: true}`, MobileNavToggle receives `visible`.
+  * 1280px: CustomLogo `{visible}` with **swapOnScroll undefined**, src stays
+    `/assets/logo.png` — desktop provably cannot swap.
+  * Scrolled-state rendering proven piecewise (the `visible` state is unreachable in this
+    pane — framer-motion's useScroll is rAF-based and frozen): logoBlue.png loads through
+    the optimizer (256x99), and `text-black` computes to `rgb(0,0,0)` vs `text-white`
+    `rgb(255,255,255)` — the latter only after disabling the transition, since transitions
+    never advance here.
+- NOTE: the two logos differ slightly in aspect (2.497 vs 2.578), so at the fixed 64px
+  width the blue one renders ~0.8px shorter. Negligible in a centred bar.
+- `bunx tsc --noEmit` exit 0.
+
+## PortfolioSection — smaller text + AboutSection padding parity, mobile only
+- PARITY TARGET MEASURED, not assumed: AboutSection's mobile inset is `max-md:px-3` = **12px**
+  (its inner card padding was removed in an earlier task, so 12px is the true effective
+  value). The portfolio panel was at `p-8` = 32px.
+- CHANGED (3 classes, all `max-md:`, in `src/components/home/PortfolioSection.tsx`):
+  * panel `max-md:px-3` — x-padding **32px -> 12px**, asserted equal to AboutSection's at
+    runtime (`paddingMatchesAboutSection: true`). Vertical `p-8` (32px) intentionally kept:
+    only the horizontal inset governs the left-edge alignment the request is about.
+  * title `max-md:text-4xl` — **48px -> 36px**
+  * category `max-md:text-xs` — **14px -> 12px**, asserted equal to AboutSection's tag
+    (`categoryMatchesAboutTag: true`)
+- LEFT ALONE DELIBERATELY, and flagged to the user: the description (14px) and the tech
+  chips (10.4px) are ALREADY smaller than AboutSection's 16px body copy, so shrinking them
+  further costs readability on a busy photographic background for no consistency gain.
+- NOTE: the title renders ~2px left of the padding edge (titleLeftEdge 10 vs padding 12)
+  because of the pre-existing `-ml-[0.05em]` optical kern on the h2. That is existing design
+  intent and now scales smaller with the reduced font size.
+- DESKTOP VERIFIED UNCHANGED (fresh 1280px load): padding 80/80/48, category 14px, title
+  112px, desc 18px, chip 12px, panel 1280x800, track scrollWidth 6400 — **8/8 identical**
+  to the baseline captured before editing, with `max-md` provably inactive.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; repo biome **145 errors / 47
+  warnings — identical to baseline**, no new diagnostics.

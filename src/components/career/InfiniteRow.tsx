@@ -36,7 +36,7 @@ export default function InfiniteRow({
                 key={item.type === "quote" ? item.author : item.src}
                 className="pr-3 shrink-0"
               >
-                <CarouselCard item={item} />
+                <CarouselCard item={item} stillOnly={loopIndex > 0} />
               </div>
             ))}
           </div>

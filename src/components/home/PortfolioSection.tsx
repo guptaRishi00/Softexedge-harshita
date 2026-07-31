@@ -3,6 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useIsDesktop } from "@/lib/useIsDesktop";
@@ -283,7 +284,7 @@ export default function PortfolioSection() {
         {projects.map((project) => (
           <div
             key={project.id}
-            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
+            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
           >
             <Link
               href={project.href}
@@ -306,9 +307,16 @@ export default function PortfolioSection() {
                   <source src={project.video} type="video/mp4" />
                 </video>
               ) : (
-                <img
-                  src={project.image}
+                <Image
+                  src={project.image as string}
                   alt={project.title}
+                  fill
+                  sizes="100vw"
+                  // Eager on purpose: this is the panel's background, not an
+                  // incidental image. next/image defaults to lazy, which the
+                  // raw <img> here never was, and a deferred load leaves the
+                  // panel rendering as a black box until it arrives.
+                  loading="eager"
                   className="h-full w-full object-cover"
                 />
               )}
@@ -317,11 +325,11 @@ export default function PortfolioSection() {
 
             <div className="pointer-events-none relative z-10 flex w-full items-end justify-between">
               <div className="flex w-full flex-col items-start gap-4 md:gap-5 lg:w-[80%]">
-                <p className="reveal-item text-sm font-medium uppercase tracking-[0.3em] text-white">
+                <p className="reveal-item text-sm font-medium uppercase tracking-[0.3em] text-white max-md:text-xs">
                   {project.category}
                 </p>
 
-                <h2 className="reveal-item -ml-[0.05em] text-5xl font-bold leading-[0.9] tracking-[-0.05em] md:text-7xl lg:text-[7rem]">
+                <h2 className="reveal-item -ml-[0.05em] text-5xl font-bold leading-[0.9] tracking-[-0.05em] max-md:text-4xl md:text-7xl lg:text-[7rem]">
                   {project.title}
                 </h2>
 

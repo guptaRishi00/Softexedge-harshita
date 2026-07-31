@@ -23,10 +23,18 @@ const wordVariants = {
   },
 } as const;
 
+// Shown in place of the video in the marquee's repeated copies, so only the
+// first copy holds a real <video>. Swap these for actual poster frames of the
+// videos if you want the repeats to look identical to the playing card.
+const col1Still =
+  "https://plus.unsplash.com/premium_photo-1661771773771-a093c948ba92?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y2FyZWVyfGVufDB8fDB8fHww";
+const col2Still =
+  "https://images.unsplash.com/photo-1561489422-45de3d015e3e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTB8fGNhcmVlcnxlbnwwfHwwfHx8MA%3D%3D";
+
 const col1Items: CarouselItem[] = [
   {
     type: "image",
-    src: "https://plus.unsplash.com/premium_photo-1661771773771-a093c948ba92?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y2FyZWVyfGVufDB8fDB8fHww",
+    src: col1Still,
   },
   {
     type: "quote",
@@ -34,14 +42,14 @@ const col1Items: CarouselItem[] = [
     author: "Priya Sharma",
     role: "Product Designer",
   },
-  { type: "video", src: "/assets/video1.mp4" },
+  { type: "video", src: "/assets/video1.mp4", still: col1Still },
 ];
 
 const col2Items: CarouselItem[] = [
-  { type: "video", src: "/assets/video2.mp4" },
+  { type: "video", src: "/assets/video2.mp4", still: col2Still },
   {
     type: "image",
-    src: "https://images.unsplash.com/photo-1561489422-45de3d015e3e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTB8fGNhcmVlcnxlbnwwfHwwfHx8MA%3D%3D",
+    src: col2Still,
   },
   {
     type: "quote",

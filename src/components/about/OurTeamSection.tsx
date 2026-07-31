@@ -8,6 +8,7 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
+import Image from "next/image";
 import { useCallback, useRef, useState } from "react";
 import { MdArrowBack, MdArrowForward } from "react-icons/md";
 
@@ -191,10 +192,12 @@ export default function OurTeamSection() {
                       </p>
                     </div>
 
-                    <img
+                    <Image
                       src={member.image}
                       alt={member.name}
                       loading="lazy"
+                      fill
+                      sizes="(max-width: 640px) 85vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                       className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] "
                     />
                   </div>

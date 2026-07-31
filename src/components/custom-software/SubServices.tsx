@@ -2,6 +2,7 @@
 
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { ReactLenis } from "lenis/react";
+import Image from "next/image";
 import { type ReactNode, useRef, useState } from "react";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
@@ -205,9 +206,11 @@ function Card({
 
         <div className="relative w-full h-[350px] md:h-[450px] overflow-hidden rounded-2xl">
           {image && (
-            <img
+            <Image
               src={image}
               alt={`${title1} ${title2}`}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               className={`h-full w-full object-cover transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 imageHidden ? "scale-105 opacity-0" : "scale-100 opacity-100"
               }`}

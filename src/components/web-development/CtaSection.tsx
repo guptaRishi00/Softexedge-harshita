@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { MdArrowOutward } from "react-icons/md";
 import SpotlightGrid from "../ui/SpotlightGrid";
 
@@ -55,9 +56,11 @@ export default function CtaSection() {
                         key={i}
                         className="relative h-14 w-14 cursor-pointer overflow-hidden rounded-[16px] border-[2px] border-black bg-zinc-800 shadow-sm transition-transform hover:z-20 hover:scale-110"
                       >
-                        <img
+                        <Image
                           src={src}
                           alt={`Creator ${i + 1}`}
+                          fill
+                          sizes="56px"
                           className="h-full w-full object-cover"
                         />
                       </div>

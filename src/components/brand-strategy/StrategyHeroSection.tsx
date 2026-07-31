@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import AgencyStats from "./AgencyStats";
 
@@ -83,10 +84,13 @@ export default function StrategyHeroSection() {
               }`}
             >
               {ROTATING_IMAGES.map((img, index) => (
-                <img
+                <Image
                   key={img}
                   src={img}
                   alt="Brand visual"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={index === 0}
                   className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-in-out ${
                     index === currentImageIndex
                       ? "translate-x-0 opacity-100 blur-0"

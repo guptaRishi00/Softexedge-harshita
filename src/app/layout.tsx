@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import VideoViewportPause from "@/components/ui/VideoViewportPause";
 import { cn } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
 
@@ -20,7 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn("h-full", "antialiased", "font-sans")}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <VideoViewportPause />
+        {children}
+      </body>
     </html>
   );
 }

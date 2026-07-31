@@ -88,7 +88,6 @@ export default function HomePage() {
         });
       }
 
-
       if (statsContainerRef.current && serviceContainerRef.current) {
         ScrollTrigger.create({
           trigger: statsContainerRef.current,
@@ -152,13 +151,17 @@ export default function HomePage() {
         </div>
 
         <section className="flex w-full flex-col items-start gap-4 overflow-hidden bg-white px-6 py-12 sm:flex-row sm:items-center sm:gap-8 md:pt-20">
-          <div className="w-full shrink-0 text-center sm:w-auto sm:text-left">
+          <div className="w-full shrink-0 text-center sm:w-auto sm:text-left lg:mb-0 mb-3">
             <p className="text-sm font-medium tracking-wide text-black/60">
               Trusted By
             </p>
           </div>
           <div className="hidden h-6 w-px bg-black/10 md:block" />
-          <div className="relative min-w-0 flex-1 overflow-hidden">
+          {/* -ml-6 cancels the section's px-6 so the marquee runs to the left
+              edge in the stacked layout. Scoped to max-sm, not max-md: at sm the
+              section turns into a row and the negative margin would pull the
+              carousel under the "Trusted by" text. */}
+          <div className="relative min-w-0 flex-1 overflow-hidden max-sm:-ml-6">
             <LogoLoop
               logos={techLogos}
               speed={50}
@@ -178,7 +181,7 @@ export default function HomePage() {
           <div ref={aboutContainerRef} className="relative z-0 bg-white">
             <div
               ref={aboutInnerRef}
-              className="origin-top will-change-transform bg-white pb-[15vh] md:pb-[25vh] lg:pb-[30vh]"
+              className="origin-top will-change-transform bg-white pb-[3vh] md:pb-[25vh] lg:pb-[30vh]"
             >
               <AboutSection />
             </div>

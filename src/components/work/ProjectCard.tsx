@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
@@ -77,9 +78,11 @@ export default function ProjectCard({
                 <source src={project.video} type="video/mp4" />
               </video>
             ) : (
-              <img
+              <Image
                 src={project.image}
                 alt={project.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 loading="lazy"
                 className="h-full w-full object-cover"
               />

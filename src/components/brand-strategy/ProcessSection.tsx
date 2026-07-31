@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const processSteps = [
   {
@@ -91,9 +92,11 @@ export default function ProcessSection() {
               className="group flex cursor-pointer flex-col"
             >
               <div className="relative mb-6 flex aspect-[4/4.5] w-full items-center justify-center overflow-hidden rounded-[20px] bg-zinc-900">
-                <img
+                <Image
                   src={step.image}
                   alt={step.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                   className="absolute inset-0 h-full w-full object-cover opacity-80 transition-all duration-700 ease-in-out group-hover:scale-110 group-hover:opacity-100"
                 />
               </div>

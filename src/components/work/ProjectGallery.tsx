@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import type { Project } from "@/data/projects";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -37,9 +38,11 @@ export default function ProjectGallery({
                 transition={{ duration: 0.8, ease: premiumEase }}
                 className={`relative w-full overflow-hidden rounded-2xl md:rounded-[40px] bg-white/5 aspect-[4/3] md:aspect-auto md:min-h-[400px] lg:min-h-[500px] ${gridClass}`}
               >
-                <img
+                <Image
                   src={image}
                   alt={`${project.title} — view ${index + 1}`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1400px) 66vw, 930px"
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                 />
               </motion.div>

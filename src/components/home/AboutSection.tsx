@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, type Variants } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
@@ -101,23 +102,23 @@ export default function AboutSection() {
       whileInView={isDesktop ? "visible" : undefined}
       exit={isDesktop ? "exit" : undefined}
       viewport={{ once: false, amount: 0.2 }}
-      className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 md:px-10 lg:mb-20"
+      className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 max-md:px-3 max-md:pt-4 md:px-10 lg:mb-20"
     >
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-multiply" />
 
       <div className="relative z-10 mx-auto">
-        <div className="grid items-center gap-16 lg:grid-cols-[1fr_0.9fr]">
-          <div className="relative mt-20 max-md:mt-0 max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
+        <div className="grid items-center gap-16 max-md:gap-8 lg:grid-cols-[1fr_0.9fr]">
+          <div className="relative mt-20 max-md:mt-0 max-md:bg-white">
             <motion.p
               variants={textReveal}
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium pl-[5px]"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium pl-[5px] max-md:mb-4 max-md:text-xs"
             >
               About The Studio
             </motion.p>
 
             <motion.h1
               variants={wordContainer}
-              className="flex max-w-5xl flex-wrap items-baseline gap-x-4 gap-y-2 text-4xl font-bold leading-[0.9em] tracking-[-0.04em] md:text-6xl lg:text-[3.5rem]"
+              className="flex max-w-5xl flex-wrap items-baseline gap-x-4 gap-y-2 text-3xl font-bold leading-[0.9em] tracking-[-0.04em] max-md:gap-x-2.5 max-md:gap-y-0.5 max-md:leading-[0.8em] md:text-6xl lg:text-[3.5rem]"
             >
               <motion.span variants={wordAnimation} className="block">
                 Building
@@ -153,9 +154,9 @@ export default function AboutSection() {
 
             <motion.div
               variants={textReveal}
-              className="mt-10 max-w-2xl space-y-6"
+              className="mt-10 max-w-2xl space-y-6 max-md:mt-6 max-md:space-y-4"
             >
-              <p className="text-xl leading-[1.25em] text-zinc-600 font-regular">
+              <p className="text-xl leading-[1.25em] text-zinc-600 font-regular max-md:text-base">
                 We design immersive identities, motion-rich interfaces, and
                 scalable digital systems that feel sharp, intentional, and
                 unforgettable
@@ -163,13 +164,13 @@ export default function AboutSection() {
               <div className="flex flex-wrap gap-4 pt-3">
                 <Link
                   href="/contact"
-                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
+                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-12 max-md:gap-3 max-md:pr-2"
                 >
-                  <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
+                  <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
                     Connect With Us
                   </span>
 
-                  <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
+                  <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg">
                     <svg width="0" height="0" className="absolute">
                       <title>Connect arrow gradient</title>
                       <defs>
@@ -202,7 +203,7 @@ export default function AboutSection() {
             whileInView={isDesktop ? { opacity: 1, scale: 1, y: 0 } : undefined}
             transition={{ duration: 1.2, ease: premiumEase }}
             viewport={{ once: false }}
-            className="relative flex items-center justify-center pt-10"
+            className="relative flex items-center justify-center pt-10 max-md:pt-0"
           >
             <motion.div
               animate={isDesktop ? { rotate: 360 } : undefined}
@@ -252,9 +253,11 @@ export default function AboutSection() {
                         }}
                         className="absolute inset-0 origin-bottom-right overflow-hidden rounded-[28px] bg-zinc-200 will-change-transform"
                       >
-                        <img
+                        <Image
                           src={card.url}
                           alt="Creative Studio"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 600px"
                           className="h-full w-full object-cover"
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
@@ -263,9 +266,11 @@ export default function AboutSection() {
                   </AnimatePresence>
                 ) : (
                   <div className="absolute inset-0 overflow-hidden rounded-[28px] border border-black/10 bg-zinc-200 shadow-sm">
-                    <img
+                    <Image
                       src={initialCards[0].url}
                       alt="Creative Studio"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 600px"
                       className="h-full w-full object-cover"
                     />
                     <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />

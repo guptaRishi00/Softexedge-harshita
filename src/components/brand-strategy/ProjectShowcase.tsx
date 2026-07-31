@@ -1,8 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import React, { useState } from "react";
 import SpecularBorder from "../ui/SpecularBorder";
+
+const MotionImage = motion.create(Image);
 
 const smoothSpring = {
   type: "spring",
@@ -186,10 +189,12 @@ function ProjectCard({
       className="group relative h-full min-h-[300px] w-full cursor-pointer"
     >
       <div className="relative h-full w-full overflow-hidden rounded-[20px]">
-        <motion.img
+        <MotionImage
           src={project.image}
           alt={project.title}
           loading="lazy"
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
           animate={{
             scale: isHovered ? 1.06 : 1.02,
             filter:

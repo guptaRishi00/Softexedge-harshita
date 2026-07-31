@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import {
   Globe,
   Users,
@@ -39,7 +40,13 @@ function BentoCard({
       className={`relative flex flex-col justify-end overflow-hidden rounded-[24px] bg-[#0a0a0a] min-h-[360px] md:min-h-[420px] lg:min-h-[480px] p-8 md:p-10 shadow-sm ${className}`}
     >
       <div className="absolute inset-0 overflow-hidden">
-        <img src={image} alt={title} className="h-full w-full object-cover" />
+        <Image
+          src={image}
+          alt={title}
+          fill
+          sizes="(max-width: 768px) 100vw, 60vw"
+          className="h-full w-full object-cover"
+        />
         <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
       </div>
 
@@ -73,7 +80,7 @@ export default function WhyJoinUs() {
         "Work remotely or in a hybrid setup that fits your lifestyle. We prioritize outcomes and deep work over rigid hours, giving you the freedom to do your best work from anywhere.",
       icon: Globe,
       className: "md:col-span-3",
-      image: "/assets/work.jpg",
+      image: "/assets/flexible.png",
     },
     {
       title: "Creative Team",
@@ -81,7 +88,7 @@ export default function WhyJoinUs() {
         "Work with passionate designers, developers, and marketers in a supportive, idea-driven culture.",
       icon: Users,
       className: "md:col-span-2",
-      image: "/assets/creative.jpg",
+      image: "/assets/flexible2.png",
     },
     {
       title: "Competitive Comp",

@@ -3,6 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import { motion } from "framer-motion";
 import gsap from "gsap";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { MdKeyboardArrowRight } from "react-icons/md";
@@ -226,9 +227,11 @@ export default function ServiceSection() {
                     "max-md:mr-4 max-md:w-[80px] max-md:opacity-100",
                   )}
                 >
-                  <img
+                  <Image
                     src={service.image}
                     alt={service.title}
+                    fill
+                    sizes="(max-width: 768px) 80px, 150px"
                     className="absolute inset-0 h-full w-full scale-110 object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
                   />
                 </div>

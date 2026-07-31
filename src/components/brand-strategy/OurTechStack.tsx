@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const techStack = [
   { id: 2, name: "Next.js", image: "/assets/nextjs.png" },
@@ -19,9 +20,11 @@ export default function OurTechStack() {
           key={tech.id}
           className="flex h-36 w-52 shrink-0 items-center justify-center rounded-3xl border border-zinc-800 bg-[#100f0f] transition-colors"
         >
-          <img
+          <Image
             src={tech.image}
             alt={`${tech.name} logo`}
+            width={118}
+            height={36}
             className="h-9 w-auto object-contain"
           />
         </div>

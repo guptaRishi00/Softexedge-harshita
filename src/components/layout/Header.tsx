@@ -16,10 +16,23 @@ import {
 } from "@/components/ui/resizable-navbar";
 import DynamicButton from "../ui/DynamicButton";
 
-const CustomLogo = () => (
+// `visible` is the navbar's scrolled state and is injected by BOTH NavBody and
+// MobileNavHeader, so it alone cannot distinguish the two. `swapOnScroll` is
+// opted into by the mobile call site only: the mobile bar turns white on scroll
+// so the white wordmark must become blue, whereas the desktop bar turns dark and
+// must keep logo.png.
+const CustomLogo = ({
+  visible,
+  swapOnScroll,
+}: {
+  visible?: boolean;
+  swapOnScroll?: boolean;
+}) => (
   <Link href="/" className="flex items-center gap-2 group">
     <Image
-      src="/assets/logo.png"
+      src={
+        swapOnScroll && visible ? "/assets/logoBlue.png" : "/assets/logo.png"
+      }
       alt="Grovio Logo"
       width={85}
       height={30}
@@ -152,8 +165,8 @@ export default function Header() {
         </NavBody>
 
         <MobileNav>
-          <MobileNavHeader className="px-8 py-8 transition-all duration-300">
-            <CustomLogo />
+          <MobileNavHeader className="px-8 py-8 transition-colors duration-300">
+            <CustomLogo swapOnScroll />
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
               onClick={toggleMobileMenu}

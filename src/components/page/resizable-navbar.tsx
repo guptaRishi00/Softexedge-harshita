@@ -7,6 +7,7 @@ import {
   useMotionValueEvent,
   useScroll,
 } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import React, { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -267,9 +268,11 @@ export const NavItems = ({
                         >
                           {sub.image && (
                             <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
-                              <img
+                              <Image
                                 src={sub.image}
                                 alt={sub.name}
+                                fill
+                                sizes="(max-width: 768px) 50vw, 25vw"
                                 className="h-full w-full object-cover  scale-105 transition-transform duration-700 ease-out group-hover:scale-100"
                               />
                             </div>

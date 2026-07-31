@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import React, {
   useCallback,
   useEffect,
@@ -19,10 +20,14 @@ export type LogoItem =
       alt?: string;
       href?: string;
       title?: string;
-      srcSet?: string;
       sizes?: string;
-      width?: number;
-      height?: number;
+      // Required by next/image, which needs intrinsic dimensions. `fill` is not
+      // an option here: the <li> is auto-width and unpositioned, so filling it
+      // would collapse the logo and zero out the measured sequence width.
+      // The rendered size is still governed by the `h-… w-auto` classes below;
+      // these only supply the aspect ratio and the srcset candidates.
+      width: number;
+      height: number;
     };
 
 export interface LogoLoopProps {
@@ -382,7 +387,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
             {(item as any).node}
           </span>
         ) : (
-          <img
+          <Image
             className={cx(
               "h-[var(--logoloop-logoHeight)] w-auto block object-contain",
               "[-webkit-user-drag:none] pointer-events-none",
@@ -392,7 +397,6 @@ export const LogoLoop = React.memo<LogoLoopProps>(
                 "transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/item:scale-120",
             )}
             src={(item as any).src}
-            srcSet={(item as any).srcSet}
             sizes={(item as any).sizes}
             width={(item as any).width}
             height={(item as any).height}
@@ -513,6 +517,9 @@ export const LogoLoop = React.memo<LogoLoopProps>(
                   className={cx(
                     "pointer-events-none absolute inset-y-0 left-0 z-10",
                     "w-[clamp(24px,8%,120px)]",
+                    // Hidden on mobile: at narrow widths the fades eat most of
+                    // the visible track. Desktop is unchanged.
+                    "max-md:hidden",
                     "bg-[linear-gradient(to_right,var(--logoloop-fadeColor,var(--logoloop-fadeColorAuto))_0%,rgba(0,0,0,0)_100%)]",
                   )}
                 />
@@ -521,6 +528,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
                   className={cx(
                     "pointer-events-none absolute inset-y-0 right-0 z-10",
                     "w-[clamp(24px,8%,120px)]",
+                    "max-md:hidden",
                     "bg-[linear-gradient(to_left,var(--logoloop-fadeColor,var(--logoloop-fadeColorAuto))_0%,rgba(0,0,0,0)_100%)]",
                   )}
                 />

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -100,10 +101,12 @@ export default function ApplicationJourney() {
               }}
               className="group relative h-[450px] w-full overflow-hidden rounded-[2.5rem]"
             >
-              <img
+              <Image
                 src={step.image}
                 alt={step.title}
                 loading="lazy"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
               />
 

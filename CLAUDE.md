@@ -17,3 +17,5 @@ gotchas so you don't have to re-explore.
   StrategyHeroSection, AgencyStats — 64 files). Editing one changes ONE page;
   a site-wide change means 8 files. Always confirm the intended scope first.
 - **No `test` or `typecheck` script exists** — use `bunx tsc --noEmit`.
+- **Use `next/image`, never a raw `<img>`.** The migration is complete (`grep "<img" src/` is 0); new remote hosts must be added to `next.config.ts` `remotePatterns` or they throw at runtime.
+- **Every `<video>` is globally paused offscreen** by `ui/VideoViewportPause` (mounted in `layout.tsx`). Never assume an `autoPlay` video keeps running offscreen; if you drive a canvas from a video, guard the `"play"` handler with `cancelAnimationFrame` — it now fires on every resume.

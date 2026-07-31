@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import { MdArrowOutward } from "react-icons/md";
@@ -28,7 +29,7 @@ export default function NextProject({ nextProject }: { nextProject: Project }) {
           className="relative mx-auto flex min-h-[500px] w-full max-w-7xl cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[40px] bg-white/5 md:min-h-[600px]"
         >
           <div className="absolute inset-0 z-0 overflow-hidden">
-            <div className="h-full w-full opacity-40">
+            <div className="relative h-full w-full opacity-40">
               {nextProject.type === "video" && nextProject.video ? (
                 <video
                   autoPlay
@@ -40,9 +41,11 @@ export default function NextProject({ nextProject }: { nextProject: Project }) {
                   <source src={nextProject.video} type="video/mp4" />
                 </video>
               ) : (
-                <img
+                <Image
                   src={nextProject.image}
                   alt={nextProject.title}
+                  fill
+                  sizes="100vw"
                   className="h-full w-full object-cover"
                 />
               )}
