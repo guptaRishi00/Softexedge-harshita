@@ -37,7 +37,7 @@ const techLogos = [
 
 export default function TechLogoCarousel() {
   return (
-    <section className="w-full overflow-hidden bg-white py-16 md:pb-32">
+    <section className="w-full overflow-hidden bg-white max-md:py-8 max-md:pb-16 md:pb-32">
       <LogoCarousel logos={techLogos} ariaLabel="Technology partners" />
     </section>
   );

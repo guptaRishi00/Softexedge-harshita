@@ -284,7 +284,12 @@ export default function PortfolioSection() {
         {projects.map((project) => (
           <div
             key={project.id}
-            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
+            // max-md:isolate — on mobile nothing above this panel creates a
+            // stacking context (the GSAP transform on the track is md+ only),
+            // so the -z-20 image holder escalates to the page wrapper's context
+            // and the section's opaque bg-[#0a0a0a] paints OVER it: black
+            // panels, no images. isolation scopes the -z-20 to this panel.
+            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 max-md:isolate max-md:px-3 max-md:last:pb-16 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
           >
             <Link
               href={project.href}
@@ -324,16 +329,16 @@ export default function PortfolioSection() {
             </div>
 
             <div className="pointer-events-none relative z-10 flex w-full items-end justify-between">
-              <div className="flex w-full flex-col items-start gap-4 md:gap-5 lg:w-[80%]">
+              <div className="flex w-full flex-col items-start gap-4 max-md:gap-3 md:gap-5 lg:w-[80%]">
                 <p className="reveal-item text-sm font-medium uppercase tracking-[0.3em] text-white max-md:text-xs">
                   {project.category}
                 </p>
 
-                <h2 className="reveal-item -ml-[0.05em] text-5xl font-bold leading-[0.9] tracking-[-0.05em] max-md:text-4xl md:text-7xl lg:text-[7rem]">
+                <h2 className="reveal-item -ml-[0.05em] text-5xl font-bold leading-[0.9] tracking-[-0.05em] max-md:text-3xl md:text-7xl lg:text-[7rem]">
                   {project.title}
                 </h2>
 
-                <p className="reveal-item max-w-[95%] text-sm leading-[1.5] text-white/80 md:text-lg lg:max-w-[90%]">
+                <p className="reveal-item max-w-[95%] text-sm leading-[1.5] text-white/80 max-md:text-xs md:text-lg lg:max-w-[90%]">
                   {project.description}
                 </p>
 
@@ -341,7 +346,7 @@ export default function PortfolioSection() {
                   {project.tech.map((tag, i) => (
                     <span
                       key={i}
-                      className="rounded-md border border-white/20 bg-black/20 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md md:text-xs"
+                      className="rounded-md border border-white/20 bg-black/20 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md max-md:px-3 max-md:py-1 max-md:text-[0.6rem] md:text-xs"
                     >
                       {tag}
                     </span>

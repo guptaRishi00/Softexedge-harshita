@@ -84,7 +84,7 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-white py-28 text-black md:py-24"
+      className="relative w-full overflow-hidden bg-white py-5 text-black max-md:pt-0 lg:pt-16 lg:pb-24 "
     >
       <div className="relative z-10 flex w-full flex-col">
         {stats.map((stat, index) => (
@@ -118,13 +118,9 @@ export default function StatsSection() {
                 "md:items-center",
                 "md:px-10",
                 "md:py-10",
-                "max-md:mx-4",
+                "max-md:px-3",
                 "max-md:my-2",
-                "max-md:rounded-2xl",
-                "max-md:border",
-                "max-md:border-black/10",
                 "max-md:bg-white",
-                "max-md:shadow-sm",
               )}
             >
               <div className="flex w-full justify-start pr-8 md:w-[55%] md:justify-end md:pr-10">
@@ -139,6 +135,9 @@ export default function StatsSection() {
                     "to-[#149CCB]",
                     "bg-clip-text",
                     "text-[4.5rem]",
+                    // max-sm, not max-md: `sm:text-[7rem]` owns 640-767px, and a
+                    // max-md override would collide with it in that band.
+                    "max-sm:text-5xl",
                     "sm:text-[7rem]",
                     "font-bold",
                     "leading-none",
@@ -155,8 +154,8 @@ export default function StatsSection() {
                 </h2>
               </div>
 
-              <div className="mt-4 w-full pl-2 md:mt-0 md:w-[90%] md:pl-1">
-                <p className="whitespace-pre-line text-3xl font-bold leading-[1.05] tracking-tight text-black/90 md:text-[5rem]">
+              <div className="mt-4 w-full pl-2 md:mt-0 md:w-[90%] md:pl-1 max-md:pl-0">
+                <p className="whitespace-pre-line text-3xl font-bold leading-[1.05] tracking-tight text-black/90 max-md:text-2xl md:text-[5rem]">
                   {stat.text}
                 </p>
               </div>

@@ -126,7 +126,7 @@ export default function AboutSection() {
 
               <motion.span
                 variants={wordAnimation}
-                className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text py-1 text-transparent"
+                className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pb-3 text-transparent"
               >
                 cinematic
               </motion.span>

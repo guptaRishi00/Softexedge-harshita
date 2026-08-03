@@ -171,7 +171,7 @@ export default function BlogSection() {
               </div>
 
               <div className="relative z-10 mt-4 flex flex-1 flex-col px-2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:-mt-32 md:group-hover:px-4 md:group-hover:pb-4">
-                <div className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 transition-colors duration-500 md:group-hover:text-white/70">
+                <div className="mb-3 flex items-center gap-2 text-sm font-medium text-zinc-500 transition-colors duration-500 max-md:mb-2 max-md:text-xs md:group-hover:text-white/70">
                   <span className="text-zinc-800 transition-colors duration-500 md:group-hover:text-white">
                     {post.author}
                   </span>
@@ -193,18 +193,18 @@ export default function BlogSection() {
   return (
     <section className="w-full overflow-hidden bg-white text-black pb-16 md:pb-32">
       <div className="mx-auto w-full ">
-        <div className="mb-12 w-full px-4 md:mb-20 md:px-10">
+        <div className="mb-12 w-full px-4 max-md:mb-8 max-md:px-3 md:mb-20 md:px-10">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
+            className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:text-xs"
           >
             Latest Insights
           </motion.p>
 
-          <div className="flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-center">
+          <div className="flex w-full flex-col items-start justify-between gap-8 max-md:gap-5 md:flex-row md:items-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -232,13 +232,13 @@ export default function BlogSection() {
                           damping: 20,
                           mass: 1,
                         }}
-                        className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent"
+                        className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent max-md:pl-0"
                       >
                         {rotatingWords[index]}
                       </motion.span>
                     </AnimatePresence>
                   ) : (
-                    <span className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent">
+                    <span className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent max-md:pl-0">
                       {rotatingWords[0]}
                     </span>
                   )}
@@ -251,17 +251,17 @@ export default function BlogSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
-              className="flex w-full items-center justify-end md:w-auto"
+              className="flex w-full items-center justify-end max-md:justify-start md:w-auto"
             >
               <Link
                 href="/blog"
-                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
+                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-12 max-md:gap-3 max-md:pr-2"
               >
-                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
+                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
                   Explore all articles
                 </span>
 
-                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
+                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg">
                   <svg width="0" height="0" className="absolute">
                     <title>Explore arrow gradient</title>
                     <defs>
@@ -289,7 +289,10 @@ export default function BlogSection() {
           </div>
         </div>
 
-        <div className="relative w-full overflow-x-clip">
+        {/* The cards had no x padding while the header sat at 12px, so their left
+            edges did not line up on mobile. Desktop keeps 0 — the track is a
+            full-bleed drag carousel there. */}
+        <div className="relative w-full overflow-x-clip max-md:px-3">
           <motion.div
             ref={trackRef}
             className="flex w-max flex-nowrap gap-4 md:gap-3 max-md:w-full max-md:flex-col md:cursor-grab md:select-none md:active:cursor-grabbing"

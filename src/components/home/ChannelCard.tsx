@@ -96,10 +96,15 @@ export default function ChannelCard({
         className="absolute inset-0 z-0 overflow-hidden"
         style={{ WebkitMaskImage: mask, maskImage: mask }}
       >
+        {/* `gridColumns` is derived from the card's DESKTOP span (sm:col-span-1
+            -> 3, else 6). Below sm every card is full width, so those two values
+            produced boxes of visibly different sizes side by side. The var lets
+            mobile force one uniform column count while >= sm still falls back to
+            the per-card value, leaving desktop untouched. */}
         <div
-          className="grid gap-2 relative w-[110%] -left-[5%] -translate-y-6"
+          className="grid gap-2 relative w-[110%] -left-[5%] -translate-y-6 max-sm:[--channel-cols:6]"
           style={{
-            gridTemplateColumns: `repeat(${gridColumns}, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(var(--channel-cols, ${gridColumns}), minmax(0, 1fr))`,
           }}
         >
           {boxyCellIds.map((id, i) => {

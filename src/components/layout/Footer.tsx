@@ -97,12 +97,12 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-16 text-white md:pt-24 lg:pt-32">
+    <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-8 text-white md:pt-24 lg:pt-32">
       <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay" />
 
-      <div className="relative z-10 mx-auto w-full flex flex-col px-6 md:px-10 lg:px-16">
-        <div className="grid grid-cols-1 items-start gap-12 pb-16 lg:grid-cols-12 md:pb-20">
-          <div className="grid grid-cols-2 gap-x-10 gap-y-12 lg:col-span-7 lg:flex lg:gap-28">
+      <div className="relative z-10 mx-auto w-full flex flex-col px-6 max-md:gap-12 md:px-10 lg:px-16">
+        <div className="grid grid-cols-1 items-start gap-12 pb-16 max-md:contents lg:grid-cols-12 md:pb-20">
+          <div className="grid grid-cols-2 gap-x-10 gap-y-12 max-md:order-3 lg:col-span-7 lg:flex lg:gap-28">
             {footerLinkGroups.map(({ title, links }, groupIndex) => (
               <motion.div
                 key={title}
@@ -138,7 +138,7 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase, delay: 0.15 }}
-            className="flex flex-col items-start lg:col-span-5 lg:pl-12 lg:-mt-1"
+            className="flex flex-col items-start max-md:order-1 lg:col-span-5 lg:pl-12 lg:-mt-1"
           >
             <h3 className="mb-8 text-[2rem] font-semibold leading-tight tracking-[-0.04em] text-white">
               Stay updated with Softexedge news
@@ -202,7 +202,7 @@ export default function Footer() {
           </motion.div>
         </div>
 
-        <div className="relative flex w-full justify-center pt-8 pb-16 md:pt-10 md:pb-20 overflow-hidden">
+        <div className="relative flex w-full justify-center pt-8 pb-16 max-md:hidden md:pt-10 md:pb-20 overflow-hidden">
           <motion.h1
             variants={brandContainer}
             initial="hidden"
@@ -230,13 +230,13 @@ export default function Footer() {
           </motion.h1>
         </div>
 
-        <div className="flex flex-col gap-16 pt-12 md:gap-24">
+        <div className="flex flex-col gap-16 pt-12 max-md:contents md:gap-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="grid grid-cols-2 justify-items-center gap-x-8 gap-y-12 text-xs font-semibold uppercase tracking-widest md:grid-cols-4"
+            className="grid grid-cols-2 justify-items-center gap-x-8 gap-y-12 text-xs font-semibold uppercase tracking-widest max-md:order-2 md:grid-cols-4"
           >
             <div className="flex flex-col items-start gap-3">
               <div className="flex items-center gap-2">
@@ -292,7 +292,7 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: premiumEase, delay: 0.05 }}
-            className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 md:flex-row md:items-end"
+            className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 max-md:order-4 max-md:pb-4 md:flex-row md:items-end"
           >
             <p className="tracking-wide">© Made By Softexedge</p>
 

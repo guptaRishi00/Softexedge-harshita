@@ -170,27 +170,29 @@ export default function ServiceSection() {
       id="services"
       ref={containerRef}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full overflow-hidden bg-black py-16 md:pt-32 md:pb-24 text-white"
+      className="relative w-full overflow-hidden bg-black pt-16 pb-18 md:pt-32 md:pb-24 text-white"
     >
-      <div className="w-full px-4 md:px-10">
+      <div className="w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-10 w-full pb-10">
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
+            className="mb-6 text-xs lg:text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
           >
             What We Offer
           </motion.p>
 
-          <div className="flex w-full flex-col-reverse items-start justify-between gap-8 md:flex-row md:items-center">
+          {/* flex-col-reverse puts the description above the title; on mobile the
+              order should read tag -> title -> description, i.e. natural DOM order. */}
+          <div className="flex w-full flex-col-reverse items-start justify-between gap-8 max-md:flex-col md:flex-row md:items-center">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
-              className="text-5xl font-bold tracking-tight text-white md:text-[80px]"
+              className="text-4xl font-bold tracking-tight text-white md:text-[80px]"
             >
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
@@ -202,7 +204,7 @@ export default function ServiceSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
-              className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+              className="max-w-2xl text-md font-light leading-[1.25em] text-white md:text-left"
             >
               We merge strategic thinking with bold creative execution to
               deliver scalable digital experiences that elevate your brand
@@ -217,21 +219,23 @@ export default function ServiceSection() {
               href={service.href}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              className="group relative flex w-full cursor-none items-center justify-between py-6 md:py-12 max-md:cursor-pointer max-md:rounded-2xl max-md:border max-md:border-white/10 max-md:bg-white/5 max-md:p-5 max-md:shadow-sm"
+              className="group relative flex w-full cursor-none items-center justify-between py-6 md:py-12 max-md:cursor-pointer max-md:rounded-2xl max-md:border max-md:border-white/10 max-md:bg-white/5 max-md:p-5 max-md:shadow-sm max-md:last:pb-10"
             >
-              <div className="flex items-center">
+              <div className="flex items-center max-md:w-full max-md:flex-col max-md:items-start">
                 <div
                   className={cn(
                     "relative h-[50px] shrink-0 overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
                     "w-0 group-hover:mr-4 group-hover:w-[80px] group-hover:opacity-100 md:group-hover:mr-8 md:group-hover:w-[150px]",
-                    "max-md:mr-4 max-md:w-[80px] max-md:opacity-100",
+                    // Mobile: image sits on top, full-bleed inside the card, with
+                    // the title beneath — so no right margin, full width, taller.
+                    "max-md:mb-4 max-md:h-[180px] max-md:w-full max-md:opacity-100",
                   )}
                 >
                   <Image
                     src={service.image}
                     alt={service.title}
                     fill
-                    sizes="(max-width: 768px) 80px, 150px"
+                    sizes="(max-width: 768px) 100vw, 150px"
                     className="absolute inset-0 h-full w-full scale-110 object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
                   />
                 </div>
@@ -249,7 +253,10 @@ export default function ServiceSection() {
               {index !== services.length - 1 && (
                 <div
                   className={cn(
-                    "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500",
+                    // Hidden on mobile: the cards there are self-contained rounded
+                    // boxes with their own border, so this row separator draws a
+                    // straight line across a rounded bottom edge.
+                    "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500 max-md:hidden",
                     "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
                   )}
                 />

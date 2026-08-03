@@ -34,8 +34,12 @@ const channels = [
   },
 ];
 
+// NOTE: the 16px font size (`text-base`) is deliberately NOT reduced on mobile.
+// iOS Safari auto-zooms the viewport when a focused input's font-size is below
+// 16px, so shrinking it would make every field jump the page on tap. The mobile
+// size reduction comes from the padding instead.
 const inputClass =
-  "w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-base text-white transition-all placeholder:text-zinc-500  focus:border-[#2E5BFF]/50 focus:bg-white/10 focus:outline-none focus:ring-4 focus:ring-[#2E5BFF]/20";
+  "w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-base text-white transition-all placeholder:text-zinc-500 max-md:rounded-xl max-md:px-4 max-md:py-3 focus:border-[#2E5BFF]/50 focus:bg-white/10 focus:outline-none focus:ring-4 focus:ring-[#2E5BFF]/20";
 
 const GRID_COLUMNS = 8;
 
@@ -53,10 +57,10 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="relative w-full overflow-hidden bg-black py-16 md:pt-32 md:pb-32"
+      className="relative w-full overflow-hidden bg-black py-16 max-md:pt-16 max-md:pb-16 md:pt-32 md:pb-32"
     >
-      <div className="relative z-10 mx-auto w-full px-4 md:px-10">
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-12">
+      <div className="relative z-10 mx-auto w-full px-4 max-md:px-3 md:px-10">
+        <div className="grid grid-cols-1 gap-16 max-md:gap-10 lg:grid-cols-12 lg:gap-12">
           <motion.div
             initial={isDesktop ? { opacity: 0, y: 40 } : false}
             whileInView={isDesktop ? { opacity: 1, y: 0 } : undefined}
@@ -69,7 +73,7 @@ export default function ContactSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, ease: premiumEase }}
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-4 max-md:text-xs"
             >
               Get in touch
             </motion.div>
@@ -79,7 +83,7 @@ export default function ContactSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
-              className="text-4xl font-bold tracking-tight text-white md:text-5xl lg:text-[64px] lg:leading-[0.9em]"
+              className="text-6xl font-bold tracking-tight text-white max-md:text-4xl md:text-5xl lg:text-[64px] leading-[0.9em]"
             >
               Let&apos;s build <br />
               <span className="inline-grid overflow-hidden py-2 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
@@ -118,14 +122,14 @@ export default function ContactSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
-              className="mt-6 text-lg font-light leading-[1.25em] text-white"
+              className="mt-6 text-lg font-light leading-[1.25em] text-white max-md:mt-4 max-md:text-base"
             >
               Ready to redefine the standard? Whether you have a specific
               project in mind or just want to explore possibilities, our team is
               ready to collaborate
             </motion.p>
 
-            <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="mt-12 grid grid-cols-1 gap-4 max-md:mt-8 max-md:gap-3 sm:grid-cols-2">
               {channels.map((channel) => (
                 <ChannelCard key={channel.label} {...channel} />
               ))}
@@ -139,13 +143,13 @@ export default function ContactSection() {
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
             className="lg:col-span-7"
           >
-            <div className="h-full overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950 transition-transform duration-300 hover:border-white/20">
-              <form className="flex h-full flex-col justify-between gap-8 p-8 sm:p-10 md:p-12">
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-                  <div className="flex flex-col gap-3">
+            <div className="h-full overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950 transition-transform duration-300 hover:border-white/20 max-md:rounded-3xl">
+              <form className="flex h-full flex-col justify-between gap-8 p-8 max-md:gap-5 max-md:p-5 sm:p-10 md:p-12">
+                <div className="grid grid-cols-1 gap-6 max-md:gap-4 md:grid-cols-2 md:gap-8">
+                  <div className="flex flex-col gap-3 max-md:gap-2">
                     <label
                       htmlFor="name"
-                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400"
+                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
                     >
                       Full Name
                     </label>
@@ -157,10 +161,10 @@ export default function ContactSection() {
                     />
                   </div>
 
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-3 max-md:gap-2">
                     <label
                       htmlFor="email"
-                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400"
+                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
                     >
                       Email Address
                     </label>
@@ -173,21 +177,21 @@ export default function ContactSection() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-                  <div className="flex flex-col gap-3">
+                <div className="grid grid-cols-1 gap-6 max-md:gap-4 md:grid-cols-2 md:gap-8">
+                  <div className="flex flex-col gap-3 max-md:gap-2">
                     <label
                       htmlFor="phone"
-                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400"
+                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
                     >
                       Phone Number
                     </label>
                     <input type="tel" id="phone" className={inputClass} />
                   </div>
 
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-3 max-md:gap-2">
                     <label
                       htmlFor="company"
-                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400"
+                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
                     >
                       Company
                     </label>
@@ -195,10 +199,10 @@ export default function ContactSection() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 max-md:gap-2">
                   <label
                     htmlFor="service"
-                    className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400"
+                    className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
                   >
                     What can we help you with?
                   </label>
@@ -235,10 +239,10 @@ export default function ContactSection() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 max-md:gap-2">
                   <label
                     htmlFor="message"
-                    className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400"
+                    className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
                   >
                     Message
                   </label>
@@ -250,10 +254,10 @@ export default function ContactSection() {
                   />
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-4 max-md:pt-0">
                   <button
                     type="submit"
-                    className="group relative cursor-pointer inline-flex w-full overflow-hidden items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors focus:outline-none focus:ring-4 focus:ring-white/20 hover:text-white"
+                    className="group relative cursor-pointer inline-flex w-full overflow-hidden items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors focus:outline-none focus:ring-4 focus:ring-white/20 hover:text-white max-md:rounded-xl max-md:py-4 max-md:text-base"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     <span className="relative z-10 transition-colors duration-300">

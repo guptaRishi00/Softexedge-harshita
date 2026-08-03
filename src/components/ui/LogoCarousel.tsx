@@ -58,7 +58,9 @@ export default function LogoCarousel({
           );
 
           const boxClass =
-            "flex h-20 w-48 shrink-0 items-center justify-center gap-3 rounded-2xl border border-zinc-300 bg-white px-7 shadow-sm md:h-24 md:w-56 md:px-9";
+            // max-md shrinks the CARD (box + padding), not its contents — the icon
+            // and label keep their sizes.
+            "flex h-20 w-48 shrink-0 items-center justify-center gap-3 rounded-2xl border border-zinc-300 bg-white px-7 shadow-sm max-md:h-16 max-md:w-40 max-md:gap-2 max-md:px-4 md:h-24 md:w-56 md:px-9";
 
           return logo.href ? (
             <a

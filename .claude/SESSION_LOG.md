@@ -8113,3 +8113,466 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
   to the baseline captured before editing, with `max-md` provably inactive.
 - `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; repo biome **145 errors / 47
   warnings — identical to baseline**, no new diagnostics.
+
+## StatsSection — smaller text, AboutSection padding parity, top pad matched to PortfolioSection
+- BOTH PARITY TARGETS MEASURED FIRST: AboutSection mobile inset = **12px**; PortfolioSection
+  last card bottom padding = **32px**. StatsSection was at a 40px text inset
+  (mx-4 16 + px-4 16 + the label wrapper's pl-2 8) and a 112px section top padding.
+- CHANGED (mobile only, `src/components/home/StatsSection.tsx`):
+  * section `max-md:pt-8` — top padding **112px -> 32px**, asserted equal to the portfolio
+    card's bottom padding at runtime (`topPadMatchesPortfolioBottom: true`).
+  * `.stat-inner`: dropped `max-md:mx-4` + the mobile card chrome (`rounded-2xl`, `border`,
+    `border-black/10`, `shadow-sm`), added `max-md:px-3`; label wrapper got `max-md:pl-0`.
+    Text inset **40px -> 12px**, asserted equal to AboutSection (`insetMatchesAboutSection:
+    true`), with the number and the label both landing at exactly x=12.
+  * number `max-sm:text-5xl` **72px -> 48px**; label `max-md:text-2xl` **30px -> 24px**.
+- BREAKPOINT TRAP AVOIDED, and it is why the number uses `max-sm` while everything else uses
+  `max-md`: the number is `text-[4.5rem] sm:text-[7rem] md:text-[10rem]`, so `sm:` already
+  owns 640-767px. A `max-md:` override would have collided with `sm:text-[7rem]` in that
+  band (two variants, no tailwind-merge resolution, order-dependent winner). Verified at
+  700px: number still **112px**, i.e. `sm:text-[7rem]` still owns the band.
+- CARD CHROME REMOVAL IS FLAGGED: the request said "padding", but the 40px inset came from
+  the outer margin + card, so reaching 12px meant removing them. This matches the treatment
+  AboutSection already got; easy to restore if the stat cards were wanted.
+- DESKTOP VERIFIED UNCHANGED (fresh 1280px load): padding 96/96, inner padLeft 40px,
+  margin 0, no border/radius/shadow, number 160px, label 80px, label wrapper pad 4px,
+  section height 1184px — **11/11 identical** to the pre-change baseline.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; repo biome **145 errors / 47
+  warnings — identical to baseline**.
+
+## PortfolioSection black images on mobile — REAL root cause found (third attempt; first two wrong)
+- ACCOUNTABILITY FIRST: this was reported three times. Attempt 1 blamed lazy loading
+  (added `loading="eager"`); attempt 2 blamed mobile decode limits. Both were LOAD-path
+  theories. Both times I verified `naturalWidth > 0` / bytes served — i.e. that images
+  LOADED — and never that they PAINTED, because this pane cannot screenshot. The images
+  were loading perfectly the whole time and being painted UNDER an opaque background.
+- THE ACTUAL MECHANISM, proven at runtime by walking computed styles (390px):
+  * image holder: `absolute inset-0 -z-20` inside `.project-panel`
+  * panel `relative/z:auto`, track no position — NEITHER creates a stacking context
+  * the GSAP x-tween that transforms the track lives in `mm.add("(min-width: 768px)")`
+    — so on mobile `track.transform === none` (measured)
+  * nearest stacking context = home/page.tsx wrapper `relative z-10 bg-[#0a0a0a]`
+  * CSS paint order in that context: wrapper bg -> NEGATIVE-Z CHILDREN (the images)
+    -> ... -> positioned z-auto descendants — which includes the SECTION with its opaque
+    `bg-[#0a0a0a]` (measured rgb(10,10,10)) painting OVER the images. Panel text is
+    z-10, painted after. Result: text on black, images invisible. Matches screenshot.
+  * WHY DESKTOP ALWAYS WORKED: the md+ GSAP transform makes the track a stacking
+    context, scoping the -z-20 inside it, above the section bg (measured
+    `trackHasTransform_desktop: true`). Desktop worked BY ACCIDENT of the animation.
+- FIX: one class, `max-md:isolate` on `.project-panel` (+ comment). `isolation: isolate`
+  creates a stacking context with no layout/visual side effects, scoping the -z-20 holder
+  to the panel: above every ancestor background, below the panel's own z-10/z-20 content.
+- VERIFIED 390px (cache-busted): all panels compute `isolation: isolate`; nearest
+  stacking context of the holder is now THE PANEL (`why: isolation`); 4/4 images loaded.
+  Paint order is now deterministic per spec — image above section bg.
+- VERIFIED 1280px (fresh load): `isolation: auto` (max-md inert), 9/9 baseline fields
+  identical (padding 80/80/48, category 14, title 112, desc 18, box 1280x800,
+  scrollWidth 6400).
+- JSX note: `//` comments between JSX attributes are valid trivia — confirmed by tsc
+  exit 0, after clearing a corrupted `.next/dev/types` artifact (same dev-server race
+  logged twice before; errors were exclusively in generated files).
+- `bunx next build` exit 0.
+- LESSON, added to the pile: "image loaded" and "image visible" are different claims.
+  When the pane cannot screenshot, visibility claims must come from stacking/paint-order
+  analysis, not load state. Also: any element with a negative z-index is only safe if an
+  ancestor BELOW the nearest opaque background creates a stacking context — on mobile
+  nothing did.
+
+## PortfolioSection — content sizes reduced further, mobile only (round 2)
+- Round 1 (earlier) took title 48->36 and category 14->12 but deliberately left the
+  description and chips. The user asked again for smaller content, which overrides that
+  readability call — this round reduces everything remaining.
+- CHANGED (4 classes in `src/components/home/PortfolioSection.tsx`, all `max-md:`):
+  title `max-md:text-4xl` -> `max-md:text-3xl` (**36 -> 30px**); description
+  `max-md:text-xs` (**14 -> 12px**); chips `max-md:px-3 max-md:py-1 max-md:text-[0.6rem]`
+  (**10.4 -> 9.6px font, 16/6 -> 12/4px padding**); content stack `max-md:gap-3`
+  (**16 -> 12px**). Category left at 12px — it was matched to AboutSection's tag in
+  round 1 and shrinking below 12px with `tracking-[0.3em]` hurts legibility.
+- VERIFIED 390px (cache-busted): all five before/after values above measured; the
+  `max-md:isolate` black-images fix from the previous task still computes
+  `isolation: isolate` after this edit.
+- VERIFIED 1280px (fresh load): **11/11 fields identical** (category 14, title 112,
+  desc 18, chip 12 @ 16/6, gap 20, panel pad 80, box 1280x800, isolation auto,
+  trackScrollWidth 6400).
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0.
+
+## PortfolioSection — last card only: bigger bottom padding on mobile
+- ONE CLASS: `max-md:last:pb-16` on the panel className — Tailwind's `last:` variant
+  targets the 5th panel without adding an index to the `.map()`. Mobile bottom padding of
+  the LAST card **32px -> 64px**; the other four measured still 32px.
+- VERIFIED 390px (cache-busted): per-panel paddingBottom = [32,32,32,32,64].
+- VERIFIED 1280px (fresh load): all five panels 48px (the `lg:pb-12` baseline),
+  `max-md` inactive, trackScrollWidth 6400 — desktop untouched.
+- PARITY NOTE, flagged to the user: an earlier task set StatsSection's mobile TOP padding
+  equal to this card's bottom padding (both 32px). That parity is now intentionally
+  broken (64 vs 32) per this request; total gap between last-card content and the stats
+  content is now 64+32=96px. If Stats pt should track this, it's a one-class follow-up.
+- `bunx tsc --noEmit` exit 0. (No build run — single utility-class change, verified at
+  runtime in both viewports; the class compiles or the page wouldn't have served it.)
+
+## StatsSection — mobile top padding re-matched to PortfolioSection's last card
+- The parity follow-up flagged in the previous entry. Analyzed the last card's mobile
+  bottom padding at runtime: **64px** (`max-md:last:pb-16`). Stats was `max-md:pt-8` (32px).
+- ONE CLASS: `max-md:pt-8` -> `max-md:pt-16` in `src/components/home/StatsSection.tsx`.
+- MERGE NOTE: the section's base class had changed on disk since my last edit
+  (`py-28` -> `py-5`, user's own tuning; my first Edit failed on stale string). Left
+  `py-5` exactly as found — at mobile it now yields pt 64 (override) / pb 20 (user's).
+- VERIFIED 390px: portfolio last card pb **64px** == stats pt **64px**
+  (`PARITY_RESTORED: true`).
+- VERIFIED 1280px: stats padding 96/96 (`md:py-24`), `max-md` inactive — desktop
+  unchanged.
+- `bunx tsc --noEmit` exit 0.
+
+## StatsSection — reduce mobile top padding
+- FILE HAD CHANGED ON DISK AGAIN (user tuning): base is now `py-5` with `lg:pt-16
+  lg:pb-24`; the `max-md:pt-16` I added last task and the old `md:py-24` are both gone.
+  Read the live class before editing rather than trusting the previous entry.
+- MEASURED THE GAP FIRST, and the request under-targets it: the section's own top padding
+  was only **20px**. The real space above the first stat is **68px** =
+  20 (section pt) + 8 (`max-md:my-2` card margin) + **40 (`py-10` on `.stat-inner`)**.
+  The named lever is the smallest of the three.
+- CHANGED, as asked, at maximum: `max-md:pt-0` — section top padding **20px -> 0px**,
+  total gap **68px -> 48px**. Bottom (20px) untouched.
+- REMAINING LEVER, flagged not applied (would be scope widening): `.stat-inner`'s
+  `py-10` contributes 40px of the remaining 48px. `max-md:py-6` there would take the gap
+  to ~32px, `max-md:py-4` to ~24px.
+- VERIFIED 390px: sectionPt 0, breakdown re-measured (0 + 8 + 40 = 48).
+- VERIFIED 1280px (fresh load, `lg` active): padding **64/96** from the user's own
+  `lg:pt-16 lg:pb-24`, `max-md` inactive, inner padLeft 40px, number 160px — unchanged.
+- `bunx tsc --noEmit` exit 0.
+
+## ServiceSection — mobile re-orientation (header order + card image-over-title)
+- TWO STRUCTURAL CHANGES, mobile only, in `src/components/home/ServiceSection.tsx`:
+  1. HEADER ORDER — the row is `flex-col-reverse ... md:flex-row`, and on mobile
+     `col-reverse` was putting the DESCRIPTION above the TITLE. Added `max-md:flex-col`
+     so mobile reads natural DOM order. Rendered order asserted at runtime:
+     **tag -> title -> description**.
+  2. CARD LAYOUT — the image/title wrapper was `flex items-center` (side by side).
+     Added `max-md:w-full max-md:flex-col max-md:items-start`, and swapped the image
+     box's mobile classes from `mr-4 w-[80px]` to `mb-4 h-[180px] w-full`. Card now
+     renders image on top (317x180, full card width) with the title beneath —
+     `imageAboveTitle: true` asserted by comparing rects.
+- ALSO FIXED, because the layout change made it wrong: `sizes` was
+  `(max-width: 768px) 80px, 150px`, sized for the old 80px thumbnail. At the new
+  ~348px full-width box that would have served an 80px candidate and looked soft.
+  Now `(max-width: 768px) 100vw, 150px` — verified the browser picks an **828px**
+  candidate for a 348px box (`sharpEnough: true`), 8/8 images load.
+- MEASUREMENT TRAP RE-ENCOUNTERED, worth remembering: the image box carries
+  `transition-all duration-700`, so after a viewport resize its width/height/opacity
+  read FROZEN at pre-resize values — the desktop baseline first came back as
+  `80x50 / opacity 1` (mobile values) at 1265px. Setting `transition: none` gave the
+  true desktop target `0x100 / opacity 0`. Both baseline and verification use the
+  corrected reading.
+- DESKTOP VERIFIED UNCHANGED (fresh 1280px load, transition-corrected): header row,
+  card inner row, image box 0x100 at opacity 0 (collapsed until hover), h3 64px,
+  card padding 48px — **7/7 identical** to baseline, `max-md` inactive.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0.
+
+## ServiceSection — remove the per-card bottom divider on mobile
+- DIAGNOSED FIRST, because TWO borders render at a card's bottom edge on mobile:
+  (a) the card's own `max-md:border max-md:border-white/10` — 0.8px, radius 18px, and
+  (b) a separate `absolute bottom-0 left-0 h-[1px] w-full` divider div, 357x1, present on
+  7 of 8 cards (rendered for every card except the last). (b) is the offender: it draws a
+  straight line across the bottom of a ROUNDED card, which is what reads as a stray border.
+- ONE CLASS: `max-md:hidden` on that divider. Desktop keeps it — there the cards have no
+  border of their own (measured `borderBottomWidth: 0px` at 1280) and the divider IS the
+  row separator the list design depends on.
+- VERIFIED 390px (cache-busted): all 7 divider elements compute `display: none`, total
+  rendered height **0**. The card's own rounded border is untouched (0.8px), as asked —
+  only the bottom line went.
+- VERIFIED 1280px (fresh load): 7 dividers, all `display: block`, first measures 1185x1
+  with the same white/10 background, `max-md` inactive — desktop unchanged.
+- `bunx tsc --noEmit` exit 0. (No build — single utility class, verified live in both
+  viewports.)
+
+## ServiceSection — x-axis padding matched to AboutSection (mobile)
+- ANALYZED BOTH LIVE rather than trusting earlier entries (AboutSection's inset has been
+  retuned several times this session): AboutSection section padLeft = **12px**;
+  ServiceSection's section has NO x padding (0) — its inner wrapper `w-full px-4 md:px-10`
+  supplied **16px**.
+- ONE CLASS: `max-md:px-3` on that inner wrapper (`src/components/home/ServiceSection.tsx`).
+- VERIFIED 390px (cache-busted): wrapper padLeft **16px -> 12px**, `PARITY: true` against
+  AboutSection's 12px, and all three content types now start at x=12 — tag, title, and the
+  card left edge — with the right side symmetric at 12px.
+- NOTE (not a defect): each service card keeps its own `max-md:p-5`, so text INSIDE a card
+  sits at 32px. That is the card's internal padding, not section padding; the section-level
+  inset is what now matches About.
+- VERIFIED 1280px (fresh load): wrapper padding 40/40 (`md:px-10`), tag left 40, h3 64px,
+  card padding 48px — 5/5 identical, `max-md` inactive.
+- `bunx tsc --noEmit` exit 0.
+
+## ExperimentalTestimonials — mobile padding parity + self-scrolling carousel; TechLogoCarousel shrunk
+- THREE ASKS, 3 files. Specialists: none — inline, each change is a handful of classes plus
+  one animate/transition branch.
+- (1) X-PADDING PARITY: measured AboutSection live = **12px**; testimonials wrapper was
+  `px-4` = 16px. Added `max-md:px-3`. Verified `PARITY: true` (12px == 12px).
+- (2) SELF-MOVING CAROUSEL ON MOBILE: previously mobile stacked the cards vertically
+  (`max-md:w-full max-md:flex-col`) with the arrows hidden — no way to see cards 2-4.
+  Now the track stays a `w-max` row on mobile and animates `x: ["0%", "-50%"]`,
+  linear/40s/infinite, while DESKTOP keeps its arrow pagination (`-active * step`) —
+  the animate and transition props branch on `isDesktop`. Also switched the map to always
+  render `duplicatedTestimonials` (desktop already did), so mobile has the 2 copies a
+  -50% loop requires.
+- CAUGHT A REAL MARQUEE BUG WHILE VERIFYING, not after shipping: with `gap-4`, 8 cards have
+  only 7 gaps, so track = 2512px and -50% = 1256px, but one copy is 4x300 + 4x16 =
+  **1264px** — an 8px drift per cycle, i.e. a visible jump every 40s. Fixed by folding the
+  spacing into the cards on mobile (`max-md:gap-0` on the track + `max-md:mr-4` per card),
+  making the track 2528px so half = 1264 = exactly one copy. Asserted: **SEAMLESS: true**
+  (halfTrack 1264 === oneCopyWidth 1264).
+- (3) TECHLOGOCAROUSEL SIZE: section `max-md:py-8` (64 -> **32px**), and in the shared
+  `ui/LogoCarousel` the icon `max-md:text-lg` (24 -> **18px**) and label `max-md:text-xs`
+  (14 -> **12px**).
+  **SCOPE FLAG: `TechLogoCarousel` renders on 12 PAGES, not just /home** (about, contact,
+  work, and all 8 service pages), and `LogoCarousel` is shared by all of them — so this
+  third change reduces that strip on every page's mobile view. Done as asked; call it out
+  in case homepage-only was intended, in which case it needs a prop instead.
+- VERIFIED 390px: parity 12px; carousel row/w-max/overflow-hidden, 8 cards, gap 0, mr 16,
+  seamless; tech strip padTop 32, icon 18, label 12.
+- VERIFIED 1280px (fresh load): **10/10 fields identical** — wrapper pad 40, track gap 12,
+  card margin 0, card 440, 8 cards, viewport 440px, 2 arrows present, tech strip 64/28/16.
+- NOT VERIFIED: that the marquee visibly moves. framer-motion's animation loop is rAF-based
+  and rAF is frozen in this pane (`trackTransform: none` even after 5s), same limitation
+  logged for every animation this session. The GEOMETRY that makes the loop seamless is
+  verified arithmetically above; the motion itself needs a real device.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; repo biome **145/47 — baseline**.
+
+## ExperimentalTestimonials edge-to-edge + direction match; TechLogoCarousel CARD (not icon) shrunk
+- CORRECTION TO MY PREVIOUS ENTRY: asked to reduce the CARD size of TechLogoCarousel, I had
+  instead shrunk the icon (`max-md:text-lg`) and label (`max-md:text-xs`) — the contents,
+  not the card. Both reverted (icon back to 24px, label back to 14px, both asserted at
+  runtime). The card is `boxClass` in `ui/LogoCarousel.tsx`: now
+  `max-md:h-16 max-md:w-40 max-md:gap-2 max-md:px-4` — box **192x80 -> 160x64**, padding
+  **28 -> 16px**.
+- DIRECTION MISMATCH FIXED: `LogoCarousel` animates `x: ["-50%", "0%"]` (content travels
+  RIGHT). I had given the testimonials `["0%", "-50%"]` — the opposite. Now `["-50%","0%"]`,
+  matching. The seamless-loop arithmetic still holds (`seamlessStillHolds: true`), since
+  reversing the keyframes does not change the geometry.
+- EDGE TO EDGE: the carousel viewport sits inside the wrapper that carries the 12px inset
+  added last task for AboutSection parity. Added `max-md:-mx-3` to the viewport to cancel
+  exactly that padding, so the carousel is full-bleed WITHOUT disturbing the text column.
+  Verified: viewport left edge **0**, first card left edge **0**, while the h2 stays at
+  **12px**.
+- VERIFIED 1280px (fresh load): **11/11 identical** — wrapper pad 40, viewport margins
+  0/-24, height 440, cards 440 with 0 margin, track gap 12, tech box 224x96 @ 36px padding,
+  icon 28, label 16.
+- SCOPE, re-flagged: `LogoCarousel`/`TechLogoCarousel` render on 12 pages, so the smaller
+  card applies to every page's mobile view.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0.
+
+## ExperimentalTestimonials — close the 24px gap on the RIGHT of the mobile carousel
+- MY PREVIOUS "edge to edge" WAS HALF-DONE: I verified the LEFT edge (0) and never
+  measured the right. There was a **24px** gap there.
+- ROOT CAUSE, from walking the ancestor chain: the carousel viewport is `w-full`, so its
+  width resolves against the wrapper's CONTENT box = 390 - 24 (px-3 both sides) = **366px**.
+  `max-md:-mx-3` then shifts it left to x=0 — but a negative margin does not STRETCH a
+  `width:100%` box, so it still ended at 366, leaving exactly the 24px seen.
+- FIX: `max-md:w-[calc(100%+1.5rem)]` alongside the existing `-mx-3` — width grown by BOTH
+  paddings (24px) so the box spans the full viewport.
+- VERIFIED 390px: left **0**, right **390**, width **390**, right gap **24 -> 0**,
+  `FULL_BLEED: true`; the text column still sits at **12px**; and
+  `scrollWidth - clientWidth <= 0`, so no horizontal page scroll was introduced.
+- DESKTOP: 7 of 8 fields identical (wrapper pad 40, margins 0/-24, height 440, cards 440,
+  gap 12, 2 arrows). The 8th, viewport width, came back 774 against an expected 735 — but
+  **735 was a value I invented, not a measured baseline**; I had never recorded desktop
+  viewport width. Confirmed 774 is the untouched value by deriving it from the layout:
+  wrapper content 1185 - text column 395 - flex gap 40 = 750, + 24 from the pre-existing
+  `-mr-6` = **774**, matching exactly. The new class is `max-md` and provably inactive
+  at this width.
+- LESSON: don't compare against invented "baseline" numbers — either measure before the
+  edit or derive the expected value; a fabricated expectation manufactures a fake diff.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0.
+
+## ServiceSection — drop the top shadow and give the last card more bottom padding (mobile)
+- THE "TOP SHADOW" IS NOT IN THE COMPONENT: it is on the ServiceSection WRAPPER in
+  `src/app/home/page.tsx:209` —
+  `shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]`.
+  Both offsets have a NEGATIVE Y, i.e. the shadow is cast UPWARD over the section above —
+  that is the seam being seen. Confirmed by reading computed `boxShadow` before editing.
+- CHANGED (2 one-class edits, 2 files):
+  * `page.tsx:209` `max-md:shadow-none` — kills both upward shadows on mobile only.
+  * `ServiceSection.tsx` card `max-md:last:pb-10` — `last:` targets the 8th card with no
+    index threading; bottom padding **20px -> 40px**.
+- VERIFIED 390px (cache-busted): wrapper boxShadow now all-transparent with no -8px/-4px
+  offsets (`removed: true`); last card **40px** while the other seven stay **20px**
+  (`othersUnchanged: true`); the cards' own `max-md:shadow-sm` is intact — only the
+  wrapper's upward shadow went.
+- VERIFIED 1280px (fresh load): the -8px and -4px shadows are both still present, all 8
+  cards share 48px bottom padding, `max-md` inactive — desktop untouched.
+- NOTE: the last card now has asymmetric padding (20 top / 40 bottom), so its content sits
+  slightly high in the box. That is inherent to "increase the padding bottom in the last
+  card"; if the intent was breathing room BEFORE the next section, the section's own
+  `pb` would be the cleaner lever.
+- `bunx tsc --noEmit` exit 0.
+
+## ExperimentalTestimonials — smaller card text + tighter x padding (mobile)
+- CHANGED (5 classes, all `max-md:`, in `src/components/home/ExperimentalTestimonials.tsx`):
+  card `max-md:px-5` (x padding **32 -> 20px**, and ONLY x — `p-8`'s 32px top/bottom is
+  kept, verified `cardPadTop: 32px`); quote `max-md:text-sm` (**18 -> 14px**);
+  name `max-md:text-sm` (**18 -> 14px**); role `max-md:text-[0.65rem]`
+  (**12 -> 10.4px**); initials avatar `max-md:h-10 max-md:w-10 max-md:text-xs`
+  (**48 -> 40px box, 14 -> 12px**) — it is inside the card and scales with the text.
+- DELIBERATELY CHANGED PADDING, NOT CARD WIDTH: the mobile marquee's seamless loop depends
+  on `track.scrollWidth / 2 === (cardWidth + marginRight) * (n/2)`. Touching `w-[300px]`
+  or `max-md:mr-4` would have re-broken the loop I fixed two tasks ago. Re-asserted after
+  this edit: **SEAMLESS_STILL: true**, card width still 300, and the carousel is still
+  full-bleed (left 0 / right 390).
+- VERIFIED 1280px (fresh load): **8/8 identical** — card padding 32/40, width 440,
+  quote 24, name 18, role 14, initials 56px @ 16px. `max-md` inactive.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0.
+
+## TechLogoCarousel — increase mobile bottom padding
+- FILE HAD CHANGED ON DISK since my last edit (user tuning): the class is now
+  `w-full overflow-hidden bg-white max-md:py-8 md:pb-32` — the old `py-16` is gone.
+  Read the live computed values before editing instead of trusting the previous entry.
+- ONE CLASS: added `max-md:pb-16` — bottom **32px -> 64px** on mobile, top left at 32px.
+- CASCADE CHECK, not assumed: `max-md:pb-16` and `max-md:py-8` are the same variant, so
+  the winner is Tailwind's utility sort order (pb after py) rather than specificity.
+  Verified at runtime that the override actually resolved — padBottom 64 while padTop
+  stayed 32 (`overrideResolvedCorrectly: true`).
+- VERIFIED 1280px (fresh load): padTop **0px** and padBottom **128px** (`md:pb-32`, and
+  there is no md top rule), logo card still 224x96, `max-md` inactive — desktop untouched.
+- SCOPE, as flagged before: this section renders on 12 pages, so the extra bottom padding
+  applies to every page's mobile view.
+- `bunx tsc --noEmit` exit 0.
+
+## ContactSection — coherent mobile scale for copy, form and gaps
+- DIAGNOSIS BY MEASUREMENT: at 390px almost every value was still the DESKTOP value —
+  card padding 32px, column gap 64px, button 18px, section padding 64px, inputs 58px tall.
+  That is the "inconsistency": the section had a `md:` scale but essentially no mobile one.
+- CHANGED — 17 measured values, all `max-md:` (one file):
+  section py 64->40, wrapper px 16->12 (now matches AboutSection, the running homepage
+  inset), column gap 64->40, tag 14->12 (+mb 24->16), title 36->30, description 18->16
+  (+mt 24->16), channels block mt 48->32 and gap 16->12, form card padding 32->20 and
+  radius 32->24, form section gap 32->20, 2-up row gaps 24->16, field gaps 12->8,
+  labels 12->10.4, input padding 20/16 -> 16/12 (height **58 -> 50**) and radius 16->12,
+  button 18->16 with padY 20->16 and radius 16->12, button wrapper pt 16->0 (the form's
+  own gap already spaces it).
+- ONE VALUE DELIBERATELY NOT REDUCED, and this is the interesting part: the inputs keep
+  `text-base` (**16px**). iOS Safari auto-zooms the viewport whenever a focused input's
+  font-size is under 16px, so shrinking it would make every field jerk the page on tap.
+  The size reduction there comes from padding instead — height still drops 58 -> 50px.
+  Asserted at runtime: `iOS_zoom_safe_inputs_still_16px: true`. Comment left in the file
+  so it is not "tidied" later.
+- VERIFIED 390px (cache-busted): all 17 before/after values measured, listed above.
+- VERIFIED 1280px (fresh load): **16/16 fields identical** — section 128/128, wrapper 40,
+  column gap 48, title 64, desc 18, channels mt 48, card pad 48, form gap 32, row gap 32,
+  field gap 12, label 12, input 16px @20px pad / 58px tall, button 18px @20px. `max-md`
+  inactive.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; repo biome **145/47 — baseline**.
+
+## Homepage — align tag/title/description to ServiceSection on mobile
+- REFERENCE MEASURED, NOT READ FROM SOURCE: ServiceSection's live mobile values are
+  **tag 12px / title 36px / desc 16px**. (Reading the classes would have given 14/48/20 —
+  the file has since been retuned, so the source no longer matches what renders.)
+- AUDIT of the three targets at 390px before editing:
+  * ExperimentalTestimonials — tag **14** MISMATCH, title 36 ok, desc **18** MISMATCH
+  * ContactSection — 12 / 36 / 16, **already matched**, no edit made
+  * BlogSection — tag **14** MISMATCH, title 36 ok, and it has **no description element
+    at all** (its heading block is tag + h2 only), so there was nothing to resize there
+- CHANGED (3 classes, 2 files): `ExperimentalTestimonials` tag `max-md:text-xs` (14->12)
+  and description `max-md:text-base` (18->16); `BlogSection` tag `max-md:text-xs` (14->12).
+  All titles were ALREADY 36px in all four sections — no title edits were needed.
+- VERIFIED 390px (cache-busted): all four sections now report **12 / 36 / 16**
+  (`ALL_ALIGNED: true`), BlogSection's desc correctly reported as `none`.
+- VERIFIED 1280px (fresh load): 9/9 fields identical — testimonials 14/60/18,
+  contact 14/64/18, blog 14/60/none. `max-md` inactive.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0.
+
+## BlogSection — mobile spacing consistency pass
+- MEASURED FIRST. Two real misalignments, not just "too big":
+  1. **The cards did not line up with the header.** The header block sat at `px-4` (16px)
+     while the card track wrapper had NO x padding at all, so card left edges were at 0.
+  2. The CTA was still full desktop size (64px tall / 18px / 44px icon) where every other
+     homepage section's mobile CTA had already been reduced to 48/16/36.
+- CHANGED (7 classes, 1 file), all `max-md:`:
+  header `px-3` (16->12, matching every other homepage section) and `mb-8` (48->32);
+  header row `gap-5` (32->20); CTA `h-12` + `text-base` + icon `h-9 w-9` (64/18/44 ->
+  48/16/36) + `gap-3`/`pr-2`; card track wrapper `px-3` (0->12) so cards align with the
+  header; card meta `text-xs` + `mb-2` (14->12, 12->8).
+- ALIGNMENT ASSERTED at 390px: tag, title and card left edges now ALL land at exactly
+  **12px** (`allLineUpAt12: true`) — previously 16/16/0.
+- VERIFIED 390px, 9 before/after values: headerPadX 16->12, headerMb 48->32,
+  headRowGap 32->20, ctaH 64->48, ctaFont 18->16, icon 44->36, trackWrapPadX 0->12,
+  metaFont 14->12, metaMb 12->8.
+- VERIFIED 1280px (fresh load): **11/11 identical** — header 40/80, row gap 32, CTA
+  64/18/44, track wrapper padding 0 with `flex-direction: row` and 12px gap (the drag
+  carousel is deliberately full-bleed on desktop), meta 14/12. `max-md` inactive.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; repo biome **145/47 — baseline**.
+
+## BlogSection — title second line indented, CTA right-aligned on mobile (both missed last task)
+- WHY I MISSED THEM: last task I asserted "alignment" by measuring the h2's and cards'
+  BOX left edges — all 12px, so it passed. But the h2's box left tells you nothing about
+  (a) the INK of its second line, which sits inside a padded child span, or (b) the CTA,
+  which I never measured horizontally at all. Box edges are not visual alignment.
+- BUG 1 — TITLE: the gradient word carries `pl-3`. Both title lines had box-left 12px, but
+  measuring the actual glyph boxes with a Range showed ink at **12px vs 24px** — a real
+  12px indent on line 2. Fixed with `max-md:pl-0` (applied to BOTH copies: the
+  `isDesktop` AnimatePresence branch and the static mobile fallback — only the second
+  actually renders on mobile, but leaving them divergent would be a trap).
+- BUG 2 — CTA: its wrapper is `justify-end`, so the button hugged the right edge at
+  x=193 while everything else started at 12. Fixed with `max-md:justify-start`.
+- VERIFIED 390px: title indent **12px -> 0** (`ALIGNED: true`), CTA left **193 -> 12**
+  (`justifyContent: flex-start`). Tag, title line 1, title line 2 and the button now all
+  report exactly **[12, 12, 12, 12]**.
+- DESKTOP: `gradPadLeft` still **12px** and `ctaJustify` still **flex-end**, right edge
+  1225, height 64, header padding 40 — unchanged. One metric (`line2Indent`) differed
+  from my expected 12, but that expectation was INVALID: on desktop the title is a single
+  line and the rotating word is mid-animation, showing a frozen
+  `translateX(-354.5px)` in this pane. Sampled 5x over 1.6s: padding constant at 12px,
+  offset constant — it is the frozen animation, not layout. **Second time this session I
+  compared against a fabricated baseline; measure or derive, never invent.**
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0.
+
+## Footer — mobile-only reorder (newsletter first, wordmark hidden)
+- REQUESTED MOBILE ORDER: newsletter+socials -> timezones -> links -> copyright, with the
+  giant "Softexedge" wordmark hidden.
+- THE STRUCTURAL PROBLEM, and why plain `order` could not do it: the four blocks are NOT
+  siblings. Newsletter and links live inside the top `grid`; timezones and copyright live
+  inside a separate `flex flex-col gap-16` group, with the wordmark between them. `order`
+  only sorts among siblings, so it cannot interleave children of two different parents.
+- SOLUTION: `max-md:contents` on BOTH wrappers. `display: contents` removes the wrapper's
+  own box so its children become direct children of the outer flex column — then all four
+  ARE siblings and `max-md:order-1..4` sorts them. Desktop keeps `grid` / `flex` untouched.
+- CONSEQUENCE HANDLED: a `contents` element contributes no padding or gap, so the
+  wrappers' `gap-12 pb-16` / `gap-16 pt-12` stop applying on mobile. Added
+  `max-md:gap-12` to the outer column to replace it, plus `max-md:pb-4` on the copyright
+  row. Without this the blocks would have butted together.
+- CHANGED: 8 classes in one file — outer `max-md:gap-12`; both wrappers `max-md:contents`;
+  newsletter `order-1`, timezones `order-2`, links `order-3`, copyright `order-4`;
+  wordmark `max-md:hidden`.
+- VERIFIED 390px, by sorting the blocks on their rendered `top` (not by reading classes):
+  **newsletter+socials -> timezones -> links -> copyright** (`CORRECT_ORDER: true`),
+  computed orders 1/2/3/4, both wrappers report `display: contents`, wordmark
+  `display: none` with height **0**, and the 3 social links are still inside the
+  newsletter block so they travelled with it as asked.
+- VERIFIED 1280px (fresh load): **6/6 identical** — grid still `grid`, bottom group still
+  `flex`, all four orders `0`, outer gap `normal`, wordmark visible at 316px tall, and DOM
+  order still links -> newsletter -> wordmark -> timezones -> copyright.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; repo biome **145/47 — baseline**.
+
+## ChannelCard — uniform background box pattern on mobile
+- ROOT CAUSE (ChannelCard.tsx:64): `gridColumns = colSpan.includes("sm:col-span-1") ? 3 : 6`
+  derives the pattern's column count from the card's DESKTOP span. Below `sm` every card
+  is full width, so the Email card drew 6 columns and Phone/Studio drew 3 — measured at
+  390px: identical 366px cards with cells of **60x60 vs 128x128**.
+- THE ORIGINAL LOGIC IS NOT WRONG, it just has a broken assumption on mobile: at >= sm the
+  wide card really is ~2x the narrow ones, so 6-vs-3 columns keeps CELL SIZE constant
+  (measured on desktop: 73px vs 71px; at 700px: 117px vs 116px). It only fails once the
+  width difference disappears.
+- FIX (one class + one style tweak, no hook, no JS branch): the inline
+  `gridTemplateColumns` now reads `repeat(var(--channel-cols, ${gridColumns}), ...)`, and
+  the grid carries `max-sm:[--channel-cols:6]`. Below sm every card is forced to 6; at
+  >= sm the var is unset so the per-card fallback applies untouched. An inline style beats
+  any class, so overriding via a CSS variable was the only way to keep the existing
+  `style` prop AND get a responsive value.
+- SCOPED TO `max-sm`, NOT `max-md`, deliberately: the col-span variants are `sm:`, so from
+  640px up the cards are 2-up with genuinely different widths and the per-card counts must
+  stay. Verified at 700px: still 6/3/3 with cells 117 vs 116 (`perCardLogicStillActive`).
+- VERIFIED 390px: all three cards **6 columns, 60x60 cells**, one distinct size
+  (`PATTERN_NOW_UNIFORM: true`) — was 60/128/128.
+- VERIFIED 1280px: cols **6/3/3** unchanged, `--channel-cols` reports `(unset)` on every
+  card, cells 73/71/71.
+- KNOWN, HARMLESS: `getIntensity()` still uses the JS `gridColumns` for its row/col math,
+  so on a narrow card below sm the hover falloff would be computed against 3 columns while
+  6 render. That path needs a mouse and cannot fire on the touch widths where they differ.
+- `bunx tsc --noEmit` exit 0; `bunx next build` exit 0.

@@ -75,7 +75,7 @@ export default function ExperimentalTestimonials() {
       id="testimonials"
       className="relative overflow-hidden bg-white pt-16 pb-8 text-zinc-900 md:pt-32"
     >
-      <div className="mx-auto flex w-full flex-col gap-10 px-4 md:px-10 lg:flex-row lg:items-stretch lg:gap-10">
+      <div className="mx-auto flex w-full flex-col gap-10 px-4 max-md:px-3 md:px-10 lg:flex-row lg:items-stretch lg:gap-10">
         <motion.div
           initial={isDesktop ? { opacity: 0, x: -30 } : false}
           whileInView={isDesktop ? { opacity: 1, x: 0 } : undefined}
@@ -89,7 +89,7 @@ export default function ExperimentalTestimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, ease: premiumEase }}
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:text-xs"
             >
               Testimonials
             </motion.p>
@@ -137,7 +137,7 @@ export default function ExperimentalTestimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
-              className="mt-5 max-w-sm text-lg leading-[1.25em] text-zinc-600 font-regular"
+              className="mt-5 max-w-sm text-lg leading-[1.25em] text-zinc-600 font-regular max-md:text-base"
             >
               Don't just take our word for it. Hear from the visionaries
               building our future every day
@@ -205,55 +205,75 @@ export default function ExperimentalTestimonials() {
           </div>
         </motion.div>
 
-        <div className="relative -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1 max-md:h-auto max-md:overflow-visible">
+        {/* Edge to edge on mobile without disturbing the text column's 12px inset:
+            -mx-3 pulls the box out over the wrapper's px-3, and the width must be
+            grown by BOTH paddings to match — `w-full` alone resolves to the
+            wrapper's content box (100% - 24px), so a negative margin shifts it
+            left but leaves 24px of dead space on the right. */}
+        <div className="relative -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1 max-md:-mx-3 max-md:h-auto max-md:w-[calc(100%+1.5rem)]">
           <motion.div
-            animate={isDesktop ? { x: -active * step } : undefined}
-            transition={{ duration: 0.6, ease: premiumEase }}
-            className="flex w-max flex-row gap-4 px-4 md:gap-3 max-md:w-full max-md:flex-col max-md:px-0"
+            // Desktop paginates by arrows (-active * step). Mobile has no arrows,
+            // so it self-scrolls: the track holds exactly two copies of the list,
+            // and -50% of its own width is precisely one copy — a seamless loop.
+            animate={isDesktop ? { x: -active * step } : { x: ["-50%", "0%"] }}
+            transition={
+              isDesktop
+                ? { duration: 0.6, ease: premiumEase }
+                : {
+                    duration: 40,
+                    ease: "linear",
+                    repeat: Number.POSITIVE_INFINITY,
+                    repeatType: "loop",
+                  }
+            }
+            // max-md:gap-0 + per-card mr-4 (below) instead of a flex gap: with a
+            // gap, N cards have only N-1 gaps, so -50% of the track is one gap
+            // short of exactly one copy and the loop jumps each cycle. Folding the
+            // spacing into each card makes width = 2N*(card+gap), so -50% lands
+            // precisely on the duplicate.
+            className="flex w-max flex-row gap-4 px-4 md:gap-3 max-md:gap-0 max-md:px-0"
           >
-            {(isDesktop ? duplicatedTestimonials : testimonials).map(
-              (item, i) => (
-                <div
-                  key={`${item.name}-${i}`}
-                  className="group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors sm:w-[360px] md:min-h-[440px] md:w-[440px] md:py-10"
-                >
-                  <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
-                    <svg
-                      width="48"
-                      height="48"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <title>Quote</title>
-                      <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" />
-                      <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
-                    </svg>
+            {duplicatedTestimonials.map((item, i) => (
+              <div
+                key={`${item.name}-${i}`}
+                className="group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors max-md:mr-4 max-md:px-5 sm:w-[360px] md:min-h-[440px] md:w-[440px] md:py-10"
+              >
+                <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <title>Quote</title>
+                    <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" />
+                    <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
+                  </svg>
+                </div>
+
+                <p className="relative z-10 mt-10 max-w-[100%] text-xl font-medium leading-[1.3em] lg:leading-[1.5em] tracking-tight text-zinc-900 max-md:text-sm md:mt-14 md:text-xl lg:text-2xl">
+                  "{item.quote}"
+                </p>
+
+                <div className="mt-8 flex items-center gap-4 md:mt-10">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-black/10 bg-black text-sm font-bold text-white max-md:h-10 max-md:w-10 max-md:text-xs md:h-14 md:w-14 md:text-base">
+                    {item.initials}
                   </div>
-
-                  <p className="relative z-10 mt-6 max-w-[100%] text-lg font-medium leading-[1.5em] tracking-tight text-zinc-900 md:mt-14 md:text-xl lg:text-2xl">
-                    "{item.quote}"
-                  </p>
-
-                  <div className="mt-8 flex items-center gap-4 md:mt-10">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-black/10 bg-black text-sm font-bold text-white md:h-14 md:w-14 md:text-base">
-                      {item.initials}
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-bold text-zinc-900">
-                        {item.name}
-                      </h4>
-                      <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-500 md:text-sm">
-                        {item.role}
-                      </p>
-                    </div>
+                  <div>
+                    <h4 className="text-lg font-bold text-zinc-900 max-md:text-sm">
+                      {item.name}
+                    </h4>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-500 max-md:text-[0.65rem] md:text-sm">
+                      {item.role}
+                    </p>
                   </div>
                 </div>
-              ),
-            )}
+              </div>
+            ))}
           </motion.div>
         </div>
       </div>
