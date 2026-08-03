@@ -376,8 +376,8 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
   return (
     <div
       className={cn(
-        "relative z-50 mx-auto flex w-full flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden transition-all duration-300",
-        visible && "bg-white/90 backdrop-blur-md",
+        "relative z-50 mx-auto flex w-full flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden transition-colors duration-300",
+        visible && "bg-white",
         className,
       )}
     >
@@ -403,9 +403,9 @@ export const MobileNavHeader = ({
   return (
     <div
       className={cn(
-        "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4 transition-all duration-300",
+        "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4 transition-colors duration-300",
         visible
-          ? "bg-white/90 backdrop-blur-md border-b border-black/5 shadow-xl"
+          ? "bg-white border-b border-black/5 shadow-xl"
           : "bg-transparent",
         className,
       )}

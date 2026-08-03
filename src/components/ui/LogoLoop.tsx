@@ -136,6 +136,7 @@ const useAnimationLoop = (
   isHovered: boolean,
   hoverSpeed: number | undefined,
   isVertical: boolean,
+  visibleRef: React.RefObject<boolean>,
 ) => {
   const rafRef = useRef<number | null>(null);
   const lastTimestampRef = useRef<number | null>(null);
@@ -171,6 +172,14 @@ const useAnimationLoop = (
     }
 
     const animate = (timestamp: number) => {
+      if (!visibleRef.current) {
+        // Drop the timestamp while paused so the resume frame starts from a
+        // zero delta instead of jumping by the whole offscreen duration.
+        lastTimestampRef.current = null;
+        rafRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
       if (lastTimestampRef.current === null) {
         lastTimestampRef.current = timestamp;
       }
@@ -209,7 +218,15 @@ const useAnimationLoop = (
       }
       lastTimestampRef.current = null;
     };
-  }, [targetVelocity, seqWidth, seqHeight, isHovered, hoverSpeed, isVertical]);
+  }, [
+    targetVelocity,
+    seqWidth,
+    seqHeight,
+    isHovered,
+    hoverSpeed,
+    isVertical,
+    visibleRef,
+  ]);
 };
 
 export const LogoLoop = React.memo<LogoLoopProps>(
@@ -233,6 +250,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const trackRef = useRef<HTMLDivElement>(null);
     const seqRef = useRef<HTMLUListElement>(null);
+    const visibleRef = useRef(true);
 
     const [seqWidth, setSeqWidth] = useState<number>(0);
     const [seqHeight, setSeqHeight] = useState<number>(0);
@@ -308,6 +326,23 @@ export const LogoLoop = React.memo<LogoLoopProps>(
       isVertical,
     ]);
 
+    useEffect(() => {
+      const container = containerRef.current;
+      if (!container || typeof IntersectionObserver === "undefined") return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            visibleRef.current = entry.isIntersecting;
+          }
+        },
+        { rootMargin: "200px" },
+      );
+      observer.observe(container);
+
+      return () => observer.disconnect();
+    }, []);
+
     useAnimationLoop(
       trackRef,
       targetVelocity,
@@ -316,6 +351,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
       isHovered,
       effectiveHoverSpeed,
       isVertical,
+      visibleRef,
     );
 
     const cssVariables = useMemo(

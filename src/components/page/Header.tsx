@@ -168,7 +168,7 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
         </NavBody>
 
         <MobileNav>
-          <MobileNavHeader className="transition-all duration-300">
+          <MobileNavHeader className="transition-colors duration-300">
             <CustomLogo onDark={onDark} />
             <MobileNavToggle
               isOpen={isMobileMenuOpen}

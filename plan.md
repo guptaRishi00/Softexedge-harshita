@@ -1,41 +1,54 @@
-# Plan: add the site's scroll-entry animation where it is genuinely missing
+# Plan: runtime jank fixes, zero visual change
 
-## Audit (measured, not assumed)
-- **68 component files already use `whileInView`** — the convention is well established.
-- Canonical shape (most common across the site):
-  ```jsx
-  initial={{ opacity: 0, y: 20 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  viewport={{ once: true, margin: "-50px" }}
-  transition={{ duration: 0.6, ease: premiumEase }}   // premiumEase = [0.16, 1, 0.3, 1]
-  ```
+## Context (measured this session, see SESSION_LOG)
+Already fixed earlier: offscreen video pause, 12→2 videos on /career, full
+next/image migration, hero canvas downscale, homepage mobile nav de-blur,
+hero video blur moved onto the video's own layer (found already done).
+Remaining measurable costs, all main-thread or per-frame:
 
-## Deliberately EXEMPT (not gaps — verified, do not touch)
-| Category | Why |
-|---|---|
-| All `*HeroSection` / `ProjectHero` (10 files) | above the fold; already animate on MOUNT via `initial`/`animate`. Scroll-entry is wrong here. |
-| `PortfolioSection`, `ServiceSection`, `StatsSection` | GSAP/ScrollTrigger-animated (confirmed: 8–16 gsap refs each) |
-| `NextProject`, `BlogArticle`, `OurTeamSection` carousel, `RelatedArticles` marquee | already scroll-driven via `useScroll`/`useTransform` |
-| Cards & sub-parts (`ProjectCard`, `BlogCard`, `QuoteCard`, `ChannelCard`, `Counter`, `InfiniteRow`, `EdgeToEdgeCarousel`, `RotatingWord`, `CarouselCard`) | animated by parent or on hover |
-| `Header`, `resizable-navbar`, `ui/` primitives | chrome / primitives |
+1. **Footer clock** — `setInterval(1000)` re-renders the entire ~150-node
+   framer-motion footer subtree every second on EVERY page, constructing 4
+   fresh `Intl.DateTimeFormat` per tick (~1ms measured, plus the re-render).
+2. **Other-pages mobile navbar** — `page/resizable-navbar.tsx` still has the
+   exact pattern removed from the homepage navbar: `backdrop-blur-md` on a
+   `fixed` bar + `transition-all`, nesting over hero blurs on 15 pages.
+   Mobile-only; identical to the change already approved for /home.
+3. **BlogSection marquee** — `useAnimationFrame` advances the desktop track
+   every frame for the page's entire lifetime, even when the section is far
+   offscreen (x.set on every rAF tick).
+4. **LogoLoop (hero "Trusted by" strip)** — its internal rAF velocity loop
+   likewise runs forever regardless of visibility.
+5. **PortfolioSection dead state** — `activeIndex` + `isDesktop` declared,
+   never read (the onUpdate that used them is gone). Dead code + 2 biome
+   errors; trivial removal.
 
-## Real gaps to fix
-| # | File(s) | What's missing | Route |
-|---|---|---|---|
-| G1 | `*/ProjectShowcase.tsx` × 8 service dirs | section header (eyebrow `<span>`, `<h2>`, `<p>`) are plain elements with no entry animation. 7 of 8 are byte-identical (md5 `9d017973b2a9`); `brand-strategy` differs. | opus (multi-file coherence) |
-| G2 | `about/OurTeamSection.tsx` | `<h2>` at :130 + its eyebrow have no entry animation (carousel below is already scroll-driven) | sonnet |
-| G3 | `blog/RelatedArticles.tsx` | `<h2>` at :139 + eyebrow have no entry animation | sonnet |
-| G4 | `blog/ArticleBlock.tsx`, `ShareRail.tsx`, `TableOfContents.tsx` | zero framer-motion; blog article body sections appear with no entry | sonnet |
+Pausing an offscreen marquee is visually undetectable by definition: the
+gated loops keep their position (early-return, no reset), so re-entry
+continues seamlessly. Declarative framer `repeat: Infinity` marquees
+(LogoCarousel, testimonials) are NOT gated — stopping those restarts their
+keyframes and could visibly jump; their per-frame cost is one transform
+write each. Out of scope, flagged: 49.8MB `video1.mp4` re-encode (no ffmpeg
+on this machine), `SubServices` ReactLenis-per-section, portfolio chip
+blurs (visible change), dev-mode overhead (prod build is the honest judge).
 
-## Constraints (echo into every brief)
-- Import/reuse the file's existing `premiumEase` if present; else `[0.16, 1, 0.3, 1]`.
-- `viewport={{ once: true, margin: "-50px" }}` — never re-trigger.
-- Convert existing elements to `motion.*` **in place**; do NOT add wrapper divs (they can change layout/height — several pages have stick lines derived from measured pixel heights).
-- No layout/spacing/copy changes. No new dependencies. Codebase has NO comments — add none.
-- Stagger only via `transition.delay` on siblings (≤0.15s steps), matching existing usage.
+## Steps
 
-## Flagged, NOT doing without approval
-- `home/Herosection.tsx` has **no entry animation at all** (no framer, no GSAP) — but it is the homepage hero, above the fold. The right fix is a MOUNT animation like the other heroes, not scroll-entry. Prominent visual change → asking first.
+| # | route | files | change | acceptance |
+|---|---|---|---|---|
+| 1 | sonnet | `src/components/layout/Footer.tsx` | Hoist 4 `Intl.DateTimeFormat` to module scope (one per tz, created once). Extract a leaf `<LocalTime timeZone>` client component holding the 1s interval + its own state, so the tick re-renders 4 tiny leaves instead of the whole footer. Markup/classes byte-identical. | `bunx tsc --noEmit` exit 0; grep shows formatters at module scope and no `setInterval` in `Footer()` body |
+| 2 | sonnet | `src/components/page/resizable-navbar.tsx`, `src/components/page/Header.tsx` | Mirror the approved homepage fix: in `MobileNav` (:379-380) and `MobileNavHeader` only — `bg-white/90 backdrop-blur-md` → `bg-white`, `transition-all` → `transition-colors`; Header caller (:171) `transition-all` → `transition-colors`. Desktop `NavBody` (:133) and mega-menu overlay (:183) untouched. | grep: zero `backdrop-blur` inside the two Mobile components; `bunx tsc --noEmit` exit 0 |
+| 3 | sonnet | `src/components/home/PortfolioSection.tsx` | Delete unused `activeIndex` state, `isDesktop`, and their now-orphaned imports (`useState` stays if still used elsewhere; `useIsDesktop` import goes). | biome no longer reports :91/:92 `noUnusedVariables`; `bunx tsc --noEmit` exit 0 |
+| 4 | opus | `src/components/home/BlogSection.tsx` | Gate the `useAnimationFrame` callback with framer's `useInView` on the track's existing wrapper ref (early return when not in view; `x` untouched so position persists — no jump on re-entry). | `bunx tsc --noEmit` exit 0; code shows in-view guard as first statement of the callback |
+| 5 | opus | `src/components/ui/LogoLoop.tsx` | Pause the internal rAF loop while the host is outside the viewport: one IntersectionObserver setting a ref flag, frame callback early-returns on it. Measurement (`seqWidth`/ResizeObserver) logic untouched. | `bunx tsc --noEmit` exit 0; frame callback early-returns on the visibility flag |
 
-## Verification per step
-`bunx tsc --noEmit` exit 0; per-file biome vs HEAD worktree unchanged; live check that the target elements exist and carry framer's inline `opacity/transform` at rest.
+Routing: 3× sonnet, 2× opus, 0× driver (0% ≤ 20% budget).
+Done gate: `spec-verifier` on the combined diff (workers wrote the code — the
+T1 carve-out keeps the gate). Then driver runs `bunx next build` + repo biome
+totals vs the 145/47 baseline.
+
+## Constraints (echoed into every brief)
+- Zero visual change (step 2's mobile nav is the one approved-precedent
+  exception, identical to the /home change already shipped).
+- Desktop untouched everywhere; mobile-only variants where applicable.
+- Minimal diff; no reformatting; no drive-by refactors; no new deps.
+- No comments that narrate the change; only why-comments where needed.

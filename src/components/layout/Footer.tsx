@@ -2,7 +2,7 @@
 
 import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { MdArrowOutward } from "react-icons/md";
 import { RiInstagramLine } from "react-icons/ri";
@@ -71,31 +71,77 @@ const brandLetter: Variants = {
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
-export default function Footer() {
-  const [mounted, setMounted] = useState(false);
-  const [time, setTime] = useState(new Date());
+const timeFormatters: Record<string, Intl.DateTimeFormat> = {
+  "America/Toronto": new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: "America/Toronto",
+    hour12: true,
+  }),
+  "Asia/Tokyo": new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: "Asia/Tokyo",
+    hour12: true,
+  }),
+  "Europe/London": new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: "Europe/London",
+    hour12: true,
+  }),
+  "Europe/Paris": new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZone: "Europe/Paris",
+    hour12: true,
+  }),
+};
 
-  useEffect(() => {
-    setMounted(true);
-    const interval = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(interval);
-  }, []);
+// One interval shared by every clock rather than one each: independent timers
+// drift, so two clocks could straddle a second boundary and show different
+// times. Subscribers get the same snapshot, and only these leaves re-render.
+let sharedNow: Date | null = null;
+let sharedTimer: ReturnType<typeof setInterval> | null = null;
+const tickListeners = new Set<() => void>();
 
-  const formatTime = (timeZone: string) => {
-    if (!mounted) return "00:00:00 AM";
-    try {
-      return new Intl.DateTimeFormat("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        timeZone,
-        hour12: true,
-      }).format(time);
-    } catch (e) {
-      return "00:00:00 AM";
+const subscribeToTick = (onTick: () => void) => {
+  tickListeners.add(onTick);
+  if (!sharedTimer) {
+    sharedNow = new Date();
+    sharedTimer = setInterval(() => {
+      sharedNow = new Date();
+      for (const listener of tickListeners) listener();
+    }, 1000);
+  }
+  return () => {
+    tickListeners.delete(onTick);
+    if (tickListeners.size === 0 && sharedTimer) {
+      clearInterval(sharedTimer);
+      sharedTimer = null;
     }
   };
+};
 
+const getTick = () => sharedNow;
+const getServerTick = () => null;
+
+function LocalTime({ timeZone }: { timeZone: string }) {
+  const time = useSyncExternalStore(subscribeToTick, getTick, getServerTick);
+
+  if (!time) return "00:00:00 AM";
+  try {
+    return timeFormatters[timeZone].format(time);
+  } catch {
+    return "00:00:00 AM";
+  }
+}
+
+export default function Footer() {
   return (
     <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-8 text-white md:pt-24 lg:pt-32">
       <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay" />
@@ -246,7 +292,7 @@ export default function Footer() {
                 </span>
               </div>
               <div className="tabular-nums text-white/40">
-                {formatTime("America/Toronto")}
+                <LocalTime timeZone="America/Toronto" />
               </div>
             </div>
 
@@ -258,7 +304,7 @@ export default function Footer() {
                 </span>
               </div>
               <div className="tabular-nums text-white/40">
-                {formatTime("Asia/Tokyo")}
+                <LocalTime timeZone="Asia/Tokyo" />
               </div>
             </div>
 
@@ -270,7 +316,7 @@ export default function Footer() {
                 </span>
               </div>
               <div className="tabular-nums text-white/40">
-                {formatTime("Europe/London")}
+                <LocalTime timeZone="Europe/London" />
               </div>
             </div>
 
@@ -282,7 +328,7 @@ export default function Footer() {
                 </span>
               </div>
               <div className="tabular-nums text-white/40">
-                {formatTime("Europe/Paris")}
+                <LocalTime timeZone="Europe/Paris" />
               </div>
             </div>
           </motion.div>

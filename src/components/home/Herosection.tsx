@@ -85,7 +85,7 @@ export default function Herosection({}: any) {
           filters never touch. */}
       <video
         ref={mainVideoRef}
-        src="/assets/hero.mp4"
+        src="/assets/video6.mp4"
         autoPlay
         loop
         muted

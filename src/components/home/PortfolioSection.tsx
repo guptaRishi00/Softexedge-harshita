@@ -5,8 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { useIsDesktop } from "@/lib/useIsDesktop";
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
 
 if (typeof window !== "undefined") {
@@ -88,9 +87,6 @@ export default function PortfolioSection() {
   const trackRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
 
-  const [activeIndex, setActiveIndex] = useState(0);
-  const isDesktop = useIsDesktop();
-
   const { contextSafe } = useGSAP(
     () => {
       const mm = gsap.matchMedia();
@@ -152,12 +148,6 @@ export default function PortfolioSection() {
                   duration: { min: 0.15, max: 0.4 },
                   delay: 0.08,
                   ease: "power1.inOut",
-                },
-                onUpdate: (self) => {
-                  const newIndex = Math.round(
-                    Math.min(1, self.progress / xPhase) * (projects.length - 1),
-                  );
-                  setActiveIndex(newIndex);
                 },
               },
             })

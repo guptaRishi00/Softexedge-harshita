@@ -4,6 +4,7 @@ import {
   AnimatePresence,
   motion,
   useAnimationFrame,
+  useInView,
   useMotionValue,
   useTransform,
 } from "framer-motion";
@@ -108,8 +109,10 @@ export default function BlogSection() {
     loopWidth ? wrap(-loopWidth, 0, v) : v,
   );
 
+  const trackInView = useInView(trackRef, { margin: "200px" });
+
   useAnimationFrame((_, delta) => {
-    if (!isDesktop || dragging.current || !loopWidth) return;
+    if (!trackInView || !isDesktop || dragging.current || !loopWidth) return;
     const step = (loopWidth / SCROLL_SECONDS) * (delta / 1000);
     x.set(wrap(-loopWidth, 0, x.get() - step));
   });

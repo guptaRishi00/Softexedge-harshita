@@ -8576,3 +8576,59 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
   so on a narrow card below sm the hover falloff would be computed against 3 columns while
   6 render. That path needs a mouse and cannot fire on the touch widths where they differ.
 - `bunx tsc --noEmit` exit 0; `bunx next build` exit 0.
+
+## /worker: runtime jank pass — 5 steps, zero visual change
+- ROUTING: planned 3x sonnet + 2x opus + 0 driver. EXECUTED as planned, with 2 driver
+  reroutes for corrections (both my fault or trivial, see below). No step failed twice.
+- WHAT SHIPPED:
+  1. **Footer clock** (sonnet): 4 `Intl.DateTimeFormat` hoisted to module scope; the 1s
+     interval moved out of `Footer` into a `<LocalTime>` leaf, so a tick re-renders 4 text
+     nodes instead of the ~150-node framer subtree — on EVERY page.
+  2. **page/ mobile navbar** (sonnet, 15 pages): `backdrop-blur-md` -> opaque `bg-white`
+     and `transition-all` -> `transition-colors` on `MobileNav` + `MobileNavHeader`, plus
+     the `Header.tsx` caller (tailwind-merge would otherwise let the caller's
+     `transition-all` win — the exact trap hit on the /home copy). A backdrop-filter on a
+     `fixed` bar re-samples everything scrolling beneath it every frame.
+  3. **PortfolioSection** (sonnet -> driver): see correction below.
+  4. **BlogSection marquee** (opus): `useAnimationFrame` gated by `useInView(trackRef,
+     {margin:"200px"})`; `x` never reset so position persists.
+  5. **LogoLoop** (opus): rAF work gated by an IntersectionObserver ref flag
+     (`rootMargin: 200px`); `lastTimestampRef` nulled while paused so resume delta is 0.
+- **MY PLANNING ERROR, caught by central verification**: the plan asserted
+  PortfolioSection's `activeIndex` was fully dead ("the onUpdate that used them is gone").
+  It was not — `setActiveIndex` was still called in the ScrollTrigger `onUpdate`. The
+  worker followed the brief and deleted the declaration, leaving an orphaned call:
+  `tsc` error TS2304. Driver fixed. Then spec-verifier (F9) pointed out the deeper truth:
+  that `onUpdate` existed ONLY to write state nothing reads, re-rendering the section on
+  every scroll tick of the pinned horizontal scroll. Removed the whole `onUpdate` — which
+  turned a lint cleanup into an actual jank fix.
+- **SPEC-VERIFIER (worker-written code, so the gate applies) — 9 findings, triaged:**
+  * F1 (P1) `ServiceSection.tsx lg:text-xl` desktop change — **NOT OURS**: that file was in
+    no worker's allowlist; it is a pre-existing uncommitted user edit. Left untouched and
+    reported rather than reverted.
+  * F3 (P2) four independent 1s intervals can drift and straddle a second boundary, so two
+    clocks could show different times — a real visual regression vs the old single `time`
+    state. FIXED: one module-level interval + `useSyncExternalStore`, so all four share a
+    snapshot AND only the leaves re-render (strictly better than both prior versions).
+  * F9 (P3) — addressed above.
+  * F2 (P2) LogoLoop still *schedules* a rAF each frame, only skipping the work.
+    ACCEPTED KNOWINGLY: the cost is a function call + boolean; the expensive part (math +
+    `style.transform` write) is what's skipped. Truly stopping the loop needs the animate
+    fn hoisted into a ref and restarted from the observer — more risk than the win.
+  * F4/F6/F8 (P3) accepted: module-scope formatter construction is outside the try/catch
+    (needs a runtime without full ICU to matter), `visibleRef` starts `true` (1-2 frames),
+    and `visibleRef` in the deps array is required by biome, not noise.
+  * F5 (P3): `transition-colors` no longer fades `shadow-xl`/`border-b` on the mobile bar —
+    inherent to the fix and identical to the already-shipped /home behaviour.
+- VERIFIED: `bunx tsc --noEmit` exit 0; `bunx next build` exit 0; repo biome **145 errors /
+  44 warnings vs the 145/47 baseline** — zero new errors, 3 fewer warnings. Per changed
+  file vs its own HEAD: Footer 3->2, PortfolioSection 4->2, BlogSection 1->1, LogoLoop
+  29->29, page/resizable-navbar 9->9, page/Header 8->8.
+- VISUAL-INERTNESS EVIDENCE: prerendered `contact.html` shows the 4 clocks as
+  `tabular-nums text-white/40">00:00:00 AM<` — same placeholder, same DOM, no wrapper
+  element added. Mobile nav components contain **0** `backdrop-blur`; the desktop pill
+  (`backdrop-blur-2xl`, :133) and mega-menu overlay (:183) are untouched.
+- STILL OUT OF SCOPE (flagged, not done): 49.8MB 4K `video1.mp4` re-encode (no ffmpeg here)
+  — the single biggest remaining win; per-section `ReactLenis` in all 8 `SubServices`;
+  declarative `repeat: Infinity` marquees (LogoCarousel/testimonials) left ungated because
+  stopping them restarts keyframes and would visibly jump.

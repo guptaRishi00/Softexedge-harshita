@@ -204,7 +204,7 @@ export default function ServiceSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
-              className="max-w-2xl text-md font-light leading-[1.25em] text-white md:text-left"
+              className="max-w-2xl text-md lg:text-xl font-light leading-[1.25em] text-white md:text-left"
             >
               We merge strategic thinking with bold creative execution to
               deliver scalable digital experiences that elevate your brand
