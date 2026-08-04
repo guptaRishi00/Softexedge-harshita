@@ -14,10 +14,13 @@ if (typeof window !== "undefined") {
 }
 
 const AUTO_ADVANCE_SECONDS = 6;
-// Mobile carousel: one slide every 4.5s, and any touch hands control to the
-// user for 6s before autoplay resumes.
+// Mobile carousel: one slide every 4.5s, each slide taking 600ms, and autoplay
+// resuming 1.5s after the finger lifts.
 const MOBILE_AUTOPLAY_MS = 4500;
-const MOBILE_RESUME_MS = 6000;
+const MOBILE_RESUME_MS = 1500;
+const MOBILE_SLIDE_MS = 600;
+// A held pointer expires after this, so a missing pointerup can never stall it.
+const MOBILE_STUCK_POINTER_MS = 5000;
 
 const projects = [
   {
@@ -95,53 +98,117 @@ export default function PortfolioSection() {
 
   // Mobile autoplay. Dragging is NOT implemented in JS: below `md` the track is
   // a native scroll-snap container, so the browser owns the drag, the momentum
-  // and the snapping — nothing runs per frame, which is the only way this stays
-  // smooth on a phone. Autoplay is just a timer nudging native smooth scroll.
+  // and the snapping — nothing runs per frame while the user is in control.
   useEffect(() => {
     if (isDesktop) return;
     const track = trackRef.current;
     if (!track) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    let visible = true;
-    let paused = false;
-    let resumeId: ReturnType<typeof setTimeout> | undefined;
+    // Every gate below is a synchronous check made at tick time, never a flag
+    // set by an async callback. The previous version gated on an
+    // IntersectionObserver `visible` flag and a setTimeout-cleared `paused`
+    // flag; if either callback failed to arrive — a missed IO delivery, a
+    // `pointerdown` whose `pointerup`/`pointercancel` never came — the flag
+    // latched and autoplay was dead permanently with no way back.
+    let pointerDown = false;
+    let lastInteraction = 0;
+
+    let tween = 0;
+    let tweenStarted = 0;
+
+    // Autoplay drives scrollLeft itself instead of asking for
+    // `behavior: "smooth"`. Programmatic smooth scrolling is the one link here
+    // with no guarantee — it is ignored outright in some mobile browsers and
+    // fights `scroll-snap-type: mandatory` in others, which left the carousel
+    // sitting still. A rAF tween always moves. Snap is switched off for the
+    // duration so it cannot re-snap mid-tween, then restored to land the slide.
+    const animateTo = (to: number) => {
+      const from = track.scrollLeft;
+      const distance = to - from;
+      if (Math.abs(distance) < 1) return;
+
+      const snapBefore = track.style.scrollSnapType;
+      track.style.scrollSnapType = "none";
+      const started = performance.now();
+      tweenStarted = started;
+
+      const step = (now: number) => {
+        const p = Math.min(1, (now - started) / MOBILE_SLIDE_MS);
+        const eased = p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
+        track.scrollLeft = from + distance * eased;
+        if (p < 1) {
+          tween = requestAnimationFrame(step);
+        } else {
+          tween = 0;
+          track.style.scrollSnapType = snapBefore;
+        }
+      };
+      tween = requestAnimationFrame(step);
+    };
+
+    const stopTween = () => {
+      if (!tween) return;
+      cancelAnimationFrame(tween);
+      tween = 0;
+      track.style.scrollSnapType = "";
+    };
+
+    // Measured fresh each tick rather than tracked by an observer, so it can
+    // never be stale. One layout read every 4.5s is nothing.
+    const isOnScreen = () => {
+      const rect = track.getBoundingClientRect();
+      return rect.bottom > 0 && rect.top < window.innerHeight;
+    };
 
     const advance = () => {
-      if (paused || !visible) return;
+      const now = performance.now();
+      // A tween whose rAF never ran (backgrounded tab, throttled renderer)
+      // would otherwise leave `tween` set and block autoplay forever. Reclaim
+      // it once it has overshot its own duration.
+      if (tween && now - tweenStarted > MOBILE_SLIDE_MS * 3) stopTween();
+      if (tween) return;
+      // A pointerdown whose up/cancel never arrived must not stall autoplay
+      // for good, so the held state expires on its own.
+      if (pointerDown && now - lastInteraction < MOBILE_STUCK_POINTER_MS) return;
+      if (now - lastInteraction < MOBILE_RESUME_MS) return;
+      if (!isOnScreen()) return;
+
       const page = track.clientWidth;
       const atEnd = track.scrollLeft >= track.scrollWidth - page - 1;
-      track.scrollTo({
-        left: atEnd ? 0 : track.scrollLeft + page,
-        behavior: "smooth",
-      });
+      animateTo(atEnd ? 0 : track.scrollLeft + page);
     };
     const tick = setInterval(advance, MOBILE_AUTOPLAY_MS);
 
-    // Touching the carousel hands it to the user; autoplay only resumes once
-    // they have been idle, so it never fights a drag.
+    // Pause only while the finger is actually down, plus a short settle — NOT
+    // for a fixed spell after any touch. The previous version paused for
+    // seconds on every `touchstart`, including the incidental touches of
+    // scrolling the PAGE past the carousel, so on a phone it could sit still
+    // for ~10s after each swipe and looked like it never moved at all.
     const hold = () => {
-      paused = true;
-      clearTimeout(resumeId);
-      resumeId = setTimeout(() => {
-        paused = false;
-      }, MOBILE_RESUME_MS);
+      stopTween();
+      pointerDown = true;
+      lastInteraction = performance.now();
     };
-    const events = ["pointerdown", "touchstart", "wheel"] as const;
-    for (const evt of events) {
+    const release = () => {
+      pointerDown = false;
+      lastInteraction = performance.now();
+    };
+    // wheel has no matching "up", so hold+release act as a debounce there
+    const holdEvents = ["pointerdown", "wheel"] as const;
+    const releaseEvents = ["pointerup", "pointercancel", "wheel"] as const;
+    for (const evt of holdEvents) {
       track.addEventListener(evt, hold, { passive: true });
     }
-
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) visible = entry.isIntersecting;
-    });
-    observer.observe(track);
+    for (const evt of releaseEvents) {
+      track.addEventListener(evt, release, { passive: true });
+    }
 
     return () => {
       clearInterval(tick);
-      clearTimeout(resumeId);
-      observer.disconnect();
-      for (const evt of events) track.removeEventListener(evt, hold);
+      stopTween();
+      for (const evt of holdEvents) track.removeEventListener(evt, hold);
+      for (const evt of releaseEvents) track.removeEventListener(evt, release);
     };
   }, [isDesktop]);
 

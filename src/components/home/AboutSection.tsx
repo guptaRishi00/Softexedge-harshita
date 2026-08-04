@@ -112,7 +112,10 @@ export default function AboutSection() {
 
       <div className="relative z-10 mx-auto">
         <div className="grid items-center gap-16 max-md:gap-8 lg:grid-cols-[1fr_0.9fr]">
-          <div className="relative mt-20 max-md:mt-0 max-md:bg-white">
+          {/* Below md the two grid items swap via `order` so the image leads and
+              the copy follows. The copy column is already tag -> title ->
+              description -> button, so nothing inside it needs reordering. */}
+          <div className="relative mt-20 max-md:order-2 max-md:mt-0 max-md:bg-white">
             <motion.p
               variants={textReveal}
               className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium pl-[5px] max-md:mb-7 max-md:text-xs"
@@ -210,7 +213,7 @@ export default function AboutSection() {
             whileInView={isDesktop ? { opacity: 1, scale: 1, y: 0 } : undefined}
             transition={{ duration: 1.2, ease: premiumEase }}
             viewport={{ once: false }}
-            className="relative flex items-center justify-center pt-10 max-md:pt-0"
+            className="relative flex items-center justify-center pt-10 max-md:order-1 max-md:pt-0"
           >
             <motion.div
               animate={isDesktop ? { rotate: 360 } : undefined}

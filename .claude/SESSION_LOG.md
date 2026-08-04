@@ -9123,3 +9123,439 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
   gap. If it needs to come down further the remaining levers are the row's 28px or a
   negative-margin overlap, not more section padding.
 - `bunx tsc --noEmit` exit 0.
+
+## ExperimentalTestimonials — CTA matched to AboutSection's on mobile
+- The two CTAs were already structurally identical (same markup, same base classes, only
+  the SVG gradient id differs: `testimonial-icon-grad` vs `about-connect-icon-grad` — kept
+  distinct on purpose, a shared id across call sites silently breaks the gradient).
+  ExperimentalTestimonials simply had ZERO `max-md:` variants.
+- CHANGE: copied AboutSection's five mobile treatments verbatim —
+  * Link: `max-md:h-12 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5`
+  * label: `max-md:text-base`
+  * icon box: `max-md:h-9 max-md:w-9 max-md:rounded-lg`
+  * plain arrow: `max-md:-translate-y-8 max-md:translate-x-8`
+  * gradient arrow: `max-md:translate-x-0 max-md:translate-y-0`
+  So below md it also rests in the desktop hover state (black border, inset padding,
+  gradient arrow) — touch has no hover, so the resting state has to carry it.
+- VERIFIED 390px by measuring BOTH buttons and diffing them property-by-property rather
+  than eyeballing: height 48px, gap 12px, border rgb(0,0,0), padding 16/10px, radius 14px,
+  label 16px, icon box 36x36 r10px, plain arrow `32px -32px`, gradient arrow `0px`,
+  visible arrow "gradient" — **11/11 properties equal, `mismatches: []`, identical: true**.
+- VERIFIED 1265px: testimonials CTA resting state intact — border rgba(0,0,0,0),
+  padding-left 0px, height 64px, gap 20px, label 18px, icon box 44x44, plain arrow visible
+  and gradient parked at `-32px 32px`. Asserted in one boolean.
+- Reminder that bit earlier: read `.translate`, not `.transform` — Tailwind v4 emits
+  translate utilities via the CSS `translate` property.
+- `bunx tsc --noEmit` 0; biome on the file clean (0 diagnostics).
+
+## ExperimentalTestimonials + LogoCarousel — marquees moved to the compositor (mobile)
+- CAUSE: both were framer `animate={{x:["-50%","0%"]}}` with `repeat: Infinity` — framer
+  writes `transform` from JS every frame on its own rAF, so any main-thread stall stutters
+  them. Same root cause as the LogoLoop marquee fixed earlier.
+- FIX: the travel is a clean **-50%** (each track holds exactly two copies, so -50% is
+  precisely one copy), which means a CSS keyframe needs NO measurement — unlike the
+  LogoLoop fix, which had to thread a measured pixel width through `--logoloop-seq`.
+  Added `@keyframes marquee-half` + `.marquee-half` to globals.css, scoped in CSS to
+  `@media (width < 48rem)`, plus a `prefers-reduced-motion` override.
+- DESKTOP SAFETY BY CONSTRUCTION: the rule lives inside a media query, so it can never run
+  on desktop even during the `useIsDesktop()` false-on-first-render flip. framer is gated
+  `isDesktop ? … : undefined` on both components; desktop keeps its exact previous
+  behaviour (arrow pagination / 28s framer loop).
+- **BLAST RADIUS**: `LogoCarousel` is shared by 12 pages (per the map), so this mobile-only
+  perf fix lands on all of them. Same visuals everywhere; flagged to the user.
+- **DEV SERVER WAS SERVING STALE CSS — 3 grounded-loops attempts, then changed approach.**
+  Symptom: `animationName: none` with the rule absent from every stylesheet
+  (`ruleCount: 0`) while `matchMedia('(width < 48rem)')` matched. Discriminated with curl:
+  the served `src_app_globals_0p2ml0n.css` had **4** hits for the `no-scrollbar` rule added
+  earlier this session but **0** for `marquee-half` — so globals.css HAD compiled before
+  and has stopped recompiling. Likely my own concurrent `bunx next build` runs (the map
+  warns about exactly this). The :3000 dev server is external to this session, so I did not
+  kill a process I did not start — verified against a production build instead.
+- VERIFIED via `next build` output CSS: `@keyframes marquee-half{0%{transform:translate(-50%)}
+  to{transform:translate(0)}}` and `@media not all and (min-width:48rem){.marquee-half{...}}`
+  — the compiled form of `width < 48rem`, i.e. mobile only.
+- VERIFIED at runtime on `next start -p 3001` (server stopped afterwards), 390px: BOTH
+  tracks `animation-name: marquee-half`, `linear`, `infinite`, `will-change: transform`,
+  1 CSS animation object each with `playState: "running"` and keyframes
+  `translate(-50%) -> translate(0px)`; durations **40s** (testimonials) and **28s**
+  (logoCarousel) from `--marquee-duration`; framer inline transform EMPTY on both.
+  Child counts 8 and 22 — both even, so -50% is exactly one copy and the loop is seamless.
+- VERIFIED 1265px: `animation-name: none` on both (CSS off), and framer writes an inline
+  `transform` there while writing nothing on mobile — that empty-vs-present difference is
+  the direct proof of which engine owns each breakpoint.
+- `bunx tsc --noEmit` 0; biome clean on both changed components; `next build` ✓.
+- ACTION FOR USER: restart the :3000 dev server — it will keep serving the old CSS
+  (no marquee) until it does.
+
+## Marquees — moved from a globals.css keyframe to WAAPI in the component (my bug)
+- MY BUG, user-reported: after the previous entry the mobile carousels were STATIC. Cause
+  was not the code — it was that I put the animation in `globals.css`, and this dev server
+  had stopped recompiling that file. Proven with curl against the URL the page actually
+  references: served `src_app_globals_0p2ml0n.css` had **0** hits for `marquee-half` and
+  **4** for `no-scrollbar` (added earlier the same session), i.e. it compiled once and then
+  went stale. Telling the user to restart was not a fix; the fragility was mine.
+- FIX: `useMarqueeHalf(ref, seconds, enabled)` exported from `ui/LogoCarousel.tsx`, used by
+  both LogoCarousel and ExperimentalTestimonials. It runs the identical -50% -> 0 travel via
+  `element.animate()` (Web Animations API). WAAPI transform animations are composited
+  exactly like CSS keyframes — same perf — but they ship with the COMPONENT, so a stale
+  stylesheet can never freeze them again. Honours `prefers-reduced-motion` with a live
+  listener; cancels on unmount and whenever `enabled` goes false.
+- `@keyframes marquee-half` + `.marquee-half` deleted from globals.css and both class
+  usages removed, so there is exactly one mechanism (grep for `marquee-half` outside the
+  hook name returns nothing).
+- **LESSON (generalise this):** prefer component-carried animation over a globals.css rule
+  in this repo. globals.css has gone stale mid-session more than once; TSX always rebuilds.
+  The LogoLoop marquee still depends on a globals.css keyframe (`logoloop-marquee`) — it
+  works only because it compiled BEFORE the stylesheet froze. Worth migrating if it ever
+  goes static.
+- VERIFIED on the DEV SERVER the user is actually looking at (not just a prod build),
+  390px: both tracks carry exactly 1 animation, `playState: "running"`, `easing: linear`,
+  `iterations === Number.POSITIVE_INFINITY` (asserted — `getTiming()` serialises Infinity
+  as null in JSON, which is a reporting artifact, not a bug), keyframes
+  `translate3d(-50%,0,0) -> translate3d(0,0,0)`, durations **40000ms** (testimonials, 8
+  children) and **28000ms** (logoCarousel, 22 children); both child counts even, so -50%
+  is exactly one copy. framer's inline transform EMPTY on both.
+- VERIFIED 1265px: **0** WAAPI animations on both tracks (hook disabled by `!isDesktop`)
+  and framer writes the inline transform instead — desktop still on its original path.
+- `bunx tsc --noEmit` 0; biome clean on both files; `next build` ✓.
+
+## ExperimentalTestimonials — marquee made draggable (mobile), still auto-moving
+- APPROACH: drag SCRUBS THE ANIMATION'S OWN TIMELINE rather than maintaining a separate
+  offset. The track is two identical copies and the WAAPI animation runs -50% -> 0 over one
+  period, so one period == exactly one copy and `currentTime` can be wrapped modulo the
+  period with no visible seam. pointerdown pauses + records `currentTime`; pointermove maps
+  px -> ms linearly (`delta = dx / halfWidth * period`); pointerup resumes. No inline
+  transform juggling, no rAF, no state — a pointermove writes one number and the compositor
+  keeps painting.
+- Chose this over converting to a native `overflow-x-auto` scroller (the PortfolioSection
+  pattern) because that would have turned a CONTINUOUS marquee into a stepped carousel;
+  here the auto-motion is the point. Trade-off: no release-inertia, unlike native scroll —
+  releasing simply resumes the marquee.
+- `touch-action: pan-y` is set on the track while draggable (and restored on cleanup) so
+  the page still scrolls vertically while horizontal drags reach the handler.
+- Drag is OPT-IN via a 4th arg — `useMarqueeHalf(ref, seconds, enabled, draggable)`.
+  LogoCarousel keeps `draggable` false, so the 12 pages using it are unaffected.
+- VERIFIED 390px with a synthetic drag: playState `running` -> **`paused` on pointerdown**
+  -> **`running` on pointerup**; a 100px leftward drag moved currentTime by **-3165ms**
+  against an expected `(-100/1264)*40000 = -3165ms` (asserted equal within 1ms);
+  `touch-action: pan-y`.
+- WRAP EDGE VERIFIED: from t=500ms a leftward drag landed at **37335ms**, i.e. wrapped up
+  near the 40000ms period instead of going negative.
+- ISOLATION VERIFIED: the same synthetic drag on the LogoCarousel track left its
+  `currentTime` unchanged, playState `running`, `touch-action: auto` — drag really is
+  opt-in.
+- VERIFIED 1265px: **0** WAAPI animations, `touch-action: auto`, and a synthetic drag left
+  the transform untouched — desktop still on framer's arrow pagination.
+- `bunx tsc --noEmit` 0; biome clean on both files; `next build` ✓.
+
+## ExperimentalTestimonials drag — rewritten, my previous version was the lag
+- TWO REAL DEFECTS IN MY OWN DRAG CODE, both on the per-move hot path:
+  1. `onMove` called `el.getBoundingClientRect()` on EVERY pointermove — a forced layout
+     read, then immediately mutated `currentTime` (a style write). Read-after-write thrash
+     on every single event, at whatever rate the touchscreen fires.
+  2. Scrubbing `currentTime` on a PAUSED WAAPI animation is not composited — pausing drops
+     the animation off the compositor, so each scrub repainted the full 2528px track (8
+     cards with borders, gradients, shadows).
+- REWRITE: drag now cancels the animation and writes `transform` directly.
+  * `half` measured ONCE at pointerdown; zero layout reads during the drag.
+  * pointermove only updates a number and schedules one rAF; N moves in a frame collapse
+    to ONE style write (`paint`).
+  * `will-change: transform` held for the drag so the element keeps its compositor layer;
+    cleared on release.
+  * position <-> time is linear (`x = half * (t/period - 1)`), so release recreates the
+    animation at the matching time — no jump. x is wrapped into [-half, 0) and the two
+    copies are identical, so wrapping is invisible.
+- VERIFIED 390px, instrumenting `getBoundingClientRect` to count forced layouts:
+  **1 layout read at pointerdown, 0 added by 20 pointermoves**; `animations during drag: 0`
+  (cancelled, so nothing fights the inline transform); `will-change: transform` set;
+  inline transform `translate3d(-948px, 0, 0)` at pointerdown; the 20 moves left the
+  transform untouched, proving they were deferred to the coalescing rAF.
+  On release: 1 animation, `running`, resume time **6994ms vs 6994ms expected** for the
+  net -95px drag; inline transform AND will-change both cleared.
+- VERIFIED 1265px: 0 WAAPI animations, `touch-action: auto`, `will-change` unset, and a
+  synthetic drag left the transform unchanged — desktop still on framer pagination.
+  LogoCarousel also untouched (0 animations, `touch-action: auto`).
+- PANE NOTE: my first probe timed out because it awaited `requestAnimationFrame`, which
+  never fires here (0 frames in 14s, measured earlier). Consequence: the drag's visual
+  update cannot be observed in-pane at all — `paint` only runs on a real rAF. Everything
+  above is the wiring, measured; the smoothness itself needs the phone.
+- `bunx tsc --noEmit` 0; biome clean; `next build` ✓.
+
+## PortfolioSection autoplay — three fixes; motion NOT verifiable in-pane
+- USER: "it is not self moving". Drag was fine (native scroll), autoplay was not running.
+- LIKELIEST CAUSE, and the substantive fix: the pause guard was bound to `touchstart`
+  and paused for a FIXED 6s after ANY touch — including the incidental touches of
+  scrolling the PAGE past the carousel. With a 4.5s tick that is up to ~10s of stillness
+  after every swipe, which on a phone reads as "never moves". Now it pauses only while the
+  pointer is actually DOWN (`pointerdown`/`wheel` hold; `pointerup`/`pointercancel`/`wheel`
+  release) and resumes **1.5s** after the finger lifts (was 6s).
+- ALSO CHANGED:
+  * Autoplay drives `scrollLeft` with a 600ms rAF tween (easeInOutCubic) instead of
+    `scrollTo({behavior:"smooth"})`. Smooth scroll was the one link with no guarantee —
+    ignored in some mobile browsers, and it fights `scroll-snap-type: mandatory`. Snap is
+    set to `none` for the tween's duration and restored at the end so it lands the slide.
+  * Stale-tween self-heal: if a tween's rAF never runs (backgrounded/throttled renderer),
+    `tween` stayed non-zero and blocked autoplay FOREVER. `advance` now reclaims a tween
+    that has overshot 3x its duration. I watched this exact deadlock happen in the pane.
+- **HONEST VERIFICATION LIMIT — autoplay motion could NOT be exercised here at all.**
+  Three independent pane failures conspire, each measured with a control in the same run:
+  1. rAF frozen — `rafFramesInRun: 0` over 15s (it fired once in a moment when the pane
+     was briefly visible, then went back to 0).
+  2. IntersectionObserver latched — it delivers no callbacks, so `visible` stays at its
+     mount-time value (false, section below the fold). Even after `scrollIntoView` put the
+     track in the viewport (`trackInViewport: true`), tween starts stayed **0**.
+  3. `scrollTo({behavior:"smooth"})` frozen (measured in an earlier task).
+  A `pauseHoldsWhileFingerDown: true` reading was DISCARDED as evidence, not reported as a
+  pass: zero tweens would have started regardless, so it proves nothing.
+- WHAT IS VERIFIED: `bunx tsc --noEmit` 0; biome 2 errors == 2 on the HEAD copy (parity);
+  `next build` ✓; declaration order of `stopTween` before `advance` asserted by index.
+- VERIFIED 1265px: `overflow-x: visible`, `scroll-snap-type: none`, inline snap never
+  touched, GSAP transform intact, track 6400px, and a synthetic pointerdown/up left
+  scrollLeft unchanged — the mobile effect is not wired on desktop at all.
+- The three fixes are reasoned, not observed. If it still does not move on the phone, the
+  next thing to check is whether autoplay is being gated by `visible` (IntersectionObserver)
+  rather than by the pause guard.
+
+## PortfolioSection autoplay — FOUND IT: the async gates were latching
+- ROOT CAUSE (confirmed by measurement, not reasoning this time): autoplay was gated on
+  two flags set by ASYNC CALLBACKS — `visible` from an IntersectionObserver, and `paused`
+  cleared by a setTimeout. If a callback never arrived, the flag latched and autoplay was
+  dead permanently with no path back. In the pane the IO never delivers, so `visible`
+  stayed false forever and `advance` reached `animateTo` **0 times**. Same class of failure
+  on a phone: a `pointerdown` whose `pointerup`/`pointercancel` is swallowed (the browser
+  taking over a scroll gesture) latched `paused` the same way.
+- FIX — every gate is now a SYNCHRONOUS check made at tick time, so nothing can go stale:
+  * visibility: `getBoundingClientRect()` in `advance` (one layout read per 4.5s tick)
+    instead of an IntersectionObserver flag.
+  * interaction: a `lastInteraction` TIMESTAMP instead of a boolean cleared by a timer;
+    `pointerDown` additionally expires after 5s so a missing pointerup cannot stall it.
+  * IntersectionObserver and the resume `setTimeout` are gone entirely.
+- **MOTION VERIFIED END-TO-END for the first time** (390px). The pane's rAF is frozen, so
+  a working rAF was supplied; the stale-tween guard reclaimed the tween that had stalled on
+  the frozen one and the next tick ran on the shim. scrollLeft trail:
+  **0 -> 4 -> 21 -> 88 -> 220 -> 316 -> 371 -> 388 -> 390** — an easeInOutCubic curve
+  landing exactly on the 390px slide boundary; 23 rAF schedules for one 600ms tween;
+  `slidesAdvanced: 1`, `landedOnSlideBoundary: true`. That also proves the stale-tween
+  guard works, since without it the first stalled tween would have blocked everything.
+- BEFORE/AFTER on the same measurement: `animateTo` reached **0 times** with the IO gate,
+  **>=1 and then actually completing** with the rect gate.
+- VERIFIED 1265px over a 10s window spanning two autoplay intervals: `overflow-x: visible`,
+  `scroll-snap-type: none`, inline snap never touched, scrollLeft unchanged, GSAP transform
+  intact, track 6400px — the mobile effect never fires on desktop.
+- `bunx tsc --noEmit` 0; biome 2 errors == HEAD parity; `next build` ✓.
+- LESSON: prefer a synchronous check at use-time over a flag maintained by an async
+  callback for anything that gates a loop. A missed callback is unrecoverable; a stale read
+  is self-correcting.
+
+## AboutSection — image above the copy on mobile
+- The copy column was ALREADY tag -> title -> description -> button, so only the image
+  needed to move. Two classes, no markup moved: `max-md:order-2` on the copy column,
+  `max-md:order-1` on the image column. The parent is `grid`, and grid items honour
+  `order`.
+- Scoped `max-md:` (below 768px). The grid only becomes two columns at `lg`, so 768-1023px
+  keeps its existing copy-then-image stack — deliberately untouched, since the project's
+  mobile idiom is `max-md:`.
+- VERIFIED 390px by measuring rendered `top` positions, not markup order:
+  image 1035 -> tag 1487 -> title 1531 -> description 1659 -> button 1747, i.e. visual
+  order **["image","tag","title","description","button"]** asserted equal to the requested
+  order. Computed grid `order` values on the two items: **["2","1"]**; single column
+  (`grid-template-columns: 366.4px`).
+- VERIFIED 1265px: computed `order` is **"0" on both** items (the `max-md:` variant does not
+  apply), grid back to two tracks `589.888px 530.9px`, copy at left 40 vs image at left 774
+  with tops aligned — desktop side-by-side layout untouched.
+- `bunx tsc --noEmit` 0; biome 1 error == 1 on the HEAD copy (pre-existing `noArrayIndexKey`).
+
+## StatsSection — tighter gap between stats (mobile)
+- CHANGE (2 classes on `.stat-inner`): `py-10` -> `py-6` and `max-md:my-2` -> `max-md:my-1`.
+- The `py` edit is mobile-only BY CONSTRUCTION, not by a variant: the cn() list already
+  carries `md:py-10`, which re-asserts 40px from 768px up, so the base value governs only
+  below md. (Same trick as the ServiceSection row padding and the StatsSection divider
+  inset.) Left a comment saying so, since a bare `py-6` looks breakpoint-agnostic.
+- VERIFIED 390px: inner padding-y **40 -> 24px**, margin-y **8 -> 4px**, gap between
+  adjacent stat NUMBERS (ink to ink) **137.2 -> 97.2px** (-29%), row box gap 16 -> 8,
+  row height 193.2 -> 153.2, section height **792.8 -> 632.8**. Unchanged: number
+  font-size 48px, padding-x 12px, all 3 dividers still rendering, and `uniformAcrossRows`
+  asserted true so no row got special-cased.
+- VERIFIED 1265px: padding-y **40px** (md:py-10 still wins), margin-y **0px** (the
+  `max-md:my-1` variant does not apply), padding-x 40px, flex-direction row, number ink gap
+  80px, row height 248 — desktop untouched, asserted in one boolean.
+- `bunx tsc --noEmit` 0; biome 1 error == 1 on the HEAD copy (pre-existing).
+
+## BlogSection — AboutSection CTA + mobile cards turned into an auto/drag carousel
+- CTA: added the three missing mobile classes (`max-md:border-black max-md:pl-4`,
+  `max-md:pr-2` -> `max-md:pr-2.5`, and the two arrow `max-md:` translate overrides).
+  VERIFIED at 390px by measuring the Blog CTA and the AboutSection CTA and diffing them
+  property-by-property: **11/11 equal, `mismatchesVsAboutSection: []`**.
+- CARDS: mobile was a vertical stack (`max-md:flex-col max-md:w-full`). Now a marquee —
+  removed the column classes, cards `max-md:w-[80vw]` (peek of the next), and BOTH copies
+  render at every breakpoint (mobile needs two for a seamless -50%).
+  * Spacing folded into cards (`max-md:gap-0` on track AND copy + per-card `max-md:mr-4`),
+    the same fix as the testimonials: with a flex gap, N cards have N-1 gaps so -50% is one
+    gap short of a copy and the loop drifts. **VERIFIED: half-track 1313 == copy 1313,
+    `seamExact: true`.**
+  * Driven by the existing `useMarqueeHalf(trackRef, 30, !isDesktop, true)` — reuse, not a
+    new implementation. WAAPI marquee `translate3d(-50%) -> translate3d(0)`, 30s, infinite,
+    `playState: running`, framer inline transform empty, `touch-action: pan-y`.
+- HOOK HARDENED (real production bug, found via a thrown NotFoundError): `setPointerCapture`
+  throws if the pointer is already gone, and the throw escaped `onDown` AFTER the animation
+  had been cancelled — leaving a permanently dead marquee. Both capture calls are now
+  wrapped in try/catch. Same class of unrecoverable-latch bug as the PortfolioSection gates.
+- HOOK GAINED CLICK SUPPRESSION: these cards are `<Link>`s, so a drag would navigate on
+  release. A capture-phase one-shot `click` swallow is installed only when the pointer moved
+  >6px, removed after 300ms. VERIFIED: `dragClickSuppressed: true` after a 100px drag,
+  `tapClickAllowed: true` after a 2px tap — taps still open articles.
+- DRAG MATH VERIFIED exactly: from t=12000ms a -150px drag resumed at **8573ms vs 8573ms
+  expected** (`matchesWithin2ms`), 1 animation, `running`, inline transform cleared.
+- TEST TRAP WORTH REMEMBERING: dispatching a synthetic click on a card actually NAVIGATED
+  (tab title became a blog article), so an earlier run's numbers were measured on the wrong
+  page and were discarded. Dispatch on the TRACK, never on a link.
+- VERIFIED 1265px: 0 WAAPI animations, `touch-action: auto`, gap 12px, card margin-right
+  **0px** (the fold is `max-md:` only), 2 copies as before, cursor grab, framer still
+  driving the transform; CTA resting state intact (transparent border, pl 0, h 64, plain
+  arrow shown) — desktop untouched, asserted in one boolean.
+- `bunx tsc --noEmit` 0; biome: BlogSection 1 error == 1 on HEAD, LogoCarousel clean;
+  `next build` ✓.
+
+## BlogSection — less padding around the card image (mobile)
+- CHANGE (1 class): card `<article>` `max-md:p-5` -> `max-md:p-3`. That single padding is
+  what surrounds the image (and the copy beneath it) — the image holder itself has no
+  margin of its own.
+- VERIFIED 390px: padding **20 -> 12px**; measured whitespace between the card edge and the
+  image **20.8 -> 12.8px** on left, right and top (the 0.8 is the card border); image grew
+  **271 -> 287px** inside an unchanged 312px card; `uniformAcrossCards` asserted true across
+  all rendered cards.
+- Carousel unaffected: marquee still `running`, and `seamStillExact` — half the track still
+  equals one copy, so the padding change did not desync the -50% loop.
+- VERIFIED 1265px: the whole card treatment is `max-md:`-scoped, so desktop has padding
+  **0px**, no border, no radius, transparent background, no shadow, image flush at 320px —
+  untouched.
+- FLAGGED, not changed: the image radius (20px) is now larger than the card radius (18px)
+  with only 12px between them, so the inner corners read rounder than the outer. A proper
+  nested radius would be ~6px. Left alone as it was not asked for.
+- `bunx tsc --noEmit` exit 0.
+
+## BlogSection — card padding 12->10px and matching card/image radius (mobile)
+- CHANGES (2 classes): `<article>` `max-md:p-3` -> `max-md:p-2.5`; image holder gained
+  `max-md:rounded-2xl`.
+- Matched the radius by MIRRORING THE CARD'S OWN CLASS (`rounded-2xl`) rather than writing
+  a literal: the theme overrides `--radius-2xl` so `rounded-2xl` computes to **18px here,
+  not the stock 16px**. Hard-coding 18px would silently drift if the theme changes.
+- VERIFIED 390px: padding **12 -> 10px**, card-edge-to-image gap **12.8 -> 10.8px** (left
+  and top; 0.8 is the border), image **287 -> 291px** in an unchanged 312px card.
+  Radius: card 18px, image **20 -> 18px**, `radiiIdentical: true` and
+  `allFourCornersMatch: true` (all four corners compared, not just top-left).
+  `uniformAcrossCards` asserted true for both padding and radius across every card.
+- Carousel unaffected: marquee `running`, `seamStillExact: true` (half-track still equals
+  one copy).
+- VERIFIED 1265px: padding **0px**, card radius **0px**, image radius **20px** — the card
+  chrome is all `max-md:` and the image keeps `rounded-[1.25rem]`, so desktop is untouched.
+- NOTE ON NESTED RADII: card and image now share 18px with only 10px between them, which is
+  what was asked. Geometrically a concentric inner radius would be ~8px; the identical
+  values are a deliberate style choice here, not an oversight.
+- `bunx tsc --noEmit` 0; biome 1 error == HEAD parity.
+
+## BlogSection — extra bottom padding on the mobile cards
+- CHANGE (1 class): card `<article>` gained `max-md:pb-4` alongside the existing
+  `max-md:p-2.5`, so the bottom goes 10 -> 16px while the other three sides stay 10px.
+- Kept BOTH classes rather than expanding to `px-2.5 pt-2.5 pb-4`: Tailwind orders the
+  padding shorthand before the per-side utility, so `pb-4` wins over `p-2.5`. VERIFIED
+  rather than assumed — computed padding came back top/left/right **10px**, bottom **16px**.
+- VERIFIED 390px: gap from the lowest rendered content to the card's bottom edge
+  **10.8 -> 16.8px** (the 0.8 is the border). Untouched: image gap top/left still 10.8,
+  image width 291, card and image radius both 18px (`radiiStillIdentical: true`).
+  `uniformAcrossCards` asserted across every card. Marquee `running`, `seamStillExact: true`.
+- VERIFIED 1265px: padding **0px** including padding-bottom, no border, no radius, no
+  shadow, transparent background — all card chrome is `max-md:`, desktop untouched.
+- `bunx tsc --noEmit` 0; biome 1 error == HEAD parity.
+
+## Footer — full mobile reorder (title/input/socials -> links -> times -> wordmark -> rest)
+- The newsletter block ALREADY contained title -> form -> socials in that exact internal
+  order, so items 1-3 needed no change; only the block sequence did.
+- CHANGES (all `max-md:`, 8 classes):
+  * link columns (Services/Explore/Pages): `order-3` -> `order-2`, plus
+    `max-md:grid-cols-1` so the three columns stack.
+  * time-zone grid: `order-2` -> `order-3`.
+  * wordmark: **`max-md:hidden` removed** (a previous task had hidden it) -> `order-4`,
+    plus `max-md:py-0` since the parent already supplies `max-md:gap-12`.
+  * copyright/privacy: `order-4` -> `order-5`.
+  * the four time CELLS get `order-1..4` by city so the 2-col grid pairs them
+    Toronto+London / Tokyo+Paris. DOM order is Toronto,Tokyo,London,Paris, which would
+    otherwise pair Toronto+Tokyo — the cells share an identical className, so they were
+    patched by locating each one from its `LocalTime timeZone` prop.
+- VERIFIED 390px, selecting the reordered blocks by their `max-md:order-*` class and
+  sorting by measured `top`:
+  order 1 "Stay updated…" 7588 -> 2 "Services…" 7854 -> 3 "Toronto…" 8791 ->
+  4 "Softexedge" 8947 -> 5 "© Made By Softexedge" 9074, with
+  `ordersAscendWithPosition: true`. Link grid collapsed to a single **318px** column.
+  Time rows measured by shared `top`: **[Toronto, London] / [Tokyo, Paris]**.
+- FIRST MEASUREMENT WAS BOGUS and discarded: a loose `pick('div', …)` matched an outer
+  wrapper for both "Services" and "times", reporting both at the footer's own top. Re-ran
+  against the ordered elements themselves.
+- VERIFIED 1265px: **every** `max-md:order-*` element computes `order: 0` (asserted, only
+  value seen), all four times on ONE row left-to-right Toronto, Tokyo, London, Paris (the
+  original desktop sequence), link grid still `display: flex` (lg:flex) with 2 columns,
+  wordmark padding back to 40px/80px — desktop untouched.
+- `bunx tsc --noEmit` 0; biome 2 errors == 2 on HEAD; `next build` ✓.
+
+## Footer wordmark — fix BOTH clips on mobile (my regression from the previous task)
+- MY REGRESSION: unhiding the wordmark last task exposed a desktop-tuned element to mobile,
+  and my `max-md:py-0` removed the room its descenders needed.
+- CLIP 1, VERTICAL (what the user screenshotted — the `g`): each letter span is
+  `overflow-hidden` with `pb-[0.3em] -mb-[0.3em]`, so the descender renders BELOW the h1's
+  own box; the wrapper is also `overflow-hidden`, so with `py-0` it cut exactly there.
+  MEASURED: letter box sat **21.0px** past the wrapper's clip edge, against
+  `0.3em x 70.2px = 21.1px` of descender room — the numbers identify the cause outright.
+  FIX: `max-md:py-0` -> `max-md:pt-0 max-md:pb-6` (24px > 21.1px). Top stays 0 because the
+  parent supplies `max-md:gap-12`.
+- CLIP 2, HORIZONTAL (found by measurement, NOT visible to me in the screenshot): the
+  wordmark was **338px wide inside a 318px overflow-hidden box**, shaving the S and the
+  final e. `text-[18vw]` is sized for the desktop container; below md the wrapper loses a
+  FIXED ~72px to page padding, so the vw multiplier has to drop.
+  FIX: `max-md:text-[15vw]`.
+- WHY 15 AND NOT 16: because the lost padding is fixed, the narrowest phone sets the limit.
+  16vw measured **-0.7px slack at 320px** — still clipping, and it only passed an earlier
+  assertion because that check used a +-1px tolerance. Tightened to 15vw and re-measured.
+- VERIFIED 390px: font 58.5px, width 283 in a 318 box, **35.1px** horizontal slack, 6.5px
+  vertical slack, `clippedLetters: []`, all 10 letters rendered.
+- VERIFIED 320px: font 48px, width 234 in a 248 box, **14.4px** horizontal slack, 9.6px
+  vertical, `clippedLetters: []`.
+- VERIFIED 1265px: padding 40/80px, `order: 0`, font **230.4px**. NOTE: that equals 18vw of
+  **1280**, not of `clientWidth` 1265 — `vw` units include the scrollbar. An assertion
+  comparing against clientWidth reported a false mismatch; the code is correct.
+- `bunx tsc --noEmit` 0; biome 2 errors == 2 on HEAD; `next build` ✓.
+
+## Footer — mobile x-padding matched to AboutSection
+- MEASURED FIRST: AboutSection content sits at **12px** (`max-md:px-3`); footer content sat
+  at **36px** = the page wrapper's 12px + the footer container's own `px-6` (24px).
+- CHANGE (1 class): footer container `px-6` -> `+ max-md:px-0`. Zero, not 12, because the
+  12px already comes from OUTSIDE the component.
+- **CHECKED THE BLAST RADIUS BEFORE ZEROING** — Footer renders on 16 route files, so
+  relying on an external inset is only safe if every caller provides one: grepped all
+  `<Footer />` call sites and **16/16 wrap it in a `p-3` or `px-3` parent**. Had even one
+  been unwrapped, its footer would have gone flush to the viewport edge.
+- VERIFIED /home 390px: title, "Services" and copyright all at **left 12px**, right 11.6px
+  — `deltaVsAbout` **24 -> 0**, identical to AboutSection's tag. No horizontal page scroll.
+  The wordmark gained 24px of room and still fits (83.2px slack).
+- The times cells sit at left 51px, NOT 12 — that is the grid's own `justify-items-center`,
+  which is the existing design, not a padding miss. Flagged so a future `allContentAt12`
+  style assertion is not read as a failure.
+- VERIFIED /about 390px (second route, since the component is shared): title and copyright
+  both at **12px**, wrapper padding `64px 12px 12px` — the change behaves the same off the
+  homepage.
+- VERIFIED /home 1265px: container padding **64px / 64px** (`lg:px-16`) — desktop untouched.
+- `bunx tsc --noEmit` 0; biome 2 errors == 2 on HEAD.
+
+## REVERTED: "Footer — mobile x-padding matched to AboutSection"
+- User asked to undo the previous entry. Removed `max-md:px-0` and its explanatory comment
+  from the footer container; line 149 is byte-identical to its pre-task string
+  (`... px-6 max-md:gap-12 md:px-10 lg:px-16`), `grep -c "max-md:px-0"` returns **0**.
+- VERIFIED 390px: container padding back to **24px / 24px**, content left back to **36px**
+  (12px page wrapper + 24px container), i.e. the AboutSection 12px alignment is gone as
+  intended.
+- REVERT SCOPE CHECKED — the other Footer work from earlier tasks is intact: block order
+  still 1,2,3,4,5 ascending with position; time rows still **[Toronto, London] /
+  [Tokyo, Paris]**; wordmark still 58.5px with 24px wrapper padding-bottom and
+  `wordmarkStillUnclipped: true`. Only the one task was undone.
+- VERIFIED 1265px: padding 64px / 64px (`lg:px-16`) — desktop unchanged throughout, as it
+  never had the override.
+- `bunx tsc --noEmit` 0; biome 2 errors == the file's standing baseline.

@@ -84,7 +84,7 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-white py-5 text-black max-md:pt-0 lg:pt-16 lg:pb-24 "
+      className="relative w-full overflow-hidden bg-white pb-5 text-black max-md:pt-4 lg:pt-16 lg:pb-24 "
     >
       <div className="relative z-10 flex w-full flex-col">
         {stats.map((stat, index) => (
@@ -114,14 +114,16 @@ export default function StatsSection() {
                 "items-start",
                 "justify-center",
                 "px-4",
-                "py-10",
+                // mobile-only by construction: `md:py-10` below re-asserts 40px
+                // from 768px up, so this base value governs only under md
+                "py-6",
                 "will-change-transform",
                 "md:flex-row",
                 "md:items-center",
                 "md:px-10",
                 "md:py-10",
                 "max-md:px-3",
-                "max-md:my-2",
+                "max-md:my-1",
                 "max-md:bg-white",
               )}
             >

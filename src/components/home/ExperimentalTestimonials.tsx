@@ -2,8 +2,9 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
+import { useMarqueeHalf } from "@/components/ui/LogoCarousel";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const testimonials = [
@@ -45,6 +46,8 @@ const premiumEase = [0.16, 1, 0.3, 1] as const;
 
 export default function ExperimentalTestimonials() {
   const isDesktop = useIsDesktop();
+  const trackRef = useRef<HTMLDivElement>(null);
+  useMarqueeHalf(trackRef, 40, !isDesktop, true);
   const [wordIndex, setWordIndex] = useState(0);
   const [active, setActive] = useState(0);
   const [step, setStep] = useState(452);
@@ -150,15 +153,18 @@ export default function ExperimentalTestimonials() {
               transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
               className="mt-8 flex items-start"
             >
+              {/* Mobile treatment mirrors AboutSection's CTA exactly: pinned to
+                  the desktop hover state (black border, inset padding, gradient
+                  arrow) because touch has no hover, at the smaller h-12 scale. */}
               <Link
                 href="/contact"
-                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
+                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-12 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
               >
-                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
+                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
                   Connect With Us
                 </span>
 
-                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white">
+                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg">
                   <svg width="0" height="0" className="absolute">
                     <title>Connect arrow gradient</title>
                     <defs>
@@ -175,9 +181,9 @@ export default function ExperimentalTestimonials() {
                     </defs>
                   </svg>
 
-                  <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                  <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
                   <MdArrowOutward
-                    className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
                     style={{ fill: "url(#testimonial-icon-grad)" }}
                   />
                 </div>
@@ -215,17 +221,11 @@ export default function ExperimentalTestimonials() {
             // Desktop paginates by arrows (-active * step). Mobile has no arrows,
             // so it self-scrolls: the track holds exactly two copies of the list,
             // and -50% of its own width is precisely one copy — a seamless loop.
-            animate={isDesktop ? { x: -active * step } : { x: ["-50%", "0%"] }}
-            transition={
-              isDesktop
-                ? { duration: 0.6, ease: premiumEase }
-                : {
-                    duration: 40,
-                    ease: "linear",
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: "loop",
-                  }
-            }
+            ref={trackRef}
+            // The mobile self-scroll is driven by useMarqueeHalf (same -50%
+            // travel, on the compositor), so framer gets no animate there.
+            animate={isDesktop ? { x: -active * step } : undefined}
+            transition={isDesktop ? { duration: 0.6, ease: premiumEase } : undefined}
             // max-md:gap-0 + per-card mr-4 (below) instead of a flex gap: with a
             // gap, N cards have only N-1 gaps, so -50% of the track is one gap
             // short of exactly one copy and the loop jumps each cycle. Folding the

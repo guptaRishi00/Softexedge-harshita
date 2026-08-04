@@ -228,13 +228,13 @@ export default function HomePage() {
               <ContactSection />
             </div>
 
-            <div className="[&>section]:pt-10 md:[&>section]:pt-30">
+            <div className="[&>section]:pt-14 md:[&>section]:pt-30">
               <BlogSection />
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 w-full p-3 bg-white">
+        <div className="relative z-10 w-full p-2 lg:p-3 bg-white">
           <Footer />
         </div>
       </main>

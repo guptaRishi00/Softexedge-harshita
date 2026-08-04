@@ -12,9 +12,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
+import { useMarqueeHalf } from "@/components/ui/LogoCarousel";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const SCROLL_SECONDS = 22;
+// One full pass of a copy on mobile. Longer than the desktop pass because the
+// mobile cards are much wider relative to the viewport.
+const MOBILE_SCROLL_SECONDS = 30;
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -111,6 +115,11 @@ export default function BlogSection() {
 
   const trackInView = useInView(trackRef, { margin: "200px" });
 
+  // Mobile only: the same compositor marquee + timeline-scrub drag used by the
+  // testimonials. Desktop keeps its framer `x` loop and pointer handlers, which
+  // are all gated on `isDesktop`, so the two never both drive the transform.
+  useMarqueeHalf(trackRef, MOBILE_SCROLL_SECONDS, !isDesktop, true);
+
   useAnimationFrame((_, delta) => {
     if (!trackInView || !isDesktop || dragging.current || !loopWidth) return;
     const step = (loopWidth / SCROLL_SECONDS) * (delta / 1000);
@@ -153,15 +162,22 @@ export default function BlogSection() {
   };
 
   const CardTrack = () => (
-    <div className="flex shrink-0 gap-4 md:gap-3 max-md:w-full max-md:flex-col">
+    // max-md:gap-0 + per-card max-md:mr-4 instead of a flex gap: with a gap, N
+    // cards have only N-1 gaps, so -50% of a two-copy track is one gap short of
+    // exactly one copy and the loop drifts each cycle. Folding the spacing into
+    // every card makes width = 2N*(card+gap), so -50% lands on the duplicate.
+    <div className="flex shrink-0 gap-4 md:gap-3 max-md:gap-0">
       {blogPosts.map((post) => (
         <div
           key={post.id}
-          className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw] max-md:w-full"
+          className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw] max-md:mr-4 max-md:w-[80vw]"
         >
           <Link href={post.href} draggable={false} className="block h-full">
-            <article className="group flex h-full flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:shadow-sm max-md:p-5">
-              <div className="relative aspect-square w-full overflow-hidden rounded-[1.25rem] bg-zinc-100 transition-[aspect-ratio] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:group-hover:aspect-[3/4]">
+            <article className="group flex h-full flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:p-2.5 max-md:pb-4 max-md:shadow-sm">
+              {/* max-md:rounded-2xl mirrors the card's own class rather than a
+                  literal value, so the two radii stay identical if the theme's
+                  --radius-2xl ever changes. Desktop keeps rounded-[1.25rem]. */}
+              <div className="relative aspect-square w-full overflow-hidden rounded-[1.25rem] bg-zinc-100 transition-[aspect-ratio] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] max-md:rounded-2xl md:group-hover:aspect-[3/4]">
                 <Image
                   src={post.image}
                   alt={post.title}
@@ -194,7 +210,7 @@ export default function BlogSection() {
   );
 
   return (
-    <section className="w-full overflow-hidden bg-white text-black pb-16 md:pb-32">
+    <section className="w-full overflow-hidden bg-white text-black pb-10 md:pb-32">
       <div className="mx-auto w-full ">
         <div className="mb-12 w-full px-4 max-md:mb-8 max-md:px-3 md:mb-20 md:px-10">
           <motion.p
@@ -216,7 +232,7 @@ export default function BlogSection() {
               className="flex flex-col items-start"
             >
               <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-6xl lg:leading-[1.05]">
-                Thoughts & 
+                Thoughts &
                 <span className="inline-grid overflow-hidden py-1 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
                   {isDesktop ? (
                     <AnimatePresence mode="wait">
@@ -258,7 +274,7 @@ export default function BlogSection() {
             >
               <Link
                 href="/blog"
-                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-12 max-md:gap-3 max-md:pr-2"
+                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-12 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
               >
                 <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
                   Explore all articles
@@ -281,9 +297,9 @@ export default function BlogSection() {
                     </defs>
                   </svg>
 
-                  <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                  <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
                   <MdArrowOutward
-                    className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
                     style={{ fill: "url(#blog-cta-grad)" }}
                   />
                 </div>
@@ -298,7 +314,7 @@ export default function BlogSection() {
         <div className="relative w-full overflow-x-clip max-md:px-3">
           <motion.div
             ref={trackRef}
-            className="flex w-max flex-nowrap gap-4 md:gap-3 max-md:w-full max-md:flex-col md:cursor-grab md:select-none md:active:cursor-grabbing"
+            className="flex w-max flex-nowrap gap-4 md:gap-3 max-md:gap-0 md:cursor-grab md:select-none md:active:cursor-grabbing"
             style={isDesktop ? { x: xWrapped } : undefined}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
@@ -306,14 +322,10 @@ export default function BlogSection() {
             onPointerCancel={handlePointerUp}
             onClickCapture={handleClickCapture}
           >
-            {isDesktop ? (
-              <>
-                <CardTrack />
-                <CardTrack />
-              </>
-            ) : (
-              <CardTrack />
-            )}
+            {/* Two copies at every breakpoint now: desktop wraps by loopWidth,
+                mobile needs them so the -50% marquee seam is invisible. */}
+            <CardTrack />
+            <CardTrack />
           </motion.div>
         </div>
       </div>

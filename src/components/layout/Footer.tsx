@@ -143,12 +143,12 @@ function LocalTime({ timeZone }: { timeZone: string }) {
 
 export default function Footer() {
   return (
-    <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-8 text-white md:pt-24 lg:pt-32">
+    <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-10 text-white md:pt-24 lg:pt-32">
       <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay" />
 
       <div className="relative z-10 mx-auto w-full flex flex-col px-6 max-md:gap-12 md:px-10 lg:px-16">
         <div className="grid grid-cols-1 items-start gap-12 pb-16 max-md:contents lg:grid-cols-12 md:pb-20">
-          <div className="grid grid-cols-2 gap-x-10 gap-y-12 max-md:order-3 lg:col-span-7 lg:flex lg:gap-28">
+          <div className="grid grid-cols-2 gap-x-10 gap-y-12 max-md:order-2 max-md:grid-cols-1 lg:col-span-7 lg:flex lg:gap-28">
             {footerLinkGroups.map(({ title, links }, groupIndex) => (
               <motion.div
                 key={title}
@@ -248,14 +248,20 @@ export default function Footer() {
           </motion.div>
         </div>
 
-        <div className="relative flex w-full justify-center pt-8 pb-16 max-md:hidden md:pt-10 md:pb-20 overflow-hidden">
+        <div className="relative flex w-full justify-center pt-8 pb-16 max-md:order-4 max-md:pt-0 max-md:pb-6 md:pt-10 md:pb-20 overflow-hidden">
           <motion.h1
             variants={brandContainer}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
             aria-label="Softexedge"
-            className="relative z-10 flex select-none text-[18vw] font-medium leading-[0.85] text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
+            // 18vw is sized for the wide desktop container; below md the
+            // wrapper loses ~72px to page padding, so 18vw renders 338px of
+            // word inside a 318px overflow-hidden box and shaves the S and e.
+            // The wrapper loses a FIXED ~72px, so the safe multiplier is set by
+            // the narrowest phone: 16vw still overflowed 0.7px at 320px, 15vw
+            // clears everywhere.
+            className="relative z-10 flex select-none text-[18vw] max-md:text-[15vw] font-medium leading-[0.85] text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
           >
             {brandLetters.map(({ char, id }) => (
               <span
@@ -282,9 +288,9 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="grid grid-cols-2 justify-items-center gap-x-8 gap-y-12 text-xs font-semibold uppercase tracking-widest max-md:order-2 md:grid-cols-4"
+            className="grid grid-cols-2 justify-items-center gap-x-8 gap-y-12 text-xs font-semibold uppercase tracking-widest max-md:order-3 md:grid-cols-4"
           >
-            <div className="flex flex-col items-start gap-3">
+            <div className="flex flex-col items-start gap-3 max-md:order-1">
               <div className="flex items-center gap-2">
                 <span className="block h-1.5 w-1.5 rounded-full bg-white" />
                 <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text font-black leading-none text-transparent">
@@ -296,7 +302,7 @@ export default function Footer() {
               </div>
             </div>
 
-            <div className="flex flex-col items-start gap-3">
+            <div className="flex flex-col items-start gap-3 max-md:order-3">
               <div className="flex items-center gap-2">
                 <span className="block h-1.5 w-1.5 rounded-full bg-white" />
                 <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text font-black leading-none text-transparent">
@@ -308,7 +314,7 @@ export default function Footer() {
               </div>
             </div>
 
-            <div className="flex flex-col items-start gap-3">
+            <div className="flex flex-col items-start gap-3 max-md:order-2">
               <div className="flex items-center gap-2">
                 <span className="block h-1.5 w-1.5 rounded-full bg-white" />
                 <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text font-black leading-none text-transparent">
@@ -320,7 +326,7 @@ export default function Footer() {
               </div>
             </div>
 
-            <div className="flex flex-col items-start gap-3">
+            <div className="flex flex-col items-start gap-3 max-md:order-4">
               <div className="flex items-center gap-2">
                 <span className="block h-1.5 w-1.5 rounded-full bg-white" />
                 <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text font-black leading-none text-transparent">
@@ -338,7 +344,7 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, ease: premiumEase, delay: 0.05 }}
-            className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 max-md:order-4 max-md:pb-4 md:flex-row md:items-end"
+            className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 max-md:order-5 max-md:pb-4 md:flex-row md:items-end"
           >
             <p className="tracking-wide">© Made By Softexedge</p>
 
