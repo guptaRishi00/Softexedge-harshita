@@ -77,13 +77,17 @@ export default function AboutSection() {
   const [frontIndex, setFrontIndex] = useState(0);
   const isDesktop = useIsDesktop();
 
+  // Desktop only: this index drives the card stack, which below `md` is a
+  // static image. Ticking it on mobile re-rendered the whole section every 6s
+  // to change one word — RotatingWord now owns its own tick there.
   useEffect(() => {
+    if (!isDesktop) return;
     const interval = setInterval(() => {
       setFrontIndex((prev) => prev + 1);
     }, 6000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isDesktop]);
 
   const visibleCards = [0, 1, 2].map((offset) => {
     const card = initialCards[(frontIndex + offset) % initialCards.length];
@@ -147,7 +151,6 @@ export default function AboutSection() {
                 <RotatingWord
                   words={["brands", "startups", "founders", "creators"]}
                   activeIndex={frontIndex}
-                  isDesktop={isDesktop}
                 />
               </motion.span>
             </motion.h1>

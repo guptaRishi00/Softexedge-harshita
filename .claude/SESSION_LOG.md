@@ -8771,3 +8771,98 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
   logoWhite.svg, traul2.png, cakeDark.png, contact.png, contact2.png, branding.png,
   web.png, d4.png, 1.png, 5.png, typescript2/tailwind2/reactnative2/reactnative3.png.
 - public/assets: 84 -> 49 files. `bunx next build` exit 0 after deletion.
+
+## LogoLoop — mobile marquee moved off the main thread
+- COMPLAINT: laggy on mobile. The component was already lean (rAF gated by
+  IntersectionObserver, images migrated) — the residual weakness is structural: a JS-rAF
+  marquee freezes for every main-thread stall (scroll work, decode, commits). Phones stall
+  often; compositor animations don't care.
+- CHANGE (LogoLoop.tsx + globals.css keyframes):
+  * `@keyframes logoloop-marquee { to { transform: translate3d(calc(var(--logoloop-seq,0) * -1px),0,0) } }`
+  * new `cssDriven` state: true only when `(max-width:767px)` AND NOT prefers-reduced-motion
+    (both live via matchMedia change listeners); vertical mode excluded.
+  * cssDriven ⇒ rAF effect clears the inline transform and returns (inline transform would
+    override the keyframes' base value and freeze it); track gets inline
+    `--logoloop-seq: <measured>` + `animation: logoloop-marquee <seq/|speed|>s linear infinite`,
+    `animationDirection: reverse` when targetVelocity < 0.
+  * Desktop path untouched — hover speed-easing needs per-frame JS, so it keeps the rAF loop.
+- VERIFIED 390px: animationName logoloop-marquee, duration **9.44s = 472px seq / speed 50
+  exactly**, keyframes RESOLVE to `none -> translate3d(-472px,0,0)` (var+calc works inside
+  @keyframes), playState "running", inline transform empty. Pane's document timeline is
+  frozen (currentTime delta 0 over 700ms — same clock as the frozen rAF/transitions), so
+  actual motion needs the phone check; the wiring evidence is complete.
+- VERIFIED 1265px: animationName none, style attr = `transform: translate3d(0px,0px,0px)`
+  (JS loop owns it), no --logoloop-seq present.
+- Seamlessness: single `to` keyframe animates from the base value (none) to exactly one
+  sequence width; content is periodic with that width, so the loop point is invisible.
+- `bunx tsc --noEmit` 0; biome on LogoLoop 13 errors/15 warnings == HEAD copy exactly.
+
+## AboutSection RotatingWord — animation enabled on mobile
+- ROOT CAUSE: not broken — deliberately disabled. `RotatingWord` had an `if (!isDesktop)`
+  branch rendering a static `words[0]`; the parent's 6s `setInterval` driver was already
+  ticking on mobile and being thrown away.
+- FIX (minimal): deleted the static branch; both breakpoints now render the same
+  AnimatePresence + spring motion.span. The now-dead `isDesktop` prop removed from
+  RotatingWord and its single call site (AboutSection:150). AboutSection's own `isDesktop`
+  still used elsewhere — untouched.
+- Desktop unchanged in substance: it always rendered this exact animated branch (the hook
+  starts false, so desktop even used to flash the static branch for one paint before
+  flipping — that flash is gone, which is the only desktop-side delta).
+- VERIFIED 390px: the word span now carries framer's inline initial style
+  (`opacity:0;transform:translateX(-100%)`) — the static branch had NO style attr — proof
+  the animated branch is live on mobile. Word cycling can't be observed in-pane (frozen
+  animation clock: mode="wait" exit never completes there); needs a phone glance.
+- VERIFIED 1265px: same structure as always (motion.span + framer style + masked wrapper).
+- `bunx tsc --noEmit` 0. Lint: 1 error on AboutSection = pre-existing `noArrayIndexKey`
+  at :138, present in HEAD copy (proven by linting `git show HEAD:` output).
+
+## AboutSection RotatingWord — mobile smoothness (two real causes, desktop frozen)
+- CAUSE 1, per-frame cost: the moving span is gradient `bg-clip-text text-transparent`
+  inside a `[mask-image:…]` wrapper. Neither composites — every animation frame is a full
+  re-rasterisation of the masked subtree. The desktop spring (stiffness 22 / damping 20 /
+  mass 1) is **overdamped — damping ratio 20/(2*sqrt(22)) = 2.13** — so it creeps, and with
+  the 1.5s exit the thing was repainting roughly 3 of every 6 seconds. Reads as lag because
+  it IS a slow crawl plus sustained repaint.
+- CAUSE 2, wasted commits: `frontIndex` lives in AboutSection and ticked every 6s on
+  mobile — but mobile's card stack is a STATIC div (`AboutSection.tsx:267`) that never
+  reads it. So each tick re-rendered the whole section (h1 + ~12 motion.spans + card
+  container) to change one word, landing exactly as the animation started.
+- FIX (mobile only, 2 files):
+  * `AboutSection`: interval gated `if (!isDesktop) return;` — mobile no longer re-renders
+    the section at all. Desktop identical.
+  * `RotatingWord`: owns its own 6s tick on mobile (re-renders one span, not the section),
+    and swaps the transition — mobile gets tween in 0.5s / out 0.32s, desktop keeps the
+    exact original spring + 1.5s easeInOut exit. Constants hoisted to module scope.
+  * Mask, overflow-hidden, gradient clip, slide direction all unchanged — appearance is
+    the same, it just stops crawling.
+- KNOWN MINOR: crossing the 768px breakpoint live re-bases the index (mobile selfIndex vs
+  desktop frontIndex), so the word can jump once on a resize. Real devices don't cross it.
+- VERIFICATION LIMIT PROVEN, not assumed: instrumented rAF in the pane — **0 frames in
+  14s**. framer's loop cannot run here, so no word cycles on ANY code path in-pane. Motion
+  quality needs the phone.
+- VERIFIED 390px: word renders, framer initial style `opacity:0;transform:translateX(-100%)`,
+  mask still present, overflow hidden, background-clip text, color rgba(0,0,0,0).
+- VERIFIED 1265px: same structure; desktop card stack still the AnimatePresence branch with
+  5 accumulated children all carrying transforms — accumulation only happens because exits
+  can't finish in the pane, which incidentally PROVES the desktop interval still ticks.
+- `bunx tsc --noEmit` 0; `bunx next build` ✓ Compiled successfully; biome on both files
+  1 error == 1 error on their HEAD copies (the pre-existing `noArrayIndexKey`).
+
+## RotatingWord — mobile timing reverted to the desktop feel
+- Previous entry made mobile snappier (tween 0.5s/0.32s). User tested it: too fast; wants
+  the slow desktop motion on mobile too. Reverted that half.
+- CHANGE (1 file): dropped MOBILE_IN/MOBILE_OUT and the `isDesktop ? … : …` transition
+  branch. Both breakpoints now share ENTER (spring stiffness 22 / damping 20 / mass 1) and
+  EXIT (1.5s easeInOut) — byte-equal to HEAD's original desktop values, checked by grepping
+  `git show HEAD:` side by side.
+- **KEPT**: the structural half of the lag fix — AboutSection's 6s interval still gated to
+  desktop, RotatingWord still self-ticks on mobile. That removed a whole-section re-render
+  every 6s and is invisible, so it costs nothing to keep and was likely the real jank.
+- Trade-off now explicit: the slow overdamped spring means the gradient `bg-clip-text` span
+  inside the masked wrapper repaints ~3 of every 6 seconds. That is the price of the
+  requested feel; user's device evidently handles it (their only complaint was speed).
+- VERIFIED 390px: word renders, mask + overflow-hidden + background-clip:text intact,
+  framer initial style present.
+- VERIFIED 1265px: unchanged; card stack still the AnimatePresence branch with 5
+  accumulated children, which proves the desktop interval still ticks.
+- `bunx tsc --noEmit` 0; biome on RotatingWord clean (0 diagnostics); `next build` ✓.

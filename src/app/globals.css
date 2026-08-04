@@ -35,6 +35,14 @@ body {
   animation-play-state: paused;
 }
 
+/* Mobile LogoLoop marquee: compositor-driven so main-thread stalls can't
+   stutter it. Distance comes from the measured sequence width via a var. */
+@keyframes logoloop-marquee {
+  to {
+    transform: translate3d(calc(var(--logoloop-seq, 0) * -1px), 0, 0);
+  }
+}
+
 @keyframes scroll {
   from {
     transform: translateX(0);

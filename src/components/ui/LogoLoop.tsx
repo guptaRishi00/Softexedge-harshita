@@ -137,6 +137,7 @@ const useAnimationLoop = (
   hoverSpeed: number | undefined,
   isVertical: boolean,
   visibleRef: React.RefObject<boolean>,
+  cssDriven: boolean,
 ) => {
   const rafRef = useRef<number | null>(null);
   const lastTimestampRef = useRef<number | null>(null);
@@ -146,6 +147,15 @@ const useAnimationLoop = (
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
+
+    if (cssDriven) {
+      // The CSS keyframe animation owns the transform; an inline value would
+      // override the keyframes' base and freeze the marquee.
+      track.style.transform = "";
+      return () => {
+        lastTimestampRef.current = null;
+      };
+    }
 
     const prefersReduced =
       typeof window !== "undefined" &&
@@ -226,6 +236,7 @@ const useAnimationLoop = (
     hoverSpeed,
     isVertical,
     visibleRef,
+    cssDriven,
   ]);
 };
 
@@ -258,6 +269,10 @@ export const LogoLoop = React.memo<LogoLoopProps>(
       ANIMATION_CONFIG.MIN_COPIES,
     );
     const [isHovered, setIsHovered] = useState<boolean>(false);
+    // Mobile only: hand the marquee to a CSS animation so main-thread stalls
+    // (scroll work, image decode, React commits) can't stutter it. Desktop
+    // keeps the rAF loop — its hover speed-easing needs per-frame JS.
+    const [cssDriven, setCssDriven] = useState<boolean>(false);
 
     const effectiveHoverSpeed = useMemo(() => {
       if (hoverSpeed !== undefined) return hoverSpeed;
@@ -327,6 +342,20 @@ export const LogoLoop = React.memo<LogoLoopProps>(
     ]);
 
     useEffect(() => {
+      if (isVertical) return;
+      const mobile = window.matchMedia("(max-width: 767px)");
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const update = () => setCssDriven(mobile.matches && !reduced.matches);
+      update();
+      mobile.addEventListener("change", update);
+      reduced.addEventListener("change", update);
+      return () => {
+        mobile.removeEventListener("change", update);
+        reduced.removeEventListener("change", update);
+      };
+    }, [isVertical]);
+
+    useEffect(() => {
       const container = containerRef.current;
       if (!container || typeof IntersectionObserver === "undefined") return;
 
@@ -352,7 +381,20 @@ export const LogoLoop = React.memo<LogoLoopProps>(
       effectiveHoverSpeed,
       isVertical,
       visibleRef,
+      cssDriven,
     );
+
+    const trackStyle = useMemo((): React.CSSProperties | undefined => {
+      if (!cssDriven || seqWidth <= 0 || Math.abs(speed) === 0)
+        return undefined;
+      return {
+        "--logoloop-seq": seqWidth,
+        animation: `logoloop-marquee ${seqWidth / Math.abs(speed)}s linear infinite`,
+        // targetVelocity > 0 scrolls content leftward, matching the keyframes'
+        // negative translate; the opposite sign plays them in reverse.
+        animationDirection: targetVelocity < 0 ? "reverse" : undefined,
+      } as React.CSSProperties;
+    }, [cssDriven, seqWidth, speed, targetVelocity]);
 
     const cssVariables = useMemo(
       () =>
@@ -580,6 +622,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
             isVertical ? "flex-col h-max w-full" : "flex-row w-max",
           )}
           ref={trackRef}
+          style={trackStyle}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
