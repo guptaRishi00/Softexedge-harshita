@@ -17,16 +17,16 @@ const AUTO_ADVANCE_SECONDS = 6;
 const projects = [
   {
     id: 1,
-    title: "Aura Skincare",
-    subtitle: "E-Commerce Experience",
+    title: "Traul",
+    subtitle: "On-Demand Logistics Platform",
     description:
-      "Redefining digital beauty retail. We crafted a highly conversion-optimized, visually stunning headless e-commerce platform that elevated Aura's brand positioning and increased online sales by 140% in Q1",
-    tech: ["SHOPIFY", "NEXT.JS", "TAILWIND"],
+      "A complete rebuild of an on-demand logistics platform — admin portal, driver app and customer app — engineered from scratch on React Native and Node.js, with real-time dispatch, geofencing and B2B billing built in, at roughly 75% lower cost than the previous vendor",
+    tech: ["REACT NATIVE", "NODE.JS", "GEOFENCING", "PAYMENTS"],
     year: "2024",
-    image: "/assets/zyro-O-Nemx50zDE-unsplash.jpg",
-    category: "E-COMMERCE",
+    image: "/assets/traul3.png",
+    category: "LOGISTICS",
     type: "image",
-    href: "/work/aura-skincare",
+    href: "/work/traul",
   },
   {
     id: 2,

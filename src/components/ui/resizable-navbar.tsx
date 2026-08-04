@@ -459,7 +459,7 @@ export const MobileNavToggle = ({
   return isOpen ? (
     <IconX
       className={cn(
-        "cursor-pointer transition-colors",
+        "h-7 w-7 cursor-pointer transition-colors",
         visible ? "text-black" : "text-white",
       )}
       onClick={onClick}
@@ -467,7 +467,7 @@ export const MobileNavToggle = ({
   ) : (
     <IconMenu2
       className={cn(
-        "cursor-pointer transition-colors",
+        "h-7 w-7 cursor-pointer transition-colors",
         visible ? "text-black" : "text-white",
       )}
       onClick={onClick}

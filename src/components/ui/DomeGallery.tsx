@@ -128,11 +128,13 @@ export default function DomeGallery({
     if (!autoRotate || stripPitch === 0) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const track = trackRef.current;
-    if (!track) return;
+    const root = rootRef.current;
+    if (!track || !root) return;
 
     const pxPerSecond = 25 * autoRotateSpeed;
     let raf = 0;
     let start = 0;
+    let pausedAt = 0;
     const tick = (now: number) => {
       if (!start) start = now;
       const offset = (((now - start) / 1000) * pxPerSecond) % stripPitch;
@@ -140,7 +142,31 @@ export default function DomeGallery({
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            if (raf) continue;
+            // offset is absolute-time-derived, so push the origin forward by the
+            // paused span to resume exactly where it stopped
+            if (start) start += performance.now() - pausedAt;
+            raf = requestAnimationFrame(tick);
+          } else if (raf) {
+            cancelAnimationFrame(raf);
+            raf = 0;
+            pausedAt = performance.now();
+          }
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(root);
+
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(raf);
+    };
   }, [autoRotate, autoRotateSpeed, stripPitch]);
 
   return (

@@ -37,7 +37,7 @@ const CustomLogo = ({
       width={85}
       height={30}
       style={{ height: "auto" }}
-      className="w-[64px] object-contain md:w-[90px]"
+      className="w-[80px] object-contain md:w-[90px]"
     />
   </Link>
 );

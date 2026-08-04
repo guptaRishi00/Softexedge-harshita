@@ -146,7 +146,7 @@ export default function HomePage() {
   return (
     <SmoothScroll>
       <main className="w-full bg-white">
-        <div className="px-3 pt-3">
+        <div className="lg:px-3 lg:pt-3 px-3 pt-4">
           <Herosection />
         </div>
 

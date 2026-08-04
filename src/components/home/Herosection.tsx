@@ -24,14 +24,6 @@ export default function Herosection({}: any) {
 
     let animationFrameId = 0;
 
-    // The canvas is never wider than 220 CSS px (xl breakpoint), so sizing the
-    // backing store to the source video's 1920x1080 meant scaling ~2M pixels
-    // down to a thumbnail on every frame. Draw at display size instead (~26k
-    // px at 1x). Height is derived from the video so the backing store keeps
-    // the video's aspect ratio — CSS `object-cover` then crops exactly as it
-    // did before at every breakpoint, i.e. no visual change. DPR is honoured
-    // (capped at 2) so it stays sharp on retina, where a flat 220px store
-    // would have been upscaled and looked soft.
     const CSS_WIDTH = 220;
 
     const sizeCanvas = () => {
@@ -75,14 +67,6 @@ export default function Herosection({}: any) {
 
   return (
     <div className="relative min-h-[96svh] rounded-[20px] overflow-hidden bg-zinc-950 lg:min-h-[96.5vh]">
-      {/* Frosted backdrop: the blur lives on the video's OWN layer (filter),
-          not a full-viewport backdrop-filter overlay. backdrop-blur re-captures
-          and re-blurs the whole viewport every frame over the moving video;
-          blurring the single video layer is the same pixels far cheaper. Same
-          24px radius as the old backdrop-blur-xl. scale-110 pushes the ~24px
-          filter edge-bleed under the container's rounded overflow-hidden clip.
-          The canvas pill stays sharp: ctx.drawImage reads raw frames, which CSS
-          filters never touch. */}
       <video
         ref={mainVideoRef}
         src="/assets/video6.mp4"
@@ -119,7 +103,7 @@ export default function Herosection({}: any) {
                 delay: APPEAR_DELAY,
                 ease: premiumEase,
               }}
-              className="text-5xl sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
+              className="text-[clamp(2.75rem,13.5vw,3.5rem)] sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
             >
               We Engineer
             </motion.h1>
@@ -133,7 +117,7 @@ export default function Herosection({}: any) {
                   delay: APPEAR_DELAY + LINE_STAGGER,
                   ease: premiumEase,
                 }}
-                className="text-5xl sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
+                className="text-[clamp(2.75rem,13.5vw,3.5rem)] sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
               >
                 Digital
               </motion.p>
@@ -163,7 +147,7 @@ export default function Herosection({}: any) {
                   delay: APPEAR_DELAY + LINE_STAGGER * 3,
                   ease: premiumEase,
                 }}
-                className="text-5xl sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
+                className="text-[clamp(2.75rem,13.5vw,3.5rem)] sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
               >
                 Solutions
               </motion.p>
