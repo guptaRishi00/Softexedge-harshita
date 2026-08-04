@@ -99,7 +99,9 @@ export default function StatsSection() {
             )}
           >
             {index !== stats.length - 1 && (
-              <div className="absolute bottom-0 left-4 right-4 h-px bg-black/10 max-md:hidden md:left-10 md:right-10" />
+              // left/right-3 matches `.stat-inner`'s max-md:px-3 so the rule
+              // ends flush with the content; md:left-10/right-10 keeps desktop.
+              <div className="absolute bottom-0 left-3 right-3 h-px bg-black/10 md:left-10 md:right-10" />
             )}
 
             <div

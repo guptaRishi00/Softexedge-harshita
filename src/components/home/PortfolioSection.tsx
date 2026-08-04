@@ -343,7 +343,7 @@ export default function PortfolioSection() {
             // so the -z-20 image holder escalates to the page wrapper's context
             // and the section's opaque bg-[#0a0a0a] paints OVER it: black
             // panels, no images. isolation scopes the -z-20 to this panel.
-            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 max-md:isolate max-md:snap-center max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
+            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 max-md:isolate max-md:snap-center max-md:px-3 max-md:pb-12 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
           >
             <Link
               href={project.href}

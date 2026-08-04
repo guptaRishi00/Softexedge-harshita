@@ -9031,3 +9031,95 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
 - VERIFIED 1265px: padding-bottom 0px, height 800px, track overflow-x visible / width
   6400px, GSAP transform intact — desktop never had the padding, unchanged.
 - `bunx tsc --noEmit` exit 0.
+
+## PortfolioSection — more bottom padding inside the mobile slides
+- INTERPRETATION (stated to the user): "padding bottom" here means the SLIDE's inner
+  content padding, not the section's. Section bottom padding is exactly what produced the
+  black band removed in the previous task — the section is #0a0a0a directly above a white
+  StatsSection at pt-0, so padding there is a black band, never whitespace. Inside the
+  panel the backdrop is the project image, so it reads as breathing room.
+- CHANGE (1 class): panel `max-md:pb-12` added. Base `p-8` gave 32px; `md:p-16` /
+  `lg:pb-12` still govern >= md.
+- VERIFIED 390px: panel padding-bottom **32px -> 48px**, gap from the tech-tag row to the
+  slide bottom **32 -> 48**, identical across all 5 panels (asserted), x-padding still
+  12px, panel height still 590.8. Section padding-bottom **0px** and band below track
+  **0** — the black band did not come back.
+- VERIFIED 1265px: padding 48px bottom / 80px top / 80px left, panel 1280x800 — `lg:pb-12`
+  was already 48px there, so desktop is untouched.
+- `bunx tsc --noEmit` exit 0.
+
+## StatsSection — row dividers restored on mobile
+- The "border bottom" is not a border: StatsSection has ZERO border classes. It is an
+  absolutely-positioned `h-px bg-black/10` element rendered per row except the last
+  (StatsSection.tsx:102), and it carried **`max-md:hidden`** — that class was the whole bug.
+- CHANGE (1 line): dropped `max-md:hidden`, and `left-4 right-4` -> `left-3 right-3` so the
+  rule ends flush with `.stat-inner`'s `max-md:px-3` content edge (it was 16px vs the
+  content's 12px). Editing the BASE inset is mobile-only by construction — `md:left-10
+  md:right-10` already overrides it from 768px up, so no new `max-md:` class was needed.
+- VERIFIED 390px: rule `display: block` (was none), 1px, `bg-black/10`, inset **12px both
+  sides == the 12px content ink edge**; **3 rules for 4 rows**, last row correctly has none
+  (matches desktop, which also skips the final divider).
+- VERIFIED 1265px: 3 rules, 1px, same colour, inset **40px** both sides — `md:left-10
+  md:right-10` still wins, desktop identical.
+- `bunx tsc --noEmit` exit 0.
+
+## ServiceSection — mobile reverted to the desktop-style title list
+- READING (stated to the user): "remove the images just show the services like it is in
+  desktop view" = desktop's RESTING presentation. On desktop the thumbnail is a hover
+  reveal (`w-0` -> `w-[150px]` on group-hover); touch has no hover, which is why it had
+  been pinned open on mobile. Removing it means the mobile card treatment goes with it —
+  a rounded bordered box containing only a title is not "like desktop".
+- REMOVED (all mobile-only), undoing several earlier mobile-specific requests:
+  * image holder: `max-md:mb-4 max-md:h-[180px] max-md:w-full max-md:opacity-100`
+    -> `max-md:hidden`
+  * card chrome on the `<a>`: `max-md:rounded-2xl max-md:border max-md:border-white/10
+    max-md:bg-white/5 max-md:p-5 max-md:shadow-sm`
+  * stacking on the inner div: `max-md:w-full max-md:flex-col max-md:items-start`
+  * `max-md:gap-4` on the list (rows adjoin on desktop)
+  * `max-md:hidden` on the row separator — so the desktop divider now shows on mobile
+  * kept: `max-md:cursor-pointer`, `max-md:last:pb-10`
+- Bonus: `sizes` "(max-width: 768px) 100vw, 150px" -> "150px". The 100vw candidate existed
+  only for the full-bleed mobile thumbnail; desktop never used it. Stops a hidden mobile
+  image from being able to pull a viewport-width file across 8 rows.
+- VERIFIED 390px: image holder `display: none` and **no visible image in any of the 8
+  rows** (asserted across all rows); border-width 0, radius 0, background transparent,
+  box-shadow none, padding 24px 0; list row-gap `normal`; **7 separators visible**
+  (`display: block`) for 8 rows.
+- VERIFIED 1265px: holder still `display: block` at width **0px**, opacity 0, height 100px
+  — the hover reveal machinery is intact, not hidden; row padding 48px 0 (`md:py-12`),
+  7 separators, sizes attr now "150px" (desktop already resolved to 150px).
+- `bunx tsc --noEmit` 0; biome 2 errors == 2 on the HEAD copy.
+
+## ServiceSection — looser rows, less tail padding (mobile)
+- CHANGE (one className, two edits): row `py-6` -> `py-7`, and `max-md:last:pb-10` deleted.
+- Editing the BASE `py` is mobile-only by construction: `md:py-12` overrides from 768px up,
+  so no `max-md:` class was needed (same trick as the StatsSection divider inset).
+- WHY `last:pb-10` WAS DELETED RATHER THAN LOWERED: it dates from the mobile CARD layout
+  removed in the previous task ("increase the padding bottom in the last card"). With the
+  cards gone it was a vestige special-casing one row; deleting it both satisfies "reduce
+  the padding bottom" and makes all 8 rows uniform. Section `pb-18` (72px) still supplies
+  the real gap to the next section.
+- VERIFIED 390px: row padding **24 -> 28px**, ink gap between adjacent service titles
+  **48 -> 56px**, last row padding-bottom **40 -> 28px** (now equal to every other row —
+  `allRowsUniform` asserted true), last title to section bottom **112 -> 100px**.
+  7 separators still render.
+- VERIFIED 1265px: row padding 48px top AND bottom including the last row, ink gap 132px,
+  section padding-bottom 96px — `md:py-12` / `md:pb-24` still win, desktop untouched.
+  (`last:pb-10` was `max-md:`-scoped, so its removal cannot reach desktop.)
+- `bunx tsc --noEmit` exit 0.
+
+## ServiceSection — less space below the last service (mobile)
+- Follow-up to the previous entry: after deleting `last:pb-10` the tail was still 100px =
+  28px row padding + **72px section `pb-18`**. The section padding was the real lever, so
+  this round targets it rather than the row.
+- CHANGE (1 class): section `pb-18` -> `pb-10` (72px -> 40px). Mobile-only by construction
+  — `md:pb-24` overrides from 768px up, so no `max-md:` variant was needed.
+- VERIFIED 390px: section padding-bottom **72 -> 40px**, last title to section bottom
+  **100 -> 68px**. Everything else held: section padding-top still 64px, row padding still
+  28px top and bottom, title ink gap still 56px — only the tail moved.
+- VERIFIED 1265px: section padding **128px top / 96px bottom** (`md:pt-32` / `md:pb-24`),
+  last row padding-bottom 48px, tail 162px — desktop untouched.
+- Next section is white, so this is black-on-white contact: 68px is now the full visual
+  gap. If it needs to come down further the remaining levers are the row's 28px or a
+  negative-margin overlap, not more section padding.
+- `bunx tsc --noEmit` exit 0.
