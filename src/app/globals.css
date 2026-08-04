@@ -35,6 +35,15 @@ body {
   animation-play-state: paused;
 }
 
+/* Native scroll containers used as carousels: keep the drag, hide the bar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Mobile LogoLoop marquee: compositor-driven so main-thread stalls can't
    stutter it. Distance comes from the measured sequence width via a var. */
 @keyframes logoloop-marquee {

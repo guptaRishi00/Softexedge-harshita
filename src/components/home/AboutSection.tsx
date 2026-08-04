@@ -105,8 +105,8 @@ export default function AboutSection() {
       initial={isDesktop ? "hidden" : false}
       whileInView={isDesktop ? "visible" : undefined}
       exit={isDesktop ? "exit" : undefined}
-      viewport={{ once: false, amount: 0.2 }}
-      className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 max-md:px-3 max-md:pt-4 md:px-10 lg:mb-20"
+      viewport={{ once: true, amount: 0.2 }}
+      className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 max-md:px-3 max-md:pt-6 md:px-10 lg:mb-20"
     >
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-multiply" />
 
@@ -115,7 +115,7 @@ export default function AboutSection() {
           <div className="relative mt-20 max-md:mt-0 max-md:bg-white">
             <motion.p
               variants={textReveal}
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium pl-[5px] max-md:mb-4 max-md:text-xs"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium pl-[5px] max-md:mb-7 max-md:text-xs"
             >
               About The Studio
             </motion.p>
@@ -165,9 +165,13 @@ export default function AboutSection() {
                 unforgettable
               </p>
               <div className="flex flex-wrap gap-4 pt-3">
+                {/* Below md this is pinned to the desktop hover state (black
+                    border, inset padding, gradient arrow): touch has no hover,
+                    so the resting state must carry it. Padding is scaled to the
+                    smaller h-12 button, not copied from the h-16 values. */}
                 <Link
                   href="/contact"
-                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-12 max-md:gap-3 max-md:pr-2"
+                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-12 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
                 >
                   <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
                     Connect With Us
@@ -190,9 +194,9 @@ export default function AboutSection() {
                       </defs>
                     </svg>
 
-                    <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                    <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
                     <MdArrowOutward
-                      className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                      className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
                       style={{ fill: "url(#about-connect-icon-grad)" }}
                     />
                   </div>

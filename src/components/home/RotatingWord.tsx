@@ -59,9 +59,21 @@ export default function RotatingWord({
             transition: EXIT,
           }}
           transition={ENTER}
-          className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text px-2 py-2 text-transparent"
+          // Static will-change keeps the compositor layer alive between the
+          // 6s cycles instead of creating and destroying one each time.
+          style={{ willChange: "transform, opacity" }}
+          className="block"
         >
-          {words[index]}
+          {/* The gradient + `bg-clip-text` sit on a STATIC child, never on the
+              animated element: a background-clipped element cannot be cheaply
+              composited, so animating it re-rasterised the glyph-clipped
+              gradient every frame. As a child it rasterises once and the
+              parent layer is merely translated. Padding stays here so the
+              gradient box — and therefore the exact colours across the word —
+              is unchanged. */}
+          <span className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text px-2 py-2 text-transparent">
+            {words[index]}
+          </span>
         </motion.span>
       </AnimatePresence>
     </span>

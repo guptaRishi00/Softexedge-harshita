@@ -69,7 +69,7 @@ export default function Herosection({}: any) {
     <div className="relative min-h-[96svh] rounded-[20px] overflow-hidden bg-zinc-950 lg:min-h-[96.5vh]">
       <video
         ref={mainVideoRef}
-        src="/assets/video6.mp4"
+        src="/assets/video7.mp4"
         autoPlay
         loop
         muted

@@ -8866,3 +8866,168 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
 - VERIFIED 1265px: unchanged; card stack still the AnimatePresence branch with 5
   accumulated children, which proves the desktop interval still ticks.
 - `bunx tsc --noEmit` 0; biome on RotatingWord clean (0 diagnostics); `next build` ✓.
+
+## RotatingWord — mobile lag, round 3: fixed the PAINT COST, not the timing
+- Timing is now the requested feel and was left byte-identical (spring 22/20/1 + 1.5s
+  easeInOut, grep-confirmed). The only remaining lever was per-frame paint cost.
+- ROOT CAUSE (structural): the animated `motion.span` WAS the `bg-clip-text` element. A
+  background-clipped element cannot be cheaply composited, so every frame of the slow
+  spring re-rasterised the glyph-clipped gradient. Notoriously bad on iOS Safari.
+- FIX (1 file, +14/-2, pixel-inert): split the two roles.
+  * animated element -> bare transform/opacity carrier, `className="block"`, plus a STATIC
+    `will-change: transform, opacity` so the compositor layer survives between 6s cycles
+    instead of being created/destroyed each time.
+  * gradient + `bg-clip-text` + `px-2 py-2` -> moved onto a STATIC child, so it rasterises
+    once and the parent layer is merely translated.
+  * Padding deliberately stayed WITH the gradient. Moving it to the carrier would have
+    shrunk the gradient box from 105.14px to 89.14px, shifting every colour across the
+    word (~7.6%-92.4% of the ramp -> 0%-100%). Verified the box is unchanged instead.
+- PIXEL-IDENTITY PROVEN against baselines captured BEFORE the edit (w/h/left/top, tol 0.02px):
+  |            | mobile 390          | desktop 1265        |
+  | gradient   | 105.14x40 @90.61,1119.03 SAME | 182.39x66.4 SAME |
+  | carrier    | 105.14x40 SAME (so x:"-100%" travels the same distance) | 182.39x66.4 SAME |
+  | wrapper    | 153.14x56 SAME      | 230.39x82.4 SAME    |
+  | h1         | 366.4x104 SAME      | 589.89x253.6 SAME   |
+  Also verified: gradient still `linear-gradient(... in oklab, #2E5BFF 0%, #149CCB 100%)`,
+  font 30px/56px, padding 8px, mask still on the wrapper, and the split actually happened
+  (`animatedElementHasBgClip: false`, `staticChildHasBgClip: true`).
+- Applied at BOTH breakpoints on purpose: it is provably pixel-inert (table above), so
+  branching it would have doubled the JSX for zero appearance difference. Desktop gets the
+  same smoothness benefit for free.
+- FLAGGED, NOT DONE (would be a behaviour change, not asked): `AboutSection.tsx:204`
+  `viewport={{ once: false }}` on the section makes the whole 12-span heading re-run its
+  staggered entrance EVERY time the section re-enters the viewport — a real scroll-time
+  cost on mobile, separate from the word.
+- `bunx tsc --noEmit` 0; biome on the file clean; `next build` ✓ Compiled successfully.
+- Pane still cannot show motion (rAF = 0 frames/14s, measured last round) — device check.
+
+## AboutSection heading entrance — run once
+- CHANGE (1 char, AboutSection.tsx:108): `viewport={{ once: false, amount: 0.2 }}` ->
+  `once: true`. The section's `sectionVariants` + staggered `wordContainer`/`wordAnimation`
+  now play their entrance on first scroll-in and never revert; previously leaving the
+  viewport reset every span to `hidden` (opacity 0, y 40, blur 8px) and re-ran the whole
+  12-span stagger on each re-entry.
+- **CORRECTION to the previous entry**, which called this a mobile cost: it is DESKTOP
+  ONLY. `whileInView` on :106 is `isDesktop ? "visible" : undefined`, so below `md` framer
+  never sets up the viewport observer and `once` is unreachable. Proven, not argued —
+  at 390px the section element has **no inline style at all** (opacity 1, filter none,
+  transform none), i.e. no variant state was ever applied.
+- SCOPE: the heading only, as asked. `AboutSection.tsx:208` (the right-hand image/card
+  column) still carries its own `viewport={{ once: false }}` and will keep replaying its
+  opacity/scale/y entrance — flagged, deliberately not changed.
+- Dead code noted, untouched: the `exit` prop on :107 + `sectionVariants.exit` never run —
+  AboutSection is not inside an `AnimatePresence` (home/page.tsx renders it directly).
+  `once: true` does not newly break this; it was already unreachable.
+- PANE LIMIT PROVEN with a control: `IntersectionObserver` delivered **0 callbacks in 3s**
+  on two observed elements, so `whileInView` cannot fire here and the once-vs-repeat
+  behaviour is not observable in-pane. What IS verified: geometry unchanged (h1 253.6
+  desktop / 104 mobile, both matching the baselines captured before the round-3 edit).
+- `bunx tsc --noEmit` 0; biome 1 error == 1 on the HEAD copy (pre-existing
+  `noArrayIndexKey`); `next build` ✓ Compiled successfully.
+
+## "Trusted By" — slightly bigger on mobile
+- Note on location: the label is NOT inside `ui/LogoLoop.tsx` — it lives in the marquee
+  section wrapper at `src/app/home/page.tsx:155`. LogoLoop renders only the logo track.
+- CHANGE (1 class): added `max-md:text-base` to the existing
+  `text-sm font-medium tracking-wide text-black/60`. `text-sm` still governs >= md, so
+  desktop is untouched by construction.
+- VERIFIED 390px: font-size **14px -> 16px**, line-height 20 -> 24, ink height 20 -> 24.
+  Weight 500, `tracking-wide`, and `text-black/60` all unchanged; no horizontal page
+  scroll (the label is centered full-width above the marquee in the stacked layout, so the
+  wider ink box changes no layout).
+- VERIFIED 1265px: font-size still **14px**, line-height 20, ink 69.7x20, weight 500 —
+  desktop identical.
+- `bunx tsc --noEmit` exit 0.
+
+## AboutSection — bigger gap between tag and title (mobile)
+- CHANGE (1 class, AboutSection.tsx:118): tag `max-md:mb-4` -> `max-md:mb-7`. Base `mb-6`
+  still governs >= md, so desktop is untouched by construction.
+- WHY 28px and not 24: measured first — the box gap was 16px but the title carries
+  `max-md:leading-[0.8em]` (24px line-height on a 30px font), so glyphs overflow ~3px above
+  their line box and the OPTICAL gap was only ~13px. Matching desktop's 24px would have
+  read as ~21px; 28px lands the optical gap at ~25px, a clear increase that accounts for
+  the negative leading.
+- VERIFIED 390px: margin-bottom 16px -> **28px**, box gap 16 -> 28, optical ~13 -> ~25.
+  Tag font-size 12px, tracking 3.6px, padding-left 5px and the title's 24px line-height all
+  unchanged — only the gap moved.
+- VERIFIED 1265px: tag margin-bottom still **24px** (`mb-6`), box gap 24, tag font 14px,
+  h1 height 253.6 — matches the desktop baseline exactly.
+- `bunx tsc --noEmit` exit 0.
+
+## AboutSection CTA — mobile pinned to the desktop hover state
+- The desktop hover look is three things, all reproduced below md:
+  `hover:border-black` -> `max-md:border-black`; `hover:pl-6 hover:pr-3.5` ->
+  `max-md:pl-4 max-md:pr-2.5`; and the arrow swap -> `max-md:-translate-y-8
+  max-md:translate-x-8` on the plain icon + `max-md:translate-x-0 max-md:translate-y-0`
+  on the gradient one.
+- PADDING IS SCALED, NOT COPIED: desktop hover pl-6/pr-3.5 belongs to an h-16 button;
+  mobile is h-12 (0.75x) with gap-3 and a 36px icon, so pl-4 (16px) / pr-2.5 (10px) keeps
+  the same proportion. Copying 24/14px verbatim would have looked bloated on the smaller
+  button. Rationale is in a JSX comment above the Link.
+- **MEASUREMENT TRAP (cost me a wrong reading):** Tailwind v4 emits translate utilities via
+  the CSS **`translate`** property, not `transform`. Reading `getComputedStyle(el).transform`
+  returned "none" for BOTH arrows and looked like the fix had failed. Read `.translate`.
+  (Same fact the spec-verifier used earlier for the navbar containing-block finding.)
+- VERIFIED 390px: border rgb(0,0,0) 1px, padding-left **16px**, padding-right 10px,
+  height 48px; plain arrow `translate: 32px -32px` (outside the 36x36 overflow-hidden box,
+  hidden), gradient arrow `translate: 0px` and geometrically INSIDE the box; asserted
+  exactly one arrow visible. Gradient fill still `url(#about-connect-icon-grad)`.
+- VERIFIED 1265px: border rgba(0,0,0,0), padding-left **0px**, padding-right 10px, height
+  64px, plain arrow visible / gradient arrow at `-32px 32px` outside the box — resting
+  state fully intact, asserted in one boolean.
+- `bunx tsc --noEmit` 0; biome 1 error == the pre-existing `noArrayIndexKey`.
+
+## PortfolioSection — mobile turned into a native snap carousel (autoplay + drag)
+- APPROACH — no rAF, no JS per frame. Below `md` the track is a **native scroll-snap
+  container** (`overflow-x-auto` + `snap-x snap-mandatory`, panels `snap-center`). The
+  browser owns the drag, the momentum and the snapping, which is the only way this stays
+  smooth on a phone. "Draggable" therefore needed ZERO drag code — it IS touch scrolling.
+  Autoplay is a 4.5s `setInterval` calling `scrollTo({behavior:"smooth"})`; the browser
+  animates it. Anti-overengineering: stopped at the native-platform rung.
+- Track: `flex-col` -> `flex-row` for both breakpoints (desktop was already a row), plus
+  `max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain`
+  (`overscroll-x-contain` stops a horizontal drag triggering browser back-swipe).
+  `.no-scrollbar` added to globals.css (no such utility existed).
+- Guards: skips entirely on `prefers-reduced-motion`; pauses on pointerdown/touchstart/
+  wheel and only resumes after 6s idle so it never fights a drag; IntersectionObserver
+  stops it while offscreen; wraps to slide 0 at the end.
+- **MOVED `max-md:last:pb-16` -> `max-md:pb-12` on the section.** StatsSection sets
+  `max-md:pt-0`, so ALL the separation between the two came from that panel padding. Left
+  on the panel it would make the 5th SLIDE sit 64px higher than the other four — an
+  obvious per-swipe inconsistency. On the section it keeps the gap and every slide matches.
+- **PANE LIMIT, discriminated with controls rather than assumed:** instant scroll worked
+  (scrollLeft -> 390) but `behavior:"smooth"` never moved (0 after 1.5s), and
+  `prefers-reduced-motion` was false / `max-width:767px` true — so the effect was running
+  and it is smooth-scroll that is frozen here, same class as the 0-frame rAF.
+- VERIFIED 390px, by intercepting `track.scrollTo` to capture the component's own calls:
+  **3 autoplay ticks in 14s** (4.5s interval) at left **390 -> 780 -> 1171**, all
+  `behavior:"smooth"`, one viewport each. Parked on the last slide it called **left: 0**
+  (wrap). After a synthetic `pointerdown` it made **0 calls in 5.2s** (pause holds).
+  Track: 5 panels, scrollWidth 1952 = 5 x 390.4, scrollbar-width none, no page x-scroll.
+- VERIFIED 1265px: section padding-bottom **0px**, track `overflow-x: visible`,
+  `scroll-snap-type: none`, width 6400px (5 x 1280), panels 1280x800, GSAP transform still
+  applied — desktop untouched, asserted in one boolean.
+- `bunx tsc --noEmit` 0; biome 2 errors == 2 on the HEAD copy; `next build` ✓.
+- NOT DONE (flagged): mouse-drag on a narrow desktop window — native overflow scrolling
+  doesn't drag with a mouse. Touch devices are unaffected; adding pointer-drag JS would
+  reintroduce the per-frame work this design exists to avoid.
+
+## PortfolioSection — remove the black band under the mobile carousel
+- MY REGRESSION FROM THE PREVIOUS TASK, reported by the user with a screenshot. Moving the
+  old `max-md:last:pb-16` onto the section as `max-md:pb-12` preserved the gap before
+  StatsSection but painted it in the section's own `bg-[#0a0a0a]` — 48px of black between
+  the slide image and the white StatsSection (which sets `max-md:pt-0`). I flagged the
+  band as a risk when making the change; it should have been the reason not to.
+- FIX: dropped `max-md:pb-12`. The slide image now meets the white section directly, which
+  is how it looked before the carousel — the old `last:pb-16` sat INSIDE the panel, over
+  the image, so it never produced a visible band. Panels keep uniform padding (no `last:`
+  variant returns), so the carousel stays consistent slide to slide.
+- LESSON for this section: it is a dark section directly above a white one with `pt-0`.
+  Any bottom padding on it is a visible black band, never whitespace. Separation has to
+  come from StatsSection's top padding, and the user has explicitly tuned that to 0.
+- VERIFIED 390px: section padding-bottom 48px -> **0px**, band below track 48 -> **0**,
+  section height 638.8 -> **590.8** (= track height exactly), gap to the next white block
+  0px, next block confirmed white.
+- VERIFIED 1265px: padding-bottom 0px, height 800px, track overflow-x visible / width
+  6400px, GSAP transform intact — desktop never had the padding, unchanged.
+- `bunx tsc --noEmit` exit 0.

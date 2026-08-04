@@ -5,7 +5,8 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 import { cn } from "@/lib/utils";
 
 if (typeof window !== "undefined") {
@@ -13,6 +14,10 @@ if (typeof window !== "undefined") {
 }
 
 const AUTO_ADVANCE_SECONDS = 6;
+// Mobile carousel: one slide every 4.5s, and any touch hands control to the
+// user for 6s before autoplay resumes.
+const MOBILE_AUTOPLAY_MS = 4500;
+const MOBILE_RESUME_MS = 6000;
 
 const projects = [
   {
@@ -86,6 +91,59 @@ export default function PortfolioSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
+  const isDesktop = useIsDesktop();
+
+  // Mobile autoplay. Dragging is NOT implemented in JS: below `md` the track is
+  // a native scroll-snap container, so the browser owns the drag, the momentum
+  // and the snapping — nothing runs per frame, which is the only way this stays
+  // smooth on a phone. Autoplay is just a timer nudging native smooth scroll.
+  useEffect(() => {
+    if (isDesktop) return;
+    const track = trackRef.current;
+    if (!track) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let visible = true;
+    let paused = false;
+    let resumeId: ReturnType<typeof setTimeout> | undefined;
+
+    const advance = () => {
+      if (paused || !visible) return;
+      const page = track.clientWidth;
+      const atEnd = track.scrollLeft >= track.scrollWidth - page - 1;
+      track.scrollTo({
+        left: atEnd ? 0 : track.scrollLeft + page,
+        behavior: "smooth",
+      });
+    };
+    const tick = setInterval(advance, MOBILE_AUTOPLAY_MS);
+
+    // Touching the carousel hands it to the user; autoplay only resumes once
+    // they have been idle, so it never fights a drag.
+    const hold = () => {
+      paused = true;
+      clearTimeout(resumeId);
+      resumeId = setTimeout(() => {
+        paused = false;
+      }, MOBILE_RESUME_MS);
+    };
+    const events = ["pointerdown", "touchstart", "wheel"] as const;
+    for (const evt of events) {
+      track.addEventListener(evt, hold, { passive: true });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) visible = entry.isIntersecting;
+    });
+    observer.observe(track);
+
+    return () => {
+      clearInterval(tick);
+      clearTimeout(resumeId);
+      observer.disconnect();
+      for (const evt of events) track.removeEventListener(evt, hold);
+    };
+  }, [isDesktop]);
 
   const { contextSafe } = useGSAP(
     () => {
@@ -265,11 +323,17 @@ export default function PortfolioSection() {
       ref={containerRef}
       id="portfolio"
       onMouseLeave={handleMouseLeave}
+      // No bottom padding below `md`: the section background is #0a0a0a and
+      // StatsSection under it is white at pt-0, so any padding here reads as a
+      // black band rather than breathing room. The slide image meets the white
+      // section directly, as it did before the carousel.
       className="relative h-auto w-full overflow-hidden bg-[#0a0a0a] text-white md:h-screen"
     >
       <div
         ref={trackRef}
-        className="flex w-full flex-col md:h-full md:w-max md:flex-row"
+        // Both breakpoints lay out in a row now; below `md` this element is
+        // itself the scroll container (desktop instead has GSAP translate it).
+        className="no-scrollbar flex w-full flex-row max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain md:h-full md:w-max"
       >
         {projects.map((project) => (
           <div
@@ -279,7 +343,7 @@ export default function PortfolioSection() {
             // so the -z-20 image holder escalates to the page wrapper's context
             // and the section's opaque bg-[#0a0a0a] paints OVER it: black
             // panels, no images. isolation scopes the -z-20 to this panel.
-            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 max-md:isolate max-md:px-3 max-md:last:pb-16 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
+            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 max-md:isolate max-md:snap-center max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
           >
             <Link
               href={project.href}

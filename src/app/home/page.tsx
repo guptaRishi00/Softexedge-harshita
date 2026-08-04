@@ -152,7 +152,7 @@ export default function HomePage() {
 
         <section className="flex w-full flex-col items-start gap-4 overflow-hidden bg-white px-6 py-12 sm:flex-row sm:items-center sm:gap-8 md:pt-20">
           <div className="w-full shrink-0 text-center sm:w-auto sm:text-left lg:mb-0 mb-3">
-            <p className="text-sm font-medium tracking-wide text-black/60">
+            <p className="text-sm font-medium tracking-wide text-black/60 max-md:text-base">
               Trusted By
             </p>
           </div>
@@ -189,7 +189,7 @@ export default function HomePage() {
 
           <div
             ref={portfolioRef}
-            className="relative z-10 bg-[#0a0a0a] shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]"
+            className="relative z-10 bg-[#0a0a0a] lg:shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]"
           >
             <PortfolioSection />
           </div>
