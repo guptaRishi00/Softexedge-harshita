@@ -257,9 +257,17 @@ export default function ContactSection() {
                 <div className="pt-4 max-md:pt-0">
                   <button
                     type="submit"
-                    className="group relative cursor-pointer inline-flex w-full overflow-hidden items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors focus:outline-none focus:ring-4 focus:ring-white/20 hover:text-white max-md:rounded-xl max-md:py-4 max-md:text-base"
+                    // Below md the button rests in the desktop hover state —
+                    // gradient fill + white label — because touch has no hover,
+                    // so the resting state has to carry it.
+                    // max-md:bg-transparent: the gradient overlay is a clipped
+                    // child, so its antialiased edge blended against the
+                    // button's own bg-white and drew a white fringe around the
+                    // rounded corners. With the overlay always opaque here the
+                    // white underneath has no purpose.
+                    className="group relative cursor-pointer inline-flex w-full overflow-hidden items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors focus:outline-none focus:ring-4 focus:ring-white/20 hover:text-white max-md:rounded-xl max-md:bg-transparent max-md:py-4 max-md:text-base max-md:text-white"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] opacity-0 transition-opacity duration-300 max-md:opacity-100 group-hover:opacity-100" />
                     <span className="relative z-10 transition-colors duration-300">
                       Send Message
                     </span>

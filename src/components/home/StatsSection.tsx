@@ -10,11 +10,14 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+// Grounded in the 2025 company profile: 5 years, five countries (India, UAE,
+// France, USA, UK), four client regions, four service pillars. The component
+// renders a "+" after every number, so each figure is stated as a floor.
 const stats = [
-  { number: "85", text: "Brands Directed" },
-  { number: "18", text: "Different Sectors" },
-  { number: "500", text: "Creative Deployments" },
-  { number: "16", text: "Years of Vision" },
+  { number: "05", text: "Years Building Systems" },
+  { number: "05", text: "Countries On The Ground" },
+  { number: "04", text: "Continents Served" },
+  { number: "04", text: "Systems Under One Roof" },
 ];
 
 export default function StatsSection() {

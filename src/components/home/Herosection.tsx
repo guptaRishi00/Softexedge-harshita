@@ -92,7 +92,7 @@ export default function Herosection({}: any) {
               }}
               className="md:hidden mb-3 inline-flex items-center justify-center text-md sm:text-sm font-medium text-white"
             >
-              Innovate. Build. Scale.
+              Brand. Build. Grow.
             </motion.div>
 
             <motion.h1
@@ -105,7 +105,7 @@ export default function Herosection({}: any) {
               }}
               className="text-[clamp(2.75rem,13.5vw,3.5rem)] sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
             >
-              We Engineer
+              We Build
             </motion.h1>
 
             <div className="flex flex-wrap items-center justify-center gap-2 md:gap-5">
@@ -149,7 +149,7 @@ export default function Herosection({}: any) {
                 }}
                 className="text-[clamp(2.75rem,13.5vw,3.5rem)] sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
               >
-                Solutions
+                Businesses
               </motion.p>
             </div>
 
@@ -163,7 +163,7 @@ export default function Herosection({}: any) {
               }}
               className="absolute bottom-12 md:relative md:bottom-auto text-lg md:text-xl lg:text-5xl font-medium text-white md:mt-5"
             >
-              crafted for impact
+              not just websites
             </motion.p>
           </div>
         </div>

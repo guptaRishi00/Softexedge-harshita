@@ -128,17 +128,17 @@ export default function AboutSection() {
               className="flex max-w-5xl flex-wrap items-baseline gap-x-4 gap-y-2 text-3xl font-bold leading-[0.9em] tracking-[-0.04em] max-md:gap-x-2.5 max-md:gap-y-0.5 max-md:leading-[0.8em] md:text-6xl lg:text-[3.5rem]"
             >
               <motion.span variants={wordAnimation} className="block">
-                Building
+                We build
               </motion.span>
 
               <motion.span
                 variants={wordAnimation}
                 className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pb-3 text-transparent"
               >
-                cinematic
+                the product
               </motion.span>
 
-              {"digital products for the next generation of"
+              {"and the demand that fills it, for"
                 .split(" ")
                 .map((word, index) => (
                   <motion.span
@@ -152,7 +152,7 @@ export default function AboutSection() {
 
               <motion.span variants={wordAnimation} className="block">
                 <RotatingWord
-                  words={["brands", "startups", "founders", "creators"]}
+                  words={["founders", "startups", "brands", "challengers"]}
                   activeIndex={frontIndex}
                 />
               </motion.span>
@@ -163,9 +163,17 @@ export default function AboutSection() {
               className="mt-10 max-w-2xl space-y-6 max-md:mt-6 max-md:space-y-4"
             >
               <p className="text-xl leading-[1.25em] text-zinc-600 font-regular max-md:text-base">
-                We design immersive identities, motion-rich interfaces, and
-                scalable digital systems that feel sharp, intentional, and
-                unforgettable
+                Strong businesses are built on well-designed systems — not
+                disconnected tools. Most companies don't have a technology
+                problem; they have a fragmentation problem: a stack that doesn't
+                talk, work that happens twice, and no single place to see the
+                truth
+              </p>
+              <p className="text-xl leading-[1.25em] text-zinc-600 font-regular max-md:text-base">
+                We engineer the platform, the automation and the growth
+                infrastructure as one system — across India, the UAE, France,
+                the USA and the UK — so one team stays accountable long after
+                launch day
               </p>
               <div className="flex flex-wrap gap-4 pt-3">
                 {/* Below md this is pinned to the desktop hover state (black

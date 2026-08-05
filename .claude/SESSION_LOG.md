@@ -9559,3 +9559,134 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
 - VERIFIED 1265px: padding 64px / 64px (`lg:px-16`) — desktop unchanged throughout, as it
   never had the override.
 - `bunx tsc --noEmit` 0; biome 2 errors == the file's standing baseline.
+
+## ContactSection — Send Message button rests in the hover look (mobile)
+- The desktop hover is two things: `hover:text-white` on the button, and the gradient
+  overlay going `opacity-0` -> `group-hover:opacity-100`. Both pinned below md with
+  `max-md:text-white` and `max-md:opacity-100`.
+- VERIFIED 390px (transitions frozen first so nothing was read mid-flight): label colour
+  **rgb(255,255,255)**, gradient **opacity 1** with the blue->cyan linear-gradient present,
+  `restsInHoverLook: true`. Untouched mobile sizing: radius 14px, padding 16px, font 16px.
+- VERIFIED 1265px: label **rgb(0,0,0)**, gradient **opacity 0**, radius 18px, font 18px,
+  padding 20px — `desktopRestsUnhovered: true`.
+- A CSSOM walk for the hover rules came back empty; I did NOT report that as a pass and
+  re-checked against the raw stylesheet text instead. Both hover classes are still on the
+  elements and both rules are still emitted:
+  `@media (hover: hover) { .group-hover\:opacity-100:is(:where(.group):hover *) {opacity:1} }`
+  and the matching text-white rule. The new ones compile to
+  `@media not (min-width: 48rem) { … }`, so they cannot reach desktop.
+- WORTH KNOWING: Tailwind wraps hover in `@media (hover: hover)`, so on a touch device
+  those rules never fire at all — which is exactly why the state has to be pinned rather
+  than left to hover. Same reasoning as the AboutSection/Blog CTAs.
+- `bunx tsc --noEmit` 0; biome clean on the file, same as its HEAD copy.
+
+## ContactSection button — kill the white fringe on mobile
+- CAUSE: the button keeps `bg-white` (its desktop resting fill) while the gradient is an
+  absolutely-positioned CHILD clipped by `overflow-hidden` + `rounded-xl`. The child's
+  antialiased curve blends against whatever is behind it, so the white background showed
+  as a light rim around the rounded corners. Now that the overlay is always opaque below
+  md, that white serves no purpose there.
+- CHANGE (1 class): `max-md:bg-transparent` on the button.
+- VERIFIED 390px: button background **rgb(255,255,255) -> rgba(0,0,0,0)**,
+  `noWhiteUnderneath: true`, and I walked 4 ancestors for anything else painting white —
+  `whitePaintingAncestors: []`, so nothing behind can re-create the rim. Border-width is
+  0px, confirming it was never an actual border. Fill intact: gradient opacity 1 with the
+  blue->cyan image, label white, radius 14px, `stillLooksHovered: true`.
+- VERIFIED 1265px: background **rgb(255,255,255)**, label **rgb(0,0,0)**, gradient opacity
+  **0**, radius 18px, font 18px, padding 20px — the solid white resting button is untouched.
+- `bunx tsc --noEmit` 0; biome clean on the file.
+
+## ExperimentalTestimonials — rotating word animates on mobile too
+- Same shape as the AboutSection/RotatingWord case: an `isDesktop ? <AnimatePresence…> :
+  <static rotatingWords[0]>` branch meant mobile rendered a frozen first word, while the
+  6s `setWordIndex` interval was already ticking unconditionally and being thrown away.
+- CHANGE: deleted the branch so both breakpoints render the same AnimatePresence + spring.
+  `isDesktop` is still used 6x elsewhere in the file (marquee gate, arrows), so nothing
+  dangles.
+- ALSO APPLIED THE PROVEN PERF STRUCTURE, because this is the exact element the user
+  reported as laggy in AboutSection: the gradient + `bg-clip-text` moved OFF the animated
+  element onto a STATIC child, and `will-change: transform, opacity` set statically. A
+  background-clipped element cannot be cheaply composited, so animating it re-rasterises
+  the glyph-clipped gradient every frame; as a child it rasterises once and the parent
+  layer is merely translated.
+- DESKTOP PROVEN UNCHANGED BY BEFORE/AFTER, not by argument: captured a baseline at 1265px
+  BEFORE editing, re-measured after, and diffed — **8/8 metrics equal, `mismatches: []`**
+  (mask 310.3x73, padding 8px 24px, margin 0px -24px, h2 height 130, font 60px,
+  background-clip text, colour rgba(0,0,0,0)). Structure confirmed moved:
+  `animatedHasBgClip: false`, `gradientChildHasBgClip: true`.
+- VERIFIED 390px: the animated element now carries framer's inline
+  `will-change:transform, opacity; opacity:0; transform:translateX(-100%)` — the static
+  branch had NO style attribute at all, so this is direct proof the animated branch is
+  live. Appearance intact: gradient on the static child, transparent colour, 36px, mask
+  and overflow-hidden still on the wrapper.
+- Word cycling itself is not observable in-pane (frozen animation clock; `mode="wait"`
+  exit never completes), so the swap timing needs the phone.
+- `bunx tsc --noEmit` 0; biome clean on the file; `next build` ✓.
+
+## ExperimentalTestimonials rotating word — the missing half of the AboutSection fix
+- The gradient-on-static-child fix was already applied here last task, and it was still
+  laggy. The reason: AboutSection got TWO fixes and this component only ever got one.
+  `wordIndex` lived in ExperimentalTestimonials, so every 6s swap re-rendered the whole
+  ~290-line section — including the 8-card `duplicatedTestimonials` track — to change one
+  word, and that commit landed exactly as the animation started.
+- FIX: extracted `home/TestimonialsRotatingWord.tsx` (sibling-file pattern, one component
+  per file, matching the repo's earlier extractions). It owns its own index + 6s interval,
+  so the tick re-renders one span instead of the section. Removed from the parent:
+  `wordIndex` state, the interval effect, the `rotatingWords` array and the now-unused
+  `AnimatePresence` import — all verified gone (`grep -c` = 0 for each).
+- DESKTOP PROVEN UNCHANGED against the baseline captured BEFORE the previous task's edit:
+  **8/8 metrics equal, `mismatchesVsBaseline: []`** (mask 310.3x73, padding 8px 24px,
+  margin 0px -24px, h2 130, font 60px, background-clip text, colour rgba(0,0,0,0)) — so
+  moving the markup into another component changed nothing visually.
+- **RE-RENDER SCOPE MEASURED, not asserted:** a MutationObserver on the whole
+  `#testimonials` subtree across 13s (two 6s tick boundaries) recorded
+  **0 mutations outside the word's own wrapper** — `tickTouchesOnlyTheWord: true`. Before
+  the change the tick re-rendered the entire section.
+- VERIFIED 390px: framer inline `will-change:transform, opacity; opacity:0;
+  transform:translateX(-100%)` present (animated branch live), gradient on the static
+  child, animated element carries no `bg-clip`, 36px.
+- REMAINING LEVER IF STILL LAGGY (not done, it is a visible change): the wrapper's
+  `[mask-image:…]` forces the masked subtree to re-rasterise while the child translates.
+  `overflow-hidden` is already there, so dropping the mask on mobile trades a soft 24px
+  edge fade for a hard clip and removes that per-frame cost.
+- `bunx tsc --noEmit` 0; biome clean on both files; `next build` ✓.
+
+## Homepage content reworked from the client PDFs (Traul, AquaLog, Authentica, profile)
+- SOURCES READ (not skimmed): Traul case study (5pp), AquaLog case study (4pp), Authentica
+  one-pager, and pp.1-10 of SoftEXedge-profile-2025. Everything below traces to those.
+- PORTFOLIO — replaced 2 invented projects with real case studies, kept Traul:
+  * Traul: description rewritten around the actual hook — the previous vendor charged
+    premium rates per small change, and the full three-product rebuild cost roughly a
+    QUARTER of those isolated changes (case study: 3 products, ~75% lower cost, 1/4x).
+  * Finova Dashboard -> **AquaLog** (AGRITECH, 2025): offline-first aquaculture software,
+    and Pond Safe — one farmer's outbreak report becomes an early warning for every farm
+    within 7km without exposing who reported it. Tech from the case study's own table.
+  * Lumina Festival -> **Authentica** (WEB3, 2025): blockchain seal, cross-platform usage
+    tracking, ownership transfer, instant revocation — "a proof that protects itself",
+    lifted from the client's own line.
+- STATS — the old set was invented AND self-contradicting: "16 Years of Vision" against a
+  2025 profile that says **05 Years Experience**. Replaced with figures traceable to the
+  deck: 05 years, 05 countries (India/UAE/France/USA/UK), 04 continents (India, Middle
+  East, Europe, North America), 04 service pillars (Web & Platform, Software & SaaS,
+  Automation & Internal Systems, Marketing & Growth). The component appends "+" to every
+  number, so each is phrased as a floor — checked, renders "05+", "04+".
+- ABOUT — swapped the generic "most agencies hand over a design file" line for the deck's
+  own quotable, **"Strong businesses are built on well-designed systems — not disconnected
+  tools"**, plus the fragmentation thesis from the Executive Summary and the real
+  five-country footprint.
+- VERIFIED 1265px by reading the rendered DOM: all 5 panels correct (title, category, tech
+  tags, href), **all three new/updated images `naturalWidth > 0`** so nothing is a broken
+  reference; 4 stat rows render "05+/05+/04+/04+" with the new labels; both About
+  paragraphs present in full.
+- **DELIBERATELY NOT FABRICATED — needs the user:**
+  * Panels 4 and 5 (Nova Workspace, Zephyr Mobility) are still invented. The brief said
+    "replace some", and I had only three real case studies, so they were left rather than
+    padded with more fiction.
+  * Images for AquaLog and Authentica are stand-ins from `public/assets` (a dashboard shot
+    and an abstract) — there are no real screenshots in the repo.
+  * `/work/aqualog` and `/work/authentica` will 404: `src/data/projects.ts` has no entries
+    (same pre-existing gap as `/work/traul`).
+  * ExperimentalTestimonials still carries four invented people with invented quotes. I did
+    not touch it — inventing attributable testimonials is not something to do silently.
+- `bunx tsc --noEmit` 0; biome per file 2/1/1 == each file's standing baseline;
+  `next build` ✓.

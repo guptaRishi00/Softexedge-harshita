@@ -1,10 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
 import { useMarqueeHalf } from "@/components/ui/LogoCarousel";
+import TestimonialsRotatingWord from "./TestimonialsRotatingWord";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const testimonials = [
@@ -40,24 +41,14 @@ const testimonials = [
 
 const duplicatedTestimonials = [...testimonials, ...testimonials];
 
-const rotatingWords = ["Collective", "Visionaries", "Innovators", "Future"];
-
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
 export default function ExperimentalTestimonials() {
   const isDesktop = useIsDesktop();
   const trackRef = useRef<HTMLDivElement>(null);
   useMarqueeHalf(trackRef, 40, !isDesktop, true);
-  const [wordIndex, setWordIndex] = useState(0);
   const [active, setActive] = useState(0);
   const [step, setStep] = useState(452);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setWordIndex((prev) => (prev + 1) % rotatingWords.length);
-    }, 6000);
-    return () => clearInterval(id);
-  }, []);
 
   useEffect(() => {
     const update = () =>
@@ -104,35 +95,7 @@ export default function ExperimentalTestimonials() {
               className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl lg:leading-[0.95em]"
             >
               Voices of the <br />
-              <span className="inline-grid overflow-hidden py-2 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
-                {isDesktop ? (
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={wordIndex}
-                      initial={{ x: "-100%", opacity: 0 }}
-                      animate={{ x: "0%", opacity: 1 }}
-                      exit={{
-                        x: "100%",
-                        opacity: 0,
-                        transition: { duration: 1.5, ease: "easeInOut" },
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 22,
-                        damping: 20,
-                        mass: 1,
-                      }}
-                      className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent will-change-transform"
-                    >
-                      {rotatingWords[wordIndex]}
-                    </motion.span>
-                  </AnimatePresence>
-                ) : (
-                  <span className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
-                    {rotatingWords[0]}
-                  </span>
-                )}
-              </span>
+              <TestimonialsRotatingWord />
             </motion.h2>
 
             <motion.p
