@@ -9690,3 +9690,240 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
     not touch it — inventing attributable testimonials is not something to do silently.
 - `bunx tsc --noEmit` 0; biome per file 2/1/1 == each file's standing baseline;
   `next build` ✓.
+
+## REVERTED: "Homepage content reworked from the client PDFs"
+- User asked to undo the previous entry. Five edits reversed across three files, each with
+  an exact-match assert so a partial revert would have failed loudly:
+  * PortfolioSection: Traul description back to the "~75% lower cost" wording; project 2
+    AquaLog -> Finova Dashboard; project 3 Authentica -> Lumina Festival.
+  * StatsSection: back to 85 / 18 / 500 / 16, and the explanatory comment removed.
+  * AboutSection: two paragraphs collapsed back to the single "hand over a design file" one.
+- VERIFIED BOTH DIRECTIONS by grep — new content **0 files** for AquaLog, Authentica,
+  "Pond Safe", "Years Building Systems", "well-designed systems", "fragmentation problem";
+  originals **1 file each** for Finova Dashboard, Lumina Festival, Brands Directed,
+  Years of Vision, "hand over a design file", "at roughly 75% lower cost".
+- VERIFIED 1265px in the DOM: project titles are exactly
+  ["Traul","Finova Dashboard","Lumina Festival","Nova Workspace","Zephyr Mobility"]
+  (asserted as one equality), stats render 85+/18+/500+/16+ with the original labels, the
+  About block is back to ONE paragraph, and every portfolio image still loads
+  (`naturalWidth > 0`) — the reverted image paths are all valid.
+- REVERT SCOPE: only this task's content edits. The mobile carousel, autoplay gates,
+  spacing and CTA work in these same three files is untouched.
+- NOTE: `bunx tsc --noEmit` first failed with 8 errors inside `.next/dev/types/routes.d.ts`
+  and `validator.ts` — the known concurrent-dev-server corruption (4th occurrence). Not
+  from source; `rm -rf .next/dev/types` then tsc exit **0**.
+- biome per file 2/1/1 == each file's standing baseline.
+
+## Homepage — more vertical breathing room on mobile, every section
+- 9 edits across 8 files, all via `max-md:` (or a base value a `md:` rule already
+  overrides), so desktop is untouched BY CONSTRUCTION rather than by inspection:
+  | section              | mobile pt/pb before | after |
+  |----------------------|---------------------|-------|
+  | Trusted By / LogoLoop | 48 / 48 | **64 / 64** |
+  | AboutSection          | 24 / 40 | **48 / 56** |
+  | StatsSection          | 16 / 20 | **40 / 40** |
+  | ServiceSection        | 64 / 40 | **80 / 64** |
+  | ExperimentalTestimonials | 64 / 32 | **80 / 56** |
+  | TechLogoCarousel      | 32 / 64 | **56 / 80** |
+  | ContactSection        | 64 / 64 | **80 / 80** |
+  | BlogSection           | 56 / 40 | **80 / 64** |
+- **PortfolioSection DELIBERATELY SKIPPED.** It is `bg-[#0a0a0a]` sitting directly above a
+  white StatsSection with `pt-0`, so section padding there renders as a BLACK BAND, not
+  whitespace — the exact regression the user reported and had me revert earlier this
+  session. Its slides already carry `max-md:pb-12` internally. Verified still 0/0.
+- The hero wrapper (`px-3 pt-4`) was also left alone: the hero is `min-h-[96svh]` with
+  absolutely-positioned children, so top padding pushes it down and adds white above the
+  video rather than breathing room inside it.
+- THIS PARTLY UNDOES EARLIER FINE-TUNING the user asked for — ServiceSection's bottom
+  padding ("reduce the padding botton below the last service", 72 -> 40) is now 64, and
+  StatsSection's top ("reduce the padding top", 16) is now 40. Flagged rather than done
+  silently; the instruction was explicitly "every component".
+- VERIFIED 390px: all 8 sections measured against their intended values —
+  **`mismatches: []`, allMatchExpected true**. PortfolioSection confirmed 0/0.
+- VERIFIED 1265px against the pre-change desktop values (md:/lg: rules) —
+  80/48, 40/40, 64/96, 128/96, 128/32, 0/128, 128/128, 120/128 — **`mismatches: []`**.
+- `bunx tsc --noEmit` 0; biome unchanged per file; `next build` ✓.
+
+## Homepage — looser tag/title/description/button rhythm on mobile
+- 12 `max-md:` edits across 5 sections. StatsSection and PortfolioSection have no
+  tag/title/description/button block, so nothing to change there.
+  | section | tag->title | title->desc | desc->button |
+  |---|---|---|---|
+  | AboutSection  | 28 -> **36** | 24 -> **32** | 16 -> **24** (+12 pt-3) |
+  | Testimonials  | 24 -> **32** | 20 -> **28** | 32 -> **40** |
+  | ContactSection| 16 -> **24** | 16 -> **24** | 32 -> **40** (to channel cards) |
+  | ServiceSection| 24 -> **32** | 32 -> **40** (row gap) | — |
+  | BlogSection   | 12 -> **24** | 20 -> **32** (row gap) | — |
+- **TWO CLASSES SILENTLY DID NOTHING and were swapped out**: `max-md:mb-5` and
+  `max-md:gap-7` were absent from the served stylesheet, so Blog's tag stayed 12px and its
+  row fell back to gap-8. Caught only because the computed values disagreed with intent —
+  the DOM had the classes, they just had no rule. Replaced with `max-md:mb-6` / `max-md:gap-8`,
+  both confirmed present in the served CSS AND in a fresh `next build`. I did NOT determine
+  why those two were missing; the production check ran after the swap, so it proves the
+  current source is clean, not why the originals failed. Worth knowing that "class is on the
+  element" is not evidence the rule exists in this project.
+- MEASUREMENT NOTE: a geometric probe reported `contact.tagToTitle: -1492px` and
+  `descToCards: 20px`. Both were bad selectors (a wrapper matched instead of the tag), not
+  regressions — the authoritative computed values for those two are 24px and 40px, read
+  directly off the elements by class. Reported as discarded rather than as passes.
+- VERIFIED 390px: About 36/32/36, Testimonials 32/28/40, Contact 24 title->desc + 24 tag mb
+  + 40 cards mt, Services 32 tag + 40 row, Blog 24 tag + 32 row.
+- VERIFIED 1265px: all 11 touched elements read their ORIGINAL md+ values —
+  24/40/24/20/32/24/48/24/32/12/32 — **`mismatches: []`**, desktop untouched.
+- `bunx tsc --noEmit` 0; biome unchanged per file; `next build` ✓.
+
+## Homepage — larger section titles on mobile
+- 7 `max-md:`/`max-sm:` edits, all arbitrary-value sizes so the exact px is explicit:
+  | section | mobile title before | after |
+  |---|---|---|
+  | AboutSection h1        | 30 | **34** |
+  | PortfolioSection h2    | 30 | **34** |
+  | StatsSection number    | 48 | **56** (max-sm, not max-md — `sm:text-[7rem]` owns 640-767) |
+  | ServiceSection h2      | 36 | **40** |
+  | ExperimentalTestimonials h2 | 36 | **40** |
+  | ContactSection h2      | 36 | **40** |
+  | BlogSection h2         | 36 | **40** |
+- **HEROSECTION DELIBERATELY SKIPPED.** Its h1 is `text-[clamp(2.75rem,13.5vw,3.5rem)]`,
+  derived earlier from the measured constraint that "We Engineer" must stay on ONE line:
+  the face renders it at 5.65x font size, so f <= 0.177*vw. At 390px the ceiling is ~57.7px
+  and it already sits at 52.7px; at 320px the margin is only a few px. Bumping it re-breaks
+  the exact wrap the user asked to preserve. Left alone and flagged.
+- VERIFIED 390px: all 7 read their new sizes, **`mismatches: []`**, `pageScrollsX: false`.
+- A first pass flagged 4 headings as "overflowing" — Finova, Lumina, Nova, Zephyr. NOT a
+  regression: those are carousel slides 2-5 parked off-screen inside the horizontal
+  scroller (Traul, slide 1, was absent from the list). Confirmed with
+  `portfolioHeadingsAllInsideScroller: true`. Reported as investigated, not as a pass.
+- ROTATING-WORD MASKS RE-CHECKED at the new size, since bigger glyphs can clip a masked
+  wrapper: testimonials 40px word 44.4h in a 60.4h mask, contact 40px word 48h in a 64h
+  mask, `clippedVertically: false` on both.
+- VERIFIED 1265px: 56 / 112 / 160 / 80 / 60 / 64 / 60 — **`mismatches: []`**, desktop
+  untouched.
+- `bunx tsc --noEmit` 0; `next build` ✓.
+
+## AboutSection — space between the image and the copy (mobile)
+- CHANGE (1 class): image column gained `max-md:mb-8`. It leads on mobile via
+  `max-md:order-1`, so its bottom margin IS the gap to the copy; the margin stacks on the
+  grid's existing 32px row-gap.
+- CHOSE MARGIN OVER A BIGGER GRID GAP on purpose: the grid only becomes two columns at
+  `lg`, so 768-1023px is still a single column — but with the copy FIRST (no `max-md:order`
+  there). Widening `gap` would have opened a gap in that band too; a `max-md:` margin
+  cannot reach it.
+- VERIFIED 390px: image-column margin-bottom **0 -> 32px**, measured distance from the
+  image's bottom edge to the "About The Studio" tag **32 -> 64px**. Grid row-gap still
+  32px, orders still 1/2, image-column padding-top still 0, no horizontal page scroll.
+- FALSE ALARM INVESTIGATED, NOT IGNORED: the probe reported `imageStillLoads: false`
+  (`naturalWidth: 0`). Not a regression — the image is `loading="lazy"` and sits **248px
+  below the fold**, and this pane never fires native lazy loading. Forcing `eager` loaded
+  it immediately (`naturalWidth: 282`) from the `/_next/image` endpoint, proving the src is
+  intact. My change only added a margin and could not affect loading.
+- VERIFIED 1265px: image-column margin-bottom **0px** (the `max-md:` variant is inert),
+  padding-top 40px (`pt-10`), both orders 0, grid back to two tracks 589.888/530.9 with the
+  copy on the left — desktop untouched, asserted in one boolean.
+- `bunx tsc --noEmit` 0; biome 1 error == the file's standing baseline.
+
+## ContactSection form — less congested inputs on mobile
+- The mobile form had three gap levels: 20px between blocks, 16px between the two stacked
+  fields in each row, 8px label->input. Raised the two that separate INPUTS:
+  * both field rows `max-md:gap-4` -> `max-md:gap-6` (16 -> **24px**), 2 occurrences,
+    asserted as exactly 2 before replacing.
+  * form `max-md:gap-5` -> `max-md:gap-8` (20 -> **32px**).
+  * label->input `max-md:gap-2` (8px) left alone — that pairs a label with its own field
+    rather than separating inputs, and widening it would loosen the pairing.
+- CHECKED THE CLASSES ACTUALLY GENERATE, given `max-md:gap-6`/`gap-7` were missing from the
+  served CSS in an earlier task: this time **`max-md:gap-6: true`, `max-md:gap-8: true`**,
+  so the earlier absence was the stale stylesheet, not an unavailable utility.
+- VERIFIED 390px: form row-gap **20 -> 32px**, both field rows **24px**; measured ink gaps
+  between consecutive inputs now 45.9 / 53.9 / 45.9 / 157.3px (the larger ones span a
+  label and a block boundary). 5 inputs found, so nothing was dropped.
+- VERIFIED 1265px: form row-gap **32px** (`gap-8`, unchanged), both rows **32px**
+  (`md:gap-8`) across two 270.763px columns, padding 48px (`md:p-12`), label->input 12px —
+  desktop untouched, asserted in one boolean.
+- `bunx tsc --noEmit` 0; biome clean on the file.
+
+## Homepage — larger section descriptions on mobile
+- 5 `max-md:` edits:
+  | section | mobile description before | after |
+  |---|---|---|
+  | AboutSection   | 16 | **18** |
+  | ExperimentalTestimonials | 16 | **18** |
+  | ContactSection | 16 | **18** |
+  | ServiceSection | 16 | **18** |
+  | PortfolioSection (panel copy) | 12 | **14** |
+- NOT CHANGED, with reasons: BlogSection's header has NO description — it is tag -> title
+  -> CTA only, so there was nothing to size. StatsSection has a number + a short label
+  rather than a description (its label is already 24px on mobile).
+- CLASSES CONFIRMED GENERATED (`max-md:text-lg`, `max-md:text-sm` both true in the served
+  CSS) — habit kept after `max-md:gap-6`/`mb-5` silently produced no rule earlier today.
+- VERIFIED 390px: 18/18/18/18/14, **`mismatches: []`**, no horizontal page scroll.
+- VERIFIED 1265px: 20/18/18/20/18 — the original `text-xl`, `text-lg`, `lg:text-xl` and
+  `md:text-lg` values — **`mismatches: []`**, desktop untouched.
+- SPOTTED, NOT FIXED: `ServiceSection.tsx:207` uses **`text-md`, which is not a real
+  Tailwind class** (the scale is sm/base/lg). It generates no rule, so that paragraph was
+  inheriting 16px by accident rather than by intent, and desktop relies on `lg:text-xl`.
+  My `max-md:text-lg` now governs mobile deliberately, but the dead class is still there
+  and the 768-1023 band still falls through to inherited 16px. Left alone as out of scope.
+- `bunx tsc --noEmit` 0; `next build` ✓.
+
+## AboutSection / Testimonials / Blog CTAs — inverted colours on mobile
+- Same 3 classes added to all three CTAs (identical markup, so one loop with a per-file
+  count==1 assert on each replacement):
+  * button  `max-md:bg-black`   (was white)
+  * label   `max-md:text-white` (was black)
+  * icon box `max-md:bg-white`  (was black)
+- The gradient icon needed NO change: the earlier hover-pinning already made the gradient
+  arrow the visible one below md, and it is filled via `url(#...)` rather than currentColor,
+  so flipping the container to white does not affect it. Verified rather than assumed —
+  each CTA shows its OWN gradient id.
+- VERIFIED 390px, all three: button `rgb(0,0,0)`, label `rgb(255,255,255)`, icon box
+  `rgb(255,255,255)`, visible icon fill `url(#about-connect-icon-grad)` /
+  `url(#testimonial-icon-grad)` / `url(#blog-cta-grad)` respectively —
+  **`allThreeCorrect: true`**. Distinct ids confirm no cross-section gradient collision
+  (the map flags a shared-id trap for `TracingBorder`).
+- VERIFIED 1265px, all three: button white, label black, icon box black, border
+  transparent, and the PLAIN arrow is the visible one — **`desktopUnchanged: true`**.
+- `bunx tsc --noEmit` 0; biome unchanged per file.
+
+## AboutSection / Testimonials / Blog CTAs — taller on mobile
+- THE ASK WAS "increase y-axis padding", BUT PADDING WOULD HAVE BEEN INERT: these CTAs are
+  fixed-height flex rows (`h-16` / `max-md:h-12`) with `items-center`, and measurement
+  confirmed **padding-top/bottom were already 0px**. Adding `py-*` to a fixed-height box
+  changes nothing visible. Raised `max-md:h-12` -> `max-md:h-14` instead (48 -> 56px),
+  which is the same outcome the request describes.
+- VERIFIED 390px, all three: height **48 -> 56px**, breathing room around the 36px icon box
+  **6 -> 10px** per side. `max-md:h-14` confirmed present in the served CSS.
+  Colours from the previous task survived: bg black, label white, icon box white.
+  X-padding untouched at 16/10px, icon box still 36x36.
+- VERIFIED 1265px, all three: height **64px**, icon box 44px, bg white, gap 20px —
+  **`desktopUnchanged: true`**.
+- `bunx tsc --noEmit` 0; biome unchanged per file.
+
+## BlogSection — space above the card carousel (mobile)
+- CHANGE (1 class): carousel wrapper gained `max-md:pt-6` (24px).
+- **MARGIN-TOP WAS TRIED FIRST AND SILENTLY DID NOTHING.** `max-md:mt-6` computed correctly
+  (`margin-top: 24px`) but the VISIBLE gap stayed at exactly 32px: the header above is an
+  adjacent sibling with `max-md:mb-8`, and adjacent-sibling margins COLLAPSE to
+  max(32, 24) = 32. Any margin-top up to 32px there is inert. Caught only because the probe
+  measured the geometric header->card distance as well as the computed margin — the
+  computed value alone looked like a pass.
+- Switched to padding, which never collapses, so it reliably adds to the header's 32px.
+  Rationale left in a comment at the call site.
+- VERIFIED 390px: carousel padding-top **0 -> 24px**, gap from the header to the FIRST CARD
+  **32 -> 56px**. Header margin-bottom untouched at 32px, carousel x-padding still 12px.
+  The marquee is unaffected: `playState: running`, `seamStillExact: true`, no page x-scroll.
+- VERIFIED 1265px: carousel padding-top **0px** and padding-left 0px (both `max-md:`-scoped),
+  header margin-bottom 80px (`md:mb-20`), header-to-card gap 80px — desktop untouched.
+- `bunx tsc --noEmit` 0; biome 1 error == the file's standing baseline.
+
+## BlogSection — more bottom padding in the blog cards (mobile)
+- CHANGE (1 class): card `<article>` `max-md:pb-4` -> `max-md:pb-6` (16 -> 24px), sitting
+  alongside the existing `max-md:p-2.5` (the per-side utility wins over the shorthand).
+- VERIFIED 390px: padding-bottom **16 -> 24px** while top/left/right stay **10px**, and the
+  gap from the lowest rendered content to the card's bottom edge went **16.8 -> 24.8px**
+  (the 0.8 is the card border). Uniform across all **8** rendered cards.
+- Nothing else moved: card and image radii still identical (`radiiStillMatch: true`), the
+  marquee is still `running` and `seamStillExact: true`, so the taller cards did not
+  desync the -50% loop.
+- VERIFIED 1265px: padding **0px** including padding-bottom, no border, no radius, no
+  shadow, transparent background — the whole card treatment is `max-md:`-scoped, desktop
+  untouched.
+- `bunx tsc --noEmit` 0; biome 1 error == the file's standing baseline.

@@ -10,14 +10,11 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-// Grounded in the 2025 company profile: 5 years, five countries (India, UAE,
-// France, USA, UK), four client regions, four service pillars. The component
-// renders a "+" after every number, so each figure is stated as a floor.
 const stats = [
-  { number: "05", text: "Years Building Systems" },
-  { number: "05", text: "Countries On The Ground" },
-  { number: "04", text: "Continents Served" },
-  { number: "04", text: "Systems Under One Roof" },
+  { number: "85", text: "Brands Directed" },
+  { number: "18", text: "Different Sectors" },
+  { number: "500", text: "Creative Deployments" },
+  { number: "16", text: "Years of Vision" },
 ];
 
 export default function StatsSection() {
@@ -87,7 +84,7 @@ export default function StatsSection() {
     <section
       ref={containerRef}
       id="stats"
-      className="relative w-full overflow-hidden bg-white pb-5 text-black max-md:pt-4 lg:pt-16 lg:pb-24 "
+      className="relative w-full overflow-hidden bg-white pb-5 text-black max-md:pb-10 max-md:pt-10 lg:pt-16 lg:pb-24 "
     >
       <div className="relative z-10 flex w-full flex-col">
         {stats.map((stat, index) => (
@@ -144,7 +141,7 @@ export default function StatsSection() {
                     "text-[4.5rem]",
                     // max-sm, not max-md: `sm:text-[7rem]` owns 640-767px, and a
                     // max-md override would collide with it in that band.
-                    "max-sm:text-5xl",
+                    "max-sm:text-[3.5rem]",
                     "sm:text-[7rem]",
                     "font-bold",
                     "leading-none",

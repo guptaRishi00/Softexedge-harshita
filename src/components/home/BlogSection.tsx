@@ -173,7 +173,7 @@ export default function BlogSection() {
           className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw] max-md:mr-4 max-md:w-[80vw]"
         >
           <Link href={post.href} draggable={false} className="block h-full">
-            <article className="group flex h-full flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:p-2.5 max-md:pb-4 max-md:shadow-sm">
+            <article className="group flex h-full flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:p-2.5 max-md:pb-6 max-md:shadow-sm">
               {/* max-md:rounded-2xl mirrors the card's own class rather than a
                   literal value, so the two radii stay identical if the theme's
                   --radius-2xl ever changes. Desktop keeps rounded-[1.25rem]. */}
@@ -210,7 +210,7 @@ export default function BlogSection() {
   );
 
   return (
-    <section className="w-full overflow-hidden bg-white text-black pb-10 md:pb-32">
+    <section className="w-full overflow-hidden bg-white text-black pb-10 max-md:pb-16 md:pb-32">
       <div className="mx-auto w-full ">
         <div className="mb-12 w-full px-4 max-md:mb-8 max-md:px-3 md:mb-20 md:px-10">
           <motion.p
@@ -218,12 +218,12 @@ export default function BlogSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:text-xs"
+            className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-6 max-md:text-xs"
           >
             Latest Insights
           </motion.p>
 
-          <div className="flex w-full flex-col items-start justify-between gap-8 max-md:gap-5 md:flex-row md:items-center">
+          <div className="flex w-full flex-col items-start justify-between gap-8 max-md:gap-8 md:flex-row md:items-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -231,7 +231,7 @@ export default function BlogSection() {
               transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
               className="flex flex-col items-start"
             >
-              <h2 className="text-4xl font-bold tracking-tight text-zinc-900 md:text-5xl lg:text-6xl lg:leading-[1.05]">
+              <h2 className="text-4xl font-bold tracking-tight text-zinc-900 max-md:text-[2.5rem] md:text-5xl lg:text-6xl lg:leading-[1.05]">
                 Thoughts &
                 <span className="inline-grid overflow-hidden py-1 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
                   {isDesktop ? (
@@ -274,13 +274,13 @@ export default function BlogSection() {
             >
               <Link
                 href="/blog"
-                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-12 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
+                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 max-md:bg-black hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-14 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
               >
-                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
+                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base max-md:text-white">
                   Explore all articles
                 </span>
 
-                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg">
+                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg max-md:bg-white">
                   <svg width="0" height="0" className="absolute">
                     <title>Explore arrow gradient</title>
                     <defs>
@@ -311,7 +311,11 @@ export default function BlogSection() {
         {/* The cards had no x padding while the header sat at 12px, so their left
             edges did not line up on mobile. Desktop keeps 0 — the track is a
             full-bleed drag carousel there. */}
-        <div className="relative w-full overflow-x-clip max-md:px-3">
+        {/* pt, not mt: the header above is a sibling with `max-md:mb-8`, and
+            adjacent-sibling margins COLLAPSE — a margin-top of 24px was
+            swallowed whole by that 32px margin-bottom and moved nothing.
+            Padding never collapses, so this reliably adds to the 32px. */}
+        <div className="relative w-full overflow-x-clip max-md:pt-6 max-md:px-3">
           <motion.div
             ref={trackRef}
             className="flex w-max flex-nowrap gap-4 md:gap-3 max-md:gap-0 md:cursor-grab md:select-none md:active:cursor-grabbing"

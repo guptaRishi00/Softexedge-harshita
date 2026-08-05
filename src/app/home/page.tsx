@@ -150,7 +150,7 @@ export default function HomePage() {
           <Herosection />
         </div>
 
-        <section className="flex w-full flex-col items-start gap-4 overflow-hidden bg-white px-6 py-12 sm:flex-row sm:items-center sm:gap-8 md:pt-20">
+        <section className="flex w-full flex-col items-start gap-4 overflow-hidden bg-white px-6 py-12 max-md:py-16 sm:flex-row sm:items-center sm:gap-8 md:pt-20">
           <div className="w-full shrink-0 text-center sm:w-auto sm:text-left lg:mb-0 mb-3">
             <p className="text-sm font-medium tracking-wide text-black/60 max-md:text-base">
               Trusted By
@@ -228,7 +228,7 @@ export default function HomePage() {
               <ContactSection />
             </div>
 
-            <div className="[&>section]:pt-14 md:[&>section]:pt-30">
+            <div className="[&>section]:pt-20 md:[&>section]:pt-30">
               <BlogSection />
             </div>
           </div>

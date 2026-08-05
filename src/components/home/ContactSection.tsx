@@ -57,7 +57,7 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="relative w-full overflow-hidden bg-black py-16 max-md:pt-16 max-md:pb-16 md:pt-32 md:pb-32"
+      className="relative w-full overflow-hidden bg-black py-16 max-md:pb-20 max-md:pt-20 md:pt-32 md:pb-32"
     >
       <div className="relative z-10 mx-auto w-full px-4 max-md:px-3 md:px-10">
         <div className="grid grid-cols-1 gap-16 max-md:gap-10 lg:grid-cols-12 lg:gap-12">
@@ -73,7 +73,7 @@ export default function ContactSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, ease: premiumEase }}
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-4 max-md:text-xs"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-6 max-md:text-xs"
             >
               Get in touch
             </motion.div>
@@ -83,7 +83,7 @@ export default function ContactSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
-              className="text-6xl font-bold tracking-tight text-white max-md:text-4xl md:text-5xl lg:text-[64px] leading-[0.9em]"
+              className="text-6xl font-bold tracking-tight text-white max-md:text-[2.5rem] md:text-5xl lg:text-[64px] leading-[0.9em]"
             >
               Let&apos;s build <br />
               <span className="inline-grid overflow-hidden py-2 px-6 -mx-6 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]">
@@ -122,14 +122,14 @@ export default function ContactSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
-              className="mt-6 text-lg font-light leading-[1.25em] text-white max-md:mt-4 max-md:text-base"
+              className="mt-6 text-lg font-light leading-[1.25em] text-white max-md:mt-6 max-md:text-lg"
             >
               Ready to redefine the standard? Whether you have a specific
               project in mind or just want to explore possibilities, our team is
               ready to collaborate
             </motion.p>
 
-            <div className="mt-12 grid grid-cols-1 gap-4 max-md:mt-8 max-md:gap-3 sm:grid-cols-2">
+            <div className="mt-12 grid grid-cols-1 gap-4 max-md:mt-10 max-md:gap-3 sm:grid-cols-2">
               {channels.map((channel) => (
                 <ChannelCard key={channel.label} {...channel} />
               ))}
@@ -144,8 +144,8 @@ export default function ContactSection() {
             className="lg:col-span-7"
           >
             <div className="h-full overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950 transition-transform duration-300 hover:border-white/20 max-md:rounded-3xl">
-              <form className="flex h-full flex-col justify-between gap-8 p-8 max-md:gap-5 max-md:p-5 sm:p-10 md:p-12">
-                <div className="grid grid-cols-1 gap-6 max-md:gap-4 md:grid-cols-2 md:gap-8">
+              <form className="flex h-full flex-col justify-between gap-8 p-8 max-md:gap-8 max-md:p-5 sm:p-10 md:p-12">
+                <div className="grid grid-cols-1 gap-6 max-md:gap-6 md:grid-cols-2 md:gap-8">
                   <div className="flex flex-col gap-3 max-md:gap-2">
                     <label
                       htmlFor="name"
@@ -177,7 +177,7 @@ export default function ContactSection() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 max-md:gap-4 md:grid-cols-2 md:gap-8">
+                <div className="grid grid-cols-1 gap-6 max-md:gap-6 md:grid-cols-2 md:gap-8">
                   <div className="flex flex-col gap-3 max-md:gap-2">
                     <label
                       htmlFor="phone"

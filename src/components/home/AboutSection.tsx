@@ -106,7 +106,7 @@ export default function AboutSection() {
       whileInView={isDesktop ? "visible" : undefined}
       exit={isDesktop ? "exit" : undefined}
       viewport={{ once: true, amount: 0.2 }}
-      className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 max-md:px-3 max-md:pt-6 md:px-10 lg:mb-20"
+      className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 max-md:px-3 max-md:pb-14 max-md:pt-12 md:px-10 lg:mb-20"
     >
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-multiply" />
 
@@ -118,14 +118,14 @@ export default function AboutSection() {
           <div className="relative mt-20 max-md:order-2 max-md:mt-0 max-md:bg-white">
             <motion.p
               variants={textReveal}
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium pl-[5px] max-md:mb-7 max-md:text-xs"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium pl-[5px] max-md:mb-9 max-md:text-xs"
             >
               About The Studio
             </motion.p>
 
             <motion.h1
               variants={wordContainer}
-              className="flex max-w-5xl flex-wrap items-baseline gap-x-4 gap-y-2 text-3xl font-bold leading-[0.9em] tracking-[-0.04em] max-md:gap-x-2.5 max-md:gap-y-0.5 max-md:leading-[0.8em] md:text-6xl lg:text-[3.5rem]"
+              className="flex max-w-5xl flex-wrap items-baseline gap-x-4 gap-y-2 text-3xl font-bold leading-[0.9em] max-md:text-[2.125rem] tracking-[-0.04em] max-md:gap-x-2.5 max-md:gap-y-0.5 max-md:leading-[0.8em] md:text-6xl lg:text-[3.5rem]"
             >
               <motion.span variants={wordAnimation} className="block">
                 We build
@@ -160,20 +160,12 @@ export default function AboutSection() {
 
             <motion.div
               variants={textReveal}
-              className="mt-10 max-w-2xl space-y-6 max-md:mt-6 max-md:space-y-4"
+              className="mt-10 max-w-2xl space-y-6 max-md:mt-8 max-md:space-y-6"
             >
-              <p className="text-xl leading-[1.25em] text-zinc-600 font-regular max-md:text-base">
-                Strong businesses are built on well-designed systems — not
-                disconnected tools. Most companies don't have a technology
-                problem; they have a fragmentation problem: a stack that doesn't
-                talk, work that happens twice, and no single place to see the
-                truth
-              </p>
-              <p className="text-xl leading-[1.25em] text-zinc-600 font-regular max-md:text-base">
-                We engineer the platform, the automation and the growth
-                infrastructure as one system — across India, the UAE, France,
-                the USA and the UK — so one team stays accountable long after
-                launch day
+              <p className="text-xl leading-[1.25em] text-zinc-600 font-regular max-md:text-lg">
+                Most agencies hand over a design file and wish you luck. We stay
+                on it — the brand, the build, the launch, and the marketing that
+                follows — so one team is accountable when the numbers come in
               </p>
               <div className="flex flex-wrap gap-4 pt-3">
                 {/* Below md this is pinned to the desktop hover state (black
@@ -182,13 +174,13 @@ export default function AboutSection() {
                     smaller h-12 button, not copied from the h-16 values. */}
                 <Link
                   href="/contact"
-                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-12 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
+                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 max-md:bg-black hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-14 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
                 >
-                  <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
+                  <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base max-md:text-white">
                     Connect With Us
                   </span>
 
-                  <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg">
+                  <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg max-md:bg-white">
                     <svg width="0" height="0" className="absolute">
                       <title>Connect arrow gradient</title>
                       <defs>
@@ -221,7 +213,12 @@ export default function AboutSection() {
             whileInView={isDesktop ? { opacity: 1, scale: 1, y: 0 } : undefined}
             transition={{ duration: 1.2, ease: premiumEase }}
             viewport={{ once: false }}
-            className="relative flex items-center justify-center pt-10 max-md:order-1 max-md:pt-0"
+            // max-md:mb-8 stacks on top of the grid's 32px row-gap (the image
+            // leads on mobile via order-1, so its bottom margin is the space
+            // before the copy). Margin rather than a bigger gap keeps the
+            // 768-1023 band — where the grid is still one column but the copy
+            // comes first — exactly as it was.
+            className="relative flex items-center justify-center pt-10 max-md:order-1 max-md:mb-8 max-md:pt-0"
           >
             <motion.div
               animate={isDesktop ? { rotate: 360 } : undefined}

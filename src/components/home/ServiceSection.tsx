@@ -170,7 +170,7 @@ export default function ServiceSection() {
       id="services"
       ref={containerRef}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full overflow-hidden bg-black pt-16 pb-10 md:pt-32 md:pb-24 text-white"
+      className="relative w-full overflow-hidden bg-black pt-16 pb-10 max-md:pb-16 max-md:pt-20 md:pt-32 md:pb-24 text-white"
     >
       <div className="w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-10 w-full pb-10">
@@ -179,20 +179,20 @@ export default function ServiceSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-6 text-xs lg:text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium"
+            className="mb-6 text-xs lg:text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-8"
           >
             What We Offer
           </motion.p>
 
           {/* flex-col-reverse puts the description above the title; on mobile the
               order should read tag -> title -> description, i.e. natural DOM order. */}
-          <div className="flex w-full flex-col-reverse items-start justify-between gap-8 max-md:flex-col md:flex-row md:items-center">
+          <div className="flex w-full flex-col-reverse items-start justify-between gap-8 max-md:flex-col max-md:gap-10 md:flex-row md:items-center">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
-              className="text-4xl font-bold tracking-tight text-white md:text-[80px]"
+              className="text-4xl font-bold tracking-tight text-white max-md:text-[2.5rem] md:text-[80px]"
             >
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
@@ -204,7 +204,7 @@ export default function ServiceSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
-              className="max-w-2xl text-md lg:text-xl font-light leading-[1.25em] text-white md:text-left"
+              className="max-w-2xl text-md max-md:text-lg lg:text-xl font-light leading-[1.25em] text-white md:text-left"
             >
               We merge strategic thinking with bold creative execution to
               deliver scalable digital experiences that elevate your brand

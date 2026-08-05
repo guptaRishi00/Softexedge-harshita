@@ -28,7 +28,7 @@ const projects = [
     title: "Traul",
     subtitle: "On-Demand Logistics Platform",
     description:
-      "Their last vendor billed premium rates for every small change. We rebuilt all three products — admin, driver, customer — from scratch, and the whole platform cost roughly a quarter of what those isolated changes did",
+      "A complete rebuild of an on-demand logistics platform — admin portal, driver app and customer app — engineered from scratch on React Native and Node.js, with real-time dispatch, geofencing and B2B billing built in, at roughly 75% lower cost than the previous vendor",
     tech: ["REACT NATIVE", "NODE.JS", "GEOFENCING", "PAYMENTS"],
     year: "2024",
     image: "/assets/traul3.png",
@@ -38,29 +38,29 @@ const projects = [
   },
   {
     id: 2,
-    title: "AquaLog",
-    subtitle: "Aquaculture Farm Management",
+    title: "Finova Dashboard",
+    subtitle: "Financial SaaS Platform",
     description:
-      "Shrimp farms run on paper ledgers, in ponds with no signal, where one missed water reading costs a season. We built offline-first software for that reality — and Pond Safe, which turns one farmer's outbreak report into an early warning for every farm within 7km, without exposing who reported it",
-    tech: ["REACT NATIVE", "POSTGIS", "RAG AI", "OFFLINE-FIRST"],
-    year: "2025",
-    image: "/assets/project-dashboard-displaying-key-metrics-like-progress-budget-deadlines.jpg",
-    category: "AGRITECH",
+      "A complete UX/UI overhaul for Finova's enterprise wealth management suite. By simplifying complex data visualizations and streamlining workflows, we reduced user onboarding time by over 60%",
+    tech: ["REACT", "D3.JS", "NODE.JS", "TYPESCRIPT"],
+    year: "2024",
+    image: "/assets/0d3a38da975f62a06fb71d3837c0c2dd.webp",
+    category: "ENTERPRISE",
     type: "image",
-    href: "/work/aqualog",
+    href: "/work/finova-dashboard",
   },
   {
     id: 3,
-    title: "Authentica",
-    subtitle: "Sovereign Proof of Creation",
+    title: "Lumina Festival",
+    subtitle: "Event Branding & Web",
     description:
-      "In a world oversaturated with content, every creation carries its own signature. Authentica seals it to the blockchain, tracks its use across platforms, transfers ownership and revokes access on command — a proof that protects itself",
-    tech: ["BLOCKCHAIN", "TRACEABILITY", "WEB3", "NEXT.JS"],
-    year: "2025",
-    image: "/assets/microsoft-copilot-pqMPnPo4_ZA-unsplash.jpg",
-    category: "WEB3",
+      "An immersive digital portal for Europe's premier light and sound festival. The site features dynamic WebGL interactions that mirror the festival's physical installations, driving record-breaking ticket sales",
+    tech: ["THREE.JS", "GSAP", "NEXT.JS", "CONTENTFUL"],
+    year: "2023",
+    image: "/assets/ux-store-jJT2r2n7lYA-unsplash.jpg",
+    category: "BRANDING",
     type: "image",
-    href: "/work/authentica",
+    href: "/work/lumina-festival",
   },
   {
     id: 4,
@@ -455,11 +455,11 @@ export default function PortfolioSection() {
                   {project.category}
                 </p>
 
-                <h2 className="reveal-item -ml-[0.05em] text-5xl font-bold leading-[0.9] tracking-[-0.05em] max-md:text-3xl md:text-7xl lg:text-[7rem]">
+                <h2 className="reveal-item -ml-[0.05em] text-5xl font-bold leading-[0.9] tracking-[-0.05em] max-md:text-[2.125rem] md:text-7xl lg:text-[7rem]">
                   {project.title}
                 </h2>
 
-                <p className="reveal-item max-w-[95%] text-sm leading-[1.5] text-white/80 max-md:text-xs md:text-lg lg:max-w-[90%]">
+                <p className="reveal-item max-w-[95%] text-sm leading-[1.5] text-white/80 max-md:text-sm md:text-lg lg:max-w-[90%]">
                   {project.description}
                 </p>
 

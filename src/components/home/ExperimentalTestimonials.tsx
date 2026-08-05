@@ -67,7 +67,7 @@ export default function ExperimentalTestimonials() {
   return (
     <section
       id="testimonials"
-      className="relative overflow-hidden bg-white pt-16 pb-8 text-zinc-900 md:pt-32"
+      className="relative overflow-hidden bg-white pt-16 pb-8 text-zinc-900 max-md:pb-14 max-md:pt-20 md:pt-32"
     >
       <div className="mx-auto flex w-full flex-col gap-10 px-4 max-md:px-3 md:px-10 lg:flex-row lg:items-stretch lg:gap-10">
         <motion.div
@@ -83,7 +83,7 @@ export default function ExperimentalTestimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, ease: premiumEase }}
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:text-xs"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-8 max-md:text-xs"
             >
               Testimonials
             </motion.p>
@@ -92,7 +92,7 @@ export default function ExperimentalTestimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
-              className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl lg:leading-[0.95em]"
+              className="text-4xl font-bold tracking-tight max-md:text-[2.5rem] md:text-5xl lg:text-6xl lg:leading-[0.95em]"
             >
               Voices of the <br />
               <TestimonialsRotatingWord />
@@ -103,7 +103,7 @@ export default function ExperimentalTestimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
-              className="mt-5 max-w-sm text-lg leading-[1.25em] text-zinc-600 font-regular max-md:text-base"
+              className="mt-5 max-w-sm text-lg leading-[1.25em] text-zinc-600 font-regular max-md:mt-7 max-md:text-lg"
             >
               Don't just take our word for it. Hear from the visionaries
               building our future every day
@@ -114,20 +114,20 @@ export default function ExperimentalTestimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
-              className="mt-8 flex items-start"
+              className="mt-8 flex items-start max-md:mt-10"
             >
               {/* Mobile treatment mirrors AboutSection's CTA exactly: pinned to
                   the desktop hover state (black border, inset padding, gradient
                   arrow) because touch has no hover, at the smaller h-12 scale. */}
               <Link
                 href="/contact"
-                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-12 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
+                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 max-md:bg-black hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-14 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
               >
-                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
+                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base max-md:text-white">
                   Connect With Us
                 </span>
 
-                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg">
+                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg max-md:bg-white">
                   <svg width="0" height="0" className="absolute">
                     <title>Connect arrow gradient</title>
                     <defs>
@@ -179,7 +179,7 @@ export default function ExperimentalTestimonials() {
             grown by BOTH paddings to match — `w-full` alone resolves to the
             wrapper's content box (100% - 24px), so a negative margin shifts it
             left but leaves 24px of dead space on the right. */}
-        <div className="relative -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1 max-md:-mx-3 max-md:h-auto max-md:w-[calc(100%+1.5rem)]">
+        <div className="relative mt-10 lg:mt-0 -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1 max-md:-mx-3 max-md:h-auto max-md:w-[calc(100%+1.5rem)]">
           <motion.div
             // Desktop paginates by arrows (-active * step). Mobile has no arrows,
             // so it self-scrolls: the track holds exactly two copies of the list,
@@ -188,7 +188,9 @@ export default function ExperimentalTestimonials() {
             // The mobile self-scroll is driven by useMarqueeHalf (same -50%
             // travel, on the compositor), so framer gets no animate there.
             animate={isDesktop ? { x: -active * step } : undefined}
-            transition={isDesktop ? { duration: 0.6, ease: premiumEase } : undefined}
+            transition={
+              isDesktop ? { duration: 0.6, ease: premiumEase } : undefined
+            }
             // max-md:gap-0 + per-card mr-4 (below) instead of a flex gap: with a
             // gap, N cards have only N-1 gaps, so -50% of the track is one gap
             // short of exactly one copy and the loop jumps each cycle. Folding the
