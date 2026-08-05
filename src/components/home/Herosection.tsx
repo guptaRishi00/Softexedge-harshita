@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { NO_ENTRY, useIsMobile } from "@/lib/useIsDesktop";
 import Header from "../layout/Header";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -12,6 +13,8 @@ const LINE_STAGGER = 0.18;
 export default function Herosection({}: any) {
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const video = mainVideoRef.current;
@@ -86,10 +89,14 @@ export default function Herosection({}: any) {
             <motion.div
               initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{
-                duration: 0.7,
-                ease: premiumEase,
-              }}
+              transition={
+                isMobile
+                  ? NO_ENTRY
+                  : {
+                      duration: 0.7,
+                      ease: premiumEase,
+                    }
+              }
               className="md:hidden mb-3 inline-flex items-center justify-center text-md sm:text-sm font-medium text-white"
             >
               Brand. Build. Grow.
@@ -98,11 +105,15 @@ export default function Herosection({}: any) {
             <motion.h1
               initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{
-                duration: 0.7,
-                delay: APPEAR_DELAY,
-                ease: premiumEase,
-              }}
+              transition={
+                isMobile
+                  ? NO_ENTRY
+                  : {
+                      duration: 0.7,
+                      delay: APPEAR_DELAY,
+                      ease: premiumEase,
+                    }
+              }
               className="text-[clamp(2.75rem,13.5vw,3.5rem)] sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
             >
               We Build
@@ -112,11 +123,15 @@ export default function Herosection({}: any) {
               <motion.p
                 initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{
-                  duration: 0.7,
-                  delay: APPEAR_DELAY + LINE_STAGGER,
-                  ease: premiumEase,
-                }}
+                transition={
+                  isMobile
+                    ? NO_ENTRY
+                    : {
+                        duration: 0.7,
+                        delay: APPEAR_DELAY + LINE_STAGGER,
+                        ease: premiumEase,
+                      }
+                }
                 className="text-[clamp(2.75rem,13.5vw,3.5rem)] sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
               >
                 Digital
@@ -126,11 +141,15 @@ export default function Herosection({}: any) {
               <motion.div
                 initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{
-                  duration: 0.7,
-                  delay: APPEAR_DELAY + LINE_STAGGER * 2,
-                  ease: premiumEase,
-                }}
+                transition={
+                  isMobile
+                    ? NO_ENTRY
+                    : {
+                        duration: 0.7,
+                        delay: APPEAR_DELAY + LINE_STAGGER * 2,
+                        ease: premiumEase,
+                      }
+                }
                 className="flex w-20 h-12 sm:w-28 sm:h-16 md:w-[150px] md:h-[80px] lg:w-[200px] lg:h-[106px] xl:w-[220px] xl:h-[118px] overflow-hidden rounded-[10px] lg:rounded-[20px] shrink-0 items-center justify-center border border-white/20 lg:shadow-xl"
               >
                 <canvas
@@ -142,11 +161,15 @@ export default function Herosection({}: any) {
               <motion.p
                 initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{
-                  duration: 0.7,
-                  delay: APPEAR_DELAY + LINE_STAGGER * 3,
-                  ease: premiumEase,
-                }}
+                transition={
+                  isMobile
+                    ? NO_ENTRY
+                    : {
+                        duration: 0.7,
+                        delay: APPEAR_DELAY + LINE_STAGGER * 3,
+                        ease: premiumEase,
+                      }
+                }
                 className="text-[clamp(2.75rem,13.5vw,3.5rem)] sm:text-6xl md:text-5xl lg:text-9xl font-bold text-white tracking-tight leading-[0.9] md:leading-none"
               >
                 Businesses
@@ -156,11 +179,15 @@ export default function Herosection({}: any) {
             <motion.p
               initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{
-                duration: 0.7,
-                delay: APPEAR_DELAY + LINE_STAGGER * 4,
-                ease: premiumEase,
-              }}
+              transition={
+                isMobile
+                  ? NO_ENTRY
+                  : {
+                      duration: 0.7,
+                      delay: APPEAR_DELAY + LINE_STAGGER * 4,
+                      ease: premiumEase,
+                    }
+              }
               className="absolute bottom-12 md:relative md:bottom-auto text-lg md:text-xl lg:text-5xl font-medium text-white md:mt-5"
             >
               not just websites

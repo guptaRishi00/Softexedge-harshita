@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import { cn } from "@/lib/utils";
@@ -12,12 +12,25 @@ import { cn } from "@/lib/utils";
 // ships when the stylesheet rebuilds, and a stale dev stylesheet silently
 // leaves the track frozen. WAAPI transform animations are composited exactly
 // like CSS ones, so there is no performance difference.
+// How long one arrow press takes to slide the track.
+const STEP_MS = 500;
+
 export const useMarqueeHalf = (
   ref: React.RefObject<HTMLElement | null>,
   seconds: number,
   enabled: boolean,
   draggable = false,
+  // When false the animation is created but held paused, so the track sits
+  // still while `step()` and the drag keep working — they both read and write
+  // the same `currentTime`, so they need the animation to exist either way.
+  autoplay = true,
 ) => {
+  // Imperative handle for arrow controls. Held in a ref so the returned
+  // callback is stable across renders while the effect swaps the real
+  // implementation on every re-run. Stays a no-op unless `draggable` is on,
+  // since stepping reuses the drag path's cancel/resume machinery.
+  const stepRef = useRef<(dx: number) => void>(() => {});
+
   useEffect(() => {
     const el = ref.current;
     if (!el || !enabled) return;
@@ -40,6 +53,7 @@ export const useMarqueeHalf = (
         },
       );
       created.currentTime = atMs;
+      if (!autoplay) created.pause();
       return created;
     };
 
@@ -75,6 +89,7 @@ export const useMarqueeHalf = (
     let currentX = 0;
     let half = 0;
     let frame = 0;
+    let stepTimer = 0;
     const previousTouchAction = el.style.touchAction;
     // pan-y so the page still scrolls vertically; horizontal comes to us.
     el.style.touchAction = "pan-y";
@@ -144,11 +159,51 @@ export const useMarqueeHalf = (
         );
       }
 
-      const resumeAt = (((currentX / half + 1) * period) % period + period) % period;
+      const resumeAt =
+        ((((currentX / half + 1) * period) % period) + period) % period;
       animation = create(resumeAt);
       el.style.transform = "";
       el.style.willChange = "";
     };
+
+    // One arrow press. Same three moves as a drag — cancel the animation,
+    // write transforms, recreate at the matching time — with a CSS transition
+    // doing the travel instead of the pointer. A transform transition is
+    // composited, so this never leaves the compositor either.
+    const step = (dx: number) => {
+      if (!animation || dragging) return;
+      half = el.getBoundingClientRect().width / 2;
+      if (half <= 0) return;
+
+      originX = half * (Number(animation.currentTime ?? 0) / period - 1);
+      animation.cancel();
+      animation = null;
+      el.style.willChange = "transform";
+      el.style.transition = "";
+      el.style.transform = `translate3d(${originX}px, 0, 0)`;
+      // Flush the start position, otherwise the transition below has nothing
+      // to interpolate from and the card teleports.
+      void el.offsetWidth;
+
+      // Travel to the UNWRAPPED target: wrapping mid-transition would animate
+      // a whole copy-width slide. The wrap happens only when the position is
+      // handed back to the animation, where it is a visual no-op.
+      const target = originX + dx;
+      el.style.transition = `transform ${STEP_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+      el.style.transform = `translate3d(${target}px, 0, 0)`;
+
+      window.clearTimeout(stepTimer);
+      stepTimer = window.setTimeout(() => {
+        currentX = wrapX(target);
+        const resumeAt =
+          ((((currentX / half + 1) * period) % period) + period) % period;
+        el.style.transition = "";
+        animation = create(resumeAt);
+        el.style.transform = "";
+        el.style.willChange = "";
+      }, STEP_MS);
+    };
+    stepRef.current = step;
 
     el.addEventListener("pointerdown", onDown);
     el.addEventListener("pointermove", onMove);
@@ -162,11 +217,16 @@ export const useMarqueeHalf = (
       el.removeEventListener("pointerup", onUp);
       el.removeEventListener("pointercancel", onUp);
       if (frame) cancelAnimationFrame(frame);
+      window.clearTimeout(stepTimer);
+      stepRef.current = () => {};
       el.style.touchAction = previousTouchAction;
+      el.style.transition = "";
       el.style.willChange = "";
       animation?.cancel();
     };
-  }, [ref, seconds, enabled, draggable]);
+  }, [ref, seconds, enabled, draggable, autoplay]);
+
+  return useCallback((dx: number) => stepRef.current(dx), []);
 };
 
 export type LogoCarouselItem = {

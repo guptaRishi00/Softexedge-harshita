@@ -11,9 +11,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { MdArrowOutward } from "react-icons/md";
+import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
 import { useMarqueeHalf } from "@/components/ui/LogoCarousel";
-import { useIsDesktop } from "@/lib/useIsDesktop";
+import { NO_ENTRY, useIsDesktop, useIsMobile } from "@/lib/useIsDesktop";
 
 const SCROLL_SECONDS = 22;
 // One full pass of a copy on mobile. Longer than the desktop pass because the
@@ -78,6 +78,8 @@ const rotatingWords = ["Perspectives", "Insights", "Ideas", "Stories"];
 
 export default function BlogSection() {
   const isDesktop = useIsDesktop();
+  // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
+  const isMobile = useIsMobile();
   const [index, setIndex] = useState(0);
 
   const x = useMotionValue(0);
@@ -118,7 +120,32 @@ export default function BlogSection() {
   // Mobile only: the same compositor marquee + timeline-scrub drag used by the
   // testimonials. Desktop keeps its framer `x` loop and pointer handlers, which
   // are all gated on `isDesktop`, so the two never both drive the transform.
-  useMarqueeHalf(trackRef, MOBILE_SCROLL_SECONDS, !isDesktop, true);
+  // autoplay=false: below md the track no longer drifts on its own, it only
+  // moves when an arrow is pressed (and while dragging). The animation still
+  // exists, paused — `step()` and the drag both work off its `currentTime`.
+  const stepTrack = useMarqueeHalf(
+    trackRef,
+    MOBILE_SCROLL_SECONDS,
+    !isDesktop,
+    true,
+    false,
+  );
+
+  // One card + its right margin. Measured rather than derived from 80vw so the
+  // arrows stay correct if the card width or gutter changes.
+  const cardStride = () => {
+    const card = trackRef.current?.firstElementChild
+      ?.firstElementChild as HTMLElement | null;
+    if (!card) return 0;
+    const marginRight =
+      Number.parseFloat(getComputedStyle(card).marginRight) || 0;
+    return card.offsetWidth + marginRight;
+  };
+
+  // The track's own transform runs -50% -> 0, i.e. content drifts right, so
+  // "next" (reveal the following card) is a NEGATIVE x step.
+  const goNext = () => stepTrack(-cardStride());
+  const goPrev = () => stepTrack(cardStride());
 
   useAnimationFrame((_, delta) => {
     if (!trackInView || !isDesktop || dragging.current || !loopWidth) return;
@@ -217,7 +244,9 @@ export default function BlogSection() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, ease: premiumEase }}
+            transition={
+              isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
+            }
             className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-6 max-md:text-xs"
           >
             Latest Insights
@@ -228,7 +257,11 @@ export default function BlogSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
+              transition={
+                isMobile
+                  ? NO_ENTRY
+                  : { duration: 0.6, delay: 0.1, ease: premiumEase }
+              }
               className="flex flex-col items-start"
             >
               <h2 className="text-4xl font-bold tracking-tight text-zinc-900 max-md:text-[2.5rem] md:text-5xl lg:text-6xl lg:leading-[1.05]">
@@ -269,18 +302,22 @@ export default function BlogSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
-              className="flex w-full items-center justify-end max-md:justify-start md:w-auto"
+              transition={
+                isMobile
+                  ? NO_ENTRY
+                  : { duration: 0.6, delay: 0.2, ease: premiumEase }
+              }
+              className="flex w-full items-center justify-end max-md:hidden md:w-auto"
             >
               <Link
                 href="/blog"
-                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 max-md:bg-black hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-14 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
+                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-14 max-md:gap-3 max-md:border-0 max-md:pr-2.5"
               >
-                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base max-md:text-white">
+                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
                   Explore all articles
                 </span>
 
-                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg max-md:bg-white">
+                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg">
                   <svg width="0" height="0" className="absolute">
                     <title>Explore arrow gradient</title>
                     <defs>
@@ -305,6 +342,29 @@ export default function BlogSection() {
                 </div>
               </Link>
             </motion.div>
+
+            {/* Below md the CTA is replaced by carousel controls. They take the
+                CTA's slot in the header row so nothing shifts, and they only
+                nudge the marquee — it keeps auto-scrolling and stays draggable
+                between presses. */}
+            <div className="flex items-center gap-4 md:hidden">
+              <button
+                type="button"
+                onClick={goPrev}
+                aria-label="Previous article"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
+              >
+                <MdArrowBack className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={goNext}
+                aria-label="Next article"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
+              >
+                <MdArrowForward className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         </div>
 

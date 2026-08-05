@@ -6,7 +6,8 @@ import gsap from "gsap";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { MdKeyboardArrowRight } from "react-icons/md";
+import { MdArrowOutward, MdKeyboardArrowRight } from "react-icons/md";
+import { NO_ENTRY, useIsMobile } from "@/lib/useIsDesktop";
 import { cn } from "@/lib/utils";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -66,6 +67,8 @@ export default function ServiceSection() {
   const containerRef = useRef<HTMLElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
+  // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setMounted(true);
@@ -178,7 +181,9 @@ export default function ServiceSection() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, ease: premiumEase }}
+            transition={
+              isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
+            }
             className="mb-6 text-xs lg:text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-8"
           >
             What We Offer
@@ -191,7 +196,11 @@ export default function ServiceSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
+              transition={
+                isMobile
+                  ? NO_ENTRY
+                  : { duration: 0.6, delay: 0.1, ease: premiumEase }
+              }
               className="text-4xl font-bold tracking-tight text-white max-md:text-[2.5rem] md:text-[80px]"
             >
               Our{" "}
@@ -203,7 +212,11 @@ export default function ServiceSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
+              transition={
+                isMobile
+                  ? NO_ENTRY
+                  : { duration: 0.6, delay: 0.2, ease: premiumEase }
+              }
               className="max-w-2xl text-md max-md:text-lg lg:text-xl font-light leading-[1.25em] text-white md:text-left"
             >
               We merge strategic thinking with bold creative execution to
@@ -219,7 +232,7 @@ export default function ServiceSection() {
               href={service.href}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              className="group relative flex w-full cursor-none items-center justify-between py-7 md:py-12 max-md:cursor-pointer"
+              className="group relative flex w-full cursor-none items-center justify-between py-9 md:py-12 max-md:cursor-pointer max-md:pr-6"
             >
               <div className="flex items-center">
                 <div
@@ -252,6 +265,18 @@ export default function ServiceSection() {
                   {service.title}
                 </h3>
               </div>
+
+              {/* Touch has no hover, so the "View Services" cursor that signals
+                  the affordance on desktop never appears — a small arrow pinned
+                  to the row's top-right corner carries that signal instead. The
+                  row reserves pr-6 below md — 24px clears the arrow's 20px band,
+                  while pr-9 was wide enough to wrap the two longest titles onto
+                  a second line. `right-0` resolves against the padding box, so
+                  the arrow stays flush right regardless of that gutter. */}
+              <MdArrowOutward
+                aria-hidden="true"
+                className="pointer-events-none absolute right-0 top-9 h-5 w-5 text-white/40 md:hidden"
+              />
 
               {index !== services.length - 1 && (
                 <div

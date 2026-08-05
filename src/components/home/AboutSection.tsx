@@ -168,19 +168,21 @@ export default function AboutSection() {
                 follows — so one team is accountable when the numbers come in
               </p>
               <div className="flex flex-wrap gap-4 pt-3">
-                {/* Below md this is pinned to the desktop hover state (black
-                    border, inset padding, gradient arrow): touch has no hover,
-                    so the resting state must carry it. Padding is scaled to the
-                    smaller h-12 button, not copied from the h-16 values. */}
+                {/* Below md only the gradient arrow is pinned from the desktop
+                    hover state — touch has no hover, so the resting state must
+                    carry it. The hover state's left inset is deliberately NOT
+                    pinned: it pushed the label 16px right of the body copy
+                    above, so the base `pl-0` governs here and the label lines
+                    up with the paragraph's left edge. */}
                 <Link
                   href="/contact"
-                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 max-md:bg-black hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-14 max-md:gap-3 max-md:border-black max-md:pl-4 max-md:pr-2.5"
+                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-14 max-md:gap-3 max-md:border-0 max-md:pr-2.5"
                 >
-                  <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base max-md:text-white">
+                  <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
                     Connect With Us
                   </span>
 
-                  <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg max-md:bg-white">
+                  <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg">
                     <svg width="0" height="0" className="absolute">
                       <title>Connect arrow gradient</title>
                       <defs>

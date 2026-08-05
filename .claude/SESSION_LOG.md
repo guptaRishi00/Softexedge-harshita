@@ -9927,3 +9927,333 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
   shadow, transparent background — the whole card treatment is `max-md:`-scoped, desktop
   untouched.
 - `bunx tsc --noEmit` 0; biome 1 error == the file's standing baseline.
+
+## AboutSection RotatingWord — static again on mobile, animated on desktop
+- Restored the `if (!isDesktop) return <static word>` early return. Desktop keeps the
+  AnimatePresence spring untouched.
+- CLEANED UP WITH IT: the mobile self-tick (`useState`/`useEffect`/`ROTATE_MS`) existed
+  only to shrink the mobile re-render while the word animated there. With mobile static it
+  is dead weight, so it and its imports are gone — `grep -c` for
+  `useState|useEffect|ROTATE_MS` returns **0**. The parent's interval is already
+  desktop-gated, so nothing ticks on mobile at all now.
+- LAYOUT PARITY BY CONSTRUCTION: hoisted the wrapper and gradient class strings into
+  `WRAPPER` / `GRADIENT` consts shared by both branches, so the word occupies the same box
+  either way and only the motion differs across the breakpoint.
+- VERIFIED 390px: word "founders" (first entry), **0 mutations across 13s** (two 6s cycles)
+  on a MutationObserver over the wrapper subtree, no framer inline style, **0 WAAPI
+  animations**, gradient span sits directly inside the mask wrapper with no intervening
+  motion.span. 34px, transparent colour (gradient clip intact).
+- One probe field, `stillSameWordAfter13s: false`, was a BAD SELECTOR, not a failure —
+  `span.bg-clip-text` also matches "the product" in the same h1. Discarded; the zero
+  mutation count is the real evidence.
+- VERIFIED 1265px: the animated branch is back (wrapper > motion.span > gradient), framer
+  inline style `will-change: transform, opacity; opacity: 0; transform: translateX(-100%)`,
+  gradient on the child and NOT on the animated element, 56px, wrapper padding 8px 24px /
+  margin -8px -24px — identical box to mobile.
+- `bunx tsc --noEmit` 0; biome clean on the file; `next build` ✓.
+
+## AboutSection / Testimonials / Blog CTAs — colour inversion reverted
+- Removed the 3 classes added two tasks ago, per file: `max-md:bg-black` (button),
+  `max-md:text-white` (label), `max-md:bg-white` (icon box). Back to the base white button
+  / black label / black icon box. `grep -c` for all three returns **0** in each file.
+- The gradient arrow needed no work either way — it comes from the hover-pinning
+  (`max-md:translate-x-0/y-0` on the gradient icon), not from these colour classes.
+- KEPT: `max-md:h-14` from the height task and `max-md:border-black` / `max-md:pl-4` from
+  the hover-pinning. Only the colour inversion was undone.
+- **A MEASUREMENT ARTIFACT NEARLY READ AS A REGRESSION.** The first mobile probe showed
+  About and Testimonials at height **64px with a transparent border** — the desktop resting
+  values — while Blog correctly showed 56px, on the same page at the same 390px viewport.
+  Cause: these CTAs carry `transition-all`, and this pane reports STALE computed values on
+  transitioned properties after a viewport resize (a documented pane limitation). Setting
+  `transition: none` on the LINK and forcing a reflow before reading gave 56px on all
+  three. Earlier probes only killed the transition on the SVGs, not the link itself — worth
+  doing on the element whose own properties are being read.
+- VERIFIED 390px (transitions killed): all three white bg / black label / black icon box,
+  gradient arrow (`url(#about-connect-icon-grad)`, `url(#testimonial-icon-grad)`,
+  `url(#blog-cta-grad)`), height 56px, border black, padding-left 16px, gap 12px.
+- VERIFIED 1265px (transitions killed): all three height 64px, bg white, border
+  transparent, padding-left 0, label black, icon box black, PLAIN arrow visible —
+  **`desktopRestingIntact: true`**.
+- `bunx tsc --noEmit` 0; biome unchanged per file.
+
+## ServiceSection - mobile gap between services
+
+- `src/components/home/ServiceSection.tsx`: service row padding `py-7` -> `py-9`.
+- Mobile-only by construction: `md:py-12` re-asserts 48px from 768px up, so the
+  base value governs below `md` only.
+- Verified @390px (with `transition:none` forced on the rows first, since they
+  carry `transition-all` and would otherwise report stale values after resize):
+  padding 36px/36px, row height 86 -> 102px, title-to-title ink gap 56 -> 72px;
+  `.py-9` rule confirmed present in the served stylesheet.
+- Verified @1266px unchanged: padding 48px/48px, row height 196px, ink gap 133px.
+- `bunx tsc --noEmit` clean; biome on the file still 2 pre-existing diagnostics
+  (noStaticElementInteractions, noArrayIndexKey).
+
+## Homepage CTAs - drop the mobile border
+
+- `AboutSection.tsx`, `BlogSection.tsx`, `ExperimentalTestimonials.tsx`: removed
+  `max-md:border-black` from the CTA link. The rest of the requested look (white
+  button bg, black arrow container, gradient arrow) was already in place from the
+  previous task, so this was the only delta.
+- `border border-transparent` stays, so the 0.8px reserved track keeps the box
+  metrics identical to desktop's resting state; only the colour is gone.
+- Stale comments in AboutSection/ExperimentalTestimonials updated - they still
+  described the mobile treatment as carrying the black border.
+- Verified @390px (with `transition:none` forced on each link first, since they
+  carry `transition-all`): all three read buttonBg rgb(255,255,255),
+  borderColor rgba(0,0,0,0), arrowBoxBg rgb(0,0,0), arrow fill
+  url(#about-connect-icon-grad) / url(#testimonial-icon-grad) / url(#blog-cta-grad),
+  height 56px.
+- Verified @1266px unchanged: height 64px, pl 0 / pr 10px, transparent border,
+  black arrow box; `hover:border-black` still present once per file.
+- `bunx tsc --noEmit` clean; biome baselines unchanged (About 1, Blog 1,
+  Testimonials 0).
+
+## ServiceSection - mobile affordance arrow on each service row
+
+- `src/components/home/ServiceSection.tsx`: added an `MdArrowOutward`
+  (`absolute right-0 top-9 h-5 w-5 text-white/40 md:hidden`, `aria-hidden`,
+  `pointer-events-none`) to each service row, plus `max-md:pr-6` on the row.
+  Rationale: the desktop affordance is the GSAP "View Services" cursor, which
+  touch never triggers.
+- Sized the gutter empirically: `pr-9` (36px) wrapped the two longest titles
+  onto a second line (row height 132 vs 102). `pr-6` (24px) fully clears the
+  arrow's 20px band and keeps every title on one line. `right-0` resolves
+  against the padding box, so the arrow stays flush right either way.
+- Verified @390px: 8/8 arrows rendered and displayed, 20x20, flush right (0px),
+  36px from row top (aligned with title cap), row heights all 102px (unchanged
+  from before this task), min title-to-arrow clearance 12px.
+- Verified @1265px: paddingRight 0px, py 48/48, row heights 196px, arrows
+  rendered but `arrowsDisplayed: 0` (md:hidden) - desktop untouched.
+- `bunx tsc --noEmit` clean; biome on the file still 2 pre-existing diagnostics.
+
+## Homepage - remove entry animations below md
+
+- Added `useIsMobile()` + `NO_ENTRY` to `src/lib/useIsDesktop.ts`. Unlike
+  `useIsDesktop` (which starts false everywhere and only flips in an effect),
+  `useIsMobile` reads matchMedia in a lazy `useState` initializer, so it is
+  already correct on the first client render - before framer consumes `initial`.
+- Gated only the `transition` prop: `transition={isMobile ? NO_ENTRY : {...}}`.
+  This is deliberate. The repo's existing `initial={isDesktop ? {...} : false}`
+  pattern kills the animation on DESKTOP too, because `initial` is read at mount
+  when `isDesktop` is still false - measured at 1265px, every already-gated
+  element (#about, testimonials outer) renders with `style: null` and never
+  animates. Applying that pattern to the ungated components would have changed
+  desktop, which the task forbids. `transition` also emits no SSR markup, so the
+  mount-correct hook cannot trip hydration.
+- Files: Herosection (6 mount entries), ServiceSection (3), Testimonials (5),
+  ContactSection (5), BlogSection (3), Footer (4 + the wordmark). Footer's
+  wordmark uses variants, so it got `brandContainerInstant`/`brandLetterInstant`
+  twins whose `hidden` states are byte-identical to the originals - only the
+  `visible` transition differs, which emits nothing at SSR.
+- Untouched on purpose: PortfolioSection and StatsSection have no framer at all
+  and their GSAP already lives inside `mm.add("(min-width: 768px)")`;
+  AboutSection is already fully `initial={false}` below md; the rotating-word and
+  carousel-pagination transitions are not entry animations.
+- Verified @1265px after reload at scroll 0 - every entry element still carries
+  its initial inline style, i.e. desktop is untouched:
+  hero h1 `opacity:0;filter:blur(6px);transform:translateY(28px)`,
+  service/testimonial/contact/blog tags + footer link group
+  `opacity:0;transform:translateY(20px)`, wordmark letter
+  `transform:translateY(110%)`. `isMobile` resolves false at 1265, true at 390.
+- LIMITATION: the Browser pane is not compositing (rAF probe: 0 frames in
+  4530ms), so the mobile timing could not be observed in-pane. Structural proof
+  only: `bunx next build` succeeds (every route prerendered, so SSR of the
+  lazy-init hook is exercised), `bunx tsc --noEmit` clean, page renders fully at
+  390px (8 service rows, 10 wordmark letters, no ReferenceError).
+- Biome: no new diagnostics. ContactSection's `noUnusedVariables` on
+  `GRID_COLUMNS` (line 44) is pre-existing - confirmed by stashing the file and
+  re-running the lint.
+
+## ExperimentalTestimonials - static rotating word below md
+
+- `src/components/home/TestimonialsRotatingWord.tsx`: mirrors the treatment
+  `RotatingWord` already has in AboutSection. `useIsDesktop()` gates both the
+  render and the tick: below md it returns a plain span (no AnimatePresence, no
+  motion, no interval); the `setInterval` now early-returns on `!isDesktop` so
+  no timer runs there at all.
+- Hoisted the wrapper/gradient class strings into shared `WRAPPER`/`GRADIENT`
+  consts so both branches occupy the same box - only the motion differs across
+  the breakpoint, never the layout.
+- Verified @390px: static branch confirmed structurally - `innerChildCount: 0`
+  (the gradient span IS the inner span, no nested motion child) and
+  `innerInlineStyle: "(none)"` (framer's will-change is gone). Word sampled over
+  18415ms = 3 full 6s rotation periods: one distinct value, "Collective".
+- Verified @1265px: motion branch intact - `innerChildCount: 1`, inline style
+  `will-change: transform, opacity; opacity: 0; transform: translateX(-100%)`.
+- The desktop word also did not rotate in-pane, so I A/B'd it: stashed the file
+  and re-ran the identical 23s sampler on the UNMODIFIED version. Baseline
+  showed the same single value and the same inline style, so the freeze is the
+  pane's stalled rAF (AnimatePresence mode="wait" cannot finish an exit without
+  it), not this change. Stash restored, tsc re-run clean.
+- One real desktop difference, benign: because useIsDesktop starts false, the
+  motion span now mounts one effect tick later than before (its style string is
+  the CSSOM serialization rather than the SSR string). Same initial, same
+  animate, same values.
+- `bunx tsc --noEmit` clean; biome 0 diagnostics on the file; repo-wide count
+  190 before and after.
+
+## About/Blog/Testimonials CTAs - align label with the copy above (mobile)
+
+- Cause: the CTA pinned the desktop HOVER state's left inset (`max-md:pl-4`),
+  which pushed the label 16px right of the paragraph above it. Measured at
+  390px: refLeft 12, labelLeft 29, labelMinusRef 17 on all three.
+- Removed `max-md:pl-4` so the base `pl-0` governs below md. That left a 1px
+  offset from the reserved transparent border, so also added `max-md:border-0`.
+- Verified @390px: all three now labelLeft 12.00 vs refLeft 12.00,
+  labelMinusRef 0.00, paddingLeft 0px, borderWidth 0px. Button height still
+  56px and arrow box still 36x36 - dropping the border changed neither, since
+  h-14 is a fixed height under border-box.
+- Verified @1265px unchanged: pl 0 / pr 10px, borderWidth 1px,
+  borderColor rgba(0,0,0,0), height 64px, black arrow box. `hover:pl-6` still
+  present once per file, so the desktop hover inset is intact.
+- Comments in AboutSection/ExperimentalTestimonials updated - they claimed the
+  mobile state pinned the hover "inset padding", which is now deliberately not
+  pinned.
+- `bunx tsc --noEmit` clean; biome unchanged (About 1, Blog 1, Testimonials 0).
+
+## ExperimentalTestimonials - bigger card text + more quote top margin (mobile)
+
+- `src/components/home/ExperimentalTestimonials.tsx`, all `max-md:` only:
+  quote `text-sm` -> `text-base` (14 -> 16px) plus `max-md:mt-14` (40 -> 56px);
+  name `text-sm` -> `text-base` (14 -> 16px); role `text-[0.65rem]` -> `text-xs`
+  (10.4 -> 12px); avatar initials `text-xs` -> `text-sm` (12 -> 14px).
+- Verified @390px across ALL 8 track cards (the track holds two copies of the
+  4-item list): none clipped, every card still exactly 360px (its min-height),
+  90-111px of free space left between the quote and the author block, so the
+  larger type did not push the carousel taller. `max-md:mt-14` confirmed present
+  as a real rule in the served stylesheet.
+- Verified @1265px unchanged: card 440x440, quote 24px / mt 56px, name 18px,
+  role 14px, avatar 16px in a 56x56 box.
+- `bunx tsc --noEmit` clean; biome 0 diagnostics on the file.
+
+## ExperimentalTestimonials - larger card quote (mobile)
+
+- `src/components/home/ExperimentalTestimonials.tsx`: quote
+  `max-md:text-base` -> `max-md:text-lg` (16 -> 18px).
+- Verified @390px across all 8 track cards: font 18px, line-height 23.4px
+  (leading-[1.3em] holds), margin-top still 56px, quote block 117px tall,
+  none clipped, every card still exactly 360px with 77px of slack between the
+  quote and the author block - so there is room for one more bump if wanted.
+- Verified @1265px unchanged: card 440x440, quote 24px / line-height 36px /
+  mt 56px.
+- `bunx tsc --noEmit` clean; biome 0 diagnostics on the file.
+
+## BlogSection - swap the mobile CTA for prev/next carousel arrows
+
+- `src/components/ui/LogoCarousel.tsx`: `useMarqueeHalf` now RETURNS a stable
+  `step(dx)` callback (held in a ref, so the identity survives re-renders while
+  the effect swaps the implementation). Backward compatible - LogoCarousel and
+  ExperimentalTestimonials ignore the return value and are untouched. Stepping
+  reuses the drag path's exact machinery: cancel the WAAPI animation, write the
+  current transform, transition to `originX + dx` over STEP_MS (500ms), then
+  recreate the animation at the matching time. A transform transition is
+  composited, so it never leaves the compositor. It travels to the UNWRAPPED
+  target and wraps only on handoff - wrapping mid-transition would animate a
+  whole copy-width slide.
+- `src/components/home/BlogSection.tsx`: CTA wrapper `max-md:justify-start` ->
+  `max-md:hidden`; added a `md:hidden` prev/next pair in the same header slot so
+  the row does not reflow. Stride is MEASURED (`card.offsetWidth + marginRight`)
+  rather than derived from 80vw. `active:` states, not `hover:` - touch has no
+  hover.
+- Direction note: the track animates -50% -> 0, i.e. content drifts RIGHT, so
+  "next" is a NEGATIVE x step. Verified rather than assumed.
+- Verified @390px: CTA `display: none`; both 48x48 arrows render; stride
+  312 + 16 = 328px. Next -> wrappedDelta -328 (expected -328); Prev ->
+  wrappedDelta +328 (expected +328) and `returnedToStart: true`. Raw deltas were
+  +984/-984, i.e. the same position wrapped by the 1312px copy width - visually
+  identical, which is the point of the two-copy track. During a step the track
+  had 0 animations and inline `transform 500ms cubic-bezier(0.16, 1, 0.3, 1)`;
+  after, 1 animation restored with inline transform AND transition both cleared,
+  so the marquee resumes and drag still works.
+- No regression in the hook's other consumers: at 390px all four marquee tracks
+  (LogoLoop, testimonials, TechLogoCarousel, blog) still report 1 animation. The
+  0 is PortfolioSection's native scroll-snap carousel, which never had one.
+- Verified @1265px: CTA wrapper `display: flex`, 219x64, "Explore all articles";
+  arrows wrapper `display: none`; blog track 0 WAAPI animations (desktop uses the
+  framer `x` loop, gated on isDesktop) - desktop untouched.
+- `bunx tsc --noEmit` clean; `bunx next build` compiled and prerendered 35/35;
+  biome unchanged (LogoCarousel 0, BlogSection 1 pre-existing).
+
+## PortfolioSection - mobile carousel smoothness
+
+- Root cause, measured not guessed: the tech-tag chips carry `backdrop-blur-md`,
+  and the track held **19** elements computing `backdrop-filter: blur(12px)`
+  inside the horizontal scroller. Every one of those makes the compositor
+  snapshot and blur its backdrop on EVERY frame while swiping.
+- Fix: `max-md:backdrop-blur-none` + `max-md:bg-black/50` on the chip (the
+  heavier flat background keeps it legible over the photo without the blur).
+  Desktop keeps `backdrop-blur-md` and `bg-black/20`.
+- Verified @390px: elements in the track computing backdrop-filter or filter
+  went 19 -> **0**; chip backdropFilter "none", background oklab(0 0 0 / 0.5).
+- Verified @1265px unchanged: 19 chips still at blur(12px), bg 0.2, padding
+  6px 16px, 12px text; track overflow-x visible, snap none, width 6325px (GSAP
+  translates it there).
+- Ruled out, so noting it so it is not re-investigated:
+  * Lenis is NOT involved - SmoothScroll early-returns below 768px before
+    constructing it, so no nested-scroller conflict.
+  * The one <video> in the track was already paused offscreen (videosPlaying 0).
+  * next/image already emits `decoding="async"` on all panel images, so there
+    was nothing to gain there; `loading="eager"` was left alone deliberately -
+    the existing comment explains lazy leaves black panels on a fast swipe.
+  * The autoplay rAF tween writes scrollLeft for 600ms every 4500ms; left as is,
+    since a scroll container cannot be advanced off the main thread and the
+    prior attempt at `behavior:"smooth"` is documented as unreliable.
+- LIMITATION: the Browser pane is not compositing (rAF frozen), so frame rate
+  could not be measured in-pane. The claim here is the amount of per-frame work
+  removed (19 backdrop-filter layers -> 0), not a measured FPS delta - confirm
+  the feel on device.
+- `bunx tsc --noEmit` clean; `bunx next build` compiled; biome unchanged at the
+  file's 2 pre-existing diagnostics.
+
+## ContactSection - more space between label and input (mobile)
+
+- `src/components/home/ContactSection.tsx`: all 6 field wrappers
+  `max-md:gap-2` -> `max-md:gap-3.5` (8 -> 14px). Base `gap-3` untouched, so
+  desktop stays at 12px.
+- Picked 3.5 over 3 deliberately: `gap-3` would equal the base value, which
+  would make the measurement unable to distinguish "the max-md rule generated"
+  from "the base rule applied" - a real risk here, since `max-md:mb-5` and
+  `max-md:gap-7` silently produced no CSS earlier in this session.
+- Verified @390px: rowGap 14px and label-to-control ink gap 14.0 on all six
+  fields (name, email, phone, company, service, message); `.max-md\:gap-3\.5`
+  confirmed present as a real rule in the served stylesheet.
+- Verified @1265px unchanged: rowGap 12px, ink gap 12.0 on all six.
+- `bunx tsc --noEmit` clean; biome unchanged (1 pre-existing
+  noUnusedVariables on GRID_COLUMNS).
+
+## BlogSection - arrows-only carousel (mobile) + centred footer legal line
+
+### BlogSection / useMarqueeHalf
+- `src/components/ui/LogoCarousel.tsx`: 5th param `autoplay = true`. When false
+  `create()` calls `animation.pause()` after seeding currentTime. Chose pause
+  over disabling the hook because BOTH `step()` and the drag read/write that
+  same `currentTime` - killing the animation would have killed the arrows and
+  the drag with it. Every recreate path (drag release, step timeout) goes
+  through `create()`, so the paused state is re-applied automatically.
+- `src/components/home/BlogSection.tsx`: passes `autoplay: false`.
+- Verified @390px: blog track playState **paused**, testimonials **running** -
+  the option did not leak to the hook's other consumers. After a full reload all
+  five tracks read: LogoLoop running, Portfolio (native scroll, no WAAPI) none,
+  testimonials running, TechLogoCarousel running, blog **paused**.
+- Arrows still drive a paused track: next/next/prev gave wrapped deltas
+  -328 / -328 / +328 against the 328px stride, and playState stayed "paused"
+  after each step.
+- Note on evidence: the "track did not move while idle" number is NOT the proof
+  here - the pane's rAF is frozen, so a running track reads 0 movement too.
+  playState paused-vs-running is the conclusive signal, since a paused WAAPI
+  animation cannot advance by definition.
+
+### Footer
+- Legal row: added `max-md:items-center max-md:text-center` to the flex column
+  and `max-md:justify-center` to the inner "All Rights Reserved + Privacy
+  Policy" row (the parent's text-align covers the wrapped case, justify-center
+  the shared-line case).
+- Verified @390px: block centre 195 (= 390/2) and all three of copyright,
+  "All Rights Reserved" and the privacy link centre at exactly **195**.
+- Verified @1265px unchanged: flex-direction row, align-items flex-end,
+  text-align start, copyright flush at block left (76), privacy flush at block
+  right (1174).
+
+- `bunx tsc --noEmit` clean; `bunx next build` compiled; biome unchanged
+  (BlogSection 1, Footer 2, LogoCarousel 0 - all pre-existing).

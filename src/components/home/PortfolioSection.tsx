@@ -467,7 +467,13 @@ export default function PortfolioSection() {
                   {project.tech.map((tag, i) => (
                     <span
                       key={i}
-                      className="rounded-md border border-white/20 bg-black/20 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md max-md:px-3 max-md:py-1 max-md:text-[0.6rem] md:text-xs"
+                      // No backdrop-filter below md. Every one of these chips
+                      // makes the compositor snapshot and blur what is behind it
+                      // on EVERY frame, and the panels put ~19 of them inside a
+                      // horizontal scroller — the single biggest cost while
+                      // swiping. The heavier flat bg keeps them just as legible
+                      // over the photo. Desktop keeps the blur.
+                      className="rounded-md border border-white/20 bg-black/20 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md max-md:bg-black/50 max-md:px-3 max-md:py-1 max-md:text-[0.6rem] max-md:backdrop-blur-none md:text-xs"
                     >
                       {tag}
                     </span>

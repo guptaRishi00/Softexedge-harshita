@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useIsDesktop } from "@/lib/useIsDesktop";
+import { NO_ENTRY, useIsDesktop, useIsMobile } from "@/lib/useIsDesktop";
 import ChannelCard from "./ChannelCard";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -45,6 +45,8 @@ const GRID_COLUMNS = 8;
 
 export default function ContactSection() {
   const isDesktop = useIsDesktop();
+  // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
+  const isMobile = useIsMobile();
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -65,14 +67,18 @@ export default function ContactSection() {
             initial={isDesktop ? { opacity: 0, y: 40 } : false}
             whileInView={isDesktop ? { opacity: 1, y: 0 } : undefined}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: premiumEase }}
+            transition={
+              isMobile ? NO_ENTRY : { duration: 0.8, ease: premiumEase }
+            }
             className="flex flex-col lg:col-span-5 lg:pr-8"
           >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, ease: premiumEase }}
+              transition={
+                isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
+              }
               className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-6 max-md:text-xs"
             >
               Get in touch
@@ -82,7 +88,11 @@ export default function ContactSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
+              transition={
+                isMobile
+                  ? NO_ENTRY
+                  : { duration: 0.6, delay: 0.1, ease: premiumEase }
+              }
               className="text-6xl font-bold tracking-tight text-white max-md:text-[2.5rem] md:text-5xl lg:text-[64px] leading-[0.9em]"
             >
               Let&apos;s build <br />
@@ -121,7 +131,11 @@ export default function ContactSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.2, ease: premiumEase }}
+              transition={
+                isMobile
+                  ? NO_ENTRY
+                  : { duration: 0.6, delay: 0.2, ease: premiumEase }
+              }
               className="mt-6 text-lg font-light leading-[1.25em] text-white max-md:mt-6 max-md:text-lg"
             >
               Ready to redefine the standard? Whether you have a specific
@@ -140,13 +154,17 @@ export default function ContactSection() {
             initial={isDesktop ? { opacity: 0, y: 40 } : false}
             whileInView={isDesktop ? { opacity: 1, y: 0 } : undefined}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
+            transition={
+              isMobile
+                ? NO_ENTRY
+                : { duration: 0.8, delay: 0.1, ease: premiumEase }
+            }
             className="lg:col-span-7"
           >
             <div className="h-full overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950 transition-transform duration-300 hover:border-white/20 max-md:rounded-3xl">
               <form className="flex h-full flex-col justify-between gap-8 p-8 max-md:gap-8 max-md:p-5 sm:p-10 md:p-12">
                 <div className="grid grid-cols-1 gap-6 max-md:gap-6 md:grid-cols-2 md:gap-8">
-                  <div className="flex flex-col gap-3 max-md:gap-2">
+                  <div className="flex flex-col gap-3 max-md:gap-3.5">
                     <label
                       htmlFor="name"
                       className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
@@ -161,7 +179,7 @@ export default function ContactSection() {
                     />
                   </div>
 
-                  <div className="flex flex-col gap-3 max-md:gap-2">
+                  <div className="flex flex-col gap-3 max-md:gap-3.5">
                     <label
                       htmlFor="email"
                       className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
@@ -178,7 +196,7 @@ export default function ContactSection() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 max-md:gap-6 md:grid-cols-2 md:gap-8">
-                  <div className="flex flex-col gap-3 max-md:gap-2">
+                  <div className="flex flex-col gap-3 max-md:gap-3.5">
                     <label
                       htmlFor="phone"
                       className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
@@ -188,7 +206,7 @@ export default function ContactSection() {
                     <input type="tel" id="phone" className={inputClass} />
                   </div>
 
-                  <div className="flex flex-col gap-3 max-md:gap-2">
+                  <div className="flex flex-col gap-3 max-md:gap-3.5">
                     <label
                       htmlFor="company"
                       className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
@@ -199,7 +217,7 @@ export default function ContactSection() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 max-md:gap-2">
+                <div className="flex flex-col gap-3 max-md:gap-3.5">
                   <label
                     htmlFor="service"
                     className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
@@ -239,7 +257,7 @@ export default function ContactSection() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 max-md:gap-2">
+                <div className="flex flex-col gap-3 max-md:gap-3.5">
                   <label
                     htmlFor="message"
                     className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"

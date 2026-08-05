@@ -6,6 +6,7 @@ import { useSyncExternalStore } from "react";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { MdArrowOutward } from "react-icons/md";
 import { RiInstagramLine } from "react-icons/ri";
+import { NO_ENTRY, useIsMobile } from "@/lib/useIsDesktop";
 
 const footerLinkGroups = [
   {
@@ -67,6 +68,16 @@ const brandLetter: Variants = {
     y: "0%",
     transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
   },
+};
+
+const brandContainerInstant: Variants = {
+  hidden: {},
+  visible: {},
+};
+
+const brandLetterInstant: Variants = {
+  hidden: { y: "110%" },
+  visible: { y: "0%", transition: NO_ENTRY },
 };
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -142,6 +153,8 @@ function LocalTime({ timeZone }: { timeZone: string }) {
 }
 
 export default function Footer() {
+  // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
+  const isMobile = useIsMobile();
   return (
     <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-10 text-white md:pt-24 lg:pt-32">
       <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay" />
@@ -155,11 +168,15 @@ export default function Footer() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{
-                  duration: 0.6,
-                  ease: premiumEase,
-                  delay: groupIndex * 0.05,
-                }}
+                transition={
+                  isMobile
+                    ? NO_ENTRY
+                    : {
+                        duration: 0.6,
+                        ease: premiumEase,
+                        delay: groupIndex * 0.05,
+                      }
+                }
                 className="flex flex-col gap-2.5"
               >
                 <p className="mb-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
@@ -183,7 +200,11 @@ export default function Footer() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, ease: premiumEase, delay: 0.15 }}
+            transition={
+              isMobile
+                ? NO_ENTRY
+                : { duration: 0.6, ease: premiumEase, delay: 0.15 }
+            }
             className="flex flex-col items-start max-md:order-1 lg:col-span-5 lg:pl-12 lg:-mt-1"
           >
             <h3 className="mb-8 text-[2rem] font-semibold leading-tight tracking-[-0.04em] text-white">
@@ -250,7 +271,7 @@ export default function Footer() {
 
         <div className="relative flex w-full justify-center pt-8 pb-16 max-md:order-4 max-md:pt-0 max-md:pb-6 md:pt-10 md:pb-20 overflow-hidden">
           <motion.h1
-            variants={brandContainer}
+            variants={isMobile ? brandContainerInstant : brandContainer}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
@@ -274,7 +295,10 @@ export default function Footer() {
                 // left, and -mr does the tightening (net advance − 0.04em).
                 className="inline-block overflow-hidden px-[0.06em] ml-[-0.06em] mr-[-0.1em] pb-[0.3em] -mb-[0.3em]"
               >
-                <motion.span variants={brandLetter} className="inline-block">
+                <motion.span
+                  variants={isMobile ? brandLetterInstant : brandLetter}
+                  className="inline-block"
+                >
                   {char}
                 </motion.span>
               </span>
@@ -287,7 +311,9 @@ export default function Footer() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, ease: premiumEase }}
+            transition={
+              isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
+            }
             className="grid grid-cols-2 justify-items-center gap-x-8 gap-y-12 text-xs font-semibold uppercase tracking-widest max-md:order-3 md:grid-cols-4"
           >
             <div className="flex flex-col items-start gap-3 max-md:order-1">
@@ -343,12 +369,19 @@ export default function Footer() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: premiumEase, delay: 0.05 }}
-            className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 max-md:order-5 max-md:pb-4 md:flex-row md:items-end"
+            transition={
+              isMobile
+                ? NO_ENTRY
+                : { duration: 0.6, ease: premiumEase, delay: 0.05 }
+            }
+            className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 max-md:order-5 max-md:items-center max-md:pb-4 max-md:text-center md:flex-row md:items-end"
           >
             <p className="tracking-wide">© Made By Softexedge</p>
 
-            <div className="flex flex-wrap items-center gap-6">
+            {/* justify-center below md so the two items centre as a group when
+                they share a line, and text-center on the parent handles the
+                wrapped case. */}
+            <div className="flex flex-wrap items-center gap-6 max-md:justify-center">
               <p className="tracking-wide">All Rights Reserved</p>
               <a href="#" className="transition-colors hover:text-white">
                 Privacy Policy ( peek responsibly )
