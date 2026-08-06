@@ -1,53 +1,58 @@
-# Plan — remaining service pages mirrored from /brand-strategy
+# About page — mobile responsiveness
 
-(Previous plan.md — the never-approved TracingBorder handoff fix — is archived as
-`plan-tracingborder-handoff.md`.)
+Scope: `/about` below `md` only. Desktop (≥768px) must be byte-identical in
+computed output. Reference conventions come from the homepage work already in
+`SESSION_LOG.md`.
 
-## Goal
-Every service in the header dropdown gets its own page that is design-identical
-to /brand-strategy, backed by its own component copies so each page can diverge
-later. Mirrors exactly how /web-development was created.
+## Homepage conventions being ported
 
-## Reality (verified)
-- Header dropdown lists 8 services. Only 2 have real routes:
-  `/brand-strategy`, `/web-development`. The other 6 point at those as placeholders.
-- `src/components/web-development/*` is a **byte-identical** copy of
-  `src/components/brand-strategy/*` (`diff` empty) — so "same to same" = literal copy.
-- Each folder holds 8 components: AgencyStats, CtaSection, FaqSection, OurTechStack,
-  ProcessSection, ProjectShowcase, StrategyHeroSection, SubServices.
-  (AgencyStats is used *inside* StrategyHeroSection, the other 7 by the page.)
-- SVG gradient ids (`cta-icon-grad`, `icon-gradient`) repeat across folders, but each
-  page imports only its own folder, so there is no same-page id collision. Same as the
-  existing web-development copy — no renaming needed.
-
-## New routes (6)
-| Dropdown service | slug |
+| Token | Homepage mobile value |
 |---|---|
-| Digital Marketing & Growth | `digital-marketing` |
-| AI & Marketing Automation  | `ai-marketing-automation` |
-| App Development            | `app-development` |
-| Custom Software & SaaS     | `custom-software` |
-| UI/UX Design               | `ui-ux-design` |
-| Video Production           | `video-production` |
+| section x-padding | `max-md:px-3` (12px) |
+| eyebrow / tag | `max-md:text-xs` (12px) |
+| section h2 | `max-md:text-[2.5rem]` (40px) |
+| body copy | `max-md:text-lg` (18px) |
+| carousel arrows | 40×40, `active:` not `hover:`, visible on mobile |
+| overlap/pin machinery | `md:`-gated (`md:-mt-[100vh]`, GSAP in `min-width:768px`) |
+
+## Findings from the live audit @390px
+
+| # | Severity | Finding | Evidence |
+|---|---|---|---|
+| 1 | **P0** | Hero stats row is painted **under** the black section — invisible on mobile | `statsRowTop: 624` vs `nextSectionTop: 353`, `statsClippedByNextSection: true` |
+| 2 | **P0** | Sticky offsets hard-code desktop heights | hero `top:-260px` for a 1253px block (149px lost); culture `top:-150px` for a 1437px block (443px lost) |
+| 3 | P1 | Hero top padding 192px (`pt-48`) | `innerPaddingTop: "192px"` |
+| 4 | P1 | All four h2 at 48px vs homepage's 40px | traditional/culture/team all `h2FontSize: "48px"` |
+| 5 | P2 | Tags 14px vs homepage 12px | `tagFontSize: "14px"` ×3 |
+| 6 | P2 | x-padding 16px/24px vs homepage 12px | `containerPaddingX: "16px"`, hero `24px` |
+| 7 | P2 | Team carousel auto-scrolls with **no** arrows on mobile | `arrowsVisible: 0` |
+| 8 | P2 | Culture quote card `p-8` (32px) cramped at 390px | `quoteCardPadding: "32px 32px"` |
 
 ## Steps
-1. For each slug: copy `src/components/brand-strategy/` → `src/components/<slug>/`
-   (byte-identical, via `cp` so the design is guaranteed "same to same").
-2. For each slug: create `src/app/<slug>/page.tsx` mirroring
-   `src/app/brand-strategy/page.tsx` composition exactly (StrategyHeroSection,
-   SubServices>ProcessSection, OurTechStack, ProjectShowcase,
-   ExperimentalTestimonials, TechLogoCarousel, p-3 CtaSection,
-   space-y-10 [FaqSection, BlogSection], p-3 Footer) with imports pointed at
-   `@/components/<slug>/` and a uniquely named default export.
-3. Re-link the dropdown in **both** headers (`page/Header.tsx` + `layout/Header.tsx`
-   — the duplicate-nav pair) so each service points at its own new route.
-4. Verify: `bunx tsc --noEmit`, biome on new files, and load all 6 routes live
-   asserting the hero + section set render (200, not 404).
-5. Update `.claude/CODEBASE_MAP.md` (6 new routes + component folders) and append
-   `.claude/SESSION_LOG.md`.
 
-## Constraints
-- Design identical to brand-strategy (no content divergence) — that is the ask
-  ("same to same"); per-page copy can be edited later independently.
-- Don't touch brand-strategy / web-development.
-- Don't commit.
+| # | Step | Files | route |
+|---|---|---|---|
+| 1 | `md:`-gate the two sticky/negative-margin overlap groups so mobile flows normally (fixes #1, #2) | `src/app/about/page.tsx` | driver |
+| 2 | Hero: mobile padding + type scale (#3, #6) | `src/components/about/AboutHeroSection.tsx` | driver |
+| 3 | AboutTraditional: h2/tag/padding (#4, #5, #6) | `src/components/about/AboutTraditional.tsx` | driver |
+| 4 | OurValuesSection: h2/tag/padding/quote card (#4, #5, #6, #8) | `src/components/about/OurValuesSection.tsx` | driver |
+| 5 | OurTeamSection: h2/tag + mobile arrows (#4, #5, #7) | `src/components/about/OurTeamSection.tsx` | driver |
+| 6 | Verify @390 / @767 / @1265; build + lint | — | driver |
+
+## Routing note — read before approving
+
+**Every step is routed `driver`, which breaks the ≤20% budget. I think that is
+correct here and want to flag it rather than pad the plan to hit the number.**
+
+`/worker` pays when cheap tokens absorb bulk labor. This task is the inverse:
+each step is 3–8 Tailwind class edits, but *which value* to pick is the entire
+task, and the values must stay consistent across five files against a table of
+homepage conventions. A brief specifying the exact classes to write is longer
+than the diff — fan-out measures at 2.6–5.9× tokens and is never faster, so it
+would cost more for a worse result.
+
+**Recommendation: run this as plain `/task`.** If quota is the binding
+constraint, say so and I will re-cut steps 2–5 as sonnet briefs with the
+conventions table inlined — that is the version where delegation pays.
+
+Awaiting approval before any edit.

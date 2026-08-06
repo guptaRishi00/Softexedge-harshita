@@ -13,15 +13,15 @@ export default function AboutTraditional() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center text-center max-w-5xl z-10 px-4 md:px-10"
+          className="flex flex-col items-center text-center max-w-5xl z-10 px-4 max-md:px-3 md:px-10"
         >
-          <div className="mb-8 inline-flex items-center justify-center rounded-full ">
-            <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
+          <div className="mb-8 inline-flex items-center justify-center rounded-full max-md:mb-6">
+            <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs">
               Who We Are
             </span>
           </div>
 
-          <h2 className="text-5xl md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter leading-[0.9em] mb-8">
+          <h2 className="text-5xl max-md:text-[2.5rem] md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter leading-[0.9em] mb-8 max-md:mb-6">
             A collective of <br className="hidden md:block" />
             <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               digital innovators.
@@ -36,7 +36,7 @@ export default function AboutTraditional() {
           </p>
         </motion.div>
 
-        <div className="relative z-10 mt-20 w-full max-w-[96rem] px-4 md:mt-28 md:px-10">
+        <div className="relative z-10 mt-20 w-full max-w-[96rem] px-4 max-md:mt-12 max-md:px-3 md:mt-28 md:px-10">
           <motion.div
             initial={{ opacity: 0, y: 90, scale: 0.93 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}

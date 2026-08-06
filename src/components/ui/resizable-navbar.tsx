@@ -50,12 +50,23 @@ interface MobileNavProps {
   children: React.ReactNode;
   className?: string;
   visible?: boolean;
+  /**
+   * Opt-in mobile treatment: the bar shrinks to a floating pill on scroll (the
+   * mobile analogue of NavBody) and the menu opens as an inline dropdown inside
+   * that same surface instead of a full-screen overlay.
+   *
+   * Off by default. `page/Header` shares these primitives across every other
+   * route and is deliberately left on the original overlay path.
+   */
+  dropdown?: boolean;
+  isOpen?: boolean;
 }
 
 interface MobileNavHeaderProps {
   children: React.ReactNode;
   className?: string;
   visible?: boolean;
+  dropdown?: boolean;
 }
 
 interface MobileNavMenuProps {
@@ -63,6 +74,7 @@ interface MobileNavMenuProps {
   className?: string;
   isOpen: boolean;
   onClose: () => void;
+  dropdown?: boolean;
 }
 
 export const Navbar = ({ children, className }: NavbarProps) => {
@@ -76,11 +88,8 @@ export const Navbar = ({ children, className }: NavbarProps) => {
     const shouldBeVisible = latest > 80;
     setVisible((prev) => (prev === shouldBeVisible ? prev : shouldBeVisible));
 
-    if (latest > lastScroll.current && latest > 120) {
-      setIsHidden(true);
-    } else {
-      setIsHidden(false);
-    }
+    const shouldHide = latest > lastScroll.current && latest > 120;
+    setIsHidden((prev) => (prev === shouldHide ? prev : shouldHide));
     lastScroll.current = latest;
   });
 
@@ -236,7 +245,7 @@ export const NavItems = ({
                   className={cn(
                     "absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 z-[110]",
                     item.dropdownItems
-                      ? "w-[90vw] max-w-[1400px]" 
+                      ? "w-[90vw] max-w-[1400px]"
                       : item.sections
                         ? item.sections.length > 1
                           ? "w-[650px]"
@@ -359,7 +368,56 @@ export const NavItems = ({
   );
 };
 
-export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
+export const MobileNav = ({
+  children,
+  className,
+  visible,
+  dropdown,
+  isOpen,
+}: MobileNavProps) => {
+  if (dropdown) {
+    // Floating whenever it is scrolled OR open, so opening at the very top of
+    // the page still detaches the bar into a card rather than leaving a
+    // full-bleed strip with a dropdown hanging off it.
+    const floating = visible || isOpen;
+
+    // No `fixed` here on purpose: the parent Navbar is already
+    // `fixed inset-x-0 top-0 flex justify-center`, so this only has to declare
+    // its width and the parent centres it. Nesting a second fixed element would
+    // re-introduce the containing-block bugs the desktop bar hit.
+    return (
+      <div
+        className={cn(
+          "z-50 flex flex-col overflow-hidden lg:hidden",
+          // Width/offset/radius are CSS transitions rather than framer `animate`
+          // props: the browser drives them with no JS per frame, and every state
+          // is then readable from computed style instead of living inside
+          // framer's internal frame loop.
+          "transition-[width,translate,border-radius,background-color,border-color] duration-200 ease-out",
+          isOpen ? "w-[96%]" : visible ? "w-[88%]" : "w-full",
+          floating
+            ? "translate-y-2.5 rounded-[18px] border border-white/10 bg-[#0b0b10]/90 backdrop-blur-md shadow-2xl"
+            : "translate-y-0 rounded-none border border-transparent bg-transparent",
+          className,
+        )}
+      >
+        {React.Children.map(children, (child) =>
+          React.isValidElement(child)
+            ? typeof child.type === "string"
+              ? child
+              : React.cloneElement(
+                  child as React.ReactElement<{
+                    visible?: boolean;
+                    dropdown?: boolean;
+                  }>,
+                  { visible, dropdown: true },
+                )
+            : child,
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -386,19 +444,33 @@ export const MobileNavHeader = ({
   children,
   className,
   visible,
+  dropdown,
 }: MobileNavHeaderProps) => {
+  // In dropdown mode the surrounding MobileNav owns the background, the blur
+  // and the positioning, so this is just the row.
+  // Extra top room only while the bar is full-width: once it shrinks to a pill
+  // the same value would read as a lopsided, top-heavy card.
+  const base = dropdown
+    ? cn(
+        "relative flex w-full shrink-0 flex-row items-center justify-between px-5 pb-3.5",
+        visible ? "pt-3.5" : "pt-8",
+      )
+    : null;
+
   return (
     <div
       className={cn(
-        // Opaque instead of translucent+blurred, and transition-colors instead
-        // of transition-all. This bar is `fixed`, so a backdrop-filter forces
-        // the browser to re-sample and re-blur whatever scrolls beneath it on
-        // every frame — and on /home what sits beneath is the hero's own
-        // full-screen backdrop-blur over a playing video, so the two nest.
-        "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4 transition-colors duration-300",
-        visible
-          ? "bg-white border-b border-black/5 shadow-xl"
-          : "bg-transparent",
+        base ??
+          // Opaque instead of translucent+blurred, and transition-colors instead
+          // of transition-all. This bar is `fixed`, so a backdrop-filter forces
+          // the browser to re-sample and re-blur whatever scrolls beneath it on
+          // every frame — and on /home what sits beneath is the hero's own
+          // full-screen backdrop-blur over a playing video, so the two nest.
+          "fixed inset-x-0 top-0 z-[70] flex w-full flex-row items-center justify-between px-6 py-4 transition-colors duration-300",
+        !dropdown &&
+          (visible
+            ? "bg-white border-b border-black/5 shadow-xl"
+            : "bg-transparent"),
         className,
       )}
     >
@@ -423,7 +495,34 @@ export const MobileNavMenu = ({
   children,
   className,
   isOpen,
+  dropdown,
 }: MobileNavMenuProps) => {
+  if (dropdown) {
+    // Height is a layout property and cannot be composited, but this is a
+    // one-shot tap interaction on a small subtree — not a loop — so the cost is
+    // paid once per open rather than every frame.
+    return (
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            key="mobile-dropdown"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full overflow-hidden"
+          >
+            <div
+              className={cn("flex w-full flex-col px-5 pt-1 pb-5", className)}
+            >
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -451,24 +550,22 @@ export const MobileNavToggle = ({
   isOpen,
   onClick,
   visible,
+  className,
 }: {
   isOpen: boolean;
   onClick: () => void;
   visible?: boolean;
+  /** Last-wins via tailwind-merge, so a caller whose bar is always dark can
+      pin the icon to white instead of the scrolled black. */
+  className?: string;
 }) => {
-  return isOpen ? (
-    <IconX
+  const Icon = isOpen ? IconX : IconMenu2;
+  return (
+    <Icon
       className={cn(
         "h-7 w-7 cursor-pointer transition-colors",
         visible ? "text-black" : "text-white",
-      )}
-      onClick={onClick}
-    />
-  ) : (
-    <IconMenu2
-      className={cn(
-        "h-7 w-7 cursor-pointer transition-colors",
-        visible ? "text-black" : "text-white",
+        className,
       )}
       onClick={onClick}
     />

@@ -10567,3 +10567,229 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
   Confirm the feel on device.
 - `bunx tsc --noEmit` clean; `bunx next build` compiled; biome 0 diagnostics on
   AboutImageStack, AboutSection unchanged at its 1 pre-existing noArrayIndexKey.
+
+## About page - mobile responsiveness (plan at .claude/plan.md)
+
+### P0 found by audit, not by eye
+The two scroll-overlap groups hard-coded DESKTOP heights in their sticky
+offsets: `top-[calc(100vh-1104px)]` and `top-[calc(100vh-994px)]`. At 390px the
+real heights are 1253px and 1437px, so the pinned blocks overflowed the fold by
+149px and 443px. Measured consequence at scrollY 900:
+`statsRowTop: 624` vs `nextSectionTop: 353`, `statsClippedByNextSection: true`
+- the entire hero stats row (10+/250+/98%/40+) rendered UNDERNEATH the black
+section and was never visible on mobile. Content loss, not just spacing.
+
+Root cause vs the homepage: only `ShrinkOnOverlap`'s GSAP was md-gated; the
+sticky + negative-margin rig around it was not. The homepage gates the whole rig
+(`md:-mt-[100vh]`, pin inside `min-width:768px`). Ported that.
+
+### Changes (5 files, all `max-md:`/base-value scoped)
+- `src/app/about/page.tsx`: `-mb-[150vh]`/`-mb-[100vh]` -> `md:`; both
+  `sticky top-[calc(...)]` -> `md:sticky md:top-[...]`; both `pb-[150vh]`/
+  `pb-[100vh]` -> `md:`. Section padding base values 96/64 -> 56/48 and 64 -> 48
+  (mobile-only by construction - `md:` re-asserts each).
+- Hero: pt 192->112, pb 128->64, px 24->12, counter 48->40, stat label 14->12,
+  stats gap 32->24, stats py 48->32.
+- AboutTraditional / OurValuesSection / OurTeamSection: h2 48 -> 40px, tag
+  14 -> 12px, container px 16 -> 12px; culture quote card p 32->20, quote text
+  20->18, avatar 56->48; the `pl-5` before "trust." zeroed below md.
+- OurValuesSection CTA: gradient arrow pinned below md (touch has no hover), same
+  as the homepage CTAs.
+- OurTeamSection arrows were `hidden md:flex` - mobile had NO carousel control at
+  all (`arrowsVisible: 0`). Now visible at 40x40 with 16px glyphs; desktop stays
+  48x48/20px.
+
+### Verification
+- @390: `statsClippedByNextSection: false`, `statsFullyAboveNextSection: true`;
+  hero/values position `static`, group marginBottom 0px, tradPaddingBottom 0px;
+  no horizontal overflow (docScrollWidth 390). All three h2 40px, all tags 12px,
+  all container padding 12px, team arrows 2 visible at 40x40, culture gradient
+  arrow centred (pinned).
+- @767 (widest mobile): still static, still 3x 40px h2, 2 arrows, no overflow.
+- @1266 desktop UNCHANGED: sticky restored with top -204px (= 900-1104) and
+  -94px (= 900-994), marginBottom -1350px, tradPaddingBottom 1350px,
+  tradSection pt 180px; hero pt 200/px 40, counter 80, tradH2 104, cultureH2 80,
+  teamH2 60, quoteCard 40, quoteText 24; team arrows 48x48; culture gradient
+  arrow NOT centred (parked off-screen, hover swap intact).
+- `bunx tsc --noEmit` clean; `bunx next build` compiled + 35/35 static pages.
+- biome: identical diagnostic set before and after (verified by stashing all 5
+  files and re-linting) - 4 pre-existing, only a line number moved.
+
+### LIMITATIONS
+- rAF is frozen in this pane (probe: 0 frames in 6802ms), so embla cannot
+  animate: the team carousel's motion could NOT be verified. Embla is
+  initialised (it applied its own `translate3d(0px,0px,0px)`) and the new mobile
+  buttons call the SAME `handlePrev`/`handleNext` as the working desktop pair -
+  only visibility and size changed. Confirm on device.
+- `AboutHeroSection.tsx` shows ~159 changed lines; `git diff -w` reduces that to
+  4 insertions / 5 deletions. The remainder is biome re-indenting pre-existing
+  misindentation in a file the edit already touched.
+- NOT changed (out of scope, flagged): the trailing shared-section wrappers
+  (Testimonials/Cta/Faq/Blog) still impose a flat `[&>section]:py-16` on mobile,
+  overriding those components' own tuned homepage values. Team carousel
+  autoscroll still runs on mobile.
+
+### Routing
+Planned all 6 steps `driver` and said so at the gate rather than padding to hit
+the <=20% budget: each step is 3-8 Tailwind edits where *which value* is the
+whole task and the values must stay consistent across 5 files. User approved
+"use /task"; executed solo. No workers dispatched, so no spec-verifier gate
+(T1 restraint - self-verification of own work is pure cost).
+
+## Homepage navbar - mobile shrink-on-scroll + inline dropdown
+
+### Scope guard
+`resizable-navbar.tsx` is shared by `layout/Header` (homepage only) and
+`page/Header` (every other route). The new behaviour is therefore an OPT-IN
+`dropdown` prop, enabled only from `layout/Header`. Verified on /about at 390px
+that it still renders the ORIGINAL path: `usesLegacyWrapper: true`,
+`usesFixedHeaderBar: true`, `accidentallyUsesDropdownShell: false`.
+
+### What changed (mobile only)
+- `MobileNav` gains the `dropdown`/`isOpen` props and, in that mode, becomes the
+  bar itself: width 100% at top -> 88% scrolled -> 96% open, with a 10px y
+  offset and 18px radius once floating. No `fixed` on it - the parent Navbar is
+  already `fixed inset-x-0 top-0 flex justify-center`, so nesting a second fixed
+  element would re-introduce the containing-block bugs the desktop bar hit.
+- Background is `bg-[#0b0b10]/70` + `backdrop-blur-2xl`, i.e. dark-translucent
+  rather than the previous `bg-white` on scroll and `bg-black` overlay.
+- `MobileNavMenu` in dropdown mode is an inline height-collapsible panel inside
+  that same surface instead of `fixed inset-0 h-screen bg-black`.
+- `MobileNavToggle` gained an optional `className` (last-wins via twMerge) so the
+  homepage can pin the icon white; `CustomLogo` lost `swapOnScroll` there since
+  the bar no longer turns white.
+- Menu content rebuilt: items 18 -> 20px, LEFT aligned (was centred), 14px row
+  padding with hairline dividers, sub-items 14 -> 16px in a rounded well,
+  full-width white CTA.
+
+### Two implementation corrections made mid-task
+1. The shell's width/y/radius started as framer `animate` props. Converted to
+   CSS transitions - the browser drives them with no JS per frame, AND every
+   state becomes readable from computed style instead of living inside framer's
+   frame loop.
+2. The transition list named `transform`; Tailwind v4 emits the y offset via the
+   CSS `translate` property, so the offset would have jumped rather than eased.
+   Now `transition-[width,translate,...]`. Confirmed `translate: "0px 10px"`.
+
+### Verification @390 (transitions disabled before every read - they are stuck at
+their start value in this non-compositing pane, which produced two misleading
+readings before I accounted for it)
+- TOP closed: width 100%, radius 0px, background rgba(0,0,0,0), backdrop none.
+- SCROLLED closed (forced - see limitation): width 88% / 343px, centred,
+  radius 18px, translate 0px 10px, background lab(.../0.7), backdrop blur(40px).
+- OPEN: width 96% / 374px (`classHasW96: true`), centred, radius 18px,
+  translate 0px 10px, background lab(.../0.7), backdrop blur(40px).
+- `isPureBlack: false` in every floating state - dark, not black, as asked.
+- Items: 5 rows all 20px, `navRowAligned: true` (left), panel padding 20px,
+  8 Services sub-items at 16px, CTA 16px on rgb(255,255,255) at 89% width.
+- Desktop @1265: NavBody `fixed`, 1250px, px-10/py-8, 17px links, Get-in-Touch
+  present; mobile shell `display: none`.
+
+### LIMITATIONS
+- framer's `useScroll` drives `visible` through its frame loop, which is stalled
+  here (rAF probe: 0 frames). Shimming rAF onto timers did NOT restart the
+  already-stalled loop, so the scroll->shrink TRIGGER could not be exercised
+  in-pane; the 88% state was verified by forcing the branch. The trigger itself
+  is `Navbar`'s existing mechanism, untouched by this task and demonstrably
+  working for the desktop bar.
+- Re the existing comment warning against backdrop-filter on this fixed bar: the
+  user asked for blur explicitly. Mitigation is that it only applies once
+  floating (scrolled or open), by which point the hero video is largely past,
+  and it is one element rather than the 19 stacked inside a scroller that made
+  PortfolioSection janky. Flagging, not objecting.
+- I briefly reported `shadow-2xl` as non-generating; that was my own bad regex -
+  the full computed value ends `rgba(0,0,0,0.25) 0px 25px 50px -12px`, which is
+  the real shadow. No change was needed.
+
+- `bunx tsc --noEmit` clean; `bunx next build` compiled + 35/35 pages.
+- biome 17 -> 12 diagnostics across the two files (added `type="button"` and
+  `<title>` on the new markup; removed the `expandedSection` state my rewrite
+  orphaned - it was the one diagnostic this task introduced, now gone).
+
+## Homepage navbar - more top padding (mobile)
+
+- `resizable-navbar.tsx`, dropdown-mode header row: `py-3.5` split into
+  `pb-3.5` + `visible ? "pt-3.5" : "pt-7"` (14 -> 28px unscrolled, 14px once
+  scrolled). The extra room is deliberately NOT applied to the shrunk pill -
+  the same value there reads as a lopsided, top-heavy card.
+- Verified @390 TOP closed: paddingTop **28px**, paddingBottom 14px, row height
+  56 -> **70px**, logo 29px from the viewport top, logo and toggle vertically
+  centred with each other and symmetric at 21px on each side.
+- Scrolled branch forced (`visible` cannot be flipped in-pane - framer's frame
+  loop is stalled, same limitation as the previous navbar entry): paddingTop
+  back to **14px**, row height **56px**.
+- OPEN at top: paddingTop 28px, panel still present - the card keeps the roomier
+  header while the dropdown is attached.
+- Desktop @1265 unchanged: NavBody fixed, 1250px, padding 32/32/40; mobile shell
+  `display: none`. `page/Header` never opts into dropdown mode (0 refs), so no
+  other route is affected.
+- `bunx tsc --noEmit` clean; biome still 12 diagnostics across the two files.
+
+## Homepage navbar - top padding nudge (mobile)
+
+- `resizable-navbar.tsx`: unscrolled `pt-7` -> `pt-8` (28 -> 32px). Scrolled
+  branch still `pt-3.5`, bottom still `pb-3.5`.
+- Verified @390 TOP closed: paddingTop **32px**, paddingBottom 14px, row height
+  70 -> **74px**, logo 33px from the viewport top, still centred against the
+  toggle and symmetric at 21px per side.
+- Scrolled branch forced: paddingTop **14px**, row height **56px** - unchanged.
+- Desktop @1265 unchanged: padding 32/32/40, 1250px, fixed; mobile shell hidden.
+- `bunx tsc --noEmit` clean; biome 12 diagnostics (unchanged).
+
+## Homepage navbar - mobile smoothness
+
+### What I ruled out first (so it is not re-investigated)
+- `transition-property: all` on the header row is NOT a global rule - it is the
+  CSS initial value. A freshly created plain div reports the same `all` / `0s`.
+- The two `filter: blur(40px)` / `blur(24px)` elements inside the nav subtree
+  belong to the desktop DynamicButton, which sits under `display: none` at
+  mobile width, so they cost nothing there.
+- Nav subtree is 50 elements on mobile, 41 of them the `display:none` desktop
+  tree. It is reconciled on `visible`/`isHidden` flips - a few times per scroll
+  session, NOT per frame - so it is not the lag source. Left mounted; unmounting
+  it needs a JS viewport check and would risk hydration.
+
+### The actual cause
+`backdrop-blur-2xl` = `blur(40px)` on the floating bar. A backdrop-filter over
+the hero's AUTOPLAYING video has to re-sample and re-blur its backdrop on every
+video frame, not just when the bar moves - so it was continuous GPU work the
+whole time the bar floated over the hero. This is exactly what the pre-existing
+comment in this file warned about when it chose an opaque bar; I reintroduced
+the blur two tasks ago at explicit request and flagged it then.
+
+### Changes (mobile dropdown branch only)
+- `backdrop-blur-2xl` -> `backdrop-blur-md` (40px -> **12px**) with the
+  background raised `/70` -> `/90` so it still reads as one solid dark bar.
+  Verified: `backdropFilter: "blur(12px)"`, `background: lab(.../0.9)`,
+  `isPureBlack: false`.
+- Shell transition 300ms -> **200ms**. `width` is a layout property and every
+  layout tick also forces the backdrop to be re-sampled at the new geometry, so
+  the shorter window compounds with the smaller radius. Verified
+  `transitionDuration: "0.2s"`.
+- `setIsHidden` was called on EVERY scroll frame while scrolling down past
+  120px. Replaced the if/else with the same functional guard `visible` already
+  used one line above: `setIsHidden(prev => prev === shouldHide ? prev : shouldHide)`.
+  Behaviour-identical, one fewer scheduled update per scroll frame.
+
+### Verification
+- @390 floating (forced): blur(12px), bg lab(.../0.9), radius 18px.
+- @390 OPEN: blur(12px), width 96%, radius 18px, translate 0px 10px, 5 rows at
+  20px, panel present - the feature set from the previous tasks is intact.
+- @1265 desktop UNCHANGED: NavBody fixed, 1250px, padding 32/40, backdrop none,
+  bg transparent; mobile shell `display: none`. The desktop bar's own
+  `bg-black/60 backdrop-blur-2xl` is untouched (still at line 141).
+- `bunx tsc --noEmit` clean; `bunx next build` compiled + 35/35 pages; biome 12
+  diagnostics (unchanged).
+
+### Not done, flagged
+- The Herosection video carries `blur-xl` (`filter: blur(24px)`) on a
+  full-screen autoplaying video. That is a permanent mobile GPU cost in its own
+  right AND it is the surface the navbar's backdrop-filter samples, so it
+  amplifies everything above. Out of scope for a navbar task, but it is the
+  next lever if the bar still feels heavy.
+- `Navbar`'s root is a framer `motion.div animate={{y}}`; a CSS transition on
+  `translate` would take framer off the scroll path entirely. Shared with
+  desktop, so left alone.
+- LIMITATION: the pane does not composite (rAF frozen), so no frame rate was
+  measured. The claim is the work removed - blur radius 40px -> 12px on an
+  element compositing over a playing video - not a measured FPS delta.

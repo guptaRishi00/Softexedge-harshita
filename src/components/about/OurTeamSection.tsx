@@ -124,14 +124,14 @@ export default function OurTeamSection() {
           plugins={[autoScroll.current]}
           className="w-full"
         >
-          <div className="mb-12 flex flex-col items-start justify-between gap-6 px-4 md:px-10 md:mb-20 md:flex-row md:items-end">
+          <div className="mb-12 flex flex-col items-start justify-between gap-6 px-4 max-md:mb-8 max-md:px-3 md:px-10 md:mb-20 md:flex-row md:items-end">
             <div className="mb-3">
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, ease: premiumEase }}
-                className="mb-4 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500"
+                className="mb-4 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs"
               >
                 The Minds Behind the Craft
               </motion.p>
@@ -141,7 +141,7 @@ export default function OurTeamSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
-                className="text-5xl font-bold tracking-tight text-zinc-900 md:text-6xl lg:text-6xl lg:leading-[1.05]"
+                className="text-5xl font-bold tracking-tight text-zinc-900 max-md:text-[2.5rem] md:text-6xl lg:text-6xl lg:leading-[1.05]"
               >
                 Meet Our{" "}
                 <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
@@ -150,22 +150,22 @@ export default function OurTeamSection() {
               </motion.h2>
             </div>
 
-            <div className="relative hidden gap-4 md:flex items-center min-w-24 min-h-12">
+            <div className="relative flex gap-4 items-center min-w-24 min-h-12 max-md:min-h-10">
               <button
                 type="button"
                 onClick={handlePrev}
                 aria-label="Previous team members"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-white"
+                className="flex h-12 w-12 max-md:h-10 max-md:w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-white"
               >
-                <MdArrowBack className="h-5 w-5" />
+                <MdArrowBack className="h-5 w-5 max-md:h-4 max-md:w-4" />
               </button>
               <button
                 type="button"
                 onClick={handleNext}
                 aria-label="Next team members"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-white"
+                className="flex h-12 w-12 max-md:h-10 max-md:w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 transition-colors hover:bg-zinc-900 hover:text-white"
               >
-                <MdArrowForward className="h-5 w-5" />
+                <MdArrowForward className="h-5 w-5 max-md:h-4 max-md:w-4" />
               </button>
             </div>
           </div>

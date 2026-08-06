@@ -44,7 +44,7 @@ export default function OurValuesSection() {
       id="culture"
       className="relative flex w-full flex-col overflow-hidden bg-black font-sans py-20 md:py-32"
     >
-      <div className="relative z-10 mx-auto w-full px-4 md:px-10">
+      <div className="relative z-10 mx-auto w-full px-4 max-md:px-3 md:px-10">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-stretch">
           <motion.div
             initial={{ opacity: 0, x: -40 }}
@@ -72,15 +72,15 @@ export default function OurValuesSection() {
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
             className="w-full lg:w-7/12 flex flex-col justify-center py-6 lg:py-12"
           >
-            <div className="mb-8">
-              <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
+            <div className="mb-8 max-md:mb-6">
+              <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs">
                 Our Culture
               </span>
             </div>
 
-            <h2 className="text-5xl md:text-7xl lg:text-[80px] font-bold tracking-tighter leading-[0.9em] mb-8 text-white">
+            <h2 className="text-5xl max-md:text-[2.5rem] md:text-7xl lg:text-[80px] font-bold tracking-tighter leading-[0.9em] mb-8 max-md:mb-6 text-white">
               We've built a culture of
-              <span className="pl-5 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              <span className="pl-5 max-md:pl-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 trust.
               </span>
             </h2>
@@ -92,7 +92,7 @@ export default function OurValuesSection() {
               recommendation or further work from that client.
             </p>
 
-            <div className="mt-12 relative flex flex-col rounded-3xl border border-white/[0.06] bg-[#100f0f] p-8 md:p-10">
+            <div className="mt-12 relative flex flex-col rounded-3xl border border-white/[0.06] bg-[#100f0f] p-8 max-md:mt-8 max-md:p-5 md:p-10">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={quoteIndex}
@@ -102,13 +102,13 @@ export default function OurValuesSection() {
                   transition={{ duration: 0.5, ease: premiumEase }}
                   className="flex flex-col gap-8"
                 >
-                  <p className="text-xl md:text-2xl font-medium leading-[1.2em] tracking-tight text-white">
+                  <p className="text-xl max-md:text-lg md:text-2xl font-medium leading-[1.2em] tracking-tight text-white">
                     {quotes[quoteIndex].text}
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mt-4">
                     <div className="flex items-center gap-4">
-                      <div className="relative h-14 w-14 overflow-hidden rounded-full bg-zinc-800">
+                      <div className="relative h-14 w-14 overflow-hidden rounded-full bg-zinc-800 max-md:h-12 max-md:w-12">
                         <Image
                           src={quotes[quoteIndex].avatar}
                           alt={quotes[quoteIndex].name}
@@ -152,9 +152,9 @@ export default function OurValuesSection() {
                             </defs>
                           </svg>
 
-                          <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                          <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
                           <MdArrowOutward
-                            className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                            className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
                             style={{ fill: "url(#culture-icon-grad)" }}
                           />
                         </div>

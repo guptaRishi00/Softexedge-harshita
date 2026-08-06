@@ -23,8 +23,8 @@ export default function AboutPage({}: Props) {
   return (
     <div className="bg-white">
       <Header />
-      <div className="relative z-0 -mb-[150vh]">
-        <div className="sticky top-[calc(100vh-1104px)] z-0 bg-[#FAFAFA]">
+      <div className="relative z-0 md:-mb-[150vh]">
+        <div className="md:sticky md:top-[calc(100vh-1104px)] z-0 bg-[#FAFAFA]">
           <ShrinkOnOverlap
             endSelector="#about-traditional"
             targetSelector="#about-hero-inner"
@@ -34,23 +34,23 @@ export default function AboutPage({}: Props) {
         </div>
         <div
           id="about-traditional"
-          className="relative z-10 bg-black pb-[150vh] [&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-45 md:[&>section]:pb-24"
+          className="relative z-10 bg-black md:pb-[150vh] [&>section]:pt-14 [&>section]:pb-12 md:[&>section]:pt-45 md:[&>section]:pb-24"
         >
           <AboutTraditional />
         </div>
       </div>
-      <div className="relative z-0 -mb-[100vh]">
-        <div className="sticky top-[calc(100vh-994px)] z-0 bg-black">
+      <div className="relative z-0 md:-mb-[100vh]">
+        <div className="md:sticky md:top-[calc(100vh-994px)] z-0 bg-black">
           <ShrinkOnOverlap
             endSelector="#our-team"
-            className="[&>section]:py-16 md:[&>section]:pt-16 md:[&>section]:pb-36"
+            className="[&>section]:py-12 md:[&>section]:pt-16 md:[&>section]:pb-36"
           >
             <OurValuesSection />
           </ShrinkOnOverlap>
         </div>
         <div
           id="our-team"
-          className="relative z-10 bg-white pb-[100vh] [&>section]:py-16 md:[&>section]:pb-10 md:[&>section]:pt-30"
+          className="relative z-10 bg-white md:pb-[100vh] [&>section]:py-12 md:[&>section]:pb-10 md:[&>section]:pt-30"
         >
           <OurTeamSection />
         </div>
