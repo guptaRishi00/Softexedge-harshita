@@ -101,6 +101,7 @@ export default function ExperimentalTestimonials() {
         >
           <div>
             <motion.p
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -112,6 +113,7 @@ export default function ExperimentalTestimonials() {
               Testimonials
             </motion.p>
             <motion.h2
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -127,6 +129,7 @@ export default function ExperimentalTestimonials() {
             </motion.h2>
 
             <motion.p
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -142,6 +145,7 @@ export default function ExperimentalTestimonials() {
             </motion.p>
 
             <motion.div
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}

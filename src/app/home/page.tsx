@@ -178,7 +178,7 @@ export default function HomePage() {
           <div ref={aboutContainerRef} className="relative z-0 bg-white">
             <div
               ref={aboutInnerRef}
-              className="origin-top will-change-transform bg-white pb-0 md:pb-[25vh] lg:pb-[30vh]"
+              className="origin-top md:will-change-transform bg-white pb-0 md:pb-[25vh] lg:pb-[30vh]"
             >
               <AboutSection />
             </div>
@@ -211,7 +211,7 @@ export default function HomePage() {
             <div ref={testimonialsGroupRef} className="relative z-10 bg-white">
               <div
                 ref={testimonialsInnerRef}
-                className="origin-top will-change-transform"
+                className="origin-top md:will-change-transform"
               >
                 <ExperimentalTestimonials />
                 <TechLogoCarousel />

@@ -247,3 +247,19 @@ body {
     animation: none;
   }
 }
+
+/* No entrance animation anywhere below md.
+   framer-motion writes its `initial` state as an INLINE style, so this has to
+   be !important to win. Doing it in CSS rather than as a JS gate matters twice
+   over: it needs no hydration to take effect, so the content is visible in the
+   very first paint instead of sitting at opacity 0 until React boots; and it
+   cannot desync SSR from the client the way gating `initial` on a viewport hook
+   would. Desktop is untouched — the query simply does not match. */
+@media not (min-width: 48rem) {
+  [data-no-mobile-entry] {
+    opacity: 1 !important;
+    transform: none !important;
+    translate: none !important;
+    filter: none !important;
+  }
+}

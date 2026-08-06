@@ -10987,3 +10987,129 @@ confirmed still reverted (0 refs each).
   panel. Real fix is mounting the `<video>` only when the panel nears the
   viewport.
 - `public/assets` ~58 MB, 8 images over 1.5 MB.
+
+## Homepage - genuinely remove mobile entrance animations
+
+### Why the earlier NO_ENTRY pass was not enough
+`transition={isMobile ? NO_ENTRY : ...}` only made the animation INSTANT. The
+elements still rendered at `initial` (opacity 0) and only reached opacity 1 when
+`whileInView` fired, so content still popped in on scroll — and worse, the SSR
+HTML shipped them at opacity 0, so the page was largely blank until React
+hydrated. Measured in production at 390px BEFORE this change: **27 elements
+sitting at opacity 0** at scroll top (hero copy, services, testimonials, ...).
+
+### Approach chosen, and the two rejected
+Gating `initial` on `useIsMobile()` was the obvious fix and was rejected: the
+hook returns false on the server and true on the first client render, so the
+emitted `style` attribute would differ and hydration would mismatch.
+Pre-computing it server-side is impossible — the server has no viewport.
+
+Done in CSS instead. `src/app/globals.css`:
+
+```
+@media not (min-width: 48rem) {
+  [data-no-mobile-entry] {
+    opacity: 1 !important; transform: none !important;
+    translate: none !important; filter: none !important;
+  }
+}
+```
+
+framer writes `initial` as an INLINE style, so `!important` is required to win.
+Two properties of doing it this way matter: it needs no hydration, so the
+content is visible in the FIRST PAINT rather than waiting for React; and SSR and
+client render identical markup, so there is no mismatch. The inline
+`opacity:0;...` is deliberately left in place and simply overridden.
+
+`data-no-mobile-entry` added to the 23 entrance `motion` elements across
+Herosection (6), ServiceSection (3), ExperimentalTestimonials (4),
+ContactSection (3), BlogSection (3), Footer (4). The 2
+`initial={{ x: "-100%" }}` props were deliberately NOT tagged — those are the
+rotating-word swaps, not entrances.
+
+### Verified in PRODUCTION (`next start`, confirmed-fresh server)
+- @390px: 25 tagged DOM elements (23 source tags; Footer's link-group map
+  renders one of them 3x). `stillTransparent: 0`, `stillFiltered: 0`,
+  all transforms identity, **`allNeutralised: true`**. Sweep for any visible
+  element left at opacity 0 returns 8, all of them `pointer-events-none`
+  hover overlays (`opacity-0 group-hover:opacity-100`) — not entrances.
+  `ruleInStylesheet: true`, so it applies before any JS runs.
+- @1266px: `mediaQueryMatchesAtThisWidth: false`,
+  `elementsStillAtInitialState: 25` (opacity 0, translateY(28px)) — the desktop
+  entrances are completely untouched.
+- No hydration errors in the console (only pre-existing 404s).
+
+### A correction to my own reading mid-task
+I first reported "24 still translated". That predicate compared against the
+string `'none'`; the computed value was `matrix(1, 0, 0, 1, 0, 0)` — the
+IDENTITY matrix, i.e. no offset. The CSS was working; the check was wrong.
+
+### Housekeeping
+`biome format --write src/components/home/*.tsx` re-wrapped one unrelated line
+in PortfolioSection.tsx. Reverted via `git checkout` after confirming that file
+carries none of this task's tags.
+
+Net diff: 7 files, +39 lines, no deletions. `bunx tsc --noEmit` clean;
+`bunx next build` compiled; biome 8 diagnostics across the six components, all
+pre-existing.
+
+### Note
+The `isMobile ? NO_ENTRY : ...` transitions on these 23 elements are now
+redundant — the CSS overrides the visual result regardless. Left in place rather
+than making 23 more edits for no functional gain.
+
+## Mobile smoothness - compositor layers + second video
+
+### Measured cause: 12 permanently-promoted layers, most of which never move
+At 390px the page held **12 compositor layers totalling 1,526,970 px**, and the
+three biggest were `will-change: transform` on elements that are ONLY ever
+transformed by ScrollTrigger inside `mm.add("(min-width: 768px)")` — i.e. never
+on a phone:
+
+| element | box | transformed on mobile |
+|---|---|---|
+| testimonials wrapper (`page.tsx`) | 390x1126 = 439,091 px | no |
+| about wrapper (`page.tsx`) | 390x974 = 379,903 px | no |
+| `.stat-inner` x4 (`StatsSection`) | 390x153 each = 238,972 px | no |
+
+~1.06M CSS px of GPU texture (≈9.5M device px at DPR 3) held for nothing, plus
+the extra layers for the compositor to manage every frame — which is the shape
+of "everything feels laggy" on a phone.
+
+### Changes
+1. Those three `will-change-transform` -> `md:will-change-transform`
+   (`src/app/home/page.tsx` x2, `src/components/home/StatsSection.tsx` x1).
+   The transform is desktop-only, so the hint should be too.
+2. `public/assets/video3.mp4` re-encoded **1920x1080 -> 1280x720**, 1,900 KB ->
+   **952 KB**. It plays inside a 390px-wide phone carousel panel (1170 device px
+   at DPR 3), so 1080p was oversized — decoding a 1080p stream while that
+   carousel is dragged/autoplayed is directly the "carousels are laggy"
+   complaint. Original kept at `video3.mp4.orig`.
+
+### Verified in PRODUCTION (`next start`, confirmed-fresh server each time)
+- @390px: layers **12 -> 6**, promoted area **1,526,970 -> 469,004 px (-69%)**.
+  The 4 remaining with non-zero area all genuinely animate (3 AboutImageStack
+  slots + the LogoLoop marquee track).
+- @390px videos: both now `1280x720`; total video bytes 3,251 -> **2,304 KB**.
+- @1265px UNCHANGED: 15 promoted layers, both GSAP wrappers still promoted
+  (1250x1030 and 1250x840, `willChange: transform`) and all 4 `.stat-inner`
+  still promoted — the desktop pin still gets its hint.
+
+### Honest limits on what this proves
+- Main-thread scroll cost moved only 2.13 -> 2.03 ms per scroll step (-5%). The
+  layer fix is a GPU-memory/compositing win, NOT a main-thread win, and this
+  pane cannot measure GPU or frame rate. The 2.0 ms/step that remains is scroll
+  listeners plus layout on a 1621-node DOM.
+- I could not attribute that remaining cost: GSAP is bundled rather than on
+  `window`, so `ScrollTrigger.getAll()` was unreachable and I could not A/B it.
+- Not changed, still suspected: framer's `useScroll` in `Navbar` runs a callback
+  on every scroll frame, and the 41-element desktop nav tree stays mounted and
+  is reconciled on every scroll-direction change. Unmounting it below `lg` needs
+  a viewport hook, which would desync SSR — deliberately not done unprompted.
+- `BlogSection` calls `useAnimationFrame` unconditionally; the body early-returns
+  on mobile but the callback still keeps framer's frame loop alive every frame.
+  Fixing it means moving the desktop marquee into a desktop-only child.
+
+`bunx tsc --noEmit` clean; `bunx next build` compiled; biome unchanged
+(1 pre-existing `noArrayIndexKey` in StatsSection, 0 in page.tsx).
+Net diff: 2 source files (+3/-3) and one re-encoded asset.

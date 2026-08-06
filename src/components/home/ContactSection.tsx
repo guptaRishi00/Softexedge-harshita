@@ -73,6 +73,7 @@ export default function ContactSection() {
             className="flex flex-col lg:col-span-5 lg:pr-8"
           >
             <motion.div
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -85,6 +86,7 @@ export default function ContactSection() {
             </motion.div>
 
             <motion.h2
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -128,6 +130,7 @@ export default function ContactSection() {
             </motion.h2>
 
             <motion.p
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}

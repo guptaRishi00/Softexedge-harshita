@@ -241,6 +241,7 @@ export default function BlogSection() {
       <div className="mx-auto w-full ">
         <div className="mb-12 w-full px-4 max-md:mb-8 max-md:px-3 md:mb-20 md:px-10">
           <motion.p
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -254,6 +255,7 @@ export default function BlogSection() {
 
           <div className="flex w-full flex-col items-start justify-between gap-8 max-md:gap-8 md:flex-row md:items-center">
             <motion.div
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -299,6 +301,7 @@ export default function BlogSection() {
             </motion.div>
 
             <motion.div
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}

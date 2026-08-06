@@ -124,6 +124,7 @@ export default function Herosection({}: any) {
           <div className="flex flex-col items-center justify-center gap-2 md:gap-4">
             {/* Mobile-only description (styled as a tag) */}
             <motion.div
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={
@@ -140,6 +141,7 @@ export default function Herosection({}: any) {
             </motion.div>
 
             <motion.h1
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={
@@ -158,6 +160,7 @@ export default function Herosection({}: any) {
 
             <div className="flex flex-wrap items-center justify-center gap-2 md:gap-5">
               <motion.p
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={
@@ -176,6 +179,7 @@ export default function Herosection({}: any) {
 
               {/* Canvas is visible on all screens again */}
               <motion.div
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={
@@ -196,6 +200,7 @@ export default function Herosection({}: any) {
               </motion.div>
 
               <motion.p
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={
@@ -214,6 +219,7 @@ export default function Herosection({}: any) {
             </div>
 
             <motion.p
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={

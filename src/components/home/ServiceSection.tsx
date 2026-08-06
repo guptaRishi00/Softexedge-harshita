@@ -178,6 +178,7 @@ export default function ServiceSection() {
       <div className="w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-10 w-full pb-10">
           <motion.p
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -193,6 +194,7 @@ export default function ServiceSection() {
               order should read tag -> title -> description, i.e. natural DOM order. */}
           <div className="flex w-full flex-col-reverse items-start justify-between gap-8 max-md:flex-col max-md:gap-10 md:flex-row md:items-center">
             <motion.h2
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -209,6 +211,7 @@ export default function ServiceSection() {
               </span>
             </motion.h2>
             <motion.p
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}

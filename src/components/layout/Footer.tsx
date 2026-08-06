@@ -165,6 +165,7 @@ export default function Footer() {
             {footerLinkGroups.map(({ title, links }, groupIndex) => (
               <motion.div
                 key={title}
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
@@ -197,6 +198,7 @@ export default function Footer() {
           </div>
 
           <motion.div
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -308,6 +310,7 @@ export default function Footer() {
 
         <div className="flex flex-col gap-16 pt-12 max-md:contents md:gap-24">
           <motion.div
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -366,6 +369,7 @@ export default function Footer() {
           </motion.div>
 
           <motion.div
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

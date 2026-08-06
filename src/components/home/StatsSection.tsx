@@ -117,7 +117,7 @@ export default function StatsSection() {
                 // mobile-only by construction: `md:py-10` below re-asserts 40px
                 // from 768px up, so this base value governs only under md
                 "py-6",
-                "will-change-transform",
+                "md:will-change-transform",
                 "md:flex-row",
                 "md:items-center",
                 "md:px-10",
