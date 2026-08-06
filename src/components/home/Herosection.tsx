@@ -93,15 +93,29 @@ export default function Herosection({}: any) {
 
   return (
     <div className="relative min-h-[96svh] rounded-[20px] overflow-hidden bg-zinc-950 lg:min-h-[96.5vh]">
-      <video
-        ref={mainVideoRef}
-        src="/assets/video7.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl"
-      />
+      {/* The blur is applied to a QUARTER-SIZE surface and then scaled back up
+          rather than to the full-screen element. Gaussian sigma scales with the
+          transform, so 6px x 4.4 is exactly the previous 24px x 1.1 on screen —
+          but the GPU now blurs ~1/16 the pixels with a 4x smaller kernel, and it
+          was doing that on every decoded frame of an autoplaying video.
+          Baking the blur into the asset was the obvious alternative and does not
+          work: `object-cover` means one source pixel covers a different number
+          of CSS pixels per viewport, so the sigma the file would need ranges
+          16-20.5 and desktop would come out ~28% over-blurred.
+          left/top -5% reproduce what `scale-110`'s centre origin did: a centred
+          110% scale puts the top-left at -5% of the box, and percentage
+          left/top resolve against that same box. */}
+      <div className="absolute inset-0 overflow-hidden">
+        <video
+          ref={mainVideoRef}
+          src="/assets/video7.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4] object-cover blur-[6px]"
+        />
+      </div>
 
       <Header />
 

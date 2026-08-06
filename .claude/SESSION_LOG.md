@@ -10861,3 +10861,129 @@ hit the <=20% budget: step 1 is one ffmpeg call whose only real content is
 choosing the ladder, step 2 is ~15 lines in one file that must preserve an
 existing cleanup contract. User approved. No workers dispatched, so no
 spec-verifier gate (T1 restraint).
+
+## Mobile perf - profiled DEV vs PRODUCTION (headline finding)
+
+### The number that explains it
+Same page, same viewport (390px), measured via Resource Timing:
+
+| | dev `next dev` :3000 | prod `next start` :3100 |
+|---|---|---|
+| **JS** | **21.22 MB** | **0.96 MB** |
+| total | 24.78 MB | 4.45 MB |
+| requests | 38 | 20 |
+
+**Production JS is 22x smaller.** The dev bloat is entirely react-icons barrel
+imports: `/si` 6,309 KB, `/md` 4,525 KB, `/ri` 3,220 KB, `/fa` 1,930 KB =
+**15,991 KB** for **43 distinct icons** actually used. Turbopack dev does not
+tree-shake barrels; the production build already does.
+
+If the phone is pointed at `next dev` over LAN, that is 21 MB of unminified JS
+to download, parse and execute — which is exactly "very slow, heats up, laggy in
+every animation". Nothing in the app code causes it.
+
+### Two fixes attempted and REVERTED because they measurably did nothing
+1. `experimental.optimizePackageImports` for react-icons/tabler/lucide.
+   After: dev JS still **21.22 MB**, icon chunks still **15,991 KB**, still
+   named `node_modules_react-icons_si_index_mjs_*` (whole barrel). Production
+   bundle byte-identical: **4323 KB with and without**. Complete no-op under
+   Turbopack — reverted rather than left as dead config.
+2. `preload="none"` on PortfolioSection's video. After: element still reported
+   `preload: "metadata"`, `readyState: 4`, **1,898 KB still fetched**. Per spec
+   `autoPlay` overrides `preload`, so the attribute cannot work there —
+   reverted.
+
+### Production runtime is actually healthy
+1620 DOM nodes, 4 animations (2 running), **zero** rendered backdrop-filters,
+0.96 MB JS. This does not look like a laggy page.
+
+### Real remaining production costs, measured, NOT changed
+- Hero `filter: blur(24px)` full-screen over the autoplaying video —
+  `rendered: true`, continuous GPU work per decoded frame. Still the largest
+  single cost. Removing it needs the blur baked into the asset, which I cannot
+  verify visually in this pane (it does not composite) and the task says the UI
+  must stay identical. Needs a go-ahead.
+- `video3.mp4` **1,898 KB** downloads and decodes on load for a panel that is
+  thousands of px below the fold. `preload` cannot fix it (see above); the real
+  fix is to mount the `<video>` only when the panel nears the viewport, which
+  means new IO state inside PortfolioSection's already-delicate mobile autoplay
+  logic. Deliberately not done unprompted.
+- `blur(64px)` decorative blob in AboutSection and a `drop-shadow(0 10px 40px)`
+  on the footer wordmark — one-time paints, minor.
+
+### Net diff from this task: NONE
+Both experiments were reverted after measurement. The deliverable is the
+dev-vs-prod evidence, not a code change.
+
+## Hero blur: blur a quarter-size surface instead of the full screen
+
+User confirmed they test a DEPLOYED build, so production is what they feel -
+the dev-vs-prod finding in the previous entry is NOT the explanation for them.
+
+### Why the asset was NOT pre-blurred (the approved approach, rejected on evidence)
+`object-cover` means one source pixel covers a different number of CSS pixels at
+every viewport, so the sigma a baked file would need is not constant:
+
+| viewport | cover scale | sigma the asset would need |
+|---|---|---|
+| 390x844 | 1.172 | 20.5 |
+| 393x852 | 1.183 | 20.3 |
+| 768x1024 | 1.422 | 16.9 |
+| 1266x900 | 1.250 | 19.2 |
+| 1920x1080 | 1.500 | 16.0 |
+
+A 28% spread. Tuning for the phone would leave desktop ~28% over-blurred, which
+breaks the standing "never change desktop" rule.
+
+### What was done instead
+Blur a QUARTER-SIZE surface and scale it back up. Gaussian sigma scales with the
+transform, so `blur(6px) x scale(4.4)` is EXACTLY the previous
+`blur(24px) x scale(1.1)` = 26.4 on screen, at every viewport, with no asset
+change and instant revert.
+
+`<video class="absolute inset-0 w-full h-full object-cover scale-110 blur-xl">`
+becomes a wrapper `absolute inset-0 overflow-hidden` around
+`absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4]
+object-cover blur-[6px]`. left/top -5% reproduce what the centred `scale-110`
+did (a centred 110% scale puts the top-left at -5% of the box). The 25% box has
+the same aspect ratio as the parent, so `object-cover` crops identically.
+
+### Verified in PRODUCTION (`next start`), both breakpoints
+| | 390x844 | 1266x900 |
+|---|---|---|
+| effective on-screen sigma | **26.4** | **26.4** |
+| previous sigma | 26.4 | 26.4 |
+| `sigmaMatchesExactly` | **true** | **true** |
+| painted box | 403x891 | 1349x955 |
+| expected painted box | 403x891 | 1349x955 |
+| `coversHero` | true | true |
+| pixels blurred per frame | **18,554** (was 296,871) | **66,571** (was 1,065,128) |
+| reduction | 16x | **16x** |
+
+So: 16x fewer pixels blurred, each with a 4x smaller kernel, on every decoded
+frame of an autoplaying video. Painted geometry is byte-identical to before.
+
+### A measurement error I made and corrected
+`pkill -f "next start"` does not match the Next process on Windows. Three
+"production" restarts silently failed with EADDRINUSE (found in the log only
+after the served HTML kept showing old classes) while the ORIGINAL server kept
+answering curl with 200. Every prod measurement between the first one and this
+fix was therefore against a stale build. Killed PID 19092 via `Stop-Process`
+and re-measured; the numbers above are from a confirmed-fresh server
+(`curl | grep scale-[4.4]` returns a hit before measuring).
+
+Consequence: the earlier claim that `preload="none"` on PortfolioSection's video
+"measurably did nothing" was based on that stale server and is NOT evidence. The
+spec reasoning still holds (`autoplay` forces the browser to load regardless of
+`preload`), but it was not actually verified. It remains reverted and untested.
+
+### Net diff: 1 file, Herosection.tsx (+23/-9)
+`bunx tsc --noEmit` clean; `bunx next build` compiled; biome unchanged (2
+pre-existing on line 13). optimizePackageImports and preload="none" both
+confirmed still reverted (0 refs each).
+
+### Still open
+- `video3.mp4` 1,898 KB downloads and decodes on load for a below-the-fold
+  panel. Real fix is mounting the `<video>` only when the panel nears the
+  viewport.
+- `public/assets` ~58 MB, 8 images over 1.5 MB.
