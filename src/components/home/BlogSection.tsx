@@ -12,13 +12,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
-import { useMarqueeHalf } from "@/components/ui/LogoCarousel";
 import { NO_ENTRY, useIsDesktop, useIsMobile } from "@/lib/useIsDesktop";
+import { tweenScrollLeft } from "@/lib/tweenScrollLeft";
 
 const SCROLL_SECONDS = 22;
-// One full pass of a copy on mobile. Longer than the desktop pass because the
-// mobile cards are much wider relative to the viewport.
-const MOBILE_SCROLL_SECONDS = 30;
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -76,6 +73,31 @@ const blogPosts = [
 
 const rotatingWords = ["Perspectives", "Insights", "Ideas", "Stories"];
 
+// Desktop-only marquee driver. `useAnimationFrame` cannot be called
+// conditionally, and calling it unconditionally keeps framer's global frame
+// loop alive at display refresh rate even on mobile, where the callback body
+// just early-returned — a permanent per-frame tax on the breakpoint that
+// doesn't use it. As a child that only mounts on desktop, mobile never
+// registers it. Renders nothing, so conditional mounting cannot desync SSR.
+function DesktopAutoScroll({
+  x,
+  loopWidth,
+  trackInView,
+  dragging,
+}: {
+  x: ReturnType<typeof useMotionValue<number>>;
+  loopWidth: number;
+  trackInView: boolean;
+  dragging: React.RefObject<boolean>;
+}) {
+  useAnimationFrame((_, delta) => {
+    if (!trackInView || dragging.current || !loopWidth) return;
+    const step = (loopWidth / SCROLL_SECONDS) * (delta / 1000);
+    x.set(wrap(-loopWidth, 0, x.get() - step));
+  });
+  return null;
+}
+
 export default function BlogSection() {
   const isDesktop = useIsDesktop();
   // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
@@ -89,11 +111,15 @@ export default function BlogSection() {
   const lastPointerX = useRef(0);
 
   useEffect(() => {
+    // Mobile renders rotatingWords[0] statically (the AnimatePresence branch is
+    // isDesktop-only), so ticking `index` there only re-rendered the section
+    // every 6s for nothing.
+    if (!isDesktop) return;
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % rotatingWords.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isDesktop]);
 
   useEffect(() => {
     const el = trackRef.current;
@@ -117,22 +143,14 @@ export default function BlogSection() {
 
   const trackInView = useInView(trackRef, { margin: "200px" });
 
-  // Mobile only: the same compositor marquee + timeline-scrub drag used by the
-  // testimonials. Desktop keeps its framer `x` loop and pointer handlers, which
-  // are all gated on `isDesktop`, so the two never both drive the transform.
-  // autoplay=false: below md the track no longer drifts on its own, it only
-  // moves when an arrow is pressed (and while dragging). The animation still
-  // exists, paused — `step()` and the drag both work off its `currentTime`.
-  const stepTrack = useMarqueeHalf(
-    trackRef,
-    MOBILE_SCROLL_SECONDS,
-    !isDesktop,
-    true,
-    false,
-  );
+  // Below md this is a NATIVE scroll-snap carousel — same mechanics as
+  // PortfolioSection, the one carousel that stayed smooth on device. JS
+  // pointermove dragging pays main-thread latency; native scrolling runs on
+  // the compositor thread and cannot be blocked by script. Desktop keeps its
+  // framer `x` marquee untouched; the second CardTrack copy (needed only for
+  // the desktop wrap) is CSS-hidden below md.
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
-  // One card + its right margin. Measured rather than derived from 80vw so the
-  // arrows stay correct if the card width or gutter changes.
   const cardStride = () => {
     const card = trackRef.current?.firstElementChild
       ?.firstElementChild as HTMLElement | null;
@@ -142,16 +160,25 @@ export default function BlogSection() {
     return card.offsetWidth + marginRight;
   };
 
-  // The track's own transform runs -50% -> 0, i.e. content drifts right, so
-  // "next" (reveal the following card) is a NEGATIVE x step.
-  const goNext = () => stepTrack(-cardStride());
-  const goPrev = () => stepTrack(cardStride());
-
-  useAnimationFrame((_, delta) => {
-    if (!trackInView || !isDesktop || dragging.current || !loopWidth) return;
-    const step = (loopWidth / SCROLL_SECONDS) * (delta / 1000);
-    x.set(wrap(-loopWidth, 0, x.get() - step));
-  });
+  // Arrows tween the scroller (snap-safe), wrapping at the ends.
+  const goNext = () => {
+    const el = scrollerRef.current;
+    const stride = cardStride();
+    if (!el || !stride) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const target =
+      el.scrollLeft >= max - 8 ? 0 : Math.min(el.scrollLeft + stride, max);
+    tweenScrollLeft(el, target);
+  };
+  const goPrev = () => {
+    const el = scrollerRef.current;
+    const stride = cardStride();
+    if (!el || !stride) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const target =
+      el.scrollLeft <= 8 ? max : Math.max(el.scrollLeft - stride, 0);
+    tweenScrollLeft(el, target);
+  };
 
   const isPanning = useRef(false);
   const startPointerX = useRef(0);
@@ -188,16 +215,16 @@ export default function BlogSection() {
     }
   };
 
-  const CardTrack = () => (
+  const CardTrack = ({ className = "" }: { className?: string }) => (
     // max-md:gap-0 + per-card max-md:mr-4 instead of a flex gap: with a gap, N
     // cards have only N-1 gaps, so -50% of a two-copy track is one gap short of
     // exactly one copy and the loop drifts each cycle. Folding the spacing into
     // every card makes width = 2N*(card+gap), so -50% lands on the duplicate.
-    <div className="flex shrink-0 gap-4 md:gap-3 max-md:gap-0">
+    <div className={`flex shrink-0 gap-4 md:gap-3 max-md:gap-0 ${className}`}>
       {blogPosts.map((post) => (
         <div
           key={post.id}
-          className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw] max-md:mr-4 max-md:w-[80vw]"
+          className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw] max-md:mr-4 max-md:w-[80vw] max-md:snap-start"
         >
           <Link href={post.href} draggable={false} className="block h-full">
             <article className="group flex h-full flex-col max-md:rounded-2xl max-md:border max-md:border-black/10 max-md:bg-white max-md:p-2.5 max-md:pb-6 max-md:shadow-sm">
@@ -238,6 +265,14 @@ export default function BlogSection() {
 
   return (
     <section className="w-full overflow-hidden bg-white text-black pb-10 max-md:pb-16 md:pb-32">
+      {isDesktop && (
+        <DesktopAutoScroll
+          x={x}
+          loopWidth={loopWidth}
+          trackInView={trackInView}
+          dragging={dragging}
+        />
+      )}
       <div className="mx-auto w-full ">
         <div className="mb-12 w-full px-4 max-md:mb-8 max-md:px-3 md:mb-20 md:px-10">
           <motion.p
@@ -378,7 +413,10 @@ export default function BlogSection() {
             adjacent-sibling margins COLLAPSE — a margin-top of 24px was
             swallowed whole by that 32px margin-bottom and moved nothing.
             Padding never collapses, so this reliably adds to the 32px. */}
-        <div className="relative w-full overflow-x-clip max-md:pt-6 max-md:px-3">
+        <div
+          ref={scrollerRef}
+          className="no-scrollbar relative w-full overflow-x-clip max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain max-md:scroll-pl-3 max-md:pt-6 max-md:px-3"
+        >
           <motion.div
             ref={trackRef}
             className="flex w-max flex-nowrap gap-4 md:gap-3 max-md:gap-0 md:cursor-grab md:select-none md:active:cursor-grabbing"
@@ -392,7 +430,7 @@ export default function BlogSection() {
             {/* Two copies at every breakpoint now: desktop wraps by loopWidth,
                 mobile needs them so the -50% marquee seam is invisible. */}
             <CardTrack />
-            <CardTrack />
+            <CardTrack className="max-md:hidden" />
           </motion.div>
         </div>
       </div>

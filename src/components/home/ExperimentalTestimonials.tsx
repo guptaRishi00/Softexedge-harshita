@@ -4,9 +4,9 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
-import { useMarqueeHalf } from "@/components/ui/LogoCarousel";
 import TestimonialsRotatingWord from "./TestimonialsRotatingWord";
 import { NO_ENTRY, useIsDesktop, useIsMobile } from "@/lib/useIsDesktop";
+import { tweenScrollLeft } from "@/lib/tweenScrollLeft";
 
 const testimonials = [
   {
@@ -48,13 +48,14 @@ export default function ExperimentalTestimonials() {
   // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
   const isMobile = useIsMobile();
   const trackRef = useRef<HTMLDivElement>(null);
-  // autoplay=false: below md the track holds still and only moves on an arrow
-  // press (and while dragging). The animation still exists, paused — `step()`
-  // and the drag both work off its `currentTime`.
-  const stepTrack = useMarqueeHalf(trackRef, 40, !isDesktop, true, false);
+  // Below md this is a NATIVE scroll-snap carousel — the same mechanics as
+  // PortfolioSection, which is the one carousel that stayed smooth on device.
+  // JS pointermove dragging runs on the main thread and pays its latency;
+  // native scrolling runs on the compositor thread and cannot be blocked by
+  // script. The second copy of the list is CSS-hidden below md (the -50% wrap
+  // needed it; a finite scroller does not).
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
-  // One card + its right margin. Measured rather than derived from w-[300px] so
-  // the arrows stay correct across the sm/md card widths.
   const cardStride = () => {
     const card = trackRef.current?.firstElementChild as HTMLElement | null;
     if (!card) return 0;
@@ -63,10 +64,25 @@ export default function ExperimentalTestimonials() {
     return card.offsetWidth + marginRight;
   };
 
-  // The track animates -50% -> 0, i.e. content drifts right, so "next" is a
-  // NEGATIVE x step — same as BlogSection.
-  const goNext = () => stepTrack(-cardStride());
-  const goPrev = () => stepTrack(cardStride());
+  // Arrows tween the scroller (snap-safe), wrapping at the ends.
+  const goNext = () => {
+    const el = scrollerRef.current;
+    const stride = cardStride();
+    if (!el || !stride) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const target =
+      el.scrollLeft >= max - 8 ? 0 : Math.min(el.scrollLeft + stride, max);
+    tweenScrollLeft(el, target);
+  };
+  const goPrev = () => {
+    const el = scrollerRef.current;
+    const stride = cardStride();
+    if (!el || !stride) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const target =
+      el.scrollLeft <= 8 ? max : Math.max(el.scrollLeft - stride, 0);
+    tweenScrollLeft(el, target);
+  };
   const [active, setActive] = useState(0);
   const [step, setStep] = useState(452);
 
@@ -244,7 +260,10 @@ export default function ExperimentalTestimonials() {
             grown by BOTH paddings to match — `w-full` alone resolves to the
             wrapper's content box (100% - 24px), so a negative margin shifts it
             left but leaves 24px of dead space on the right. */}
-        <div className="relative mt-10 lg:mt-0 -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1 max-md:-mx-3 max-md:h-auto max-md:w-[calc(100%+1.5rem)] max-md:pl-11">
+        <div
+          ref={scrollerRef}
+          className="no-scrollbar relative mt-10 lg:mt-0 -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1 max-md:-mx-3 max-md:h-auto max-md:w-[calc(100%+1.5rem)] max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain"
+        >
           <motion.div
             // Desktop paginates by arrows (-active * step). Mobile has no arrows,
             // so it self-scrolls: the track holds exactly two copies of the list,
@@ -261,12 +280,14 @@ export default function ExperimentalTestimonials() {
             // short of exactly one copy and the loop jumps each cycle. Folding the
             // spacing into each card makes width = 2N*(card+gap), so -50% lands
             // precisely on the duplicate.
-            className="flex w-max flex-row gap-4 px-4 md:gap-3 max-md:gap-0 max-md:px-0"
+            className="flex w-max flex-row gap-4 px-4 md:gap-3 max-md:gap-0 max-md:px-11"
           >
             {duplicatedTestimonials.map((item, i) => (
               <div
                 key={`${item.name}-${i}`}
-                className="group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors max-md:mr-4 max-md:w-[calc(100vw-5.5rem)] max-md:px-5 md:min-h-[440px] md:w-[440px] md:py-10"
+                className={`group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors max-md:mr-4 max-md:w-[calc(100vw-5.5rem)] max-md:snap-center max-md:px-5 md:min-h-[440px] md:w-[440px] md:py-10 ${
+                  i >= testimonials.length ? "max-md:hidden" : ""
+                }`}
               >
                 <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
                   <svg

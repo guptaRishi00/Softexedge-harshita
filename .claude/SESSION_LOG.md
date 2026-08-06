@@ -11113,3 +11113,145 @@ of "everything feels laggy" on a phone.
 `bunx tsc --noEmit` clean; `bunx next build` compiled; biome unchanged
 (1 pre-existing `noArrayIndexKey` in StatsSection, 0 in page.tsx).
 Net diff: 2 source files (+3/-3) and one re-encoded asset.
+
+## Mobile drag lag - the paused-marquee layer regression
+
+### A theory disproven before any edit
+Suspected the classic inline-component footgun: `CardTrack` is defined inside
+BlogSection, so every 6s `setIndex` re-render should change its identity and
+remount all 8 cards. Tested empirically in prod (branded the live DOM node,
+waited past a tick): **node identity survived** - `reactCompiler: true`
+auto-memoizes the inner component. No remount. Theory dropped, not fixed.
+
+### The real mechanism (and it was MY regression)
+When blog/testimonials went arrows-only, their WAAPI marquees became permanently
+**paused** - and a paused animation drops off the compositor. Measured at rest:
+both draggable tracks `willChange: auto`, animation `paused`, sizes 2627x453 and
+2547x360. So the ~2600px track had NO layer at rest, and every pointerdown
+re-rasterised it synchronously under the finger; the hook then cleared
+`will-change` on release, guaranteeing the same stall on the NEXT drag. When the
+marquee autoplayed (before the arrows change), the running animation kept the
+layer alive - which is why drag used to feel better.
+
+### Changes
+1. `useMarqueeHalf` (LogoCarousel.tsx): draggable tracks are promoted
+   STATICALLY for the hook's lifetime (`el.style.willChange = "transform"` at
+   drag-section setup); removed all four per-drag/per-step set/clear writes.
+   Cleanup still resets it. Non-draggable path (LogoLoop) untouched.
+   Rasterisation is tiled, so the resident cost is visible tiles, not the whole
+   strip.
+2. BlogSection rotating-word interval gated to desktop - mobile renders
+   `rotatingWords[0]` statically, so the tick only re-rendered the section every
+   6s for nothing.
+3. BlogSection `useAnimationFrame` moved into a `DesktopAutoScroll` child that
+   mounts only when `isDesktop` - the unconditional hook kept framer's global
+   frame loop alive at display refresh rate on mobile for a body that
+   early-returned. The child renders null, so conditional mounting cannot
+   desync SSR.
+
+### Verified in PRODUCTION
+- @390: both draggable tracks now `willChange: transform` at rest with anims
+  `paused`; arrows still step exactly (blog -328, testimonials -318, wrapped);
+  promotion survives a step (`willChangeAfterStep: "transform"`).
+  LogoLoop/TechLogoCarousel running as before.
+- @1266: tracks back to `willChange: auto` (hook disabled there), 0 WAAPI anims,
+  and the track carries a framer-written `translateX(-1314px)` - proof
+  DesktopAutoScroll mounted and IS driving the desktop marquee post-refactor.
+  Desktop rotating word still animated.
+- `bunx tsc --noEmit` clean; build compiled; biome count unchanged at 1
+  (the pre-existing useExhaustiveDependencies, moved 98 -> 127 by added lines).
+
+### Why this wasn't caught earlier + the standing caveat
+Every pass so far attacked continuous costs (blur, video decode, layers, frame
+loops); drag START cost only exists at the moment of pointerdown and cannot be
+felt in a pane whose rAF is frozen. Same limitation still holds - no FPS/thermal
+measurement here, claims are mechanism-level. ALSO worth saying: all fixes are
+in the PRODUCTION build (`next start`); if the phone is testing `bun run dev`,
+dev-mode overhead will mask every one of these wins.
+
+## "Still laggy" - the phone is testing the wrong server
+
+No code change this round; the finding is about what is being measured.
+
+- Two servers are live, both bound 0.0.0.0: **:3000 = `npm run dev`** (what the
+  session previews used all along, and almost certainly what the phone opens)
+  and **:3100 = `next start`** on the current build (where every perf fix was
+  verified).
+- Yesterday's commit (aa85e00, pushed) predates today's drag fixes -
+  BlogSection/LogoCarousel changes are uncommitted, so any DEPLOYED url has
+  none of them either.
+- Measured the difference in-pane at 390px, same route:
+
+  | server | scripts | total JS |
+  |---|---|---|
+  | dev :3000 | 29 | **21,735 KB** |
+  | prod :3100 | 11 | **987 KB** |
+
+  **22x more JavaScript in dev.** On this desktop-class machine the scroll-step
+  cost is equal (1.44 vs 1.53 ms - parse is done, machine is fast), but a phone
+  must download, parse and run those 21.7 MB with the React dev runtime's
+  checks on every interaction - drag included. No optimisation can make dev
+  mode feel smooth on a phone.
+- Prod verified reachable on the LAN at **http://192.168.29.24:3100/home**
+  (200, 311 KB HTML) and serving the fixed build (6x md:will-change-transform
+  markers). No firewall block rule on node; :3000 works from the phone via the
+  identical binding, so :3100 should too.
+- ACTION FOR USER: open http://192.168.29.24:3100/home on the phone and judge
+  smoothness THERE. If that is smooth, the site is fixed and the remaining gap
+  was dev mode. If it is still laggy on :3100, that is a real signal worth the
+  next investigation round.
+
+## Blog + Testimonials carousels -> native scroll-snap (mobile)
+
+### The decision
+User narrowed the complaint to exactly the two carousels still driven by JS
+pointer events; PortfolioSection - native scroll-snap - was implicitly certified
+smooth. JS pointermove dragging pays main-thread latency by construction (events
+delivered on the main thread, transform written a frame later, blocked by any
+script); native scrolling runs on the compositor thread and cannot be blocked.
+After three rounds of micro-optimising the JS path, the correct fix was to stop
+using it: both carousels now use Portfolio's mechanics below md.
+
+### Changes
+- NEW `src/lib/tweenScrollLeft.ts`: Portfolio's proven snap-safe arrow tween
+  (programmatic smooth scroll is unreliable against `snap-mandatory`; disable
+  snap for the tween, restore to land).
+- `ExperimentalTestimonials.tsx` / `BlogSection.tsx` below md:
+  * wrapper -> `max-md:overflow-x-auto max-md:snap-x max-md:snap-mandatory
+    max-md:overscroll-x-contain no-scrollbar` (blog keeps `scroll-pl-3`;
+    testimonials cards `snap-center`, track `px-11` so edge cards can centre;
+    blog cards `snap-start`)
+  * `useMarqueeHalf` calls REMOVED (no WAAPI, no JS drag, no step machinery);
+    arrows now tween the scroller with wrap-at-ends
+  * the second list copy - which existed only for the -50% wrap - is CSS-hidden
+    below md (`max-md:hidden`), so SSR markup is identical at both breakpoints
+- Hook itself untouched; its one remaining consumer is LogoLoop
+  (TechLogoCarousel wraps LogoCarousel's default export).
+- BEHAVIOUR CHANGE, disclosed: mobile drag is now FINITE (4 cards, ends stop)
+  instead of infinitely wrapping. Arrows wrap: next at the last card returns to
+  the start. Visuals at rest are identical.
+
+### Verified in PRODUCTION @390
+- Both scrollers: `snap-type: x mandatory`, `overscroll: contain`, overflow-x
+  auto. Testimonials: 4/8 cards visible (copy hidden), `snap-center`,
+  scrollWidth 1362 vs 390. Blog: track copies `[flex, none]`, 4/8 card wrappers
+  visible, `snap-start`, scroll-padding 12px, stride 328.
+- Arrows under an rAF shim (pane rAF is frozen): blog 0 -> 328 -> 0,
+  testimonials 0 -> 318.4 -> 0; inline snap-type restored after each tween.
+- First blog probe misread: cards inside a `display:none` parent report their
+  own display, and the snap class sits on the wrapper div, not the <a>. Re-read
+  against the right nodes before concluding.
+
+### Verified @1266 (desktop)
+- Blog: NO scroller (overflow stays clip), both copies visible, framer marquee
+  transform present (`translateX(-1314px)`).
+- Testimonials: 8 cards visible. Pagination click produced no transform IN THE
+  PANE - framer captured the real rAF at module load, so even a shim installed
+  afterwards cannot drive it; this pane cannot exercise framer animations at
+  all. Fallback evidence: `git diff` contains none of `animate=` / `paginate` /
+  `active * step` / `setActive` / `setStep` - the desktop path is byte-identical.
+- `bunx tsc --noEmit` clean; build compiled; biome: only the pre-existing
+  BlogSection useExhaustiveDependencies.
+
+Prod server rebuilt and bound 0.0.0.0:3100 - phone test URL unchanged:
+http://192.168.29.24:3100/home

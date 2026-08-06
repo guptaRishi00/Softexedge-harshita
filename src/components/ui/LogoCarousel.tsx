@@ -83,6 +83,14 @@ export const useMarqueeHalf = (
     // plain transform write on a will-change'd element stays composited.
     // Position maps to time linearly (x = half * (t/period - 1)), so the drag
     // can hand a resume time back to a fresh animation.
+    // The track stays promoted for the hook's whole lifetime. With autoplay
+    // off the WAAPI animation sits paused, and a PAUSED animation drops off
+    // the compositor — so without this the ~2600px track had no layer at rest
+    // and every pointerdown re-rasterised it from scratch, synchronously,
+    // under the finger. That stall was the "laggy drag". Rasterisation is
+    // tiled, so the resident cost is the visible tiles, not the full strip.
+    el.style.willChange = "transform";
+
     let dragging = false;
     let startPointerX = 0;
     let originX = 0;
@@ -114,7 +122,6 @@ export const useMarqueeHalf = (
       startPointerX = event.clientX;
       animation.cancel();
       animation = null;
-      el.style.willChange = "transform";
       el.style.transform = `translate3d(${currentX}px, 0, 0)`;
       // Pointer capture is a nicety, not load-bearing: it throws NotFoundError
       // if the pointer is already gone. Letting that escape would abort the
@@ -163,7 +170,6 @@ export const useMarqueeHalf = (
         ((((currentX / half + 1) * period) % period) + period) % period;
       animation = create(resumeAt);
       el.style.transform = "";
-      el.style.willChange = "";
     };
 
     // One arrow press. Same three moves as a drag — cancel the animation,
@@ -178,7 +184,6 @@ export const useMarqueeHalf = (
       originX = half * (Number(animation.currentTime ?? 0) / period - 1);
       animation.cancel();
       animation = null;
-      el.style.willChange = "transform";
       el.style.transition = "";
       el.style.transform = `translate3d(${originX}px, 0, 0)`;
       // Flush the start position, otherwise the transition below has nothing
@@ -200,7 +205,6 @@ export const useMarqueeHalf = (
         el.style.transition = "";
         animation = create(resumeAt);
         el.style.transform = "";
-        el.style.willChange = "";
       }, STEP_MS);
     };
     stepRef.current = step;
