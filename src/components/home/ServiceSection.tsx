@@ -242,9 +242,7 @@ export default function ServiceSection() {
                   className={cn(
                     "relative h-[50px] shrink-0 overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
                     "w-0 group-hover:mr-4 group-hover:w-[80px] group-hover:opacity-100 md:group-hover:mr-8 md:group-hover:w-[150px]",
-                    // No thumbnail below md: it is a hover reveal, and touch has
-                    // no hover, so the list shows titles only — desktop's
-                    // resting state.
+
                     "max-md:hidden",
                   )}
                 >
@@ -269,17 +267,9 @@ export default function ServiceSection() {
                 </h3>
               </div>
 
-              {/* Touch has no hover, so the "View Services" cursor that signals
-                  the affordance on desktop never appears. This chip carries the
-                  signal instead, pinned to exactly what OpenPositions shows in
-                  its hovered/active state: dark round container, gradient arrow.
-                  `pointer-events-none` so taps still reach the row's anchor, and
-                  the row reserves pr-11 below md to keep titles clear of it —
-                  `right-0` resolves against the padding box, so the chip stays
-                  flush right regardless of that gutter. */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute right-0 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full bg-[#1a1a1a] md:hidden"
+                className="pointer-events-none absolute right-0 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border border-[#2a2a2a] bg-[#080808] md:hidden"
               >
                 <svg width="0" height="0" className="absolute">
                   <title>Service arrow gradient</title>
@@ -296,7 +286,6 @@ export default function ServiceSection() {
                     </linearGradient>
                   </defs>
                 </svg>
-
                 <MdArrowOutward
                   className="h-4 w-4"
                   style={{ fill: `url(#service-arrow-grad-${index})` }}

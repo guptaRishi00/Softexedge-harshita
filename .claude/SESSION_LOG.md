@@ -11255,3 +11255,191 @@ using it: both carousels now use Portfolio's mechanics below md.
 
 Prod server rebuilt and bound 0.0.0.0:3100 - phone test URL unchanged:
 http://192.168.29.24:3100/home
+
+## AboutSection - "founders" word gap (mobile)
+
+- Cause: RotatingWord's GRADIENT span carries `px-2` so the DESKTOP slide
+  animation's glyphs clear the wrapper's overflow-hidden. On mobile the word is
+  static, so the uncancelled 8px of left padding stacked on the h1's 10px flex
+  gap: "founders" sat 18px from "for" while every other pair sat at 10px.
+- Fix: `max-md:-mx-2` appended to the GRADIENT const. Below md only the static
+  branch ever renders (isDesktop is false there), so the animated version cannot
+  be affected by construction.
+- Probe correction en route: `rot.querySelector('span span')` matched the
+  WRAPPER (its motion.span ancestor is also a span - descendant selectors look
+  at ancestry, not :scope), which reported a nonsense -14. Re-measured against
+  the `bg-clip-text` span and with a Range over the text node.
+- Verified @390 in production: normal pairs 10px; founders gap now **10.0** by
+  both padding math and text-node range (was 18). Gradient margin -8, padding 8.
+- Verified @1266: margins back to **0px** (max-md not matched), padding 8px,
+  word inside the framer motion.span - desktop untouched.
+- tsc clean, build compiled, biome 0 diagnostics on the file.
+
+## About + Testimonials CTAs - bigger on mobile
+
+- Both CTAs, one step toward the desktop scale: `max-md:h-14` override REMOVED
+  (base `h-16` now governs mobile: 56 -> 64px), label `max-md:text-base`
+  removed (base `text-lg`: 16 -> 18px), arrow box `max-md:h-9 w-9` ->
+  `max-md:h-10 w-10` (36 -> 40px), gap `max-md:gap-3` -> `gap-4`, pr `2.5 -> 3`.
+- BlogSection's CTA deliberately untouched - only the two named sections; its
+  mobile CTA is `max-md:hidden` anyway (replaced by arrows earlier).
+- Verified @390 in prod: both 64px / 18px label / 40x40 arrow / 16px gap, and
+  the label is still flush with the copy above (`labelStillAlignedWithCopy:
+  true` - the pl-0 alignment from the earlier task survives).
+- Verified @1265: all three CTAs identical at 64px / 18px / 44x44 / gap 20 /
+  pl 0 / pr 10 / border 1px - desktop untouched (these were base values, so
+  removing max-md overrides cannot move them).
+- tsc clean, build compiled, biome unchanged (About 1 pre-existing
+  noArrayIndexKey, Testimonials 0).
+
+## ServiceSection - arrow chip recolour (mobile)
+
+- Chip: `bg-[#1a1a1a]` -> `border border-[#1a1a1a] bg-[#101010]` (border takes
+  the old bg colour; bg one tone darker than #1a1a1a, not black - the section
+  itself is #000, so #101010 still reads as gray against it). No breakpoint
+  prefix needed: the whole chip is `md:hidden`.
+- Verified @390 in prod: 8/8 chips, bg **#101010**, border **#1a1a1a** at 1px,
+  36x36, all identical; section bg rgb(0,0,0) confirms the chip is not black.
+- Verified @1265: chips rendered 8 / displayed **0** (md:hidden); row py 48px,
+  title 63.25px - desktop untouched.
+- tsc clean, build compiled, biome unchanged (2 pre-existing).
+
+## Blog + Testimonials - mobile arrows -> pagination dots
+
+- NEW `src/components/ui/CarouselDots.tsx`: dot pagination matching the
+  reference image and OurValuesSection's visual language (inactive `w-1.5
+  bg-zinc-300` dots, active `w-6` gradient pill #2E5BFF->#149CCB). A LEAF that
+  owns its passive scroll listener and active-index state, so swipes re-render
+  a few buttons, never the host section. Tap = `tweenScrollLeft` to
+  `max/(count-1) * i`; mandatory snap then self-corrects to the exact card
+  boundary (observed: tween aimed 631, snap landed 656 = exactly 2x328).
+- Both sections: mobile `md:hidden` arrow pairs REMOVED along with
+  goNext/goPrev/cardStride and the tweenScrollLeft imports; dots added centred
+  under each scroller (`md:hidden`). Blog also drops MdArrowBack/Forward from
+  its imports. Testimonials' `max-md:hidden` DESKTOP pair kept.
+- Latch bug caught IN REVIEW before shipping: the scroll listener's original
+  "one pending rAF" guard (`if (!frame.current)`) latches forever if a
+  scheduled rAF never fires - the async-flag failure mode this codebase already
+  hit twice. Replaced with cancel-and-rearm per event, which cannot latch and
+  still measures once per frame.
+- Verified @390 in prod: 0 visible arrow buttons anywhere; 4 dots per section,
+  centred, 1 gradient pill each, inactive bg-zinc-300. Tap dot 3 (blog):
+  scrolled 0 -> 657 (snap-corrected card 3), snap restored. Swipe
+  (testimonials, synthetic event): active dot -> 2. Blog's initially-stale dot
+  after tap was PANE event delivery, not code - native scroll events dispatch
+  in rendering steps, frozen here; a synthetic scroll event on the same
+  scroller updated it to 2 immediately. Real browsers deliver scroll events.
+- Verified @1266: dots rendered 8 / visible 0; desktop testimonial arrow pair
+  still the only visible pair; blog marquee transform present.
+- tsc clean, build compiled, biome: no new diagnostics.
+
+## Blog + Testimonials - dots moved into the old arrow slots
+
+- Refinement of the previous task ("in place of left right arrow button"): the
+  dots had been placed centred BELOW each carousel; they now occupy exactly
+  where the arrow pairs used to sit - Blog in the header row beside the title,
+  Testimonials under the CTA (`mt-10`). CarouselDots' base class dropped
+  `justify-center` (the slots are left-aligned; hosts can pass their own
+  justification).
+- Verified @390 in prod: both dot groups left-aligned with the section title
+  (dotsLeft 12 = titleLeft 12), above their carousels (blog 32px, testimonials
+  80px incl. the section gap), 4 dots + 1 active pill each, 0 visible arrow
+  buttons anywhere.
+- Verified @1266: dots visible 0; desktop testimonial arrows still the only
+  pair; blog CTA visible 219x64 - desktop untouched.
+- tsc clean, build compiled, biome unchanged (1 pre-existing in BlogSection).
+
+## Footer - last mobile animation removed (wordmark letters)
+
+- The four motion.div entrance blocks were already CSS-neutralised
+  (data-no-mobile-entry). One animation had escaped that sweep: the wordmark
+  letters use VARIANTS, not `initial={{opacity:0}}`, so the regex never tagged
+  them - below md they still sat at translateY(110%) inside the letterbox until
+  whileInView fired. Tagged the letter motion.span with data-no-mobile-entry.
+- LocalTime clocks left alone (time display, not animation); the parked hover
+  arrows left alone (resting design, not entrances).
+- Verified @390 in prod WITHOUT scrolling to the footer (whileInView cannot
+  have fired): all 10 letters at identity transform. Full-footer sweep: the
+  only non-identity elements are the 8 pinned hover-arrow svgs (plain half
+  parked 32/-32 or 24/-24, gradient half at 0) - intended resting state.
+- Verified @1266 at scroll 0: all 10 letters ARMED at the hidden pose
+  (sample `matrix(1,0,0,1,0,213)` = y 110% of the 194px glyph box) - the
+  desktop letter-rise animation is intact.
+- tsc clean, build compiled, biome at the file's baseline 2.
+
+## PortfolioSection - "Our Projects" title slide (both breakpoints)
+
+- SCOPE CALL, stated up front: the task said ServiceSection, but ServiceSection
+  has no slides (flat service-row list, heading already "Our Services"). The
+  homepage's slide carousel is PortfolioSection - the projects - so the title
+  slide went there.
+- New panel 0: typographic opener on the section's own #0a0a0a - "Portfolio"
+  tag, "Our Projects" with the house gradient on "Projects", and a dynamic
+  count line ("05 case studies ... scroll to explore",
+  `String(projects.length).padStart(2,"0")`). No image, no video, nothing
+  animating - the cheapest possible slide. Carries `project-panel` so the
+  desktop GSAP treats it as panel 0, which the reveal loop leaves static.
+- Integration fix that made it safe: the desktop snap hard-coded
+  `steps = projects.length - 1`; now `panelCount = track.children.length` is
+  read from the DOM (the title slide has no projects[] entry). Everything else
+  (totalWidth, autoplay proportion, mobile paging) already derived from
+  DOM/scroll metrics and adapted automatically.
+- Side effect, intended: the first PROJECT panel (now index 1) gains the same
+  slide-in reveal the later panels always had - the skip-first rule now
+  belongs to the static title card. Verified armed: 4 .reveal-item at opacity 0.
+- Verified @390 in prod: 6 panels; intro first, text-only, 390x591 (70svh),
+  snap-center, title 44px, gradient on "Projects", count line renders "05 ...",
+  vertically centred; all 5 project panels still have their media; track
+  scrollWidth 2342 = 6 pages.
+- Verified @1266: intro 1266x900 (w-screen h-screen), title 144px
+  (lg:text-[9rem]), track 7594 = 6 screens, pin-spacer height **8128 = 900 +
+  6328 + 900 exactly** - GSAP absorbed the extra panel; track snap none /
+  overflow visible (GSAP owns desktop motion).
+- tsc clean, build compiled, biome unchanged (2 pre-existing).
+
+## PortfolioSection - compositor card transition (mobile)
+
+### Cause
+The finger-drag is native scroll (smooth); the laggy "transition between the
+cards" was the AUTOPLAY slide - a rAF loop writing `track.scrollLeft` every
+frame for 600ms. scrollLeft can only be driven from the main thread, so the
+slide stuttered whenever anything else ran during its window.
+
+### Fix
+- New inner wrapper (`panelsRef`, `flex w-full flex-row md:contents`) around
+  all six panels. Below md it is the slide surface; on md `display: contents`
+  erases the box so GSAP keeps translating the track exactly as before.
+- `animateTo` now runs a CSS `transform` transition on that wrapper
+  (600ms, cubic-bezier(0.65,0,0.35,1) = the old easeInOutCubic), then COMMITS
+  the distance to scrollLeft in the same style flush that clears the transform
+  - an invisible swap. Snap disabled during, restored after, as before.
+- Commit hardening after an in-pane diagnostic: on COMPLETION commit the
+  slide's own intended distance (works even if the transition was throttled -
+  background tabs coalesce transitions but the intent is known); only an
+  INTERRUPTION (stopTween) measures the computed matrix mid-flight.
+- The old rAF-reclaim dance in advance() deleted - setTimeout always fires,
+  so `sliding` cannot wedge shut.
+- Desktop panelCount switched to `querySelectorAll(".project-panel")` - the
+  wrapper made `track.children.length` = 1.
+
+### Diagnostics worth keeping
+- This pane CANNOT run CSS transitions at all: computed transform stays at the
+  START value even past the transition's end (verified: inline transform with
+  no transition reads -390; with a 100ms transition it reads identity forever).
+  First commit version measured the matrix at timeout and therefore committed
+  0 in-pane; target-distance commit is immune and also strictly better in real
+  browsers.
+
+### Verified in PROD @390
+scrollLeft progression across five autoplay ticks:
+**0 -> 390 -> 780 -> 1170 -> 1560 -> 1952** (= track max, 2342-390), exactly
+one page per 4.5s tick; wrapper transform cleared and snap restored after
+every slide (samples show `translate3d(-390px)` + snap `none` DURING, cleared +
+default AFTER, every cycle).
+
+### Verified @1265
+wrapper `display: contents`, no inline styles; 6 panels found; track 7590 =
+6x1265; pin-spacer 8125 = 900+6325+900 (viewport-rounding of the earlier 8128);
+first project's reveal still armed at opacity 0. Desktop untouched.
+
+tsc clean, build compiled, biome at the file's 2 pre-existing diagnostics.

@@ -16,8 +16,13 @@ const EXIT = { duration: 1.5, ease: "easeInOut" } as const;
 // differs across the breakpoint, never the layout.
 const WRAPPER =
   "relative flex items-center justify-center overflow-hidden px-6 -mx-6 py-2 -my-2 [mask-image:linear-gradient(to_right,transparent_0,black_24px,black_calc(100%-24px),transparent_100%)]";
+// max-md:-mx-2 cancels the px-2 below md: that padding exists so the DESKTOP
+// slide animation's glyphs clear the wrapper's overflow-hidden, but on mobile
+// the word is static and the uncancelled 8px read as a wider word gap than the
+// h1's 10px flex gap. Below md only the static branch ever renders (isDesktop
+// is false there), so this cannot touch the animated version.
 const GRADIENT =
-  "block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text px-2 py-2 text-transparent";
+  "block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text px-2 py-2 text-transparent max-md:-mx-2";
 
 export default function RotatingWord({
   words,

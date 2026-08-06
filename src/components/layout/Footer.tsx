@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { MdArrowOutward } from "react-icons/md";
-import { RiInstagramLine } from "react-icons/ri";
+import { AiFillInstagram } from "react-icons/ai";
 import { NO_ENTRY, useIsMobile } from "@/lib/useIsDesktop";
 
 const footerLinkGroups = [
@@ -49,7 +49,7 @@ const footerLinkGroups = [
 
 const socialLinks = [
   { icon: <FaFacebookF size={14} />, href: "#" },
-  { icon: <RiInstagramLine size={14} />, href: "#" },
+  { icon: <AiFillInstagram size={14} />, href: "#" },
   { icon: <FaLinkedinIn size={14} />, href: "#" },
 ];
 
@@ -298,6 +298,11 @@ export default function Footer() {
                 className="inline-block overflow-hidden px-[0.06em] ml-[-0.06em] mr-[-0.1em] pb-[0.3em] -mb-[0.3em]"
               >
                 <motion.span
+                  // Variants escaped the data-no-mobile-entry sweep (it keyed
+                  // on `initial={{opacity:0}}`), so below md these letters
+                  // still sat at translateY(110%) until whileInView fired —
+                  // the last animated thing in the footer on mobile.
+                  data-no-mobile-entry
                   variants={isMobile ? brandLetterInstant : brandLetter}
                   className="inline-block"
                 >

@@ -94,6 +94,9 @@ export default function PortfolioSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
+  // Mobile slide surface: the autoplay transition translates this inner
+  // wrapper on the compositor, then commits the distance to scrollLeft.
+  const panelsRef = useRef<HTMLDivElement>(null);
   const isDesktop = useIsDesktop();
 
   // Mobile autoplay. Dragging is NOT implemented in JS: below `md` the track is
@@ -114,43 +117,65 @@ export default function PortfolioSection() {
     let pointerDown = false;
     let lastInteraction = 0;
 
-    let tween = 0;
-    let tweenStarted = 0;
+    const panels = panelsRef.current;
+    if (!panels) return;
 
-    // Autoplay drives scrollLeft itself instead of asking for
-    // `behavior: "smooth"`. Programmatic smooth scrolling is the one link here
-    // with no guarantee — it is ignored outright in some mobile browsers and
-    // fights `scroll-snap-type: mandatory` in others, which left the carousel
-    // sitting still. A rAF tween always moves. Snap is switched off for the
-    // duration so it cannot re-snap mid-tween, then restored to land the slide.
+    let sliding = false;
+    let slideTimer = 0;
+
+    // The slide runs as a CSS transform transition on the panels wrapper, not
+    // as per-frame scrollLeft writes. scrollLeft can only be driven from the
+    // main thread, so the old rAF tween stuttered whenever anything else ran
+    // during its 600ms window; a transform transition is composited and cannot
+    // be blocked by script. When it finishes (or is interrupted), the visual
+    // offset is committed to scrollLeft in the same style flush that clears
+    // the transform — the swap is invisible. `behavior: "smooth"` remains off
+    // the table: it is ignored outright in some mobile browsers and fights
+    // `scroll-snap-type: mandatory` in others.
+    // On completion the intent is known — commit the slide's own distance
+    // rather than a measured matrix, so a throttled or coalesced transition
+    // (background tab, busy compositor) still lands exactly one page. Only an
+    // INTERRUPTION needs to measure where the transition actually got to.
+    const commit = (px: number) => {
+      panels.style.transition = "none";
+      panels.style.transform = "";
+      panels.style.willChange = "";
+      if (px) track.scrollLeft += px;
+      // flush so the cleared transition cannot animate the reset
+      void panels.offsetWidth;
+      panels.style.transition = "";
+    };
+
+    let slideDistance = 0;
+
     const animateTo = (to: number) => {
-      const from = track.scrollLeft;
-      const distance = to - from;
+      const distance = to - track.scrollLeft;
       if (Math.abs(distance) < 1) return;
+      slideDistance = distance;
 
       const snapBefore = track.style.scrollSnapType;
       track.style.scrollSnapType = "none";
-      const started = performance.now();
-      tweenStarted = started;
+      sliding = true;
+      panels.style.willChange = "transform";
+      panels.style.transition = `transform ${MOBILE_SLIDE_MS}ms cubic-bezier(0.65, 0, 0.35, 1)`;
+      panels.style.transform = `translate3d(${-distance}px, 0, 0)`;
 
-      const step = (now: number) => {
-        const p = Math.min(1, (now - started) / MOBILE_SLIDE_MS);
-        const eased = p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2;
-        track.scrollLeft = from + distance * eased;
-        if (p < 1) {
-          tween = requestAnimationFrame(step);
-        } else {
-          tween = 0;
-          track.style.scrollSnapType = snapBefore;
-        }
-      };
-      tween = requestAnimationFrame(step);
+      // setTimeout, not transitionend: the timer fires even if the event is
+      // lost, so a missed transition can never wedge `sliding` shut.
+      slideTimer = window.setTimeout(() => {
+        sliding = false;
+        commit(slideDistance);
+        track.style.scrollSnapType = snapBefore;
+      }, MOBILE_SLIDE_MS + 60);
     };
 
     const stopTween = () => {
-      if (!tween) return;
-      cancelAnimationFrame(tween);
-      tween = 0;
+      if (!sliding) return;
+      window.clearTimeout(slideTimer);
+      sliding = false;
+      // interrupted mid-flight: commit however far the transition got
+      const m = new DOMMatrixReadOnly(getComputedStyle(panels).transform).m41;
+      commit(-m);
       track.style.scrollSnapType = "";
     };
 
@@ -163,14 +188,11 @@ export default function PortfolioSection() {
 
     const advance = () => {
       const now = performance.now();
-      // A tween whose rAF never ran (backgrounded tab, throttled renderer)
-      // would otherwise leave `tween` set and block autoplay forever. Reclaim
-      // it once it has overshot its own duration.
-      if (tween && now - tweenStarted > MOBILE_SLIDE_MS * 3) stopTween();
-      if (tween) return;
+      if (sliding) return;
       // A pointerdown whose up/cancel never arrived must not stall autoplay
       // for good, so the held state expires on its own.
-      if (pointerDown && now - lastInteraction < MOBILE_STUCK_POINTER_MS) return;
+      if (pointerDown && now - lastInteraction < MOBILE_STUCK_POINTER_MS)
+        return;
       if (now - lastInteraction < MOBILE_RESUME_MS) return;
       if (!isOnScreen()) return;
 
@@ -249,6 +271,11 @@ export default function PortfolioSection() {
         let cleanupAuto: () => void = () => {};
         const track = trackRef.current;
         if (track) {
+          // Count panels from the DOM: the "Our Projects" title slide is a
+          // panel with no projects[] entry, so projects.length undercounts.
+          // querySelectorAll, not children.length — the panels sit inside the
+          // mobile slide wrapper (display:contents on md, but still one child).
+          const panelCount = track.querySelectorAll(".project-panel").length;
           const totalWidth = track.scrollWidth - window.innerWidth;
           const holdPx = window.innerHeight;
           const xPhase = totalWidth / (totalWidth + holdPx);
@@ -265,7 +292,7 @@ export default function PortfolioSection() {
                 snap: {
                   snapTo: (value) => {
                     if (value >= xPhase) return value;
-                    const steps = projects.length - 1;
+                    const steps = panelCount - 1;
                     return (
                       (Math.round((value / xPhase) * steps) / steps) * xPhase
                     );
@@ -402,87 +429,115 @@ export default function PortfolioSection() {
         // itself the scroll container (desktop instead has GSAP translate it).
         className="no-scrollbar flex w-full flex-row max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain md:h-full md:w-max"
       >
-        {projects.map((project) => (
-          <div
-            key={project.id}
-            // max-md:isolate — on mobile nothing above this panel creates a
-            // stacking context (the GSAP transform on the track is md+ only),
-            // so the -z-20 image holder escalates to the page wrapper's context
-            // and the section's opaque bg-[#0a0a0a] paints OVER it: black
-            // panels, no images. isolation scopes the -z-20 to this panel.
-            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 max-md:isolate max-md:snap-center max-md:px-3 max-md:pb-12 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
-          >
-            <Link
-              href={project.href}
-              className="absolute inset-0 z-20 cursor-none max-md:cursor-pointer"
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
+        {/* Mobile slide surface. `md:contents` erases the box on desktop so
+            the GSAP track keeps translating panels directly; below md it is the
+            element the autoplay transition transforms. w-full (not w-max):
+            panels size against the scroller's width, and their overflow still
+            extends the scroller's scrollable range. */}
+        <div ref={panelsRef} className="flex w-full flex-row md:contents">
+          {/* Title slide — typographic opener before the case studies. It
+            carries the same `project-panel` class so the desktop GSAP (snap
+            steps and the reveal loop, both keyed on panel order) treats it as
+            panel 0 — which the reveal loop already leaves static. Pure text on
+            the section's own #0a0a0a: no image to decode, nothing animating. */}
+          <div className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-center overflow-hidden p-8 max-md:isolate max-md:snap-center max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20">
+            <p className="mb-6 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:mb-4 max-md:text-xs">
+              Portfolio
+            </p>
+            <h2 className="text-[3.25rem] font-bold leading-[0.9] tracking-[-0.04em] max-md:text-[2.75rem] md:text-8xl lg:text-[9rem]">
+              Our{" "}
+              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+                Projects
+              </span>
+            </h2>
+            <p className="mt-8 max-w-xl text-lg font-light leading-[1.25em] text-white/70 max-md:mt-6 max-md:text-base">
+              {String(projects.length).padStart(2, "0")} case studies in brand,
+              product and growth — scroll to explore
+            </p>
+          </div>
+
+          {projects.map((project) => (
+            <div
+              key={project.id}
+              // max-md:isolate — on mobile nothing above this panel creates a
+              // stacking context (the GSAP transform on the track is md+ only),
+              // so the -z-20 image holder escalates to the page wrapper's context
+              // and the section's opaque bg-[#0a0a0a] paints OVER it: black
+              // panels, no images. isolation scopes the -z-20 to this panel.
+              className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-end overflow-hidden p-8 max-md:isolate max-md:snap-center max-md:px-3 max-md:pb-12 md:h-screen md:w-screen md:p-16 lg:px-20 lg:pb-12 lg:pt-20"
             >
-              <span className="sr-only">View {project.title}</span>
-            </Link>
+              <Link
+                href={project.href}
+                className="absolute inset-0 z-20 cursor-none max-md:cursor-pointer"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                <span className="sr-only">View {project.title}</span>
+              </Link>
 
-            <div className="absolute inset-0 -z-20 overflow-hidden">
-              {project.type === "video" ? (
-                <video
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="h-full w-full object-cover"
-                >
-                  <source src={project.video} type="video/mp4" />
-                </video>
-              ) : (
-                <Image
-                  src={project.image as string}
-                  alt={project.title}
-                  fill
-                  sizes="100vw"
-                  // Eager on purpose: this is the panel's background, not an
-                  // incidental image. next/image defaults to lazy, which the
-                  // raw <img> here never was, and a deferred load leaves the
-                  // panel rendering as a black box until it arrives.
-                  loading="eager"
-                  className="h-full w-full object-cover"
-                />
-              )}
-              <div className="absolute inset-0 bg-linear-to-t from-black/100 via-black/20 to-transparent" />
-            </div>
+              <div className="absolute inset-0 -z-20 overflow-hidden">
+                {project.type === "video" ? (
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="h-full w-full object-cover"
+                  >
+                    <source src={project.video} type="video/mp4" />
+                  </video>
+                ) : (
+                  <Image
+                    src={project.image as string}
+                    alt={project.title}
+                    fill
+                    sizes="100vw"
+                    // Eager on purpose: this is the panel's background, not an
+                    // incidental image. next/image defaults to lazy, which the
+                    // raw <img> here never was, and a deferred load leaves the
+                    // panel rendering as a black box until it arrives.
+                    loading="eager"
+                    className="h-full w-full object-cover"
+                  />
+                )}
+                <div className="absolute inset-0 bg-linear-to-t from-black/100 via-black/20 to-transparent" />
+              </div>
 
-            <div className="pointer-events-none relative z-10 flex w-full items-end justify-between">
-              <div className="flex w-full flex-col items-start gap-4 max-md:gap-3 md:gap-5 lg:w-[80%]">
-                <p className="reveal-item text-sm font-medium uppercase tracking-[0.3em] text-white max-md:text-xs">
-                  {project.category}
-                </p>
+              <div className="pointer-events-none relative z-10 flex w-full items-end justify-between">
+                <div className="flex w-full flex-col items-start gap-4 max-md:gap-3 md:gap-5 lg:w-[80%]">
+                  <p className="reveal-item text-sm font-medium uppercase tracking-[0.3em] text-white max-md:text-xs">
+                    {project.category}
+                  </p>
 
-                <h2 className="reveal-item -ml-[0.05em] text-5xl font-bold leading-[0.9] tracking-[-0.05em] max-md:text-[2.125rem] md:text-7xl lg:text-[7rem]">
-                  {project.title}
-                </h2>
+                  <h2 className="reveal-item -ml-[0.05em] text-5xl font-bold leading-[0.9] tracking-[-0.05em] max-md:text-[2.125rem] md:text-7xl lg:text-[7rem]">
+                    {project.title}
+                  </h2>
 
-                <p className="reveal-item max-w-[95%] text-sm leading-[1.5] text-white/80 max-md:text-sm md:text-lg lg:max-w-[90%]">
-                  {project.description}
-                </p>
+                  <p className="reveal-item max-w-[95%] text-sm leading-[1.5] text-white/80 max-md:text-sm md:text-lg lg:max-w-[90%]">
+                    {project.description}
+                  </p>
 
-                <div className="reveal-item mt-2 flex flex-wrap gap-2 md:gap-3">
-                  {project.tech.map((tag, i) => (
-                    <span
-                      key={i}
-                      // No backdrop-filter below md. Every one of these chips
-                      // makes the compositor snapshot and blur what is behind it
-                      // on EVERY frame, and the panels put ~19 of them inside a
-                      // horizontal scroller — the single biggest cost while
-                      // swiping. The heavier flat bg keeps them just as legible
-                      // over the photo. Desktop keeps the blur.
-                      className="rounded-md border border-white/20 bg-black/20 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md max-md:bg-black/50 max-md:px-3 max-md:py-1 max-md:text-[0.6rem] max-md:backdrop-blur-none md:text-xs"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                  <div className="reveal-item mt-2 flex flex-wrap gap-2 md:gap-3">
+                    {project.tech.map((tag, i) => (
+                      <span
+                        key={i}
+                        // No backdrop-filter below md. Every one of these chips
+                        // makes the compositor snapshot and blur what is behind it
+                        // on EVERY frame, and the panels put ~19 of them inside a
+                        // horizontal scroller — the single biggest cost while
+                        // swiping. The heavier flat bg keeps them just as legible
+                        // over the photo. Desktop keeps the blur.
+                        className="rounded-md border border-white/20 bg-black/20 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md max-md:bg-black/50 max-md:px-3 max-md:py-1 max-md:text-[0.6rem] max-md:backdrop-blur-none md:text-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <div

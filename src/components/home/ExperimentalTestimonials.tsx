@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
 import TestimonialsRotatingWord from "./TestimonialsRotatingWord";
 import { NO_ENTRY, useIsDesktop, useIsMobile } from "@/lib/useIsDesktop";
-import { tweenScrollLeft } from "@/lib/tweenScrollLeft";
+import CarouselDots from "@/components/ui/CarouselDots";
 
 const testimonials = [
   {
@@ -56,33 +56,6 @@ export default function ExperimentalTestimonials() {
   // needed it; a finite scroller does not).
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  const cardStride = () => {
-    const card = trackRef.current?.firstElementChild as HTMLElement | null;
-    if (!card) return 0;
-    const marginRight =
-      Number.parseFloat(getComputedStyle(card).marginRight) || 0;
-    return card.offsetWidth + marginRight;
-  };
-
-  // Arrows tween the scroller (snap-safe), wrapping at the ends.
-  const goNext = () => {
-    const el = scrollerRef.current;
-    const stride = cardStride();
-    if (!el || !stride) return;
-    const max = el.scrollWidth - el.clientWidth;
-    const target =
-      el.scrollLeft >= max - 8 ? 0 : Math.min(el.scrollLeft + stride, max);
-    tweenScrollLeft(el, target);
-  };
-  const goPrev = () => {
-    const el = scrollerRef.current;
-    const stride = cardStride();
-    if (!el || !stride) return;
-    const max = el.scrollWidth - el.clientWidth;
-    const target =
-      el.scrollLeft <= 8 ? max : Math.max(el.scrollLeft - stride, 0);
-    tweenScrollLeft(el, target);
-  };
   const [active, setActive] = useState(0);
   const [step, setStep] = useState(452);
 
@@ -178,13 +151,13 @@ export default function ExperimentalTestimonials() {
                   label aligns with the copy above. */}
               <Link
                 href="/contact"
-                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:h-14 max-md:gap-3 max-md:border-0 max-md:pr-2.5"
+                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:gap-4 max-md:border-0 max-md:pr-3"
               >
-                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300 max-md:text-base">
+                <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
                   Connect With Us
                 </span>
 
-                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-9 max-md:w-9 max-md:rounded-lg">
+                <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-10 max-md:w-10 max-md:rounded-lg">
                   <svg width="0" height="0" className="absolute">
                     <title>Connect arrow gradient</title>
                     <defs>
@@ -210,29 +183,12 @@ export default function ExperimentalTestimonials() {
               </Link>
             </motion.div>
 
-            {/* Mobile controls. The pair below is desktop-only and paginates via
-                framer's `active` index; below md the track is the paused WAAPI
-                marquee instead, so these drive `stepTrack`. Same 48px circles as
-                BlogSection's, with `active:` rather than `hover:` — touch has no
-                hover. */}
-            <div className="mt-10 flex items-center gap-4 md:hidden">
-              <button
-                type="button"
-                onClick={goPrev}
-                aria-label="Previous testimonial"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
-              >
-                <MdArrowBack className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={goNext}
-                aria-label="Next testimonial"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
-              >
-                <MdArrowForward className="h-4 w-4" />
-              </button>
-            </div>
+            {/* Mobile pagination dots, in the old arrow slot under the CTA. */}
+            <CarouselDots
+              scrollerRef={scrollerRef}
+              count={testimonials.length}
+              className="mt-10 md:hidden"
+            />
           </div>
 
           <div className="mt-12 flex items-center gap-4 max-md:hidden">

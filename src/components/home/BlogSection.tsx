@@ -11,9 +11,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
+import { MdArrowOutward } from "react-icons/md";
 import { NO_ENTRY, useIsDesktop, useIsMobile } from "@/lib/useIsDesktop";
-import { tweenScrollLeft } from "@/lib/tweenScrollLeft";
+import CarouselDots from "@/components/ui/CarouselDots";
 
 const SCROLL_SECONDS = 22;
 
@@ -150,35 +150,6 @@ export default function BlogSection() {
   // framer `x` marquee untouched; the second CardTrack copy (needed only for
   // the desktop wrap) is CSS-hidden below md.
   const scrollerRef = useRef<HTMLDivElement>(null);
-
-  const cardStride = () => {
-    const card = trackRef.current?.firstElementChild
-      ?.firstElementChild as HTMLElement | null;
-    if (!card) return 0;
-    const marginRight =
-      Number.parseFloat(getComputedStyle(card).marginRight) || 0;
-    return card.offsetWidth + marginRight;
-  };
-
-  // Arrows tween the scroller (snap-safe), wrapping at the ends.
-  const goNext = () => {
-    const el = scrollerRef.current;
-    const stride = cardStride();
-    if (!el || !stride) return;
-    const max = el.scrollWidth - el.clientWidth;
-    const target =
-      el.scrollLeft >= max - 8 ? 0 : Math.min(el.scrollLeft + stride, max);
-    tweenScrollLeft(el, target);
-  };
-  const goPrev = () => {
-    const el = scrollerRef.current;
-    const stride = cardStride();
-    if (!el || !stride) return;
-    const max = el.scrollWidth - el.clientWidth;
-    const target =
-      el.scrollLeft <= 8 ? max : Math.max(el.scrollLeft - stride, 0);
-    tweenScrollLeft(el, target);
-  };
 
   const isPanning = useRef(false);
   const startPointerX = useRef(0);
@@ -381,28 +352,14 @@ export default function BlogSection() {
               </Link>
             </motion.div>
 
-            {/* Below md the CTA is replaced by carousel controls. They take the
-                CTA's slot in the header row so nothing shifts, and they only
-                nudge the marquee — it keeps auto-scrolling and stays draggable
-                between presses. */}
-            <div className="flex items-center gap-4 md:hidden">
-              <button
-                type="button"
-                onClick={goPrev}
-                aria-label="Previous article"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
-              >
-                <MdArrowBack className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={goNext}
-                aria-label="Next article"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
-              >
-                <MdArrowForward className="h-4 w-4" />
-              </button>
-            </div>
+            {/* Mobile pagination dots, in the old arrow slot beside the title.
+                The component owns its scroll listener, so swipes never
+                re-render this section. */}
+            <CarouselDots
+              scrollerRef={scrollerRef}
+              count={blogPosts.length}
+              className="md:hidden"
+            />
           </div>
         </div>
 
