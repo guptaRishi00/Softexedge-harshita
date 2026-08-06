@@ -352,17 +352,17 @@ export default function BlogSection() {
                 type="button"
                 onClick={goPrev}
                 aria-label="Previous article"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
               >
-                <MdArrowBack className="h-5 w-5" />
+                <MdArrowBack className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={goNext}
                 aria-label="Next article"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
               >
-                <MdArrowForward className="h-5 w-5" />
+                <MdArrowForward className="h-4 w-4" />
               </button>
             </div>
           </div>

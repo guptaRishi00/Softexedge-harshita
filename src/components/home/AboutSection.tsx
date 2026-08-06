@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import { useIsDesktop } from "@/lib/useIsDesktop";
+import AboutImageStack from "./AboutImageStack";
 import RotatingWord from "./RotatingWord";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
@@ -106,7 +107,7 @@ export default function AboutSection() {
       whileInView={isDesktop ? "visible" : undefined}
       exit={isDesktop ? "exit" : undefined}
       viewport={{ once: true, amount: 0.2 }}
-      className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 max-md:px-3 max-md:pb-14 max-md:pt-12 md:px-10 lg:mb-20"
+      className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 max-md:px-3 max-md:pb-14 max-md:pt-8 md:px-10 lg:mb-20"
     >
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-multiply" />
 
@@ -282,16 +283,10 @@ export default function AboutSection() {
                     ))}
                   </AnimatePresence>
                 ) : (
-                  <div className="absolute inset-0 overflow-hidden rounded-[28px] border border-black/10 bg-zinc-200 shadow-sm">
-                    <Image
-                      src={initialCards[0].url}
-                      alt="Creative Studio"
-                      fill
-                      sizes="(max-width: 768px) 100vw, 600px"
-                      className="h-full w-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
-                  </div>
+                  // Below md the stack is CSS-transition driven and owns its own
+                  // tick, so it never re-renders this section. Desktop keeps the
+                  // framer/AnimatePresence version above, untouched.
+                  <AboutImageStack images={initialCards.map((c) => c.url)} />
                 )}
               </div>
 

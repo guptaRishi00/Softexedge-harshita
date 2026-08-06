@@ -48,7 +48,25 @@ export default function ExperimentalTestimonials() {
   // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
   const isMobile = useIsMobile();
   const trackRef = useRef<HTMLDivElement>(null);
-  useMarqueeHalf(trackRef, 40, !isDesktop, true);
+  // autoplay=false: below md the track holds still and only moves on an arrow
+  // press (and while dragging). The animation still exists, paused — `step()`
+  // and the drag both work off its `currentTime`.
+  const stepTrack = useMarqueeHalf(trackRef, 40, !isDesktop, true, false);
+
+  // One card + its right margin. Measured rather than derived from w-[300px] so
+  // the arrows stay correct across the sm/md card widths.
+  const cardStride = () => {
+    const card = trackRef.current?.firstElementChild as HTMLElement | null;
+    if (!card) return 0;
+    const marginRight =
+      Number.parseFloat(getComputedStyle(card).marginRight) || 0;
+    return card.offsetWidth + marginRight;
+  };
+
+  // The track animates -50% -> 0, i.e. content drifts right, so "next" is a
+  // NEGATIVE x step — same as BlogSection.
+  const goNext = () => stepTrack(-cardStride());
+  const goPrev = () => stepTrack(cardStride());
   const [active, setActive] = useState(0);
   const [step, setStep] = useState(452);
 
@@ -69,7 +87,7 @@ export default function ExperimentalTestimonials() {
   return (
     <section
       id="testimonials"
-      className="relative overflow-hidden bg-white pt-16 pb-8 text-zinc-900 max-md:pb-14 max-md:pt-20 md:pt-32"
+      className="relative overflow-hidden bg-white pt-16 pb-8 text-zinc-900 max-md:pb-14 max-md:pt-17 md:pt-32"
     >
       <div className="mx-auto flex w-full flex-col gap-10 px-4 max-md:px-3 md:px-10 lg:flex-row lg:items-stretch lg:gap-10">
         <motion.div
@@ -171,6 +189,30 @@ export default function ExperimentalTestimonials() {
                 </div>
               </Link>
             </motion.div>
+
+            {/* Mobile controls. The pair below is desktop-only and paginates via
+                framer's `active` index; below md the track is the paused WAAPI
+                marquee instead, so these drive `stepTrack`. Same 48px circles as
+                BlogSection's, with `active:` rather than `hover:` — touch has no
+                hover. */}
+            <div className="mt-10 flex items-center gap-4 md:hidden">
+              <button
+                type="button"
+                onClick={goPrev}
+                aria-label="Previous testimonial"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
+              >
+                <MdArrowBack className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={goNext}
+                aria-label="Next testimonial"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300 text-zinc-900 active:bg-zinc-900 active:text-white"
+              >
+                <MdArrowForward className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           <div className="mt-12 flex items-center gap-4 max-md:hidden">
@@ -198,7 +240,7 @@ export default function ExperimentalTestimonials() {
             grown by BOTH paddings to match — `w-full` alone resolves to the
             wrapper's content box (100% - 24px), so a negative margin shifts it
             left but leaves 24px of dead space on the right. */}
-        <div className="relative mt-10 lg:mt-0 -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1 max-md:-mx-3 max-md:h-auto max-md:w-[calc(100%+1.5rem)]">
+        <div className="relative mt-10 lg:mt-0 -mr-6 flex h-[360px] w-full items-center overflow-hidden md:h-[440px] lg:flex-1 max-md:-mx-3 max-md:h-auto max-md:w-[calc(100%+1.5rem)] max-md:pl-11">
           <motion.div
             // Desktop paginates by arrows (-active * step). Mobile has no arrows,
             // so it self-scrolls: the track holds exactly two copies of the list,
@@ -220,7 +262,7 @@ export default function ExperimentalTestimonials() {
             {duplicatedTestimonials.map((item, i) => (
               <div
                 key={`${item.name}-${i}`}
-                className="group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors max-md:mr-4 max-md:px-5 sm:w-[360px] md:min-h-[440px] md:w-[440px] md:py-10"
+                className="group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors max-md:mr-4 max-md:w-[calc(100vw-5.5rem)] max-md:px-5 md:min-h-[440px] md:w-[440px] md:py-10"
               >
                 <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
                   <svg

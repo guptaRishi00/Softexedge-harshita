@@ -173,7 +173,7 @@ export default function ServiceSection() {
       id="services"
       ref={containerRef}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full overflow-hidden bg-black pt-16 pb-10 max-md:pb-16 max-md:pt-20 md:pt-32 md:pb-24 text-white"
+      className="relative w-full overflow-hidden bg-black pt-16 pb-10 max-md:pb-10 max-md:pt-20 md:pt-32 md:pb-24 text-white"
     >
       <div className="w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-10 w-full pb-10">
@@ -232,7 +232,7 @@ export default function ServiceSection() {
               href={service.href}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              className="group relative flex w-full cursor-none items-center justify-between py-9 md:py-12 max-md:cursor-pointer max-md:pr-6"
+              className="group relative flex w-full cursor-none items-center justify-between py-9 md:py-12 max-md:cursor-pointer max-md:pr-11"
             >
               <div className="flex items-center">
                 <div
@@ -258,7 +258,7 @@ export default function ServiceSection() {
 
                 <h3
                   className={cn(
-                    "text-3xl font-medium leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-5xl md:text-[clamp(2.5rem,5vw,5rem)]",
+                    "text-2xl font-medium leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-5xl md:text-[clamp(2.5rem,5vw,5rem)]",
                     "text-white group-hover/list:text-white/20 group-hover:!text-white",
                   )}
                 >
@@ -267,16 +267,38 @@ export default function ServiceSection() {
               </div>
 
               {/* Touch has no hover, so the "View Services" cursor that signals
-                  the affordance on desktop never appears — a small arrow pinned
-                  to the row's top-right corner carries that signal instead. The
-                  row reserves pr-6 below md — 24px clears the arrow's 20px band,
-                  while pr-9 was wide enough to wrap the two longest titles onto
-                  a second line. `right-0` resolves against the padding box, so
-                  the arrow stays flush right regardless of that gutter. */}
-              <MdArrowOutward
+                  the affordance on desktop never appears. This chip carries the
+                  signal instead, pinned to exactly what OpenPositions shows in
+                  its hovered/active state: dark round container, gradient arrow.
+                  `pointer-events-none` so taps still reach the row's anchor, and
+                  the row reserves pr-11 below md to keep titles clear of it —
+                  `right-0` resolves against the padding box, so the chip stays
+                  flush right regardless of that gutter. */}
+              <div
                 aria-hidden="true"
-                className="pointer-events-none absolute right-0 top-9 h-5 w-5 text-white/40 md:hidden"
-              />
+                className="pointer-events-none absolute right-0 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full bg-[#1a1a1a] md:hidden"
+              >
+                <svg width="0" height="0" className="absolute">
+                  <title>Service arrow gradient</title>
+                  <defs>
+                    <linearGradient
+                      id={`service-arrow-grad-${index}`}
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="0%"
+                    >
+                      <stop stopColor="#2E5BFF" offset="0%" />
+                      <stop stopColor="#149CCB" offset="100%" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                <MdArrowOutward
+                  className="h-4 w-4"
+                  style={{ fill: `url(#service-arrow-grad-${index})` }}
+                />
+              </div>
 
               {index !== services.length - 1 && (
                 <div

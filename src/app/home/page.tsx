@@ -178,7 +178,7 @@ export default function HomePage() {
           <div ref={aboutContainerRef} className="relative z-0 bg-white">
             <div
               ref={aboutInnerRef}
-              className="origin-top will-change-transform bg-white pb-[3vh] md:pb-[25vh] lg:pb-[30vh]"
+              className="origin-top will-change-transform bg-white pb-0 md:pb-[25vh] lg:pb-[30vh]"
             >
               <AboutSection />
             </div>
@@ -225,7 +225,7 @@ export default function HomePage() {
               <ContactSection />
             </div>
 
-            <div className="[&>section]:pt-20 md:[&>section]:pt-30">
+            <div className="[&>section]:pt-16 md:[&>section]:pt-30">
               <BlogSection />
             </div>
           </div>

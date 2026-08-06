@@ -3,6 +3,7 @@
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 export type Channel = {
   label: string;
@@ -21,6 +22,7 @@ export default function ChannelCard({
   Icon,
   colSpan,
 }: Channel) {
+  const isDesktop = useIsDesktop();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const cardRef = useRef<HTMLAnchorElement>(null);
   const hoveringRef = useRef(false);
@@ -73,7 +75,19 @@ export default function ChannelCard({
     return distance > 3.5 ? 0 : 1 - distance / 1.79;
   };
 
-  const mask = useMotionTemplate`radial-gradient(280px circle at ${mouseX}px ${mouseY}px, black 0%, rgba(0,0,0,0.15) 100%)`;
+  // The mask decides how much of the grey box grid shows through, so LOWER
+  // alpha reads as a darker card. Below md it is dialled down: the mask is
+  // parked at 85% width (touch never fires mousemove, so it never follows a
+  // pointer there) and at full strength that parked blob was the brightest
+  // thing on the card.
+  //
+  // Gated on useIsDesktop, which is false on the server AND on the first client
+  // render — so the SSR'd inline style matches and hydration is clean. That is
+  // only safe because this is a live style, not an `initial` that framer
+  // consumes once at mount.
+  const maskCore = isDesktop ? 1 : 0.5;
+  const maskEdge = isDesktop ? 0.15 : 0.04;
+  const mask = useMotionTemplate`radial-gradient(280px circle at ${mouseX}px ${mouseY}px, rgba(0,0,0,${maskCore}) 0%, rgba(0,0,0,${maskEdge}) 100%)`;
 
   return (
     <a

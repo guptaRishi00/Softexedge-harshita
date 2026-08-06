@@ -10257,3 +10257,313 @@ further (rgba tint / static-frame blur); user chose "Keep option 1 (done)". No e
 
 - `bunx tsc --noEmit` clean; `bunx next build` compiled; biome unchanged
   (BlogSection 1, Footer 2, LogoCarousel 0 - all pre-existing).
+
+## AboutSection - tighter gap to LogoLoop (mobile)
+
+- `src/components/home/AboutSection.tsx`: `max-md:pt-12` -> `max-md:pt-8`
+  (48 -> 32px). No `md:pt-*` exists on the section, so the base `py-10` governs
+  desktop and this is mobile-only by construction.
+- Measured the gap first: 108px total from the logo strip's ink to the About
+  image, made of the LogoLoop section's own `pb-14` (56px) + AboutSection's
+  `pt-12` (48px). Only AboutSection is in scope, so its 48px share was the part
+  cut; the LogoLoop 56px was left alone. Say so if the remaining gap is still
+  too large - the other 56px lives in `src/app/home/page.tsx`.
+- Verified @390px: paddingTop 48 -> **32px**, visual logo-ink-to-image gap
+  108 -> **92px**. paddingBottom still 56px, image offset inside the section
+  33px.
+- Verified @1265px unchanged: padding 40px on all four sides, margin-bottom
+  80px.
+- `bunx tsc --noEmit` clean; biome unchanged (1 pre-existing noArrayIndexKey).
+
+## About -> Portfolio seam (mobile)
+
+- SCOPE NOTE: the task asked to reduce PortfolioSection's own margin/padding
+  top, but measurement showed it has NEITHER on mobile - `paddingTop: 0px`,
+  `marginTop: 0px`, and its first panel sits at offset 0 inside the section.
+  The whole seam came from the About WRAPPER in `src/app/home/page.tsx`
+  (`pb-[3vh]` = 25.32px at 844 height), which is the literal spacer between the
+  two sections. Cut that instead and said so rather than silently touching
+  AboutSection's own `pb-14`.
+- `src/app/home/page.tsx`: about wrapper `pb-[3vh]` -> `pb-0`. Mobile-only by
+  construction - `md:pb-[25vh]` and `lg:pb-[30vh]` re-assert above 768/1024 and
+  were not touched.
+- Verified @390px: wrapper paddingBottom 25.32 -> **0px**; About-bottom to
+  Portfolio-top gap 25 -> **0px**; white space from the About CTA to the dark
+  section 81 -> **56px** (all that remains is AboutSection's own `pb-14`).
+- Verified @820x900 (the md band): 225px = 25vh, unchanged.
+- Verified @1266x900 (the lg band): 270px = 30vh, unchanged.
+- Remaining knob if it is still too wide: AboutSection's `max-md:pb-14` (56px).
+- `bunx tsc --noEmit` clean; biome 0 diagnostics on page.tsx.
+
+## ServiceSection - tighter bottom, smaller titles, OpenPositions-style arrow
+
+- `max-md:pb-16` -> `max-md:pb-10` (64 -> 40px).
+- Service title `text-3xl` -> `text-2xl` (30 -> 24px). Edited the BASE, not a
+  new `max-md:` - a `max-md:` utility sorts after `sm:` in Tailwind v4 and would
+  have dragged the 640-767 band from 48px down to 24px too. Editing the base
+  confines the change to <640, and `sm:text-5xl` still governs 640-767.
+- Arrow replaced with OpenPositions' hovered/active treatment, copied from
+  `src/components/career/OpenPositions.tsx:193-222`: 44px dark round chip
+  (`bg-[#1a1a1a]`, no border) holding a gradient-filled MdArrowOutward, with a
+  per-row gradient id. `pointer-events-none` so taps still reach the row anchor.
+  Centred vertically (`top-1/2 -translate-y-1/2`) to match OpenPositions.
+- Row gutter `max-md:pr-6` -> `max-md:pr-14` (24 -> 56px) to reserve the wider
+  chip. The smaller titles paid for it: nothing wraps.
+- Verified @390px: section paddingBottom **40px**, title **24px**, 8/8 chips at
+  **44x44**, bg **rgb(26,26,26)** (= #1a1a1a, same as OpenPositions), fully
+  rounded, pointerEvents none, gradient arrow 20x20 with fill
+  url(#service-arrow-grad-0). Every chip flush right (0) and vertically centred
+  (0). All 8 titles still ONE line, min clearance 56px, row height 96px.
+- Verified @700px (the sm band): title still 48px, 8 chips visible, nothing
+  wrapped, min clearance 98px, row height 120px.
+- Verified @1266px unchanged: pt 128 / pb 96, title 63.28px, row padding-right
+  0px, py 48/48, row height 196px, chips rendered but `chipsDisplayed: 0`
+  (md:hidden).
+- `bunx tsc --noEmit` clean; biome unchanged at the file's 2 pre-existing
+  diagnostics.
+
+## ServiceSection - smaller mobile arrow chip
+
+- Chip `h-11 w-11` -> `h-9 w-9` (44 -> 36px) and glyph `h-5 w-5` -> `h-4 w-4`
+  (20 -> 16px). Shrunk both together: reducing only the glyph inside a 44px
+  container would just add dead space, not read as a smaller arrow.
+- Row gutter `max-md:pr-14` -> `max-md:pr-11` (56 -> 44px) so the breathing room
+  past the chip stays at ~8px. No breakpoint prefix needed on the chip's own
+  sizes - the whole chip is `md:hidden`.
+- Verified @390px: chip **36x36**, arrow **16x16**, bg still rgb(26,26,26),
+  fill url(#service-arrow-grad-0), 8/8 chips, all flush right (0) and vertically
+  centred (0), row padding-right 44px, no title wrapped, min clearance 64px,
+  row height still 96px, section paddingBottom still 40px.
+- Verified @700px (sm band): chip 36x36, 8 visible, title still 48px, nothing
+  wrapped, min clearance 106px.
+- Verified @1266px unchanged: padding 128/96, title 63.28px, row padding-right
+  0px, py 48/48, row height 196px, chipsDisplayed 0 (md:hidden).
+- `bunx tsc --noEmit` clean; biome unchanged at the file's 2 pre-existing
+  diagnostics.
+
+## ExperimentalTestimonials - tighter gap to ServiceSection (mobile)
+
+- `src/components/home/ExperimentalTestimonials.tsx`: `max-md:pt-20` ->
+  `max-md:pt-12` (80 -> 48px). Mobile-only - `md:pt-32` re-asserts 128px from
+  768px up.
+- Measured first: 140px from the last service row to the "Testimonials" tag,
+  of which 40px is ServiceSection's own `max-md:pb-10` and 80px this section's
+  `pt-20`. Only the Testimonials share was in scope and was the part cut.
+- Verified @390px: paddingTop 80 -> **48px**; ink gap last service row to tag
+  140 -> **108px**. paddingBottom still 56px, ServiceSection pb still 40px.
+- Verified @1265px unchanged: paddingTop 128px, paddingBottom 32px, marginTop 0.
+- Remaining knob if still too wide: ServiceSection's `max-md:pb-10` (40px).
+- `bunx tsc --noEmit` clean; biome 0 diagnostics on the file.
+
+## ExperimentalTestimonials - nudge mobile top padding back up
+
+- `max-md:pt-12` -> `max-md:pt-14` (48 -> 56px), partially restoring the cut
+  made in the previous entry (which took it 80 -> 48).
+- Chose 14 over 16 deliberately: `pt-16` is the BASE value, so a
+  `max-md:pt-16` would compute the same whether or not the max-md rule
+  generated - the measurement could not tell the two apart. 56px is distinct
+  from both the base (64) and `md:pt-32` (128), so the reading is unambiguous.
+- Verified @390px: paddingTop 48 -> **56px**, `.max-md\:pt-14` confirmed
+  present as a real rule in the served stylesheet; ink gap from the last
+  service row to the tag 108 -> **116px**. paddingBottom still 56px.
+- Verified @1265px unchanged: paddingTop 128px, paddingBottom 32px, marginTop 0.
+- `bunx tsc --noEmit` clean; biome 0 diagnostics on the file.
+
+## ExperimentalTestimonials - arrows-only carousel (mobile)
+
+- Same treatment BlogSection already got, reusing the `autoplay` param added to
+  `useMarqueeHalf` for it: `useMarqueeHalf(trackRef, 40, !isDesktop, true,
+  false)` and the returned `stepTrack`. No hook changes were needed.
+- Stride is MEASURED (`card.offsetWidth + marginRight`) rather than derived from
+  `w-[300px]`, so it stays right across the sm/md card widths. "next" is a
+  NEGATIVE step - the track animates -50% -> 0, so content drifts right.
+- Added a `md:hidden` 48px arrow pair matching BlogSection's, placed under the
+  CTA. The pre-existing `max-md:hidden` pair is left alone: it paginates via
+  framer's `active` index, which is the desktop mechanism.
+- Note on the duplicated aria-labels: 4 buttons now share 2 labels, but the two
+  pairs are `md:hidden` / `max-md:hidden`, so `display: none` keeps exactly one
+  pair in the a11y tree at any width. Confirmed 4 in the DOM, 2 visible, at BOTH
+  breakpoints.
+- Verified @390px: track playState **paused**; mobile pair display flex at
+  48x48, desktop pair display none; stride 300 + 16 = **316**. next/next/prev
+  gave **-316 / -316 / +316** and `returnedToPrevPosition: true`; playState
+  stayed "paused" throughout and the inline transform was cleared after each
+  step, so drag still works.
+- No regression in the hook's other consumers - after a reload at 390px:
+  LogoLoop running, Portfolio (native scroll) none, **testimonials paused**,
+  TechLogoCarousel running, **blog paused**.
+- Verified @1265px: track has 0 WAAPI animations (framer drives `x`), the
+  VISIBLE pair is the original desktop one (marginTop 48px = mt-12, vs mine at
+  mt-10), card 440x440 with no right margin - desktop untouched.
+- `bunx tsc --noEmit` clean; `bunx next build` compiled; biome 0 diagnostics on
+  the file.
+
+## ExperimentalTestimonials - centred card with peeking neighbours (mobile)
+
+- Card width below md -> `max-md:w-[calc(100vw-5.5rem)]`. Chose a viewport
+  RELATIVE width so the leftover is a constant 88px at every mobile width,
+  which makes the centring inset a fixed 44px instead of a per-breakpoint calc.
+- Centring inset lives on the WRAPPER (`max-md:pl-11` = 44px), NOT the track.
+  The track's own width is what the -50% marquee and the drag/step wrap are
+  measured against, so padding the track would desync the loop. The wrapper is
+  exactly 100vw (`-mx-3` + `w-[calc(100%+1.5rem)]` against the parent's `px-3`),
+  which is what makes 44px the correct half-leftover.
+- Removed `sm:w-[360px]`. First attempt kept it and the 640-767 band came out
+  UNCENTRED (card 360px, insets 44 / 296): `sm:` outranks `max-md:` here, so the
+  min-width rule won. One mobile rule for the whole <768 range fixes it.
+- Verified @390px: card 302x360, stride 318, trackHalf 1272 and
+  `halfEqualsFourStrides: true` (loop math intact), playState paused. Card 4
+  centred at insets **44 / 44 (symmetric)** with cards 3 and 5 peeking **28px**
+  each. Centring SURVIVES stepping - after next: card 1 at 44/44 with 28px
+  peeks; after next again: card 2 at 44/44 with 28px peeks.
+- Verified @700px (sm band): card 612 = 700-88 as designed, insets 44/44
+  symmetric, 28px peeks.
+- Verified @1265px on a FRESH load: card 440x440, marginRight 0, wrapper
+  paddingLeft 0, track gap 12px, 0 WAAPI animations - desktop untouched.
+- Observed but NOT introduced here: resizing 390 -> 1265 WITHOUT a reload leaves
+  the paused marquee animation on the track (fresh load is clean, 0 animations).
+  The hook's cleanup is unchanged by this task, so this is pre-existing.
+- `bunx tsc --noEmit` clean; `bunx next build` compiled; biome 0 diagnostics.
+
+## Footer - bigger Softexedge wordmark (mobile)
+
+- The size was NOT the real constraint - the container was. The wordmark row sat
+  inside the parent's `px-6`, so at a 320px viewport it only had 256px to work
+  with, which is why it had been pinned to 15vw. Probed the ceiling in-page:
+  at 320px, 16vw fit with 7.3px spare and 16.5vw overflowed by 0.2px, so simply
+  bumping the size would have bought ~1 step and little visible change.
+- Fix: the row now bleeds across that padding below md
+  (`max-md:-mx-6 max-md:w-[calc(100%+3rem)]`), giving it the full footer-card
+  width, and `max-md:text-[15vw]` was dropped so the base `text-[18vw]` governs
+  everywhere.
+- Verified at the BINDING case, 320px (narrowest realistic phone): font
+  48 -> **57.6px**, row 256 -> **304px**, word 278.83px, **12.59px clear each
+  side**, `anyLetterClipped: false`, row horizontal overflow **0**.
+- Verified @390px: font 58.5 -> **70.2px**, word 337.84 in a 374px row, 18.08px
+  clear each side, no clipping, overflow 0.
+- Verified @767px (widest mobile, md starts at 768): font 138.06px, word 656.89
+  in a 751px row, 47.05px clear, no clipping, row marginLeft -24px (bleed
+  active).
+- Verified @1265px unchanged: font 227.7px = exactly 18vw, row margins **0px**
+  (bleed correctly off), row 1098px wide, padding 40/80.
+- `bunx tsc --noEmit` clean; `bunx next build` compiled; biome unchanged at the
+  file's 2 pre-existing diagnostics.
+
+## Footer - gradient arrows on mobile
+
+- Both arrow pairs already existed as a plain -> gradient hover SWAP; touch never
+  fires `hover:`, so the gradient half was unreachable on mobile. Pinned the
+  hovered state below md, exactly as the About/Blog/Testimonials CTAs do:
+  `max-md:-translate-y-8 max-md:translate-x-8` on the plain arrow and
+  `max-md:translate-x-0 max-md:translate-y-0` on the gradient one (translate-6
+  values for the social pair, which uses a smaller offset).
+- Covers the subscribe button and all 3 social links = 4 arrow holders.
+- Verified @390px: all 4 holders report the IN-PLACE arrow as
+  fill `url(#footer-arrow-grad)` and the off-screen one as plain. The
+  `#footer-arrow-grad` def is present with stops #2E5BFF -> #149CCB.
+- Verified @1265px unchanged: all 4 holders resting on the PLAIN arrow with the
+  gradient one parked off-screen (translate -32px 32px / -24px 24px), i.e. the
+  desktop hover swap is intact.
+- `bunx tsc --noEmit` clean; biome unchanged at the file's 2 pre-existing
+  diagnostics.
+
+## Contact -> Blog gap (mobile)
+
+- `src/app/home/page.tsx`: the Blog wrapper's arbitrary-variant padding
+  `[&>section]:pt-20` -> `[&>section]:pt-12` (80 -> 48px). Mobile-only by
+  construction - `md:[&>section]:pt-30` re-asserts 120px from 768px up.
+- Measured first: 181px from the contact form's bottom to the "Latest Insights"
+  tag - 80px ContactSection `pb`, 80px the Blog wrapper's `pt`, ~21px internal
+  slack. Cut the Blog side.
+- Verified @390px: blog paddingTop 80 -> **48px**; ink gap form-to-tag
+  181 -> **149px**. ContactSection pb still 80px, blog pb still 64px.
+- Verified @1265px unchanged: blog paddingTop **120px** (= pt-30), blog pb
+  128px, contact pb 128px.
+- Remaining knob if still too wide: ContactSection's own `pb` (80px on mobile).
+- `bunx tsc --noEmit` clean; biome 0 diagnostics on page.tsx.
+
+## Testimonials + Blog - smaller mobile carousel arrows
+
+- Both mobile pairs: button `h-12 w-12` -> `h-10 w-10` (48 -> 40px), glyph
+  `h-5 w-5` -> `h-4 w-4` (20 -> 16px). 4 buttons total.
+- Targeting note: ExperimentalTestimonials has TWO pairs with identical sizes
+  and identical aria-labels. The edit keyed on `active:bg-zinc-900`, which only
+  the mobile pair carries (the desktop pair uses `transition-colors hover:`), so
+  the desktop buttons could not be hit. Asserted 2 matches per file and
+  re-grepped afterwards: `h-12 w-12 ... transition-colors hover:` still x2.
+- Verified @390px: all four mobile buttons **40x40** with **16x16** glyphs and
+  visible; both desktop-variant buttons hidden. Still functional at the new
+  size - one Next press gave wrappedDelta **-318** (testimonials, expected -318)
+  and **-328** (blog, expected -328), both tracks still `paused`.
+- Verified @1265px unchanged: the desktop-variant pair is **48x48 with 20x20**
+  glyphs and visible; all four mobile buttons hidden.
+- `bunx tsc --noEmit` clean; biome unchanged (Testimonials 0, Blog 1
+  pre-existing).
+
+## ContactSection - darker channel-card mask (mobile)
+
+- `src/components/home/ChannelCard.tsx` (used ONLY by ContactSection - grepped
+  to confirm, so the edit is contained). The radial-gradient mask decides how
+  much of the grey #161616 box grid shows through, so LOWER alpha reads as a
+  darker card. Below md: core `black` -> `rgba(0,0,0,0.5)`, edge
+  `rgba(0,0,0,0.15)` -> `rgba(0,0,0,0.04)`.
+- Gated on `useIsDesktop`, which is false on the server AND on the first client
+  render, so the SSR'd inline style matches and hydration stays clean. That is
+  only safe because this is a LIVE style, not an `initial` that framer consumes
+  once at mount - the opposite of why the NO_ENTRY work needed the other hook.
+- Verified @390px: all 3 cards report inline
+  `radial-gradient(280px at …, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.04) 100%)`.
+- Verified @1265px unchanged: `rgb(0,0,0) 0%, rgba(0,0,0,0.15) 100%`, box grid
+  still rgb(22,22,22).
+- CAVEAT: the circle position reads `-1000px -1000px` in-pane rather than the
+  parked 85%-width position. `parkMaskRight` runs from a double-rAF and a
+  ResizeObserver, both of which are tied to rendering steps that this
+  non-compositing pane never runs. Pre-existing environment limitation, not
+  affected by this change (the parking logic was untouched) - the alphas are
+  what changed and they are confirmed.
+- `bunx tsc --noEmit` clean; `bunx next build` compiled; biome still exactly 1
+  diagnostic (`noStaticElementInteractions`) - confirmed pre-existing by
+  stashing the file and re-linting (it moved 114 -> 128 only because lines were
+  added above it).
+
+## AboutSection - mobile image stacking animation
+
+- NEW `src/components/home/AboutImageStack.tsx`; AboutSection's mobile branch
+  swapped from a single static <Image> to `<AboutImageStack images={...} />`.
+  The desktop framer/AnimatePresence stack is untouched.
+- Three perf decisions, all following lessons already paid for this session:
+  * The tick lives in the LEAF, not AboutSection. Ticking AboutSection's
+    `frontIndex` would re-render the whole ~315-line section every few seconds
+    to move three boxes — the exact trap TestimonialsRotatingWord was pulled
+    out of.
+  * Motion is CSS transitions on `transform` + `opacity` only, not a framer
+    spring. Both are compositor properties, so the browser interpolates them
+    with zero per-frame JS once the transition starts.
+  * `will-change: transform, opacity` is STATIC, keeping the layers alive
+    between cycles instead of rebuilding them on every swap.
+- Off-screen gating is a SYNCHRONOUS getBoundingClientRect check at tick time,
+  not an IntersectionObserver flag — an async flag that fails to arrive latches
+  and kills the loop permanently, which is how the portfolio autoplay died.
+  Also honours prefers-reduced-motion.
+- `origin-top` is what makes it read as a stack: scaling about the top edge
+  keeps it anchored so the negative y is the only lift, and each card's top
+  peeks above the one in front by exactly that amount.
+- Verified @390px geometry: 3 layers, z 3/2/1, transform-origin `183.2px 0px`,
+  transitionProperty exactly `transform, opacity` (no layout properties),
+  willChange `transform, opacity`. Slots: y0/scale1/op1/w366,
+  y-16/scale.94/op.85/w344, y-30/scale.88/op.7/w322 — i.e. 16px and 30px peeks.
+- Verified the cycle RUNS: scrolled into view and sampled 19.2s — z-order
+  rotated 3/2/1 -> 1/3/2 -> 2/1/3 -> 3/2/1 across 6 transitions at ~3.4-3.6s
+  (3500ms hold, background-tab timer clamping explains the drift). Every card
+  visits every slot.
+- Verified the off-screen gate HOLDS: scrolled to top, 65.7s elapsed = 18
+  possible ticks, z-order unchanged 1/3/2 -> 1/3/2 (`stayedPut: true`).
+- Verified @1266px untouched: the perspective box still holds the framer cards
+  directly (`origin-bottom-right`, transitionProperty `all`),
+  `usesMobileStackHost: false` — AboutImageStack does not mount on desktop.
+- LIMITATION: the pane does not composite (rAF frozen), so smoothness could not
+  be measured as FPS. The claim here is structural — compositor-only properties,
+  no per-frame JS, no section-wide re-render — not a measured frame rate.
+  Confirm the feel on device.
+- `bunx tsc --noEmit` clean; `bunx next build` compiled; biome 0 diagnostics on
+  AboutImageStack, AboutSection unchanged at its 1 pre-existing noArrayIndexKey.

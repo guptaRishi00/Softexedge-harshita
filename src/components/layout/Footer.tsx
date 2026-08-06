@@ -239,9 +239,9 @@ export default function Footer() {
                       </linearGradient>
                     </defs>
                   </svg>
-                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
                   <MdArrowOutward
-                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
                     style={{ fill: "url(#footer-arrow-grad)" }}
                   />
                 </div>
@@ -257,9 +257,9 @@ export default function Footer() {
                 >
                   {social.icon}
                   <div className="relative flex h-4 w-4 items-center justify-center overflow-hidden">
-                    <MdArrowOutward className="absolute z-10 h-full w-full transition-transform duration-300 group-hover:-translate-y-6 group-hover:translate-x-6" />
+                    <MdArrowOutward className="absolute z-10 h-full w-full transition-transform duration-300 max-md:-translate-y-6 max-md:translate-x-6 group-hover:-translate-y-6 group-hover:translate-x-6" />
                     <MdArrowOutward
-                      className="absolute z-10 h-full w-full -translate-x-6 translate-y-6 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                      className="absolute z-10 h-full w-full -translate-x-6 translate-y-6 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
                       style={{ fill: "url(#footer-arrow-grad)" }}
                     />
                   </div>
@@ -269,20 +269,20 @@ export default function Footer() {
           </motion.div>
         </div>
 
-        <div className="relative flex w-full justify-center pt-8 pb-16 max-md:order-4 max-md:pt-0 max-md:pb-6 md:pt-10 md:pb-20 overflow-hidden">
+        <div className="relative flex w-full justify-center pt-8 pb-16 max-md:order-4 max-md:-mx-6 max-md:w-[calc(100%+3rem)] max-md:pt-0 max-md:pb-6 md:pt-10 md:pb-20 overflow-hidden">
           <motion.h1
             variants={isMobile ? brandContainerInstant : brandContainer}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.5 }}
             aria-label="Softexedge"
-            // 18vw is sized for the wide desktop container; below md the
-            // wrapper loses ~72px to page padding, so 18vw renders 338px of
-            // word inside a 318px overflow-hidden box and shaves the S and e.
-            // The wrapper loses a FIXED ~72px, so the safe multiplier is set by
-            // the narrowest phone: 16vw still overflowed 0.7px at 320px, 15vw
-            // clears everywhere.
-            className="relative z-10 flex select-none text-[18vw] max-md:text-[15vw] font-medium leading-[0.85] text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
+            // 18vw at every width now. It previously had to drop to 15vw
+            // below md because the row sat inside the parent's px-6 and the
+            // word overflowed that narrower box — the row now bleeds across
+            // that padding (max-md:-mx-6 above), so it has the full card width.
+            // The binding case is the NARROWEST phone: at 320px the row is
+            // 304px and 18vw renders 279px of word, ~12px clear each side.
+            className="relative z-10 flex select-none text-[18vw] font-medium leading-[0.85] text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.8)] pointer-events-none pr-2 md:pr-4"
           >
             {brandLetters.map(({ char, id }) => (
               <span
