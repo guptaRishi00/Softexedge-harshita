@@ -25,9 +25,21 @@ export default function Herosection({}: any) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animationFrameId = 0;
-
     const CSS_WIDTH = 220;
+
+    // `requestVideoFrameCallback` fires once per PRESENTED VIDEO frame — 24fps
+    // for this asset — whereas rAF fires once per DISPLAY refresh, 60-120fps on
+    // a phone. The old loop therefore re-copied the same decoded frame three to
+    // five times over. Identical pixels, a fraction of the GPU uploads. rAF
+    // stays as the fallback where rVFC is unavailable.
+    const maybeRvfc = video as unknown as {
+      requestVideoFrameCallback?: (cb: () => void) => number;
+      cancelVideoFrameCallback?: (handle: number) => void;
+    };
+    const rvfc = maybeRvfc.requestVideoFrameCallback?.bind(video);
+    const cancelRvfc = maybeRvfc.cancelVideoFrameCallback?.bind(video);
+
+    let handle = 0;
 
     const sizeCanvas = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -48,15 +60,26 @@ export default function Herosection({}: any) {
 
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      animationFrameId = requestAnimationFrame(drawFrame);
+      schedule();
+    };
+
+    const schedule = () => {
+      handle = rvfc ? rvfc(drawFrame) : requestAnimationFrame(drawFrame);
+    };
+
+    const cancel = () => {
+      if (!handle) return;
+      if (rvfc && cancelRvfc) cancelRvfc(handle);
+      else cancelAnimationFrame(handle);
+      handle = 0;
     };
 
     // Cancel first: "play" fires again every time the video is resumed (it is
     // paused offscreen by VideoViewportPause), and without this each resume
     // would leave another concurrent draw loop running.
     const startLoop = () => {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = requestAnimationFrame(drawFrame);
+      cancel();
+      schedule();
     };
 
     video.addEventListener("play", startLoop);
@@ -64,7 +87,7 @@ export default function Herosection({}: any) {
 
     return () => {
       video.removeEventListener("play", startLoop);
-      cancelAnimationFrame(animationFrameId);
+      cancel();
     };
   }, []);
 

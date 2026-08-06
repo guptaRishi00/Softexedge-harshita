@@ -1,58 +1,81 @@
-# About page — mobile responsiveness
+# Mobile performance / thermal — homepage hero
 
-Scope: `/about` below `md` only. Desktop (≥768px) must be byte-identical in
-computed output. Reference conventions come from the homepage work already in
-`SESSION_LOG.md`.
+Constraint: **no UI change**. Every step below must be pixel-neutral.
 
-## Homepage conventions being ported
+## The smoking gun
 
-| Token | Homepage mobile value |
+`public/assets/video7.mp4` — the hero background, autoplaying on every visit:
+
+| property | value |
 |---|---|
-| section x-padding | `max-md:px-3` (12px) |
-| eyebrow / tag | `max-md:text-xs` (12px) |
-| section h2 | `max-md:text-[2.5rem]` (40px) |
-| body copy | `max-md:text-lg` (18px) |
-| carousel arrows | 40×40, `active:` not `hover:`, visible on mobile |
-| overlap/pin machinery | `md:`-gated (`md:-mt-[100vh]`, GSAP in `min-width:768px`) |
+| resolution | **3840×2160 (4K)** |
+| codec | **HEVC / h265** |
+| bitrate | **16,670 kbps** |
+| size | **20 MB** for 10s |
 
-## Findings from the live audit @390px
+It is rendered two ways, and *neither* can use that resolution:
 
-| # | Severity | Finding | Evidence |
-|---|---|---|---|
-| 1 | **P0** | Hero stats row is painted **under** the black section — invisible on mobile | `statsRowTop: 624` vs `nextSectionTop: 353`, `statsClippedByNextSection: true` |
-| 2 | **P0** | Sticky offsets hard-code desktop heights | hero `top:-260px` for a 1253px block (149px lost); culture `top:-150px` for a 1437px block (443px lost) |
-| 3 | P1 | Hero top padding 192px (`pt-48`) | `innerPaddingTop: "192px"` |
-| 4 | P1 | All four h2 at 48px vs homepage's 40px | traditional/culture/team all `h2FontSize: "48px"` |
-| 5 | P2 | Tags 14px vs homepage 12px | `tagFontSize: "14px"` ×3 |
-| 6 | P2 | x-padding 16px/24px vs homepage 12px | `containerPaddingX: "16px"`, hero `24px` |
-| 7 | P2 | Team carousel auto-scrolls with **no** arrows on mobile | `arrowsVisible: 0` |
-| 8 | P2 | Culture quote card `p-8` (32px) cramped at 390px | `quoteCardPadding: "32px 32px"` |
+1. Full-screen at `object-cover scale-110 **blur-xl**` → `filter: blur(24px)`
+   destroys all detail. At a 390px viewport nothing above ~480p is visible.
+2. A 220×118 CSS canvas chip (`CSS_WIDTH = 220`, DPR capped at 2 → a **440px**
+   backing store).
+
+So the useful ceiling is ~660 device px wide. It is shipping 3840.
+
+Why this cooks the phone specifically:
+- 20 MB download before the hero settles.
+- **Continuous 4K HEVC decode at 24fps.** Where HEVC has no hardware path the
+  browser falls back to *software* decode of 4K — that alone pegs the CPU.
+- `filter: blur(24px)` re-blurs a full-screen surface every decoded frame.
+- The canvas `drawImage` copies it again every **display** frame (up to 120Hz),
+  not every video frame (24Hz) — ~5× more draws than the source has frames.
+- The navbar's `backdrop-filter` then samples the result.
+
+Every other video is already sane H.264 ≤5 Mbps. video7 is the outlier by 8×.
+
+## Ruled out (measured, so it is not re-investigated)
+
+- `ogl`/WebGL (`SpecularBorder`) — only on blog/work/brand-strategy cards, and
+  gated behind `isHovered`, which never fires on touch. Not on the homepage.
+- `VideoViewportPause` already pauses every offscreen `<video>` globally.
+- The `blur(40px)`/`blur(24px)` elements in the nav subtree sit under
+  `display: none` at mobile width.
+- PortfolioSection's mobile `backdrop-blur` was removed earlier this session.
 
 ## Steps
 
 | # | Step | Files | route |
 |---|---|---|---|
-| 1 | `md:`-gate the two sticky/negative-margin overlap groups so mobile flows normally (fixes #1, #2) | `src/app/about/page.tsx` | driver |
-| 2 | Hero: mobile padding + type scale (#3, #6) | `src/components/about/AboutHeroSection.tsx` | driver |
-| 3 | AboutTraditional: h2/tag/padding (#4, #5, #6) | `src/components/about/AboutTraditional.tsx` | driver |
-| 4 | OurValuesSection: h2/tag/padding/quote card (#4, #5, #6, #8) | `src/components/about/OurValuesSection.tsx` | driver |
-| 5 | OurTeamSection: h2/tag + mobile arrows (#4, #5, #7) | `src/components/about/OurTeamSection.tsx` | driver |
-| 6 | Verify @390 / @767 / @1265; build + lint | — | driver |
+| 1 | Re-encode video7 → 1280×720 H.264 ~1.2 Mbps (keeps the canvas chip sharp at its 440px backing store; blurred layer cannot tell). Keep the original as `.orig` until approved. | `public/assets/video7.mp4` | driver |
+| 2 | Canvas draw loop → `requestVideoFrameCallback` with rAF fallback: draw once per *video* frame instead of once per *display* frame | `src/components/home/Herosection.tsx` | driver |
+| 3 | Verify: bytes, codec, resolution, decoded-frame count; confirm markup/classes unchanged | — | driver |
 
-## Routing note — read before approving
+Expected: 20 MB → ~1.5 MB (-93%), 4K HEVC → 720p H.264 (hardware-decoded
+everywhere), canvas draws cut ~5×. No markup or class changes at all.
 
-**Every step is routed `driver`, which breaks the ≤20% budget. I think that is
-correct here and want to flag it rather than pad the plan to hit the number.**
+## Not in this plan — offered as a follow-up
 
-`/worker` pays when cheap tokens absorb bulk labor. This task is the inverse:
-each step is 3–8 Tailwind class edits, but *which value* to pick is the entire
-task, and the values must stay consistent across five files against a table of
-homepage conventions. A brief specifying the exact classes to write is longer
-than the diff — fan-out measures at 2.6–5.9× tokens and is never faster, so it
-would cost more for a worse result.
+**Deliberately keeping `filter: blur(24px)` as-is.** Baking the blur into the
+asset would remove the per-frame GPU blur entirely — likely the single largest
+remaining win — but the radius would have to be matched by eye across viewports,
+and I cannot verify appearance in this pane (it does not composite). That is a
+UI risk and the task says no UI change. Worth doing as a follow-up **after** you
+re-test the phone, if it still runs hot.
 
-**Recommendation: run this as plain `/task`.** If quota is the binding
-constraint, say so and I will re-cut steps 2–5 as sonnet briefs with the
-conventions table inlined — that is the version where delegation pays.
+Also out of scope: `public/assets` is **77 MB** total, with 8 PNG/JPGs over
+1.5 MB (largest 2.9 MB). Those are page-level images, not the thermal cause, but
+they are the next weight lever.
+
+## Routing note
+
+All three steps are `driver`, over the ~20% budget. Step 1 is a single ffmpeg
+invocation whose only real content is choosing the target ladder; step 2 is a
+~15-line change in one file that must preserve an existing cleanup contract
+(the loop is cancelled and restarted on every `play`). Briefing either one costs
+more than doing it. **Recommend plain `/task`.**
+
+A genuine fan-out exists if you want it *after* this lands: a site-wide sweep
+auditing all ~40 page components for the same class of issue would parallelise
+well. Say the word and I will cut that as a separate, properly-routed plan.
 
 Awaiting approval before any edit.

@@ -10793,3 +10793,71 @@ the blur two tasks ago at explicit request and flagged it then.
 - LIMITATION: the pane does not composite (rAF frozen), so no frame rate was
   measured. The claim is the work removed - blur radius 40px -> 12px on an
   element compositing over a playing video - not a measured FPS delta.
+
+## Mobile heat/lag - hero video (plan at .claude/plan.md)
+
+### Cause, measured
+`public/assets/video7.mp4`, the autoplaying hero background, was
+**3840x2160 HEVC at 16,670 kbps, 20 MB for 10s**. It is only ever shown two
+ways, neither of which can use that: full-screen under `filter: blur(24px)`
+(detail destroyed), and a 220px CSS canvas chip whose backing store is 275-440px.
+Useful ceiling ~660 device px; it shipped 3840. On a phone that is a 20 MB
+download plus continuous 4K HEVC decode - and where there is no HEVC hardware
+path the browser falls back to SOFTWARE 4K decode, which alone pegs the CPU.
+Every other video in the project is already H.264 <= 5 Mbps; this was the
+outlier by 8x.
+
+### Changes
+1. Re-encoded to **1280x720 H.264, 1,103 kbps** (lanczos downscale, `-movflags
+   +faststart`, audio dropped - the element is `muted` with no controls).
+   **20,436 KB -> 1,356 KB (-93.4%)**, and 720p H.264 hardware-decodes on every
+   phone. Original kept at `public/assets/video7.mp4.orig` pending sign-off.
+2. `Herosection.tsx` canvas loop: rAF -> `requestVideoFrameCallback` with an rAF
+   fallback. rVFC fires once per PRESENTED VIDEO frame (24fps here); rAF fired
+   once per DISPLAY refresh (60-120fps on a phone), so the loop was re-copying
+   the same decoded frame 3-5x over. The existing cancel-then-restart contract
+   on `play` is preserved (VideoViewportPause pauses/resumes it offscreen).
+
+### Two type errors hit and fixed en route
+- `function drawFrame()` is hoisted, which drops TS's null-narrowing of
+  video/canvas/ctx -> 6 errors. Arrow consts restore it; `drawFrame` may
+  reference `schedule` before its declaration since it is not *called* until
+  both exist.
+- `HTMLVideoElement & Partial<Pick<...>>` does NOT make the rVFC methods
+  optional - intersecting a required property with an optional one yields
+  required, so TS2774 "always defined". Cast through `unknown` instead.
+
+### Verification
+- Asset: BEFORE `hevc,3840,2160` / 20,436 KB -> AFTER `h264,1280,720` /
+  1,356 KB. Same duration 10.04s, same 241 frames, same 24fps.
+- NO UI CHANGE, checked structurally: the JSX diff contains zero
+  `className`/`<video>`/`<canvas>` lines ("NONE - no JSX/className lines
+  touched"). At 390px and 1266px the video still computes
+  `className: "absolute inset-0 w-full h-full object-cover scale-110 blur-xl"`,
+  `filter: blur(24px)`, `scale: 1.1`, `object-fit: cover` - identical to before.
+- Runtime: `intrinsicResolution 1280x720`, `readyState 4`,
+  `rvfcSupported: true`, video served 206 Partial Content, no new console errors.
+- `bunx tsc --noEmit` clean; `bunx next build` compiled + 35/35 pages; biome
+  identical before and after (2 pre-existing on line 13).
+
+### LIMITATION
+The pane does not composite (rAF frozen), so the canvas repaint could not be
+observed and no FPS/thermal delta was measured. The claims here are the work
+removed - 93.4% fewer bytes, 4K HEVC -> 720p H.264 decode, ~3-5x fewer canvas
+uploads - not a measured frame rate. Re-test on the phone.
+
+### Still open, deliberately
+- `filter: blur(24px)` on the full-screen video still re-blurs every decoded
+  frame. Baking the blur into the asset would remove that entirely and is
+  probably the largest remaining win, but the radius must be matched by eye
+  across viewports and I cannot verify appearance here - it is a UI risk and the
+  task said no UI change. Best next step IF the phone still runs warm.
+- `public/assets` is still ~58 MB after this, with 8 images over 1.5 MB (largest
+  2.9 MB) and video1.mp4 at 10 MB / 4,968 kbps on the About page.
+
+### Routing
+Planned 3/3 steps `driver` and flagged that at the gate rather than padding to
+hit the <=20% budget: step 1 is one ffmpeg call whose only real content is
+choosing the ladder, step 2 is ~15 lines in one file that must preserve an
+existing cleanup contract. User approved. No workers dispatched, so no
+spec-verifier gate (T1 restraint).
