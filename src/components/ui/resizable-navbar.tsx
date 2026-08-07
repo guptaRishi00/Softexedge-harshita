@@ -75,6 +75,12 @@ interface MobileNavMenuProps {
 export const Navbar = ({ children, className }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState<boolean>(false);
+  // Tracks the last value handed to `setVisible` so the scroll listener can
+  // decide whether a real change occurred BEFORE touching React state. Without
+  // it the listener called setState on every scroll event and React's bail-out
+  // still paid dispatcher overhead each time — costly on a momentum-scrolling
+  // phone where the cloneElement pass below re-runs on every commit.
+  const visibleRef = useRef(false);
 
   // The scroll plumbing is a native passive listener, and hide-on-scroll is a
   // DIRECT style write + CSS transition instead of framer state:
@@ -98,7 +104,16 @@ export const Navbar = ({ children, className }: NavbarProps) => {
       const latest = window.scrollY;
 
       const shouldBeVisible = latest > 80;
-      setVisible((prev) => (prev === shouldBeVisible ? prev : shouldBeVisible));
+      // Guard with a ref instead of feeding setState a same-value functional
+      // update every scroll event: React still runs the dispatcher (and pays
+      // its overhead) for every bail-out, and on a momentum-scrolling phone
+      // this listener fires 60-120x/sec. Skipping the call entirely when the
+      // boolean has not actually crossed the threshold removes that per-frame
+      // cost; `visible` still flips at exactly the same positions.
+      if (shouldBeVisible !== visibleRef.current) {
+        visibleRef.current = shouldBeVisible;
+        setVisible(shouldBeVisible);
+      }
 
       const shouldHide = latest > lastScroll && latest > 120;
       if (shouldHide !== hidden) {

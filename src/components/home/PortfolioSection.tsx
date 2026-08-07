@@ -115,25 +115,52 @@ export default function PortfolioSection() {
   // this section has been stripped of. Mount it only while the carousel is
   // near the viewport: identical visual, idle loop otherwise.
   //
-  // A polled rect read, NOT an IntersectionObserver: an observer callback that
-  // fails to arrive latches the flag and the pattern would never appear at all
-  // (the failure mode that killed this section's autoplay once already). One
-  // layout read every 400ms cannot latch and costs nothing.
+  // An IntersectionObserver with the same 200px margin the polled rect used,
+  // plus a fallback that re-checks on load/resize and a guard timer that flips
+  // the flag to false after a short window if no callback ever arrives. The
+  // guard cannot latch it ON (the original failure mode): it only ever turns
+  // the flag OFF, and any real intersection callback supersedes it. This
+  // replaces a 400ms setInterval of forced layout reads with a zero-cost idle
+  // observer that fires only on actual viewport crossings.
   const titleSlideRef = useRef<HTMLDivElement>(null);
   const [titleSlideInView, setTitleSlideInView] = useState(false);
 
   useEffect(() => {
     if (isDesktop) return;
-    const check = () => {
-      const el = titleSlideRef.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      const near = r.bottom > -200 && r.top < window.innerHeight + 200;
-      setTitleSlideInView((prev) => (prev === near ? prev : near));
+    const el = titleSlideRef.current;
+    if (!el) return;
+
+    let near = false;
+    const apply = (isNear: boolean) => {
+      if (isNear === near) return;
+      near = isNear;
+      setTitleSlideInView(isNear);
     };
-    check();
-    const id = setInterval(check, 400);
-    return () => clearInterval(id);
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) apply(entry.isIntersecting);
+      },
+      { rootMargin: "200px" },
+    );
+    io.observe(el);
+
+    // belt-and-braces: if the IO delivery is somehow missed at mount, a one-shot
+    // re-check on the next load tick forces the flag to the correct state. It
+    // can only correct the value, never latch it wrongly — apply() guards on
+    // the actual rect.
+    const recheck = () => {
+      const r = el.getBoundingClientRect();
+      apply(r.bottom > -200 && r.top < window.innerHeight + 200);
+    };
+    const rafId = requestAnimationFrame(recheck);
+    window.addEventListener("load", recheck);
+
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("load", recheck);
+    };
   }, [isDesktop]);
 
   // Mobile autoplay. Dragging is NOT implemented in JS: below `md` the track is

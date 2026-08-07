@@ -9,11 +9,14 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
+    // Below md this page registers NO ScrollTriggers (every one on /home is
+    // gated behind `mm.add("(min-width: 768px)")`), and Lenis is skipped so
+    // native scrolling owns the page. The previous mobile branch still called
+    // `ScrollTrigger.refresh()` after 100ms — a forced layout pass over the
+    // whole subtree that had nothing to refresh. Returning early removes that
+    // wasted work; nothing else in this effect is needed on mobile.
     if (window.matchMedia("(max-width: 767px)").matches) {
-      const timer = setTimeout(() => {
-        ScrollTrigger.refresh();
-      }, 100);
-      return () => clearTimeout(timer);
+      return;
     }
 
     const lenis = new Lenis({
