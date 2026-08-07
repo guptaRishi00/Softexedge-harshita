@@ -11702,3 +11702,47 @@ tsc clean, build compiled, biome unchanged (1 pre-existing in BlogSection).
 - @1265: track `overflow-x: visible`, scrollLeft 0, scrollWidth 7590, 6 panels,
   pin-spacer 8125 — GSAP-pinned, neither hold constant runs there.
 - tsc clean, build compiled, biome at the file's baseline 2.
+
+## Navbar - framer taken off the scroll path (both copies)
+
+### The answer to "why is it still laggy, especially the navbar"
+The video was never the navbar's problem. THREE things ran on every scroll:
+1. `useScroll` + `useMotionValueEvent` — framer library code per scroll frame,
+   only to produce two booleans.
+2. `setIsHidden` state — flipping on every scroll DIRECTION CHANGE re-rendered
+   Navbar, and each render re-runs its `React.Children.map` + `cloneElement`
+   pass over the ENTIRE nav subtree (~50 elements, the display:none desktop
+   tree included). On a phone, momentum scrolling reverses constantly.
+3. The hide/show slide was a framer spring = per-frame JS.
+
+### Changes (both files, identical treatment)
+- `src/components/ui/resizable-navbar.tsx` (homepage) and
+  `src/components/page/resizable-navbar.tsx` (every other route — a full copy
+  of the same component, which is why fixing only one would have left most of
+  the site slow; its `setIsHidden` was still UNGUARDED, firing every frame).
+- Scroll handling is now a native `{ passive: true }` listener. Hide/show is a
+  DIRECT `el.style.translate` write plus `transition-[translate] duration-300
+  ease-out` — same 300ms ease-out, run by the compositor, and it no longer
+  touches React at all. `visible` remains state (children restyle from it) but
+  flips only when the 80px threshold is crossed, not per frame.
+- `motion.div` -> plain `div` on the root. NavBody/NavItems/menus keep framer.
+
+### Verified
+- Main-thread cost per scroll step: **/home 2.03 -> 0.58 ms (-71%)**,
+  **/about 1.29 -> 0.40 ms (-69%)**.
+- Behaviour identical on both routes: scroll down past 120 -> inline translate
+  `0px -120px`; scroll up -> `0px`; computed `transition-property: translate`,
+  `duration 0.3s`.
+- Mobile shell states intact @390: floating class + `blur(12px)` when scrolled,
+  cleared at top; logo and toggle present.
+- Desktop @1266 intact: NavBody padding 32px at top -> 12px scrolled,
+  `backdrop-blur-2xl` class appears on scroll and clears at top, root translate
+  `0px -120px` / `0px`.
+- NavBody still a motion.div in the page copy (8 `motion.div` remain); zero live
+  `useScroll`/`useMotionValueEvent` references (the one grep hit is a comment).
+- tsc clean, build compiled, biome **19 before and 19 after** (verified by
+  stashing both files and re-linting).
+
+### Still not addressed (flagged, not done)
+The two navbar files are near-duplicates. Deduplicating them is the real
+cleanup but it is a cross-route refactor, not this task's scope.

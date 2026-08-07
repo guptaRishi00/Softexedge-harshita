@@ -1,15 +1,10 @@
 "use client";
 
 import { IconMenu2, IconX } from "@tabler/icons-react";
-import {
-  AnimatePresence,
-  motion,
-  useMotionValueEvent,
-  useScroll,
-} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface NavbarProps {
@@ -68,30 +63,47 @@ interface MobileNavMenuProps {
 
 export const Navbar = ({ children, className }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollY } = useScroll();
-  const lastScroll = useRef(0);
   const [visible, setVisible] = useState<boolean>(false);
-  const [isHidden, setIsHidden] = useState<boolean>(false);
 
-  useMotionValueEvent(scrollY, "change", (latest: number) => {
-    const shouldBeVisible = latest > 80;
-    setVisible((prev) => (prev === shouldBeVisible ? prev : shouldBeVisible));
+  // Same treatment as the homepage copy (ui/resizable-navbar): a native passive
+  // listener plus a direct style write and a CSS transition. framer's
+  // useScroll/useMotionValueEvent ran library code on every scroll frame; the
+  // per-frame `setIsHidden` (unguarded in this copy) re-rendered the component
+  // and re-ran the cloneElement pass over the whole nav subtree on every scroll
+  // direction change; and the slide itself was a framer spring. The CSS
+  // transition below is the same 300ms ease-out, run by the compositor.
+  // `visible` stays React state — children restyle from it, but it flips only
+  // when the 80px threshold is crossed, not per frame.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let lastScroll = 0;
+    let hidden = false;
 
-    if (latest > lastScroll.current && latest > 120) {
-      setIsHidden(true);
-    } else {
-      setIsHidden(false);
-    }
-    lastScroll.current = latest;
-  });
+    const onScroll = () => {
+      const latest = window.scrollY;
+
+      const shouldBeVisible = latest > 80;
+      setVisible((prev) => (prev === shouldBeVisible ? prev : shouldBeVisible));
+
+      const shouldHide = latest > lastScroll && latest > 120;
+      if (shouldHide !== hidden) {
+        hidden = shouldHide;
+        el.style.translate = hidden ? "0 -120px" : "0 0";
+      }
+      lastScroll = latest;
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      animate={{ y: isHidden ? -120 : 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
       className={cn(
-        "fixed inset-x-0 top-0 z-[100] flex justify-center",
+        "fixed inset-x-0 top-0 z-[100] flex justify-center transition-[translate] duration-300 ease-out",
         className,
       )}
     >
@@ -105,7 +117,7 @@ export const Navbar = ({ children, className }: NavbarProps) => {
               )
           : child,
       )}
-    </motion.div>
+    </div>
   );
 };
 
