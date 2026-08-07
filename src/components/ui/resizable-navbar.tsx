@@ -452,7 +452,7 @@ export const MobileNavHeader = ({
   // the same value would read as a lopsided, top-heavy card.
   const base = dropdown
     ? cn(
-        "relative flex w-full shrink-0 flex-row items-center justify-between px-5 pb-3.5",
+        "relative flex w-full shrink-0 flex-row items-center justify-between px-7 pb-3.5",
         visible ? "pt-3.5" : "pt-8",
       )
     : null;
@@ -513,7 +513,7 @@ export const MobileNavMenu = ({
             className="w-full overflow-hidden"
           >
             <div
-              className={cn("flex w-full flex-col px-5 pt-1 pb-5", className)}
+              className={cn("flex w-full flex-col px-7 pt-1 pb-5", className)}
             >
               {children}
             </div>

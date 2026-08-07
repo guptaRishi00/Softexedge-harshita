@@ -8,9 +8,10 @@ import {
 } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const TOTAL_ITEMS = 80;
-const COLUMNS = 10;
-const ROWS = TOTAL_ITEMS / COLUMNS;
+// Defaults reproduce the original fixed 10x8 grid exactly, so every existing
+// call site (CtaSection) renders byte-identically without passing anything.
+const DEFAULT_COLUMNS = 10;
+const DEFAULT_ROWS = 8;
 
 const SWEEP_CELLS_PER_SEC = 6;
 const SWEEP_TRAIL = 4;
@@ -24,12 +25,15 @@ export default function SpotlightGrid({
   travel = 0.9,
   sweep = false,
   sweepColStart = 0,
-  sweepColEnd = COLUMNS - 1,
+  sweepColEnd,
   sweepRowStart = 0,
-  sweepRowEnd = ROWS - 1,
+  sweepRowEnd,
   scatter = false,
   sweepTrail = SWEEP_TRAIL,
   plus = false,
+  columns = DEFAULT_COLUMNS,
+  rows = DEFAULT_ROWS,
+  cellClassName = "rounded-2xl",
 }: {
   speed?: number;
   glowColor?: string;
@@ -44,19 +48,31 @@ export default function SpotlightGrid({
   scatter?: boolean;
   sweepTrail?: number;
   plus?: boolean;
+  /** Grid shape. Fewer columns = larger cells at the same container width. */
+  columns?: number;
+  rows?: number;
+  /** Corner treatment for both cell layers, e.g. "rounded-none" for square. */
+  cellClassName?: string;
 }) {
+  const COLUMNS = columns;
+  const ROWS = rows;
+  const TOTAL_ITEMS = columns * rows;
+  // Resolved here rather than as destructuring defaults: a default cannot
+  // reference a parameter declared after it.
+  const colEnd = sweepColEnd ?? COLUMNS - 1;
+  const rowEnd = sweepRowEnd ?? ROWS - 1;
+
   const reduce = useReducedMotion();
   const rootRef = useRef<HTMLDivElement | null>(null);
 
-  const mouseX = useMotionValue(-1000); 
+  const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
   const [focus, setFocus] = useState<{ row: number; col: number } | null>(null);
   const [sweepHead, setSweepHead] = useState(-1);
 
   const scatterSteps = useMemo(() => {
     if (!scatter) return null;
-    const n =
-      (sweepColEnd - sweepColStart + 1) * (sweepRowEnd - sweepRowStart + 1);
+    const n = (colEnd - sweepColStart + 1) * (rowEnd - sweepRowStart + 1);
     let seed = 0x9e3779b9;
     const rnd = () => {
       seed = (seed * 1664525 + 1013904223) >>> 0;
@@ -70,7 +86,7 @@ export default function SpotlightGrid({
     const steps = new Array<number>(n);
     for (let s = 0; s < n; s++) steps[order[s]] = s;
     return steps;
-  }, [scatter, sweepColStart, sweepColEnd, sweepRowStart, sweepRowEnd]);
+  }, [scatter, sweepColStart, colEnd, sweepRowStart, rowEnd]);
 
   useEffect(() => {
     if (reduce) return;
@@ -95,7 +111,7 @@ export default function SpotlightGrid({
 
       if (sweep) {
         const regionCount =
-          (sweepColEnd - sweepColStart + 1) * (sweepRowEnd - sweepRowStart + 1);
+          (colEnd - sweepColStart + 1) * (rowEnd - sweepRowStart + 1);
         const period = regionCount + sweepTrail;
         const next = (t * SWEEP_CELLS_PER_SEC) % period;
         setSweepHead((cur) =>
@@ -141,19 +157,21 @@ export default function SpotlightGrid({
     travel,
     sweep,
     sweepColStart,
-    sweepColEnd,
+    colEnd,
     sweepRowStart,
-    sweepRowEnd,
+    rowEnd,
     sweepTrail,
+    COLUMNS,
+    ROWS,
   ]);
 
   const getIntensity = (index: number) => {
     if (sweep) {
       const centreAt = (row: number, col: number) => {
-        if (row < sweepRowStart || row > sweepRowEnd) return 0;
-        if (col < sweepColStart || col > sweepColEnd) return 0;
+        if (row < sweepRowStart || row > rowEnd) return 0;
+        if (col < sweepColStart || col > colEnd) return 0;
 
-        const regionCols = sweepColEnd - sweepColStart + 1;
+        const regionCols = colEnd - sweepColStart + 1;
         const ordinal =
           (row - sweepRowStart) * regionCols + (col - sweepColStart);
         const step = scatterSteps ? scatterSteps[ordinal] : ordinal;
@@ -165,8 +183,8 @@ export default function SpotlightGrid({
 
       const r = Math.floor(index / COLUMNS);
       const c = index % COLUMNS;
-      if (r < sweepRowStart || r > sweepRowEnd) return 0;
-      if (c < sweepColStart || c > sweepColEnd) return 0;
+      if (r < sweepRowStart || r > rowEnd) return 0;
+      if (c < sweepColStart || c > colEnd) return 0;
 
       const own = centreAt(r, c);
       if (!plus) return own;
@@ -226,15 +244,14 @@ export default function SpotlightGrid({
             return (
               <div
                 key={index}
-                className="relative aspect-square w-full overflow-hidden rounded-2xl p-[2px] transition-all duration-300 ease-out"
+                className={`relative aspect-square w-full overflow-hidden ${cellClassName} p-[2px] transition-all duration-300 ease-out`}
                 style={{ backgroundColor: "#121212" }}
               >
                 <div
                   className={
                     glowColor
                       ? "absolute inset-0"
-                      : 
-                        "absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#1473cb]"
+                      : "absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#1473cb]"
                   }
                   style={{
                     opacity: intensity * 0.8,
@@ -248,7 +265,7 @@ export default function SpotlightGrid({
                 />
 
                 <div
-                  className="relative z-10 h-full w-full rounded-2xl transition-colors duration-300"
+                  className={`relative z-10 h-full w-full ${cellClassName} transition-colors duration-300`}
                   style={{
                     backgroundColor: bgColor,
                     transition: sweepTween && `background-color ${sweepTween}`,

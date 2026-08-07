@@ -11443,3 +11443,262 @@ wrapper `display: contents`, no inline styles; 6 panels found; track 7590 =
 first project's reveal still armed at opacity 0. Desktop untouched.
 
 tsc clean, build compiled, biome at the file's 2 pre-existing diagnostics.
+
+## AboutSection - mobile stack got a real exit phase
+
+### Cause (a defect in my own earlier implementation)
+The mobile stack cycled by rotating SLOT poses and flipping z-index. z-index is
+discrete, so at each swap the front card jumped BEHIND the other two in a single
+frame while its 700ms transform tween then played out hidden. Nothing was
+dropping frames — the motion was simply invisible, which reads as a pop. The
+desktop version never had this because AnimatePresence gives its exiting card a
+real exit (x 1000 / y 400 / rotateZ 90).
+
+### Fix
+- New `EXIT` pose (y 56, scale 0.92, opacity 0) and a `leaving` index kept
+  SEPARATE from `front`, so promoting the other cards is not delayed by the
+  exit.
+- The leaver holds the TOP z-index for its whole exit — it is now seen leaving
+  rather than cut behind the stack — then a timer (not `transitionend`, which
+  can be dropped and would strand the card invisible) clears `leaving`.
+- The card returning to the deepest slot does so with `transition: none`, so
+  the audience never sees it travel back up.
+- Still transform + opacity only, `will-change` still static: the exit adds
+  zero new work for the compositor.
+
+### Verified in PROD @390, 108.9s / 63 state changes
+Every cycle shows the same clean two-phase shape, e.g.
+`z4 op0 s0.92 anim` (leaver on top, fading out) -> ~710ms later
+`z1 op0.7 s0.88 none` (silently reseated at the back).
+Across ~30 swaps the exit pose appears EXACTLY once per cycle and always at
+z4 (above the 3-card stack); no cycle skipped, none stuck invisible. Roles
+rotate 0->1->2->0 with no drift over the whole run.
+
+### Verified @1266
+`usesMobileHost: false`, 6 direct framer children with `origin-bottom-right`,
+transitionProperty `all`, and `hasExitPoseAnywhere: false` — the mobile EXIT
+pose never renders on desktop. Untouched.
+
+tsc clean, build compiled, biome 0 diagnostics on the file.
+
+## Blog + Testimonials - infinite mobile carousels
+
+- NEW `src/lib/useInfiniteCarousel.ts`. Track renders 3 identical runs on
+  mobile; scrolling PARKS in run 2, so there is a full run of runway either
+  way. When the position comes within one slide of a true end, scrollLeft jumps
+  exactly one run - invisible (runs are pixel-identical) and lands on the same
+  snap boundary, so the snap engine does not re-animate.
+- Wrapping at the EXTREMES, not the middle: assigning scrollLeft during an iOS
+  momentum fling kills the fling, and the extremes are where a fling has
+  already run out. Same cancel-and-rearm rAF guard as CarouselDots (a
+  "one pending" flag latches if its callback never runs).
+- Run width is `slideStride * itemCount` measured from `[data-slide]` offsets,
+  NOT `scrollWidth / copies` - both tracks carry their own horizontal padding
+  (testimonials centres with `px-11`, blog `px-3`), which would skew a
+  scrollWidth ratio and let the modular arithmetic drift.
+- CarouselDots gained `loop`: active index is now `round(scrollLeft/stride) %
+  count` while looping (a ratio against full scrollWidth would sweep the dots
+  three times per lap), and tapping a dot steps to the NEAREST occurrence of
+  that slide rather than its absolute index, so it never rewinds a whole lap.
+- Copy counts arranged so DESKTOP IS BYTE-IDENTICAL: testimonials array tripled
+  with run 3 `md:hidden`; blog gains two `md:hidden` CardTracks alongside the
+  existing `max-md:hidden` one. Desktop sees exactly 2 runs either way, which
+  its framer wrap depends on.
+
+### Verified in PROD @390 (rAF shimmed — pane's real rAF is frozen)
+| | blog | testimonials |
+|---|---|---|
+| runs visible | 3 | 3 |
+| stride / run width | 328 / 1312 | 318 / 1272 |
+| parked at start | 1314 | 1274 |
+| from left edge (40) | **1314** | **1274** |
+| from right edge | **2298** | **2229** |
+| middle untouched | yes | yes |
+Both wrap in BOTH directions and leave mid-track positions alone.
+
+### Verified @1266
+Both sections: 2 runs visible (8 of 16 / 8 of 12 slides), no native scroller,
+0 dots, blog's framer marquee still driving (`translateX(-1314px)`), desktop
+testimonial arrows still 2. Untouched.
+
+### Two measurement corrections made mid-task
+- `slidesVisible` first read 16 for blog: a slide inside a `display:none`
+  parent still reports its own display. Switched to `offsetParent !== null`.
+- First wrap test showed testimonials never wrapping - the 200ms wait was too
+  short for the snap engine to settle. At 450ms both wrap reliably; the code
+  was never at fault.
+
+tsc clean, build compiled, biome unchanged (1 pre-existing in BlogSection).
+
+## Navbar - more x padding (mobile)
+
+- Dropdown-mode header row `px-5` -> `px-7` (20 -> 28px). The MENU PANEL below
+  it was moved in lockstep (same px-5 -> px-7): it shares the bar's inset, so
+  changing only the row would have left the nav rows misaligned with the logo
+  above them.
+- No breakpoint prefix needed - both classes live in the `dropdown` branch,
+  which `page/Header` never opts into and which is `lg:hidden` regardless.
+- Verified @390 closed: paddingLeft/Right **28px**, logo inset 28 and toggle
+  inset 28 (`symmetric: true`), still vertically centred, row height 74px.
+- Verified @390 OPEN: panel paddingLeft 28px, `panelMatchesRow: true`, and
+  `navItemAlignsWithLogo: true` across 6 nav rows - the lockstep move is what
+  keeps that alignment.
+- Verified @1266 unchanged: desktop NavBody padding 40px x / 32px y, width
+  1250, fixed; mobile shell `display: none`.
+- tsc clean, build compiled, biome unchanged.
+
+## PortfolioSection - ChannelCard pattern on the title slide (mobile)
+
+- Added ContactSection's box-grid + radial-mask treatment to the "Our Projects"
+  slide, `md:hidden` so desktop never renders it.
+- Simplification worth noting: ChannelCard uses TWO nested divs per cell, but at
+  rest both are #161616 — the inner one only diverges during its hover glow,
+  which is desktop-only interaction. This slide has no hover, so ONE div per
+  cell is pixel-identical and halves the nodes (80 instead of 160). The mask is
+  likewise parked (`at 85% 50%`) rather than mouse-tracked, so it needs no
+  motion values, no ResizeObserver and no per-frame work — it paints once.
+  That matters on a page where mobile perf has been the running complaint.
+- `-z-10` is scoped by the panel's existing `max-md:isolate`; the three copy
+  elements got `relative` so they stay above it.
+- Verified @390 against the live ChannelCard on the same page: cell background
+  **rgb(22,22,22) === rgb(22,22,22)**, mask stops
+  `rgba(0,0,0,0.5) 0% -> rgba(0,0,0,0.04) 100%` identical (only the centre
+  differs: parked 85%/50% vs the card's mouse position). 80 cells, 6 columns,
+  8px gap, 65x65 square cells, radius 8px, layer absolute / z -10 /
+  pointer-events none, copy still `relative` above it.
+- Verified @1265: pattern layer `display: none` (rendered, hidden); slide still
+  1265x900, title 144px, 6 panels, track 7590, pin-spacer 8125 — desktop
+  untouched.
+- Two failed anchors en route, both indentation: the slide sits one level
+  deeper since the compositor-slide wrapper was added (12 spaces, not 10).
+  Asserts fired before any write, so no partial edits.
+- tsc clean, build compiled, biome at the file's 2 pre-existing diagnostics.
+
+## PortfolioSection - CtaSection's SpotlightGrid on the title slide (mobile)
+
+- The "auto moving animation" in CtaSection is `SpotlightGrid` (a scattered
+  sweep of glowing cells). Mounted it in the title slide's masked layer with
+  CtaSection's EXACT props (speed .15, sweep, scatter, plus, sweepTrail 6,
+  sweepColStart 2, sweepRowStart 2, sweepRowEnd 5), replacing the static cells
+  from the previous task. ChannelCard's radial mask wrapper is KEPT — sweep
+  mode supplies no mask of its own, so the wrapper is what gives the falloff.
+- PERF GATE, and why it exists: SpotlightGrid runs a permanent rAF loop and is
+  not otherwise on the homepage, so mounting it unconditionally would add
+  per-frame work that keeps running while the user is anywhere else on the page
+  — the exact cost this section has been stripped of. It now mounts only while
+  the slide is within 200px of the viewport.
+- The gate is a POLLED rect read (400ms interval), not an IntersectionObserver.
+  First attempt used framer's `useInView`; it never mounted, because IO
+  callbacks are delivered during rendering steps that this pane has frozen —
+  and more importantly that is the async-flag pattern which has already killed
+  this very section's autoplay once. A polled rect read cannot latch.
+- Verified @390 in prod: SpotlightGrid mounts when the section is scrolled in —
+  **80 cells, 10 columns, 12px gap, outer #121212 (rgb(18,18,18)), inner
+  rgb(15,15,15), glow `linear-gradient(... rgb(46,91,255) ...)` = #2E5BFF** —
+  i.e. exactly SpotlightGrid's own constants. Mask still on the wrapper.
+- Gate verified BOTH ways: scrolled to top it unmounts (sampled every 300ms:
+  mounted through 3130ms, `mounted: false` from 4141ms on — this pane throttles
+  background timers, so the 400ms poll fires far slower here than on device),
+  and it remounts on scrolling back.
+- Verified @1265: layer `display: none`, `spotlightMountedOnDesktop: false`;
+  slide 1265x900, title 144px, 6 panels, track 7590, pin-spacer 8125 —
+  desktop untouched, and desktop never pays the rAF loop.
+- Two failed measurements en route, both mine not the code's: probing for
+  `.grid` inside the layer missed SpotlightGrid's own grid div, and an
+  unmount/remount sequence with 900ms waits was too short for the throttled
+  poll.
+- tsc clean (one round-trip: `useState` needed importing), build compiled,
+  biome at the file's 2 pre-existing diagnostics.
+
+## PortfolioSection - square, larger pattern cells (mobile)
+
+- The cells belong to SpotlightGrid, which CtaSection also uses, so this needed
+  per-instance PROPS rather than a CSS override. A CSS-only override was ruled
+  out on purpose: the column count feeds the sweep math (`index % COLUMNS`, the
+  `plus` arms, the scatter region), so forcing columns in CSS while the JS still
+  assumed 10 would have scrambled where the animation plays.
+- `SpotlightGrid` gained `columns` (10), `rows` (8) and `cellClassName`
+  ("rounded-2xl") — all defaulted to today's fixed values, so existing call
+  sites render byte-identically. `sweepColEnd`/`sweepRowEnd` moved from
+  destructuring defaults to resolved locals (`colEnd`/`rowEnd`), since a
+  default cannot reference a parameter declared after it.
+- Portfolio instance: `columns={5} rows={8} cellClassName="rounded-none"`, and
+  the sweep region RESCALED (`sweepColStart` 2->1, `sweepRowStart` 2->1,
+  `sweepRowEnd` 5->6) — those props are cell coordinates, so reusing the
+  10-column values would have put the sweep in the wrong place.
+- Verified @390 portfolio: **40 cells, 5 columns, outer AND inner radius 0px,
+  cells 72x72 (was 34x34 — more than doubled), square: true**, cell bg still
+  rgb(18,18,18), glow gradient still rgb(46,91,255).
+- REGRESSION CHECK on /brand-strategy (CtaSection, same component): **80 cells,
+  10 columns, radius 18px inside and out, gap 12px, 27x27, bg rgb(18,18,18)** —
+  untouched, and its call site still passes no new props.
+- Verified @1265 homepage: layer `display: none`,
+  `spotlightMountedOnDesktop: false`, slide 1265x900, title 144px, 6 panels,
+  track 7590 — desktop untouched.
+- tsc clean, build compiled. Biome +1 on SpotlightGrid
+  (`noArrayIndexKey`, line 246) — PRE-EXISTING `key={index}` in its cell map,
+  surfaced only because the line moved; not introduced here.
+
+## PortfolioSection - pattern cells back to rounded-2xl (mobile)
+
+- One value: the portfolio SpotlightGrid instance's `cellClassName`
+  "rounded-none" -> "rounded-2xl". The prop added in the previous task made
+  this a single-token change with no touch to the shared component (git diff
+  confirms SpotlightGrid carries only that earlier task's edits, none from
+  this one). Stale "square corners per the brief" comment trimmed.
+- Verified @390 portfolio: outer AND inner radius **18px**; size and shape
+  deliberately unchanged from last task — 40 cells, 5 columns, 72x72, cell bg
+  rgb(18,18,18), glow rgb(46,91,255).
+- Regression check on /brand-strategy (CtaSection, same component): 80 cells,
+  10 columns, 18px radius, gap 12px, 27x27 — unchanged.
+- Verified @1265 homepage: layer `display: none`,
+  `spotlightMountedOnDesktop: false`, slide 1265x900, title 144px, 6 panels.
+- tsc clean, build compiled, biome 3 (unchanged, all pre-existing).
+
+## PortfolioSection - mobile autoplay cadence 5s
+
+- `MOBILE_AUTOPLAY_MS` 4500 -> 5000. One constant; it drives the single
+  `setInterval` that advances every mobile slide, so "first slide 5s and the
+  next card every five seconds" is the same knob throughout.
+- Desktop's `AUTO_ADVANCE_SECONDS` (the GSAP scroll autoplay) deliberately
+  untouched.
+- Verified @390 in prod over 24.2s — scrollLeft advanced
+  **0 -> 390 -> 780 -> 1170 -> 1560**, one page each, with gaps
+  **[4011, 5000, 5000, 4997] ms**. The first gap is short only because sampling
+  started mid-interval; every subsequent gap is 5000 +/- 3ms.
+- Verified @1265: track `overflow-x: visible`, scrollLeft 0, scrollWidth 7590,
+  6 panels, pin-spacer 8125 — desktop is GSAP-pinned and never runs the mobile
+  interval.
+- tsc clean, build compiled, biome at the file's baseline 2.
+
+## PortfolioSection - title slide holds 10s, others 5s (mobile)
+
+- This is now genuinely TWO values, where the previous request read as a uniform
+  5s. New `MOBILE_FIRST_SLIDE_MS = 10000` alongside `MOBILE_AUTOPLAY_MS = 5000`.
+- The interval still fires every 5s; a `lastAdvance` timestamp plus a per-slide
+  `hold` lets slide 0 sit for two ticks while every other slide advances on the
+  first. Slide index is read from `scrollLeft` AT TICK TIME (synchronous) rather
+  than tracked in a counter, so a drag or a dot tap cannot desync it — the same
+  rule the rest of this effect already follows.
+- `lastAdvance` is also reset while the reader is interacting and while the
+  section is off screen, so a slide always gets its full hold from the moment it
+  is actually visible and unbothered, rather than firing the instant a gate
+  lapses. 50ms tolerance absorbs setInterval drift (an elapsed of 9998 against a
+  10000 hold would otherwise cost a whole extra tick).
+- Desktop's `AUTO_ADVANCE_SECONDS = 6` untouched.
+
+### Verification, and an important caveat about this pane
+- Subsequent slides: gaps **[4997, 5006, 4996, 5001] ms** across a clean run —
+  5s to within 6ms.
+- Slide 0: held **9002ms** measured from a sample start that was UP TO 1s after
+  the real dwell began (the dwell starts at the prior interval tick, which is
+  not observable), so the true hold is ~10s. It is unambiguously ~2x the others.
+- Apparent "stalls" mid-testing were NOT a regression: a direct probe measured
+  **6 timer ticks in 5621ms where 22 were expected — this pane throttles timers
+  ~4x**, which stretches a 5s interval to ~20s. Confirmed live at the same
+  moment: scrollLeft had advanced 390 -> 780 with the panels wrapper caught
+  mid-slide (`translate3d(-390px)`, 600ms transition active). Autoplay is
+  healthy; only the pane's clock is slow.
+- @1265: track `overflow-x: visible`, scrollLeft 0, scrollWidth 7590, 6 panels,
+  pin-spacer 8125 — GSAP-pinned, neither hold constant runs there.
+- tsc clean, build compiled, biome at the file's baseline 2.

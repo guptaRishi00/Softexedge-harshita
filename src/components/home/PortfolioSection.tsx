@@ -5,18 +5,28 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useIsDesktop } from "@/lib/useIsDesktop";
+import SpotlightGrid from "@/components/ui/SpotlightGrid";
 import { cn } from "@/lib/utils";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+// ChannelCard's mobile mask, kept from the static version: it is what gives the
+// grid its soft falloff. SpotlightGrid provides no mask of its own in sweep
+// mode, so this wrapper supplies it.
+const PATTERN_MASK =
+  "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.04) 100%)";
+
 const AUTO_ADVANCE_SECONDS = 6;
 // Mobile carousel: one slide every 4.5s, each slide taking 600ms, and autoplay
 // resuming 1.5s after the finger lifts.
-const MOBILE_AUTOPLAY_MS = 4500;
+const MOBILE_AUTOPLAY_MS = 5000;
+// The title slide holds longer than the case studies — it is the one panel the
+// reader is meant to actually read before the carousel starts moving.
+const MOBILE_FIRST_SLIDE_MS = 10000;
 const MOBILE_RESUME_MS = 1500;
 const MOBILE_SLIDE_MS = 600;
 // A held pointer expires after this, so a missing pointerup can never stall it.
@@ -99,6 +109,33 @@ export default function PortfolioSection() {
   const panelsRef = useRef<HTMLDivElement>(null);
   const isDesktop = useIsDesktop();
 
+  // SpotlightGrid drives a permanent rAF loop. It is not otherwise on the
+  // homepage, so mounting it unconditionally would add per-frame work that
+  // keeps running while the user is anywhere else on the page — the exact cost
+  // this section has been stripped of. Mount it only while the carousel is
+  // near the viewport: identical visual, idle loop otherwise.
+  //
+  // A polled rect read, NOT an IntersectionObserver: an observer callback that
+  // fails to arrive latches the flag and the pattern would never appear at all
+  // (the failure mode that killed this section's autoplay once already). One
+  // layout read every 400ms cannot latch and costs nothing.
+  const titleSlideRef = useRef<HTMLDivElement>(null);
+  const [titleSlideInView, setTitleSlideInView] = useState(false);
+
+  useEffect(() => {
+    if (isDesktop) return;
+    const check = () => {
+      const el = titleSlideRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const near = r.bottom > -200 && r.top < window.innerHeight + 200;
+      setTitleSlideInView((prev) => (prev === near ? prev : near));
+    };
+    check();
+    const id = setInterval(check, 400);
+    return () => clearInterval(id);
+  }, [isDesktop]);
+
   // Mobile autoplay. Dragging is NOT implemented in JS: below `md` the track is
   // a native scroll-snap container, so the browser owns the drag, the momentum
   // and the snapping — nothing runs per frame while the user is in control.
@@ -116,6 +153,10 @@ export default function PortfolioSection() {
     // latched and autoplay was dead permanently with no way back.
     let pointerDown = false;
     let lastInteraction = 0;
+    // When the current slide settled. The interval still fires every
+    // MOBILE_AUTOPLAY_MS; this is what lets slide 0 sit for two ticks while
+    // every other slide advances on the first.
+    let lastAdvance = performance.now();
 
     const panels = panelsRef.current;
     if (!panels) return;
@@ -193,10 +234,29 @@ export default function PortfolioSection() {
       // for good, so the held state expires on its own.
       if (pointerDown && now - lastInteraction < MOBILE_STUCK_POINTER_MS)
         return;
-      if (now - lastInteraction < MOBILE_RESUME_MS) return;
-      if (!isOnScreen()) return;
+      if (now - lastInteraction < MOBILE_RESUME_MS) {
+        // Restart the dwell once the reader stops interfering, rather than
+        // firing the moment the resume window lapses.
+        lastAdvance = now;
+        return;
+      }
+      if (!isOnScreen()) {
+        // Same for scrolling past: the slide gets its full hold from the
+        // moment it is actually on screen.
+        lastAdvance = now;
+        return;
+      }
 
       const page = track.clientWidth;
+      // Index read from scrollLeft at tick time — synchronous, so it cannot go
+      // stale the way a tracked counter would after a drag or a dot tap.
+      const index = page > 0 ? Math.round(track.scrollLeft / page) : 0;
+      const hold = index === 0 ? MOBILE_FIRST_SLIDE_MS : MOBILE_AUTOPLAY_MS;
+      // 50ms tolerance: setInterval drifts, and an elapsed of 9998 against a
+      // 10000 hold would otherwise cost a whole extra tick.
+      if (now - lastAdvance < hold - 50) return;
+
+      lastAdvance = now;
       const atEnd = track.scrollLeft >= track.scrollWidth - page - 1;
       animateTo(atEnd ? 0 : track.scrollLeft + page);
     };
@@ -440,17 +500,52 @@ export default function PortfolioSection() {
             steps and the reveal loop, both keyed on panel order) treats it as
             panel 0 — which the reveal loop already leaves static. Pure text on
             the section's own #0a0a0a: no image to decode, nothing animating. */}
-          <div className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-center overflow-hidden p-8 max-md:isolate max-md:snap-center max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20">
-            <p className="mb-6 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:mb-4 max-md:text-xs">
+          <div
+            ref={titleSlideRef}
+            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-center overflow-hidden p-8 max-md:isolate max-md:snap-center max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20"
+          >
+            {/* Animated box grid, mobile only — CtaSection's SpotlightGrid with
+                its exact props, wrapped in ChannelCard's radial mask (sweep
+                mode supplies none of its own). `-z-10` is scoped by the panel's
+                `max-md:isolate`, so it sits above the section background and
+                behind the copy. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 -z-10 overflow-hidden md:hidden"
+              style={{ WebkitMaskImage: PATTERN_MASK, maskImage: PATTERN_MASK }}
+            >
+              {!isDesktop && titleSlideInView && (
+                <SpotlightGrid
+                  speed={0.15}
+                  sweep
+                  scatter
+                  plus
+                  sweepTrail={6}
+                  // 5 columns instead of CtaSection's 10 doubles the cell size
+                  // at the same container width.
+                  // The sweep region is rescaled to the new grid — those props
+                  // are cell coordinates, so reusing 10-column values would
+                  // put the animation in the wrong place.
+                  columns={5}
+                  rows={8}
+                  cellClassName="rounded-2xl"
+                  sweepColStart={1}
+                  sweepRowStart={1}
+                  sweepRowEnd={6}
+                />
+              )}
+            </div>
+
+            <p className="relative mb-6 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:mb-4 max-md:text-xs">
               Portfolio
             </p>
-            <h2 className="text-[3.25rem] font-bold leading-[0.9] tracking-[-0.04em] max-md:text-[2.75rem] md:text-8xl lg:text-[9rem]">
+            <h2 className="relative text-[3.25rem] font-bold leading-[0.9] tracking-[-0.04em] max-md:text-[2.75rem] md:text-8xl lg:text-[9rem]">
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Projects
               </span>
             </h2>
-            <p className="mt-8 max-w-xl text-lg font-light leading-[1.25em] text-white/70 max-md:mt-6 max-md:text-base">
+            <p className="relative mt-8 max-w-xl text-lg font-light leading-[1.25em] text-white/70 max-md:mt-6 max-md:text-base">
               {String(projects.length).padStart(2, "0")} case studies in brand,
               product and growth — scroll to explore
             </p>

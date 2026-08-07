@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import { NO_ENTRY, useIsDesktop, useIsMobile } from "@/lib/useIsDesktop";
 import CarouselDots from "@/components/ui/CarouselDots";
+import { useInfiniteCarousel } from "@/lib/useInfiniteCarousel";
 
 const SCROLL_SECONDS = 22;
 
@@ -150,6 +151,7 @@ export default function BlogSection() {
   // framer `x` marquee untouched; the second CardTrack copy (needed only for
   // the desktop wrap) is CSS-hidden below md.
   const scrollerRef = useRef<HTMLDivElement>(null);
+  useInfiniteCarousel(scrollerRef, blogPosts.length, 3, !isDesktop);
 
   const isPanning = useRef(false);
   const startPointerX = useRef(0);
@@ -195,6 +197,7 @@ export default function BlogSection() {
       {blogPosts.map((post) => (
         <div
           key={post.id}
+          data-slide
           className="w-[55vw] shrink-0 sm:w-[40vw] md:w-[30vw] lg:w-[25vw] max-md:mr-4 max-md:w-[80vw] max-md:snap-start"
         >
           <Link href={post.href} draggable={false} className="block h-full">
@@ -358,6 +361,7 @@ export default function BlogSection() {
             <CarouselDots
               scrollerRef={scrollerRef}
               count={blogPosts.length}
+              loop
               className="md:hidden"
             />
           </div>
@@ -388,6 +392,8 @@ export default function BlogSection() {
                 mobile needs them so the -50% marquee seam is invisible. */}
             <CardTrack />
             <CardTrack className="max-md:hidden" />
+            <CardTrack className="md:hidden" />
+            <CardTrack className="md:hidden" />
           </motion.div>
         </div>
       </div>

@@ -17,6 +17,14 @@ const SLOTS = [
   { y: -30, scale: 0.88, opacity: 0.7 },
 ];
 
+// The outgoing card's pose: drops away and fades instead of teleporting behind
+// the stack. Desktop's AnimatePresence gives its exiting card a real exit; the
+// mobile version had none, so at each swap the front card's z-index flipped in
+// ONE frame and its 700ms tween then played out hidden behind the others —
+// which reads as a pop, not a cycle. Still transform+opacity only, so the exit
+// costs the compositor nothing extra.
+const EXIT = { y: 56, scale: 0.92, opacity: 0 };
+
 /**
  * Mobile-only card stack for AboutSection.
  *
@@ -33,6 +41,9 @@ const SLOTS = [
  */
 export default function AboutImageStack({ images }: { images: string[] }) {
   const [front, setFront] = useState(0);
+  // Index of the card currently playing its exit, or null. Kept separate from
+  // `front` so the promotion of the others is not delayed by it.
+  const [leaving, setLeaving] = useState<number | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,17 +58,33 @@ export default function AboutImageStack({ images }: { images: string[] }) {
       if (!el) return;
       const rect = el.getBoundingClientRect();
       if (rect.bottom <= 0 || rect.top >= window.innerHeight) return;
-      setFront((f) => (f + 1) % images.length);
+      setFront((f) => {
+        setLeaving(f);
+        return (f + 1) % images.length;
+      });
     }, HOLD_MS);
 
     return () => clearInterval(id);
   }, [images.length]);
 
+  // Clear the exit pose once it has finished, so the card can slide back into
+  // the deepest slot for its next turn. A timer, not transitionend: the event
+  // can be dropped (interrupted transition, backgrounded tab) and would leave
+  // the card stuck invisible — the latch failure this codebase keeps hitting.
+  useEffect(() => {
+    if (leaving === null) return;
+    const t = setTimeout(() => setLeaving(null), SLIDE_MS);
+    return () => clearTimeout(t);
+  }, [leaving]);
+
   return (
     <div ref={hostRef} className="absolute inset-0">
       {images.map((url, i) => {
         const offset = (i - front + images.length) % images.length;
-        const slot = SLOTS[Math.min(offset, SLOTS.length - 1)];
+        const isLeaving = i === leaving;
+        const slot = isLeaving
+          ? EXIT
+          : SLOTS[Math.min(offset, SLOTS.length - 1)];
 
         return (
           <div
@@ -66,8 +93,15 @@ export default function AboutImageStack({ images }: { images: string[] }) {
             style={{
               transform: `translate3d(0, ${slot.y}px, 0) scale(${slot.scale})`,
               opacity: slot.opacity,
-              zIndex: images.length - offset,
-              transition: `transform ${SLIDE_MS}ms ${EASE}, opacity ${SLIDE_MS}ms ${EASE}`,
+              // The leaver stays ON TOP for its whole exit — that is the point:
+              // it must be seen leaving rather than cut behind the stack.
+              zIndex: isLeaving ? images.length + 1 : images.length - offset,
+              // Once invisible it snaps to its back-slot pose with no
+              // transition, so the audience never sees it travel back.
+              transition:
+                leaving === null && offset === images.length - 1
+                  ? "none"
+                  : `transform ${SLIDE_MS}ms ${EASE}, opacity ${SLIDE_MS}ms ${EASE}`,
               willChange: "transform, opacity",
             }}
           >

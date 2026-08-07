@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { tweenScrollLeft } from "@/lib/tweenScrollLeft";
+import { slideStride } from "@/lib/useInfiniteCarousel";
 
 /**
  * Dot pagination for a native scroll-snap carousel — the same visual language
@@ -16,10 +17,13 @@ import { tweenScrollLeft } from "@/lib/tweenScrollLeft";
 export default function CarouselDots({
   scrollerRef,
   count,
+  loop = false,
   className = "",
 }: {
   scrollerRef: React.RefObject<HTMLDivElement | null>;
   count: number;
+  /** Track renders repeated runs of the list; map position within one run. */
+  loop?: boolean;
   className?: string;
 }) {
   const [active, setActive] = useState(0);
@@ -30,8 +34,18 @@ export default function CarouselDots({
     if (!el) return;
 
     const measure = () => {
+      if (count < 2) return;
+      if (loop) {
+        // Position within ONE run: the track repeats, so a ratio against the
+        // full scrollWidth would sweep the dots several times per lap.
+        const stride = slideStride(el);
+        if (stride <= 0) return;
+        const i = Math.round(el.scrollLeft / stride) % count;
+        setActive((i + count) % count);
+        return;
+      }
       const max = el.scrollWidth - el.clientWidth;
-      if (max <= 0 || count < 2) return;
+      if (max <= 0) return;
       const unit = max / (count - 1);
       setActive(
         Math.min(count - 1, Math.max(0, Math.round(el.scrollLeft / unit))),
@@ -53,11 +67,22 @@ export default function CarouselDots({
       el.removeEventListener("scroll", onScroll);
       if (frame.current) cancelAnimationFrame(frame.current);
     };
-  }, [scrollerRef, count]);
+  }, [scrollerRef, count, loop]);
 
   const jump = (i: number) => {
     const el = scrollerRef.current;
     if (!el || count < 2) return;
+    if (loop) {
+      const stride = slideStride(el);
+      if (stride <= 0) return;
+      // Step to the nearest occurrence of slide `i` rather than its absolute
+      // index, so tapping "1" while in a later run does not rewind a full lap.
+      const current = Math.round(el.scrollLeft / stride);
+      let delta = (i - (current % count) + count) % count;
+      if (delta > count / 2) delta -= count;
+      tweenScrollLeft(el, (current + delta) * stride);
+      return;
+    }
     const max = el.scrollWidth - el.clientWidth;
     tweenScrollLeft(el, (max / (count - 1)) * i);
   };

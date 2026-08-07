@@ -7,6 +7,7 @@ import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
 import TestimonialsRotatingWord from "./TestimonialsRotatingWord";
 import { NO_ENTRY, useIsDesktop, useIsMobile } from "@/lib/useIsDesktop";
 import CarouselDots from "@/components/ui/CarouselDots";
+import { useInfiniteCarousel } from "@/lib/useInfiniteCarousel";
 
 const testimonials = [
   {
@@ -39,7 +40,11 @@ const testimonials = [
   },
 ];
 
-const duplicatedTestimonials = [...testimonials, ...testimonials];
+const duplicatedTestimonials = [
+  ...testimonials,
+  ...testimonials,
+  ...testimonials,
+];
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -55,6 +60,7 @@ export default function ExperimentalTestimonials() {
   // script. The second copy of the list is CSS-hidden below md (the -50% wrap
   // needed it; a finite scroller does not).
   const scrollerRef = useRef<HTMLDivElement>(null);
+  useInfiniteCarousel(scrollerRef, testimonials.length, 3, !isDesktop);
 
   const [active, setActive] = useState(0);
   const [step, setStep] = useState(452);
@@ -187,6 +193,7 @@ export default function ExperimentalTestimonials() {
             <CarouselDots
               scrollerRef={scrollerRef}
               count={testimonials.length}
+              loop
               className="mt-10 md:hidden"
             />
           </div>
@@ -241,8 +248,9 @@ export default function ExperimentalTestimonials() {
             {duplicatedTestimonials.map((item, i) => (
               <div
                 key={`${item.name}-${i}`}
+                data-slide
                 className={`group relative flex min-h-[360px] w-[300px] shrink-0 flex-col justify-between rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef] p-8 transition-colors max-md:mr-4 max-md:w-[calc(100vw-5.5rem)] max-md:snap-center max-md:px-5 md:min-h-[440px] md:w-[440px] md:py-10 ${
-                  i >= testimonials.length ? "max-md:hidden" : ""
+                  i >= testimonials.length * 2 ? "md:hidden" : ""
                 }`}
               >
                 <div className="absolute right-6 top-6 text-black/10 transition-colors group-hover:text-black/20 md:right-8 md:top-8">
