@@ -93,17 +93,30 @@ export default function ChannelCard({
     <a
       href={href}
       ref={setCardRef}
-      onMouseMove={(e) => {
-        hoveringRef.current = true;
-        const { left, top } = e.currentTarget.getBoundingClientRect();
-        mouseX.set(e.clientX - left);
-        mouseY.set(e.clientY - top);
-      }}
-      onMouseLeave={() => {
-        hoveringRef.current = false;
-        setHoveredIndex(null);
-        parkMaskRight();
-      }}
+      // Desktop only. iOS synthesises a mouseover/mousemove pass on the FIRST
+      // tap; because these handlers move the spotlight mask, that pass changes
+      // what is rendered, so Safari treats the tap as a hover and withholds the
+      // click — the card needs a second tap. The spotlight is a pointer
+      // affordance that does not exist on touch, so this is pure cost there.
+      onMouseMove={
+        isDesktop
+          ? (e) => {
+              hoveringRef.current = true;
+              const { left, top } = e.currentTarget.getBoundingClientRect();
+              mouseX.set(e.clientX - left);
+              mouseY.set(e.clientY - top);
+            }
+          : undefined
+      }
+      onMouseLeave={
+        isDesktop
+          ? () => {
+              hoveringRef.current = false;
+              setHoveredIndex(null);
+              parkMaskRight();
+            }
+          : undefined
+      }
       className={`group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/20 transition-transform duration-300 block ${colSpan}`}
     >
       <motion.div
@@ -127,7 +140,7 @@ export default function ChannelCard({
             return (
               <div
                 key={id}
-                onMouseEnter={() => setHoveredIndex(i)}
+                onMouseEnter={isDesktop ? () => setHoveredIndex(i) : undefined}
                 className="relative aspect-square w-full overflow-hidden rounded-md p-[0.8px]"
                 style={{
                   backgroundColor: intensity > 0 ? "transparent" : "#161616",

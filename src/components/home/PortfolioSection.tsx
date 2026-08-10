@@ -442,7 +442,7 @@ export default function PortfolioSection() {
     <section
       ref={containerRef}
       id="portfolio"
-      onMouseLeave={handleMouseLeave}
+      onMouseLeave={isDesktop ? handleMouseLeave : undefined}
       // No bottom padding below `md`: the section background is #0a0a0a and
       // StatsSection under it is white at pt-0, so any padding here reads as a
       // black band rather than breathing room. The slide image meets the white
@@ -479,15 +479,16 @@ export default function PortfolioSection() {
               className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
             >
               <Image
-                src="/assets/carousel.jfif"
+                src="/assets/collage.png"
                 alt=""
                 fill
                 sizes="100vw"
                 className="object-cover"
               />
-              {/* Scrim: the copy is white on what was a flat #0a0a0a panel, so
-                  the photo needs holding back to keep the type legible. */}
-              <div className="absolute inset-0 bg-[#0a0a0a]/65" />
+              {/* Scrim: the copy is white and left-aligned, so the darkening
+                  runs left-to-right — solid black behind the type, clearing to
+                  nothing on the right where the collage can read on its own. */}
+              <div className="absolute inset-0 bg-linear-to-r from-black to-transparent" />
             </div>
 
             <p className="relative mb-6 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:mb-4 max-md:text-xs">
@@ -518,8 +519,12 @@ export default function PortfolioSection() {
               <Link
                 href={project.href}
                 className="absolute inset-0 z-20 cursor-none max-md:cursor-pointer"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+                // Same iOS first-tap-is-a-hover problem as ChannelCard: this
+                // cursor pill is `hidden md:flex`, but animating it in during
+                // the synthesised hover pass still costs the panel its first
+                // tap, so the link needs tapping twice.
+                onMouseEnter={isDesktop ? handleMouseEnter : undefined}
+                onMouseLeave={isDesktop ? handleMouseLeave : undefined}
               >
                 <span className="sr-only">View {project.title}</span>
               </Link>

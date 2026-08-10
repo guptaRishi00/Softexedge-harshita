@@ -176,16 +176,9 @@ export default function HomePage() {
 
         <div className="relative">
           <div ref={aboutContainerRef} className="relative z-0 bg-white">
-            {/* No `will-change: transform` here, deliberately. GSAP scrubs this
-                wrapper to `scale(0.85) translateY(40)`, and `will-change` pins it
-                into a permanently composited layer whose hit region WebKit does
-                not recompute against the live transform. The result in Safari:
-                the button you can see is ~46px above its own layout box, so the
-                click lands on the paragraph behind it and appears to do nothing.
-                GSAP still promotes the layer for the duration of the tween. */}
             <div
               ref={aboutInnerRef}
-              className="origin-top bg-white pb-0 md:pb-[25vh] lg:pb-[30vh]"
+              className="origin-top md:will-change-transform bg-white pb-0 md:pb-[25vh] lg:pb-[30vh]"
             >
               <AboutSection />
             </div>
@@ -216,8 +209,10 @@ export default function HomePage() {
             </div>
 
             <div ref={testimonialsGroupRef} className="relative z-10 bg-white">
-              {/* Same scrub, same reason as the About wrapper above. */}
-              <div ref={testimonialsInnerRef} className="origin-top">
+              <div
+                ref={testimonialsInnerRef}
+                className="origin-top md:will-change-transform"
+              >
                 <ExperimentalTestimonials />
                 <TechLogoCarousel />
               </div>

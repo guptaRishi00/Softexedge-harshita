@@ -172,7 +172,7 @@ export default function ServiceSection() {
     <section
       id="services"
       ref={containerRef}
-      onMouseLeave={handleMouseLeave}
+      onMouseLeave={isMobile ? undefined : handleMouseLeave}
       className="relative w-full overflow-hidden bg-black pt-16 pb-10 max-md:pb-10 max-md:pt-20 md:pt-32 md:pb-24 text-white"
     >
       <div className="w-full px-4 max-md:px-3 md:px-10">
@@ -233,8 +233,12 @@ export default function ServiceSection() {
             <a
               key={index}
               href={service.href}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
+              // See ChannelCard: on iOS the synthesised hover pass on the
+              // first tap animates the desktop cursor pill in, which makes
+              // Safari swallow that tap's click. The pill is `hidden md:flex`,
+              // so there is nothing to show on touch anyway.
+              onMouseEnter={isMobile ? undefined : handleMouseEnter}
+              onMouseLeave={isMobile ? undefined : handleMouseLeave}
               className="group relative flex w-full cursor-none items-center justify-between py-9 md:py-12 max-md:cursor-pointer max-md:pr-11"
             >
               <div className="flex items-center">

@@ -12231,3 +12231,134 @@ document.addEventListener('click', e => { const el = [...document.querySelectorA
 If `target` is still a `P` while `geometry says` names the button, the layer is
 still stale and the next step is to drop the scrubbed `scale` on the About /
 Testimonials wrappers (the visual/layout mismatch itself), not just the hint.
+
+---
+
+## 2026-08-07 — Safari double-click: previous fix REVERTED, diagnosis was wrong
+
+User: "nah! still the same issue".
+
+### Correction
+The previous entry's diagnosis was over-fitted. The user's console log showed a
+click on `p.text-xl...text-zinc-600` (AboutSection.tsx:166) with `click` firing
+and `same: true`. I assumed they had AIMED at the "Connect With Us" link below
+it and that the scrubbed `scale(0.85)` had displaced the hit target by the 46px
+I measured. That assumption was never established — the log is equally
+consistent with simply clicking the paragraph, in which case it shows only that
+clicks work normally and says nothing about the bug.
+
+`md:will-change-transform` has been **restored** on both wrappers
+(`aboutInnerRef`, `testimonialsInnerRef`) in `src/app/home/page.tsx`. tsc clean,
+build compiled. The tree is back to its pre-investigation state; no speculative
+change is left in.
+
+### What is actually established so far
+- Click events fire normally on at least one element (a paragraph), with
+  matching down/up targets.
+- 113 of 118 interactive elements hit-test clean at the top of the page; the 5
+  that did not were a preview-pane artifact (pins not running), not a defect.
+- No global overlay, no page-wide `preventDefault`, no `pointer-events` trap,
+  no hover-guard problem, clean page shell.
+- Lenis (desktop-only) and the hover-latch (touch-only) are both excluded by the
+  user's "both browsers" answer.
+
+### Still missing: a log from a button that actually fails
+Every datapoint so far comes from elements that work. Next snippet asks for the
+failing button specifically and reports `defaultPrevented`, the event target,
+whether that target is inside an `a`/`button`, and which `a`/`button`
+geometrically contains the click point.
+
+---
+
+## 2026-08-07 — Mobile double-tap: root-caused and fixed
+
+User narrowed it to **mobile**, naming ContactSection's channel cards, the
+navbar menu icon, and "other buttons". That kills the earlier GSAP-transform
+theory outright: the menu icon sits at the top of the page and every GSAP scrub
+on /home is gated to `min-width: 768px`.
+
+### Root cause — two distinct mechanisms
+**1. JS mouse handlers (channel cards, service rows, portfolio panels).**
+iOS synthesises a `mouseover`/`mousemove` pass on the FIRST tap. If a handler in
+that pass changes what is rendered, Safari treats the tap as a hover and
+withholds the `click`; the user must tap again. The offenders all mutate visible
+state:
+- `ChannelCard` `onMouseMove` moves the spotlight mask (ChannelCard.tsx:96)
+- `ServiceSection` / `PortfolioSection` `onMouseEnter` animate the custom cursor
+  pill in — a pill that is `hidden md:flex`, so it cannot even show on touch.
+
+**2. The menu toggle was a bare `<svg onClick>`.** iOS only dispatches `click`
+reliably on natively interactive elements; an SVG is not one, so the first tap
+goes to the hover/focus pass.
+
+**CSS hover was ruled out, not assumed.** Parsed the production CSS chunk with
+brace-matched `@media (hover:hover)` spans: **156 of 161 `:hover` selectors are
+inside the guard**. The 5 outside are `group-has-[a:hover]` variants and
+`.marquee-track:hover` — none on the reported controls. Tailwind v4 guards
+hover correctly, so the classic hover-latch is not in play here.
+
+### What changed
+- `home/ChannelCard.tsx` — `onMouseMove`, `onMouseLeave`, `onMouseEnter` gated
+  behind `isDesktop`.
+- `home/ServiceSection.tsx` — section `onMouseLeave` + per-row
+  `onMouseEnter`/`onMouseLeave` gated behind `!isMobile`.
+- `home/PortfolioSection.tsx` — section `onMouseLeave` + panel-link
+  `onMouseEnter`/`onMouseLeave` gated behind `isDesktop`.
+- `ui/resizable-navbar.tsx` **and** `page/resizable-navbar.tsx` —
+  `MobileNavToggle` is now a real `<button type="button">` wrapping the icon,
+  with `aria-label` and `aria-expanded`. Applied to BOTH copies deliberately
+  (reported for /home, but /about and the other routes carry the identical
+  defect); called out rather than done silently.
+
+Desktop keeps every handler — the gates only remove them below the breakpoint.
+
+### Verified (prod build, `next start -p 3100`)
+- @390 toggle: `BUTTON`, `type="button"`, `aria-label="Open menu"`, 28x28, svg
+  inside. **One** `.click()` opens the menu: panels 1 -> 2, `aria-expanded`
+  false -> true.
+- The `isDesktop` gate flips correctly by breakpoint, proven via its other
+  observable (`maskCore = isDesktop ? 1 : 0.5`): @1280 the mask inner stop is
+  `rgb(0, 0, 0)` (alpha 1, desktop), @390 it is `rgba(0, 0, 0, 0.5)` (mobile).
+- @1280 desktop nav `display: flex`, mobile bar `display: none`.
+- tsc clean; build compiled; biome unchanged at 20 pre-existing diagnostics
+  across the five touched files.
+
+### Caveat
+The spotlight/cursor animations could not be observed moving in the preview pane
+— framer's `useMotionTemplate` needs rAF, which the pane freezes — so the gate
+was verified through `isDesktop` rather than by watching the effect. And there
+is no Safari here: the mechanism is textbook and the code change is
+unambiguous, but confirmation has to come from the device.
+
+---
+
+## 2026-08-07 — PortfolioSection title slide: flat scrim -> left-to-right gradient
+
+**Task:** on the first slide, drop the black overlay and use a left-to-right
+black-to-transparent gradient instead.
+
+### What changed
+One className in `components/home/PortfolioSection.tsx` (plus its comment):
+`absolute inset-0 bg-[#0a0a0a]/65` -> `absolute inset-0 bg-linear-to-r
+from-black to-transparent`. No breakpoint qualifier — the backdrop applies at
+every width since `md:hidden` was dropped earlier, and the task named none.
+
+Used `bg-linear-to-r` (the Tailwind v4 name) rather than `bg-gradient-to-r`;
+both spellings appear in this repo, and v4 keeps the old one only as a
+deprecated alias.
+
+### Verified (prod build, `next start -p 3100`)
+- @1280 and @390 both compute
+  `linear-gradient(to right in oklab, rgb(0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%)`
+  — correct direction, opaque black at 0%, fully transparent at 100%.
+- `backgroundColor: rgba(0, 0, 0, 0)` at both widths, i.e. the flat overlay is
+  genuinely gone rather than layered under the gradient.
+- Scrim still covers the panel exactly: 1280x720 and 390x591, matching the panel
+  box in each case. Collage image still mounted underneath.
+- The copy is left-aligned (headline left edge 12px @390), so it sits over the
+  opaque end of the ramp — legibility is preserved where it matters.
+- tsc clean; build compiled; biome unchanged at the 2 pre-existing diagnostics
+  (`noStaticElementInteractions` L442, `noArrayIndexKey` L577).
+
+Note: the slide's image is now `/assets/collage.png` (changed outside this
+task); left as found.

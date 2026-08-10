@@ -586,16 +586,21 @@ export const MobileNavToggle = ({
   onClick: () => void;
   onDark?: boolean;
 }) => {
+  // A real <button>, not an <svg onClick>. iOS dispatches click reliably only on
+  // natively interactive elements; a bare SVG is not one, so the first tap is
+  // spent on the hover/focus pass and the menu opens only on the second. Also
+  // gives the control a name and keyboard access, which the raw icon lacked.
   const color = onDark ? "text-white" : "text-black";
-  return isOpen ? (
-    <IconX
-      className={cn("cursor-pointer transition-colors", color)}
+  const Icon = isOpen ? IconX : IconMenu2;
+  return (
+    <button
+      type="button"
       onClick={onClick}
-    />
-  ) : (
-    <IconMenu2
-      className={cn("cursor-pointer transition-colors", color)}
-      onClick={onClick}
-    />
+      aria-label={isOpen ? "Close menu" : "Open menu"}
+      aria-expanded={isOpen}
+      className="flex cursor-pointer items-center justify-center bg-transparent p-0"
+    >
+      <Icon className={cn("transition-colors", color)} />
+    </button>
   );
 };
