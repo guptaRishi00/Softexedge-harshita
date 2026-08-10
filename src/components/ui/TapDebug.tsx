@@ -1,60 +1,61 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
- * On-screen tap/click tracer, for diagnosing the iOS "needs two taps" problem
- * on a real device without a Mac and Web Inspector.
+ * On-screen tap tracer for diagnosing the iOS "needs two taps" problem on a
+ * real device, without a Mac and Web Inspector.
  *
  * Renders NOTHING unless the URL carries `?debug=tap`, so it is inert for real
  * visitors even though it is mounted in the root layout. The flag is read from
  * `window.location.search` in an effect rather than via `useSearchParams`,
  * which would opt every page into dynamic rendering.
  *
- * The panel is `pointer-events: none` throughout: an instrument that swallowed
- * taps would change the very thing it is measuring.
+ * NON-PERTURBING BY CONSTRUCTION. The first version called setState from every
+ * listener, which re-rendered this panel during the very `mouseover` pass it
+ * was measuring — and a DOM change during that pass is exactly what makes
+ * WebKit withhold the click. So the instrument could cause the failure it
+ * recorded. Handlers now only push into a ref; the panel is written from a
+ * timer, well after event dispatch has finished. Nothing here touches the DOM
+ * while a tap is being processed.
  */
 
-type Entry = {
-  n: number;
-  type: string;
-  target: string;
-  prevented: boolean;
-};
+type Entry = { n: number; type: string; target: string; prevented: boolean };
 
-// Every event in a tap's lifecycle, in the order iOS emits them. Seeing WHICH
-// of these arrive is the whole point: a touchend with no click means Safari
-// decided the tap was a hover; no touchend at all means it became a scroll.
 const TRACKED = [
   "touchstart",
   "touchend",
   "touchcancel",
   "pointerdown",
   "pointerup",
-  // `mouseover` is the synthetic hover pass iOS runs before deciding whether to
-  // dispatch a click. Seeing it arrive and then NOT be followed by mousedown is
-  // the signature of Safari cancelling the tap because the page changed under
-  // the finger — the one remaining explanation that the first trace could not
-  // distinguish. `mousemove` is deliberately not tracked: it floods.
+  // The synthetic hover pass. `mousemove` is left out — it floods.
   "mouseover",
   "mousedown",
   "mouseup",
   "click",
 ] as const;
 
-const MAX_ROWS = 14;
+const MAX_ROWS = 10;
+const MAX_MUTATIONS = 6;
+// A mutation this soon after the hover pass is what WebKit reacts to.
+const MUTATION_WINDOW_MS = 400;
+const FLUSH_MS = 250;
 
-const describe = (t: EventTarget | null) => {
+const describe = (t: EventTarget | null): string => {
   if (!(t instanceof Element)) return String(t);
   const cls = typeof t.className === "string" ? t.className : "";
   const id = t.id ? `#${t.id}` : "";
-  return `${t.tagName.toLowerCase()}${id}${cls ? `.${cls.trim().split(/\s+/)[0]}` : ""}`;
+  const first = cls.trim().split(/\s+/)[0];
+  return `${t.tagName.toLowerCase()}${id}${first ? `.${first}` : ""}`;
 };
 
 export default function TapDebug() {
   const [on, setOn] = useState(false);
-  const [rows, setRows] = useState<Entry[]>([]);
-  const [counts, setCounts] = useState({ touches: 0, clicks: 0 });
+  const panelRef = useRef<HTMLPreElement>(null);
+  const log = useRef<Entry[]>([]);
+  const mutations = useRef<string[]>([]);
+  const lastHover = useRef(0);
+  const counts = useRef({ touchend: 0, click: 0 });
 
   useEffect(() => {
     setOn(new URLSearchParams(window.location.search).get("debug") === "tap");
@@ -67,46 +68,85 @@ export default function TapDebug() {
     const handlers = TRACKED.map((type) => {
       const fn = (e: Event) => {
         n += 1;
-        const entry: Entry = {
+        // Ref only — no setState, no DOM write, nothing that could perturb the
+        // tap currently being arbitrated.
+        log.current.unshift({
           n,
           type,
           target: describe(e.target),
           prevented: e.defaultPrevented,
-        };
-        setRows((prev) => [entry, ...prev].slice(0, MAX_ROWS));
-        if (type === "touchend")
-          setCounts((c) => ({ ...c, touches: c.touches + 1 }));
-        if (type === "click") setCounts((c) => ({ ...c, clicks: c.clicks + 1 }));
+        });
+        log.current.length = Math.min(log.current.length, MAX_ROWS);
+        if (type === "touchend") counts.current.touchend += 1;
+        if (type === "click") counts.current.click += 1;
+        if (type === "mouseover") lastHover.current = performance.now();
       };
-      // Capture phase, so this sees the event even if something downstream
-      // stops propagation — which is one of the things being tested for.
       document.addEventListener(type, fn, true);
       return { type, fn };
     });
 
+    // Names whatever mutates during the hover pass — the thing that makes
+    // WebKit drop the click. Anything inside this panel is ignored so the
+    // instrument can never accuse itself.
+    const panel = panelRef.current;
+    const mo = new MutationObserver((records) => {
+      const since = performance.now() - lastHover.current;
+      if (since > MUTATION_WINDOW_MS) return;
+      for (const r of records) {
+        const target = r.target as Node;
+        if (panel && target instanceof Node && panel.contains(target)) continue;
+        const what =
+          r.type === "attributes"
+            ? `${describe(target as Element)} @${r.attributeName}`
+            : `${describe(target as Element)} ${r.type}`;
+        if (!mutations.current.includes(what)) mutations.current.unshift(what);
+      }
+      mutations.current.length = Math.min(
+        mutations.current.length,
+        MAX_MUTATIONS,
+      );
+    });
+    mo.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+    });
+
+    // The only writer, and it runs on a timer rather than inside a listener.
+    const id = window.setInterval(() => {
+      const el = panelRef.current;
+      if (!el) return;
+      const c = counts.current;
+      const head =
+        `touchend: ${c.touchend}  click: ${c.click}  ` +
+        (c.touchend > c.click ? "<= TAPS LOST" : "ok");
+      const rows = log.current
+        .map(
+          (r) =>
+            `${r.n}. ${r.type} ${r.target}${r.prevented ? " [prevented]" : ""}`,
+        )
+        .join("\n");
+      const muts = mutations.current.length
+        ? `\nCHANGED DURING HOVER PASS:\n  ${mutations.current.join("\n  ")}`
+        : "\nCHANGED DURING HOVER PASS: (nothing)";
+      el.textContent = `${head}\n${rows}${muts}`;
+    }, FLUSH_MS);
+
     return () => {
       for (const { type, fn } of handlers)
         document.removeEventListener(type, fn, true);
+      mo.disconnect();
+      window.clearInterval(id);
     };
   }, [on]);
 
   if (!on) return null;
 
   return (
-    <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[9999] max-h-[45svh] overflow-hidden bg-black/90 p-2 font-mono text-[10px] leading-tight text-lime-300"
+    <pre
+      ref={panelRef}
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-[9999] m-0 max-h-[48svh] overflow-hidden whitespace-pre-wrap bg-black/90 p-2 font-mono text-[10px] leading-tight text-lime-300"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 8px)" }}
-    >
-      <div className="mb-1 text-white">
-        touchend: {counts.touches} &nbsp; click: {counts.clicks} &nbsp;
-        {counts.touches > counts.clicks ? "<= TAPS LOST" : "ok"}
-      </div>
-      {rows.map((r) => (
-        <div key={r.n}>
-          {r.n}. <span className="text-cyan-300">{r.type}</span> {r.target}
-          {r.prevented ? " [prevented]" : ""}
-        </div>
-      ))}
-    </div>
+    />
   );
 }

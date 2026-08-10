@@ -12500,3 +12500,58 @@ left untracked — it floods.
 No Safari in this environment. The diagnosis is now evidence-based rather than
 speculative, but confirmation still has to come from the device. `?debug=tap`
 remains available for the next trace.
+
+---
+
+## 2026-08-07 — Safari double-tap: failure mode identified; instrument was perturbing
+
+`touch-action: manipulation` did not fix it, and the new trace explains why —
+the failure is NOT the double-tap deferral I diagnosed last round.
+
+### The trace (iPhone, one tap, complete)
+```
+1. pointerdown svg  2. touchstart svg  3. pointerup svg  4. touchend svg
+5. mouseover svg
+touchend: 1  click: 0  <= TAPS LOST
+```
+And repeatedly, across the longer trace: `touchend -> mouseover -> (nothing)`,
+then the NEXT tap yields `mousedown -> mouseup -> click`.
+
+So WebKit runs the synthetic **hover pass** and then aborts before dispatching
+the click. That is the documented rule: if the page changes during the
+mouseover pass, the click is withheld and the tap is consumed as a hover. It is
+not a deferral (last round's reading — tap 1's mouse events arriving after tap 2
+was consistent with both, wrongly resolved in favour of deferral), and not a
+prevented or mis-targeted event: nothing is flagged `[prevented]`.
+
+`touch-action: manipulation` was kept. It is correct and harmless — verified not
+to restrict any scroller — but it addresses a different mechanism.
+
+### The instrument was part of the problem
+The first `TapDebug` called `setState` from every listener, including that
+`mouseover`. That re-rendered the panel and mutated the DOM *during the pass
+being measured* — the exact trigger for the abort. So it may have been causing
+the failure it recorded. Rewritten to be non-perturbing:
+- listeners now only push into a ref: no setState, no DOM write during dispatch;
+- the panel is written from a 250ms timer, after dispatch has finished;
+- added a `MutationObserver` that reports **what mutates within 400ms of the
+  hover pass**, ignoring anything inside the panel so it cannot accuse itself.
+
+That last line is the whole point of the next trace: it should name the element
+and attribute that changes on hover, which is the thing to fix.
+
+### Verified (prod build, `next start -p 3100`, mobile preset)
+- Inert without the flag: `grep -c "TAPS LOST"` on the served HTML = 0.
+- With `?debug=tap`: panel is a `PRE`, `pointer-events: none`, and logged
+  `pointerdown -> pointerup -> mouseover` with
+  `CHANGED DURING HOVER PASS: (nothing)`.
+- **The observer arm actually works** (otherwise "(nothing)" would be
+  meaningless): setting `data-probe` on `<main>` during the hover window was
+  reported as `main.w-full @data-probe`.
+- tsc clean; build compiled; biome clean.
+
+### Next
+Re-deploy, open `?debug=tap`, tap a control once, and read the
+`CHANGED DURING HOVER PASS` list. If it names something, that is the culprit. If
+it says `(nothing)` on a real lost tap, the abort is not mutation-driven and the
+remaining fix is to drive handlers from `pointerup` instead of `click`.
