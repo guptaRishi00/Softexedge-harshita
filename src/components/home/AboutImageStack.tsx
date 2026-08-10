@@ -7,26 +7,21 @@ const HOLD_MS = 3500;
 const SLIDE_MS = 700;
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
-// Slot geometry indexed by distance from the front. `origin-top` is what makes
-// this read as a stack: scaling about the top edge keeps it anchored, so the
-// negative y is the only thing lifting each card, and its top peeks above the
-// one in front by exactly that amount.
-const SLOTS = [
-  { y: 0, scale: 1, opacity: 1 },
-  { y: -16, scale: 0.94, opacity: 0.85 },
-  { y: -30, scale: 0.88, opacity: 0.7 },
-];
+// Only the front card is visible. The queued ones sit at the identical pose
+// with opacity 0, so nothing peeks above or behind the front card and the swap
+// reads as one image becoming the next rather than a deck being dealt.
+const FRONT = { y: 0, scale: 1, opacity: 1, blur: 0 };
+const HIDDEN = { y: 0, scale: 1, opacity: 0, blur: 0 };
 
-// The outgoing card's pose: drops away and fades instead of teleporting behind
-// the stack. Desktop's AnimatePresence gives its exiting card a real exit; the
-// mobile version had none, so at each swap the front card's z-index flipped in
-// ONE frame and its 700ms tween then played out hidden behind the others —
-// which reads as a pop, not a cycle. Still transform+opacity only, so the exit
-// costs the compositor nothing extra.
-const EXIT = { y: 56, scale: 0.92, opacity: 0 };
+// The outgoing card dissipates: it drifts up a little, expands slightly and
+// blurs out as it fades — smoke, not a card being dropped. Blur is the one
+// non-free property here, but it runs on a single element that is already
+// promoted (transform + opacity are animating on it too), for 700ms once per
+// 3.5s cycle, so no extra layer is created and nothing else on the page pays.
+const EXIT = { y: -22, scale: 1.06, opacity: 0, blur: 12 };
 
 /**
- * Mobile-only card stack for AboutSection.
+ * Mobile-only image cycler for AboutSection.
  *
  * Owns its own tick on purpose. The desktop stack is driven by AboutSection's
  * `frontIndex`, and ticking that on mobile re-rendered the entire section every
@@ -82,26 +77,32 @@ export default function AboutImageStack({ images }: { images: string[] }) {
       {images.map((url, i) => {
         const offset = (i - front + images.length) % images.length;
         const isLeaving = i === leaving;
-        const slot = isLeaving
-          ? EXIT
-          : SLOTS[Math.min(offset, SLOTS.length - 1)];
+        const isFront = offset === 0 && !isLeaving;
+        const slot = isLeaving ? EXIT : isFront ? FRONT : HIDDEN;
 
         return (
           <div
             key={url}
-            className="absolute inset-0 origin-top overflow-hidden rounded-[28px] border border-black/10 bg-zinc-200 shadow-sm"
+            className="absolute inset-0 origin-center overflow-hidden rounded-[28px] border border-black/10 bg-zinc-200 shadow-sm"
             style={{
               transform: `translate3d(0, ${slot.y}px, 0) scale(${slot.scale})`,
               opacity: slot.opacity,
-              // The leaver stays ON TOP for its whole exit — that is the point:
-              // it must be seen leaving rather than cut behind the stack.
+              filter: slot.blur ? `blur(${slot.blur}px)` : "none",
+              // The leaver stays ON TOP for its whole exit — it has to be seen
+              // dissipating, not cut away behind the incoming image.
               zIndex: isLeaving ? images.length + 1 : images.length - offset,
-              // Once invisible it snaps to its back-slot pose with no
-              // transition, so the audience never sees it travel back.
+              // Opacity is always transitionable, even while queued. A card
+              // promoted to front changes its opacity and its transition in the
+              // same commit, and "transition was none a moment ago" is exactly
+              // the case where a fade is liable not to start — keeping opacity
+              // in the list at all times means the incoming image always fades.
+              // transform and filter join only for the two cards on screen, so
+              // a released leaver drops its blur and scale instantly instead of
+              // spending 700ms animating a blur nobody can see.
               transition:
-                leaving === null && offset === images.length - 1
-                  ? "none"
-                  : `transform ${SLIDE_MS}ms ${EASE}, opacity ${SLIDE_MS}ms ${EASE}`,
+                isFront || isLeaving
+                  ? `transform ${SLIDE_MS}ms ${EASE}, opacity ${SLIDE_MS}ms ${EASE}, filter ${SLIDE_MS}ms ${EASE}`
+                  : `opacity ${SLIDE_MS}ms ${EASE}`,
               willChange: "transform, opacity",
             }}
           >

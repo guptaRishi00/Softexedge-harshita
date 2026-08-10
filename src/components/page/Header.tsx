@@ -116,7 +116,17 @@ const navItems: NavItem[] = [
   },
 ];
 
-export default function Header({ onDark = false }: { onDark?: boolean }) {
+export default function Header({
+  onDark = false,
+  dropdown = false,
+}: {
+  onDark?: boolean;
+  /**
+   * Opt in to the homepage's mobile navbar: a shrinking floating pill whose
+   * menu opens inline. Default false so the other routes keep the overlay.
+   */
+  dropdown?: boolean;
+}) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesExpanded, setIsServicesExpanded] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -167,7 +177,7 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
           />
         </NavBody>
 
-        <MobileNav>
+        <MobileNav dropdown={dropdown} isOpen={isMobileMenuOpen}>
           <MobileNavHeader className="transition-colors duration-300">
             <CustomLogo onDark={onDark} />
             <MobileNavToggle
@@ -177,7 +187,11 @@ export default function Header({ onDark = false }: { onDark?: boolean }) {
             />
           </MobileNavHeader>
 
-          <MobileNavMenu isOpen={isMobileMenuOpen} onClose={closeMobileMenu}>
+          <MobileNavMenu
+            isOpen={isMobileMenuOpen}
+            onClose={closeMobileMenu}
+            dropdown={dropdown}
+          >
             {navItems.map((item, idx) => {
               const hasDropdown =
                 (item.sections && item.sections.length > 0) ||

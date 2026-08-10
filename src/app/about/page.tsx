@@ -22,7 +22,7 @@ type Props = {};
 export default function AboutPage({}: Props) {
   return (
     <div className="bg-white">
-      <Header />
+      <Header dropdown />
       <div className="relative z-0 md:-mb-[150vh]">
         <div className="md:sticky md:top-[calc(100vh-1104px)] z-0 bg-[#FAFAFA]">
           <ShrinkOnOverlap

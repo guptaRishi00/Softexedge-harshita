@@ -373,10 +373,18 @@ export default function BlogSection() {
         {/* pt, not mt: the header above is a sibling with `max-md:mb-8`, and
             adjacent-sibling margins COLLAPSE — a margin-top of 24px was
             swallowed whole by that 32px margin-bottom and moved nothing.
-            Padding never collapses, so this reliably adds to the 32px. */}
+            Padding never collapses, so this reliably adds to the 32px.
+
+            pb-4/-mb-4: `overflow-x: auto` forces the computed `overflow-y` to
+            `auto` too, so this box clips vertically whether or not that was
+            wanted. The cards' bottom edge sat exactly on it, which sheared off
+            the bottom of their `shadow-sm`. The padding gives the shadow room
+            INSIDE the scroll box; the equal negative margin takes that height
+            back out of the flow, so the section is not one pixel taller and
+            nothing below moves. */}
         <div
           ref={scrollerRef}
-          className="no-scrollbar relative w-full overflow-x-clip max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain max-md:scroll-pl-3 max-md:pt-6 max-md:px-3"
+          className="no-scrollbar relative w-full overflow-x-clip max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain max-md:scroll-pl-3 max-md:pt-6 max-md:-mb-4 max-md:px-3 max-md:pb-4"
         >
           <motion.div
             ref={trackRef}

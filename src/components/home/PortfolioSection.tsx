@@ -5,20 +5,13 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useIsDesktop } from "@/lib/useIsDesktop";
-import SpotlightGrid from "@/components/ui/SpotlightGrid";
 import { cn } from "@/lib/utils";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
-
-// ChannelCard's mobile mask, kept from the static version: it is what gives the
-// grid its soft falloff. SpotlightGrid provides no mask of its own in sweep
-// mode, so this wrapper supplies it.
-const PATTERN_MASK =
-  "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.04) 100%)";
 
 const AUTO_ADVANCE_SECONDS = 6;
 // Mobile carousel: one slide every 4.5s, each slide taking 600ms, and autoplay
@@ -108,60 +101,6 @@ export default function PortfolioSection() {
   // wrapper on the compositor, then commits the distance to scrollLeft.
   const panelsRef = useRef<HTMLDivElement>(null);
   const isDesktop = useIsDesktop();
-
-  // SpotlightGrid drives a permanent rAF loop. It is not otherwise on the
-  // homepage, so mounting it unconditionally would add per-frame work that
-  // keeps running while the user is anywhere else on the page — the exact cost
-  // this section has been stripped of. Mount it only while the carousel is
-  // near the viewport: identical visual, idle loop otherwise.
-  //
-  // An IntersectionObserver with the same 200px margin the polled rect used,
-  // plus a fallback that re-checks on load/resize and a guard timer that flips
-  // the flag to false after a short window if no callback ever arrives. The
-  // guard cannot latch it ON (the original failure mode): it only ever turns
-  // the flag OFF, and any real intersection callback supersedes it. This
-  // replaces a 400ms setInterval of forced layout reads with a zero-cost idle
-  // observer that fires only on actual viewport crossings.
-  const titleSlideRef = useRef<HTMLDivElement>(null);
-  const [titleSlideInView, setTitleSlideInView] = useState(false);
-
-  useEffect(() => {
-    if (isDesktop) return;
-    const el = titleSlideRef.current;
-    if (!el) return;
-
-    let near = false;
-    const apply = (isNear: boolean) => {
-      if (isNear === near) return;
-      near = isNear;
-      setTitleSlideInView(isNear);
-    };
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) apply(entry.isIntersecting);
-      },
-      { rootMargin: "200px" },
-    );
-    io.observe(el);
-
-    // belt-and-braces: if the IO delivery is somehow missed at mount, a one-shot
-    // re-check on the next load tick forces the flag to the correct state. It
-    // can only correct the value, never latch it wrongly — apply() guards on
-    // the actual rect.
-    const recheck = () => {
-      const r = el.getBoundingClientRect();
-      apply(r.bottom > -200 && r.top < window.innerHeight + 200);
-    };
-    const rafId = requestAnimationFrame(recheck);
-    window.addEventListener("load", recheck);
-
-    return () => {
-      io.disconnect();
-      cancelAnimationFrame(rafId);
-      window.removeEventListener("load", recheck);
-    };
-  }, [isDesktop]);
 
   // Mobile autoplay. Dragging is NOT implemented in JS: below `md` the track is
   // a native scroll-snap container, so the browser owns the drag, the momentum
@@ -527,40 +466,28 @@ export default function PortfolioSection() {
             steps and the reveal loop, both keyed on panel order) treats it as
             panel 0 — which the reveal loop already leaves static. Pure text on
             the section's own #0a0a0a: no image to decode, nothing animating. */}
-          <div
-            ref={titleSlideRef}
-            className="project-panel relative flex h-[70svh] w-full shrink-0 flex-col justify-center overflow-hidden p-8 max-md:isolate max-md:snap-center max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20"
-          >
-            {/* Animated box grid, mobile only — CtaSection's SpotlightGrid with
-                its exact props, wrapped in ChannelCard's radial mask (sweep
-                mode supplies none of its own). `-z-10` is scoped by the panel's
-                `max-md:isolate`, so it sits above the section background and
-                behind the copy. */}
+          <div className="project-panel relative isolate flex h-[70svh] w-full shrink-0 flex-col justify-center overflow-hidden p-8 max-md:snap-center max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20">
+            {/* Backdrop for the title slide, both breakpoints. A static image
+                needs none of the viewport gating the animated grid required —
+                it has no rAF loop to idle, and next/image handles its own
+                loading. `-z-10` is scoped by the panel's own `isolate`, so it
+                sits above the section background and behind the copy; without
+                that isolation a negative z-index would escape this panel and
+                paint behind the section's #0a0a0a. */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 -z-10 overflow-hidden md:hidden"
-              style={{ WebkitMaskImage: PATTERN_MASK, maskImage: PATTERN_MASK }}
+              className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
             >
-              {!isDesktop && titleSlideInView && (
-                <SpotlightGrid
-                  speed={0.15}
-                  sweep
-                  scatter
-                  plus
-                  sweepTrail={6}
-                  // 5 columns instead of CtaSection's 10 doubles the cell size
-                  // at the same container width.
-                  // The sweep region is rescaled to the new grid — those props
-                  // are cell coordinates, so reusing 10-column values would
-                  // put the animation in the wrong place.
-                  columns={5}
-                  rows={8}
-                  cellClassName="rounded-2xl"
-                  sweepColStart={1}
-                  sweepRowStart={1}
-                  sweepRowEnd={6}
-                />
-              )}
+              <Image
+                src="/assets/carousel.jfif"
+                alt=""
+                fill
+                sizes="100vw"
+                className="object-cover"
+              />
+              {/* Scrim: the copy is white on what was a flat #0a0a0a panel, so
+                  the photo needs holding back to keep the type legible. */}
+              <div className="absolute inset-0 bg-[#0a0a0a]/65" />
             </div>
 
             <p className="relative mb-6 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:mb-4 max-md:text-xs">
@@ -572,7 +499,7 @@ export default function PortfolioSection() {
                 Projects
               </span>
             </h2>
-            <p className="relative mt-8 max-w-xl text-lg font-light leading-[1.25em] text-white/70 max-md:mt-6 max-md:text-base">
+            <p className="relative mt-8 max-w-xl text-lg font-light leading-[1.25em] text-white max-md:mt-6 max-md:text-base">
               {String(projects.length).padStart(2, "0")} case studies in brand,
               product and growth — scroll to explore
             </p>

@@ -11746,3 +11746,379 @@ The video was never the navbar's problem. THREE things ran on every scroll:
 ### Still not addressed (flagged, not done)
 The two navbar files are near-duplicates. Deduplicating them is the real
 cleanup but it is a cross-route refactor, not this task's scope.
+
+---
+
+## 2026-08-07 — /about mobile navbar matched to the homepage
+
+**Task:** About page, mobile only — make the navbar the same as the homepage.
+Desktop untouched.
+
+### What changed
+`page/resizable-navbar.tsx` had no dropdown mode; `ui/resizable-navbar.tsx`
+(homepage) does. Ported it as an **opt-in** `dropdown` prop rather than
+switching About to `layout/Header`, because `page/Header` serves ~15 routes and
+its logo rule (`visible || onDark ? logo.png : logoBlue.png`) is what keeps the
+mark readable on light heroes.
+
+- `page/resizable-navbar.tsx` — `dropdown` branches added to `MobileNav`
+  (shrinking pill: `w-full` / `w-[88%]` / `w-[96%]`, `translate-y-2.5`,
+  `rounded-[18px]`, `bg-[#0b0b10]/90`, `backdrop-blur-md`), `MobileNavHeader`
+  (`px-7`, `pt-8` -> `pt-3.5` on scroll) and `MobileNavMenu` (inline
+  height/opacity dropdown instead of the full-screen overlay). Non-dropdown
+  branches are byte-identical to before.
+- `page/Header.tsx` — new `dropdown` prop, **default false**.
+- `app/about/page.tsx` — `<Header dropdown />`.
+
+### The one deliberate divergence from the homepage
+`layout/Header` pins its mobile logo and toggle white unconditionally — it can,
+because /home's hero is dark video at every scroll position. /about's hero is
+`#FAFAFA`, so unconditional white would be invisible at the top. Instead
+`MobileNav` forwards `floating` (= `visible || isOpen`) and the dropdown
+`MobileNavHeader` clones `onDark: child.props.onDark || floating` down, so the
+marks follow the pill.
+
+### Verified (prod build, `next start -p 3100`)
+- @390 `/about` vs `/home`, all three bar states forced and measured after the
+  200ms transition settled — identical: top `w 390 / radius 0 / translate 0px`,
+  scrolled `w 343 vs 344, left 23, radius 18px, translate 0px 10px,
+  blur(12px)`, open `w 374 vs 375, left 8`. Header `px-7` (28px) and
+  `pt-8`->`pt-3.5` (32px -> 14px) match. The ±1px is subpixel rounding.
+- Toggle click on /about: `closedAtTop` blue logo + black icon ->
+  `openAtTop` white logo + white icon + `w-[96%]`, and reverts on close.
+  Dropdown panel mounts inline with 5 links at `px-7`.
+- `/career` bar unchanged: `fixed ... px-6 py-4` overlay, `px-0 py-2` wrapper.
+- Desktop @1265 `/about` unchanged: NavBody `padding 32px 40px`, 7 links,
+  mobile bar `display: none`.
+- tsc clean; build compiled; biome on the three touched files reports only
+  pre-existing diagnostics (all in untouched line ranges).
+
+### Pane limitations hit (again)
+Scroll events are never delivered here (`scrollY 900`, `fired: 0`) and rAF is
+frozen, so `visible` could not be driven by scrolling — the scrolled states were
+verified by forcing the class branches and reading computed style after a
+`setTimeout` settle. Reading computed style synchronously after a class swap
+returns the *pre-transition* value; transitioned properties need the wait.
+
+---
+
+## 2026-08-07 — /about AboutHeroSection mobile title
+
+**Task:** mobile only — make the hero title bigger, remove the "." from the
+"digital" line. Desktop untouched.
+
+### What changed
+`components/about/AboutHeroSection.tsx`, two edits:
+- Both `<h1>` halves share one ladder
+  (`text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[6rem]`). Bumped the **base**
+  step `2.75rem -> 3.4rem` (44px -> 54.4px). Editing the base is mobile-only by
+  construction — `sm:` re-asserts at 640px — the same approach used for
+  ServiceSection's titles.
+- Trailing period wrapped: `digital excellence<span className="max-sm:hidden">.</span>`
+  CSS-only, so no `useIsMobile()` hydration hazard and the desktop DOM is
+  identical.
+
+### Note on the request wording
+The ask was to remove the "." from "digital", but the only period on that line
+is the full stop after "excellence" — that is the one now hidden on phones.
+
+### Bigger necessarily re-wraps
+At the old 44px, line one ("The minds behind") already measured **359px inside a
+366px container** (`max-md:px-3`), i.e. 7px of headroom. Any increase wraps.
+Measured natural widths at 390px: 44px -> [359, 333], 48px -> [392, 364],
+54.4px -> [444, 412]. 48px would wrap line one but not line two (asymmetric), so
+3.4rem was chosen for a consistent 2+2 break: "The minds / behind" and
+"digital / excellence". Title block goes 2 lines -> 4.
+
+### Verified (prod build, `next start -p 3100`)
+- @390: both h1 `54.4px` (was 44px), period span `display: none`, clean word
+  breaks, `docScrollWidth` no horizontal overflow.
+- Stats row not regressed (the old About P0): top 884 + height 225 = 1109 inside
+  a 1133 `overflow:hidden` main; all 4 stats present, `171px 171px` grid.
+- @700 (the 640-767 band): `60px`, 1 line each, period `inline` — unchanged.
+- @1265 desktop: `96px`, 1 line each, period `inline` — unchanged.
+- tsc clean; build compiled; biome on the file reports only the 2 pre-existing
+  diagnostics (unused `React` import L4, array-index key L114), neither in the
+  edited lines.
+
+### Scope note
+Both changes land below **640px** (`sm`), not below 768px (`max-md`, the repo's
+usual mobile idiom), because this component's own type ladder treats the base
+step as the phone step. 640-767 keeps its existing 60px treatment.
+
+---
+
+## 2026-08-07 — /about AboutHeroSection: mobile stat dividers removed
+
+**Task:** mobile only — remove the borders around the stats. Desktop untouched.
+
+### What changed
+`components/about/AboutHeroSection.tsx`, one `cn()` block. The stat cells
+carried three border rules:
+
+```
+index !== 0            && "border-zinc-200 md:border-l md:border-t-0"
+(index === 1 || 3)     && "border-l border-zinc-200"     <- mobile 2-col grid
+(index === 2 || 3)     && "border-t border-zinc-200"     <- mobile 2-col grid
+```
+
+The last two are unprefixed, so they were the mobile dividers; both are gone.
+`md:border-t-0` went with them — it existed solely to cancel the base
+`border-t` on desktop, so it is now dead. Desktop's dividers were never those
+rules: they come from `md:border-l`, which is untouched.
+
+### Verified (prod build, `next start -p 3100`)
+- @390: all four cells `0px/0px/0px/0px` (top/right/bottom/left), grid still
+  `171px 171px`, all four stats present.
+- @700 (2-col band, `md:` not yet active): all four cells `0px` on every side.
+- @1265 desktop: `276.5px x4` grid; cell 0 no border, cells 1-3 `border-left:
+  1px` in zinc-200, zero top borders — byte-for-byte the previous desktop
+  result (`md:border-l` on 1-3, `md:border-t-0` having cancelled the base
+  `border-t` on 2-3).
+- tsc clean; build compiled; biome unchanged at the same 2 pre-existing
+  diagnostics (unused `React` import L4, array-index key L114).
+
+---
+
+## 2026-08-07 — /about: gap between hero and AboutTraditional (mobile)
+
+**Task:** mobile only — reduce the gap between AboutHeroSection and
+AboutTraditional. Desktop untouched.
+
+### Where the gap came from
+Measured at 390: **120px**, made of two parts —
+- `#about-hero-inner` `pb-16` = 64px (in AboutHeroSection)
+- `[&>section]:pt-14` = 56px (in `app/about/page.tsx`, not the hero)
+
+### What changed
+One class in `components/about/AboutHeroSection.tsx`: `pb-16` -> `pb-4`
+(64px -> 16px). Base-only, `md:pb-25` re-asserts at 768px. Left the page-level
+`pt-14` alone — the task scoped the change to AboutHeroSection, and 72px still
+reads as a section break rather than a collision. Say the word if it should go
+tighter; the remaining 56px lives in `app/about/page.tsx:37`.
+
+### Verified (prod build, `next start -p 3100`)
+- @390: `heroPadBottom 16px` + `secPadTop 56px` = **72px total, was 120px**.
+- @700 (still the base band): 16px / 56px, no horizontal overflow.
+- @1265 desktop: `heroPadBottom 100px` (`md:pb-25`), `secPadTop 180px`
+  (`md:pt-45`), sticky `position: sticky` / `top: -304px`
+  (= `calc(100vh-1104px)` at 800px tall), wrapper `padding-bottom 1200px` —
+  all unchanged.
+- tsc clean; build compiled; biome unchanged at the same 2 pre-existing
+  diagnostics (unused `React` import L4, array-index key L114).
+
+### Measurement note
+`whileInView` never fires in the preview pane (IntersectionObserver frozen), so
+elements sit at their `y: 40` initial offset and `getBoundingClientRect` reads
+40px low. Used `offsetTop`/`offsetHeight` (layout, pre-transform) instead.
+
+### Pre-existing, not touched
+`app/about/page.tsx:26` still hard-codes `md:top-[calc(100vh-1104px)]` while the
+desktop hero inner measures **1184px**. Desktop-only and unrelated to this
+change, but the magic number is stale.
+
+---
+
+## 2026-08-07 — /about AboutHeroSection: wider stat gaps (mobile)
+
+**Task:** mobile only — increase the gap between the stats. Desktop untouched.
+
+### What changed
+One class in `components/about/AboutHeroSection.tsx`: the stats grid's
+`max-md:gap-6` -> `max-md:gap-10` (24px -> 40px, both axes). The grid's ladder is
+`gap-8 max-md:gap-6 md:gap-4`, so only the `max-md:` step moved.
+
+### Verified (prod build, `next start -p 3100`)
+- @390: `rowGap/columnGap 40px` (was 24px), columns `163px x2` (was 171px),
+  grid height 224 -> 240. All four labels still 1 line — widest
+  ("Projects shipped") 151px inside a 163px column. No horizontal overflow.
+- Counter values render as "0+" in the preview pane (its count-up is view-gated
+  and IntersectionObserver is frozen here), so the real values were measured
+  against the h4's computed font: "250+" 94px, "98%" 82px, "40+" 74px,
+  "10+" 65px — all well inside 163px.
+- @700 (still the `max-md:` band): 40px gaps, `318px x2`, labels 1 line, no
+  overflow.
+- @1265 desktop: `rowGap/columnGap 16px` (`md:gap-4`), `276.5px x4`,
+  padding 80px/48px — unchanged.
+- tsc clean; build compiled; biome unchanged at the same 2 pre-existing
+  diagnostics (unused `React` import L4, array-index key L114).
+
+---
+
+## 2026-08-07 — AboutSection (homepage) mobile: stack -> smoke dissolve
+
+**Task as written** named AboutTraditional on /about. That component has exactly
+one card (the video) and nothing stacked — `ShrinkOnOverlap` and the sticky
+wrappers are all `min-width: 768px`, so mobile /about is plain flow. Asked; the
+user meant **AboutSection on the homepage**, i.e. `AboutImageStack`.
+
+### What changed
+`components/home/AboutImageStack.tsx` only. It is already the mobile-only
+branch (`AboutSection` renders it under `!isDesktop`; desktop keeps its
+framer/AnimatePresence stack), so desktop cannot be reached from this file.
+
+- `SLOTS` (three peeking poses: y -16/-30, scale 0.94/0.88, opacity 0.85/0.7)
+  replaced by `FRONT` / `HIDDEN`. Queued cards now sit at the identical pose
+  with opacity 0 — nothing peeks above or behind the front card.
+- `EXIT` changed from a drop (`y 56, scale 0.92`) to a dissipate:
+  `y -22, scale 1.06, blur 12px, opacity 0`. Rises, expands, blurs out.
+- `origin-top` -> `origin-center` so the expansion reads as spreading, not
+  growing downward. Parent (`perspective-[1200px]`) has `overflow: visible`, so
+  the 6% expansion is not clipped.
+- Transition list: `transform, opacity, filter` for the front and leaving cards;
+  **`opacity` alone** for queued cards. Two reasons — a released leaver drops
+  its blur/scale instantly rather than spending 700ms animating a blur nobody
+  can see, and opacity is never absent from the list, so a card promoted to
+  front always has a transition already in place when its opacity flips.
+  (First pass used `transition: none` for queued cards; that makes the fade-in
+  depend on a transition appearing in the same commit as the value change.)
+
+### Verified (prod build, `next start -p 3100`, 390x844)
+Sampled React's **inline** styles (set synchronously, so unaffected by the
+frozen transitions) across a full rotation — 8 distinct states, each of the
+three cards taking its turn:
+- exactly one card at `op:1` in every state — never two visible at once;
+- every queued card `translate3d(0,0,0) scale(1) op:0 f:none` — no peek;
+- every leaver `translate3d(0,-22px,0) scale(1.06) blur(12px) op:0 z:4`;
+- after release the leaver returns to `scale(1) op:0 f:none z:1 tr:op-only` —
+  snapped, no invisible blur animation;
+- queued cards always `tr:op-only`.
+- @1265 the host's first child is the framer card
+  (`origin-bottom-right ... will-change-transform`, host 560px) — the mobile
+  component is not mounted, desktop untouched.
+- tsc clean; build compiled; biome clean on this file.
+
+### Not verified here — needs a look on device
+The preview pane reported `document.hidden: true`, which freezes CSS
+transitions at their start values (every card read `opacity: 0`, `blur(0px)`
+mid-flight). The state machine and the target poses are proven; the *feel* of
+the 700ms dissolve is not. Worth one look on the phone.
+
+---
+
+## 2026-08-07 — PortfolioSection title slide: pattern -> carousel.jfif (mobile)
+
+**Task:** mobile only — on the first ("Our Projects") slide, drop the pattern and
+use `carousel.jfif` from public. Desktop untouched.
+
+Image lives at `public/assets/carousel.jfif` (not `public/` root).
+
+### What changed
+`components/home/PortfolioSection.tsx` only. The backdrop `<div>` is `md:hidden`,
+so the swap is mobile-only by construction.
+
+- SpotlightGrid + `PATTERN_MASK` wrapper replaced with
+  `<Image src="/assets/carousel.jfif" fill sizes="100vw" className="object-cover">`
+  plus a `bg-[#0a0a0a]/65` scrim (the copy is white on what was a flat panel).
+- Deleted the machinery that existed **only** to lazily mount that grid:
+  `PATTERN_MASK`, the `SpotlightGrid` import, `titleSlideRef`,
+  `titleSlideInView`, and its ~50-line IntersectionObserver effect (which was
+  `if (isDesktop) return` — a desktop no-op, so removing it cannot affect
+  desktop). `useState` became unused and was dropped from the React import.
+  Net effect: the section no longer has any rAF-driven background at all.
+
+### `.jfif` needs next/image, not a bare <img>
+Next's static handler has no mapping for the extension:
+`GET /assets/carousel.jfif` -> `200 application/octet-stream` (44,699 B).
+The optimizer sniffs content instead:
+`GET /_next/image?url=%2Fassets%2Fcarousel.jfif&w=640&q=75` -> `200 image/jpeg`
+(22,662 B). So routing through `<Image>` is what makes it serve as an image.
+
+### Verified (prod build, `next start -p 3100`)
+- @390: backdrop `display: block`, `maskImage: none`, no `.grid` in the panel,
+  img box `390x591` with `object-fit: cover`, scrim `#0a0a0a / 0.65`.
+  Forced the lazy load (browser lazy-loading is IO-driven and frozen in the
+  pane): `img.decode()` resolved, `complete: true`,
+  currentSrc `.../w=828&q=75`.
+- @1265 desktop: backdrop `display: none`, panel 1266x800, section bg
+  `rgb(10,10,10)`, 6 panels, h2 144px — unchanged.
+- tsc clean; build compiled; biome back to the 2 pre-existing diagnostics
+  (`noStaticElementInteractions` L442, `noArrayIndexKey` L572). The
+  `noUnusedImports` this change introduced was fixed, not left.
+
+### Flag: the source image is small
+`carousel.jfif` is **347x195**. The mobile slide is 390x591 and uses
+`object-cover`, so it upscales ~3x vertically — and more again at 2-3x DPR. It
+will look soft. The 65% scrim hides some of it, but a ~1200x1800 source would
+be the real fix. Delivered as asked; worth replacing the asset.
+
+---
+
+## 2026-08-07 — PortfolioSection title slide: backdrop image on desktop too
+
+**Task:** extend the previous change — the `carousel.jfif` backdrop on the first
+slide should also apply in desktop view.
+
+### What changed
+`components/home/PortfolioSection.tsx`, two classes:
+- backdrop wrapper: dropped `md:hidden`, so it now renders at every breakpoint.
+- title panel: `max-md:isolate` -> `isolate`.
+
+The second is load-bearing, not tidying. The backdrop is `-z-10`; `isolate` is
+what confines that negative z-index to the panel's own stacking context. Neither
+`relative` on the panel nor `relative` on the section creates one (z-index is
+`auto` on both), so without promoting `isolate` past `md` the backdrop would
+have escaped the panel and painted *behind* the section's `#0a0a0a` — invisible
+on desktop while looking correct in the class list.
+
+### Verified (prod build, `next start -p 3100`)
+Paint order proved by hit-testing. The wrapper is `pointer-events-none`, so
+`elementFromPoint` skips it; probes temporarily set `pointerEvents = 'auto'` on
+the live DOM (source untouched) and restored it after.
+- @1266 desktop: `isolation: isolate`, backdrop `display: block`, `zIndex: -10`,
+  img box `1266x800` `object-fit: cover`, loaded. Probes at 85%/10% width,
+  80%/92% height return `DIV.absolute inset-0 bg-[#0a0a0a]/65` — the scrim that
+  sits directly on the image — so the backdrop paints ABOVE the section
+  background. Had `-z-10` escaped, `#portfolio` (`rgb(10,10,10)`) would have
+  covered it. Probe over the headline returns the `H2`, so copy stays on top.
+- @390 mobile: unchanged — `isolation: isolate`, backdrop `display: block`,
+  img box `390x591`, `max-md:snap-center` still present, same scrim on top.
+- tsc clean; build compiled; biome still the same 2 pre-existing diagnostics.
+- Could not capture pixels: the preview pane is not compositing
+  ("Browser pane is not displayed"), so screenshots time out.
+
+### Correction to the previous entry
+I logged `carousel.jfif` as **347x195**. That was the naturalWidth of a *resized
+next/image variant*, not the file. Loading the raw path measures the source at
+**736x414**. Still modest for a 1266x800 desktop panel (~1.9x upscale under
+`object-cover`) and for mobile at 2-3x DPR, so it will look soft — but not as
+bad as first reported.
+
+---
+
+## 2026-08-07 — BlogSection mobile: card shadow no longer clipped
+
+**Task:** mobile only — the shadow was being cut off at the bottom of the cards.
+Desktop untouched.
+
+### Root cause
+The mobile carousel is `max-md:overflow-x-auto`. A box with `overflow-x: auto`
+computes `overflow-y: auto` as well (they cannot be independently `visible`), so
+it clips vertically whether or not that was intended. Measured before the fix:
+`overflowY: "auto"`, `paddingBottom: "0px"`, and the card's bottom edge exactly
+on the scroller's (`sr.bottom - cr.bottom === 0`), while `shadow-sm` reaches 4px
+below the border box (`0 1px 3px 0` + `0 1px 2px -1px`). So ~4px was sheared off.
+The scroller already carried `max-md:pt-6` — the same problem, previously solved
+only for the top.
+
+### What changed
+One className in `components/home/BlogSection.tsx` (plus a comment):
+`max-md:pb-4 max-md:-mb-4` on the scroller. The padding gives the shadow room
+INSIDE the scroll box; the equal negative margin takes that height back out of
+the flow so nothing below moves.
+
+### Verified (prod build, `next start -p 3100`)
+- @390: `paddingBottom 16px`, `marginBottom -16px`, room below card inside the
+  scroller `16px` vs a shadow reach of `4px` -> **clipped: false** (was 0px room
+  vs 4px reach).
+- Height neutrality measured, not assumed. Toggling the two properties on the
+  live node: pre-change section height **819**, padding alone **835**
+  (+16, the cost avoided), with the shipped pair **819** — delta **0**.
+- @1266 desktop: `paddingTop/paddingBottom/marginBottom/paddingLeft` all `0px`,
+  `overflow-x: clip`, `overflow-y: visible`, and the card's `box-shadow` is
+  `none` there (`shadow-sm` is `max-md:`) — nothing to clip and nothing changed.
+- tsc clean; build compiled.
+
+### Lint note
+`biome` reports `useExhaustiveDependencies` at BlogSection.tsx:125. Pre-existing
+— this change touched only a className string and a comment around line 373-386.
