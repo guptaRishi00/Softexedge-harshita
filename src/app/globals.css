@@ -53,6 +53,23 @@ select,
   touch-action: manipulation;
 }
 
+/* iOS decides per-tap whether to synthesise the mouse sequence at all. When it
+   judges the target "not clickable" it runs only the hover pass and drops the
+   click, so the control needs a second tap — which is exactly what the on-device
+   trace shows: pointerdown/pointerup on 100% of taps, click on roughly 1 in 3,
+   each lost tap ending `touchend -> mouseover -> nothing`.
+
+   Safari's heuristic counts an element as clickable if it (or an ancestor)
+   carries `cursor: pointer`. Setting it on <body> makes the whole document
+   qualify, so the click is dispatched on the first tap. Scoped to touch devices,
+   where no cursor is ever drawn — desktop never matches this query, so pointer
+   styling there is untouched. */
+@media (hover: none) and (pointer: coarse) {
+  body {
+    cursor: pointer;
+  }
+}
+
 /* Native scroll containers used as carousels: keep the drag, hide the bar. */
 .no-scrollbar {
   scrollbar-width: none;

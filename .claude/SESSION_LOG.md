@@ -12555,3 +12555,59 @@ Re-deploy, open `?debug=tap`, tap a control once, and read the
 `CHANGED DURING HOVER PASS` list. If it names something, that is the culprit. If
 it says `(nothing)` on a real lost tap, the abort is not mutation-driven and the
 remaining fix is to drive handlers from `pointerup` instead of `click`.
+
+---
+
+## 2026-08-07 — Safari double-tap: `cursor: pointer` on body for touch devices
+
+### What the mutation list actually showed
+```
+div.flex childList / div.w-full @style / div.z-50 @class / div.z-50 childList
+button.flex @aria-expanded / button.flex @aria-label
+```
+All of that is the dropdown OPENING — the aftermath of tap 2's successful click,
+caught because the 400ms window did not close on click. So it named no culprit.
+Fixed in `TapDebug`: `lastHover` is now zeroed when a `click` fires, so only a
+tap that produced NO click can contribute mutations.
+
+### The fact the traces do establish
+Across three device traces the ratio is consistent: **`pointerdown` and
+`pointerup` fire on 100% of taps; `click` on roughly one in three**
+(`touchend: 3 click: 1`, `touchend: 8 click: 2`, `touchend: 1 click: 0`), and
+every lost tap ends `touchend -> mouseover -> nothing`, with nothing
+`[prevented]`. iOS is running only the hover pass and declining to synthesise
+the click.
+
+Safari's heuristic for "is this a click target" counts an element as clickable
+when it or an ancestor has `cursor: pointer`. The tap targets in the trace are
+the icon's `svg` and `path` — bare SVG geometry.
+
+### What changed
+`src/app/globals.css`:
+```css
+@media (hover: none) and (pointer: coarse) {
+  body { cursor: pointer; }
+}
+```
+Whole document qualifies as clickable, so the click is dispatched on the first
+tap. Touch devices draw no cursor, so there is no visual cost; desktop never
+matches the query.
+
+### Verified (prod build, `next start -p 3100`)
+- Emitted through minification correctly scoped:
+  `@media (hover:none) and (pointer:coarse){body{cursor:pointer}}`.
+- @375 touch preset (`hover: none`, `pointer: coarse`, query matches):
+  `body`, `button`, and critically **`svg` and `path`** — the exact tap targets
+  from the trace — all compute `cursor: pointer`.
+- @1280 desktop: query does NOT match; `body`, `main`, heading and paragraph all
+  `cursor: auto`. Desktop pointer styling unchanged.
+- tsc clean; build compiled; biome clean.
+
+### Honest status
+This is a known workaround for this exact WebKit behaviour, chosen because the
+traces rule out the alternatives (nothing prevented, pointer events always
+delivered, viewport correct, hover CSS guarded, no overlay). It is still
+unconfirmed on the device. If it does not land, the remaining move is to stop
+depending on the synthetic click and drive activation from `pointerup`, which
+the traces prove is delivered 100% of the time — more invasive, so it is worth
+trying this first.

@@ -78,8 +78,15 @@ export default function TapDebug() {
         });
         log.current.length = Math.min(log.current.length, MAX_ROWS);
         if (type === "touchend") counts.current.touchend += 1;
-        if (type === "click") counts.current.click += 1;
         if (type === "mouseover") lastHover.current = performance.now();
+        if (type === "click") {
+          counts.current.click += 1;
+          // Close the mutation window. A click means the tap SUCCEEDED, and
+          // everything it causes (menus opening, aria flipping) would otherwise
+          // be logged as "changed during the hover pass" and drown out the one
+          // case of interest — a mutation on a tap that produced no click.
+          lastHover.current = 0;
+        }
       };
       document.addEventListener(type, fn, true);
       return { type, fn };
