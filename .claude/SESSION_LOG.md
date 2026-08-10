@@ -12611,3 +12611,60 @@ unconfirmed on the device. If it does not land, the remaining move is to stop
 depending on the synthetic click and drive activation from `pointerup`, which
 the traces prove is delivered 100% of the time — more invasive, so it is worth
 trying this first.
+
+---
+
+## 2026-08-07 — Safari double-tap: WHY established; click-rescue shipped
+
+User asked for the explanation first. The corrected tracer (mutation window now
+closes on click) finally produced a clean lost-tap capture:
+
+```
+1. pointerdown path ... 4. touchend path  5. mouseover path   click: 0
+CHANGED DURING HOVER PASS:
+  body.min-h-full childList / canvas.w-full @height / canvas.w-full @width
+  div.flex childList / div.absolute @style / p.absolute @style
+```
+
+### Why this happens (the actual mechanism)
+iOS runs a synthetic hover pass (`mouseover`) on every first tap, then checks
+whether the page changed while it ran. If it did, WebKit assumes layout may
+have shifted under the finger, discards the click, and spends the tap as
+"hover only" — that IS the double-tap. This site animates continuously (hero
+canvas painter, framer inline-style writes on absolute elements, AboutImageStack
+committing every 3.5s), so some DOM mutation lands inside almost every hover
+pass. The page as a whole reads "unstable" to the heuristic — which is why it
+hits ALL buttons, both breakpoints of Safari, and why per-cause CSS fixes
+(`touch-action: manipulation`, hover guards, `cursor: pointer` — all kept, all
+individually correct) each failed: whichever mutation source you silence,
+another one coincides with the next tap.
+
+### The deterministic facts (three device traces)
+`pointerdown`/`pointerup`: 100% of taps. `click`: ~1 in 3
+(`3/1`, `8/2`, `1/0`). Nothing ever `[prevented]`.
+
+### What shipped — stop depending on the synthetic click
+`src/components/ui/IosClickRescue.tsx`, mounted in `app/layout.tsx`. On
+`pointerup` over an interactive element (`a[href], button, [role=button],
+label, summary`), wait 120ms; if no native click arrived, dispatch the
+element's own `.click()`. Guards: touch-media only; movement < 12px;
+press < 700ms; release must be over the same control; click-counter snapshot
+(not a boolean that can latch) prevents double-fire; `isConnected` check
+prevents clicking a detached node.
+
+### Verified (prod build, mobile preset w/ touch emulation)
+- Lost-tap shape (`pointerdown -> pointerup -> mouseover`, no click): rescue
+  fired exactly 1 click, menu opened (`aria-expanded: true`).
+- Normal tap (native click arrives): exactly one more click — **no double** —
+  menu closed.
+- Guards hold: 60px fling -> 0 rescues; 900ms long-press -> 0; tap on a plain
+  `<p>` -> 0.
+- Desktop (query unmatched): rescue never fires.
+- tsc clean; build compiled; biome clean.
+
+### Follow-ups worth doing later
+The mutation churn the trace exposed is real work happening every frame
+(canvas attribute writes, framer style writes at rest). The rescue makes taps
+reliable regardless; calming those writers is a perf task for another day.
+`TapDebug` stays until the user confirms on-device, then remove it and its two
+layout lines.
