@@ -12122,3 +12122,55 @@ the flow so nothing below moves.
 ### Lint note
 `biome` reports `useExhaustiveDependencies` at BlogSection.tsx:125. Pre-existing
 — this change touched only a className string and a comment around line 373-386.
+
+---
+
+## 2026-08-07 — Safari "needs two clicks" — INVESTIGATED, NOT FIXED
+
+**Report:** every clickable element on /home needs a double click; especially
+Safari. User then narrowed it: **both** Mac and iOS Safari, and **always**, even
+when the page has been stationary.
+
+**No code was changed.** I could not identify a cause I can stand behind, and a
+speculative page-wide change to this page is not worth the risk.
+
+### Ruled out (each checked, not assumed)
+- **Global overlay / z-index trap.** Hit-tested all 118 `a[href]`/`button` on the
+  page, each scrolled to centre: 113 clean. See the 5 below.
+- **The 5 "blocked" hits were a harness artifact, not a bug.** Portfolio's
+  panel `<Link>` (`absolute inset-0 z-20`) read as covered by
+  `p.whitespace-pre-line` = "Brands Directed" from `#stats`. Cause: the z-20
+  wrapper carries `md:-mt-[100vh]`, and StatsSection's top measured 2028 —
+  identical to `#portfolio`'s — because **no pins were active** (`.pin-spacer`
+  count 0, fixed-pin count 0, ScrollTrigger never initialised). The preview pane
+  delivers no scroll events and freezes rAF, so GSAP never runs and the negative
+  margin is uncompensated. On the real site the pins absorb that overlap.
+- **`pointer-events` toggling** — only static `pointer-events-auto` in
+  per-service CtaSections, none on /home.
+- **Page-wide `preventDefault`** — the only click suppressor on /home is
+  BlogSection's drag guard (`onClickCapture`, `isPanning`), scoped to that track.
+- **Hover rules in globals.css** — none; no missing `@media (hover: hover)`.
+- **Page shell** — `layout.tsx` renders only `VideoViewportPause`, which returns
+  `null`. No body-level overlay.
+- **Lenis (`SmoothScroll`)** — skipped below 768px, so it cannot explain iOS.
+- **Hover-latch (`group-hover:` on buttons)** — touch-only, cannot explain macOS.
+
+The last two were my leading hypotheses; the user's "both browsers, always"
+answer eliminates both.
+
+### Why it could not be reproduced here
+No Safari in this environment. The preview pane is Chromium AND is degraded:
+no scroll events, frozen rAF, IntersectionObserver callbacks undelivered,
+`document.hidden: true`. So GSAP pins, Lenis, scroll-linked state and CSS
+transitions all fail to run — the exact machinery any remaining hypothesis
+depends on.
+
+### Next step — need a repro
+Ask for: one specific element that misbehaves, and ideally a screen recording.
+Most valuable single datapoint: whether the FIRST click fires any event at all
+(paste in Safari's console, then click once):
+`['pointerdown','pointerup','click'].forEach(t=>document.addEventListener(t,e=>console.log(t,e.target),true))`
+If pointerdown/pointerup fire but `click` does not, the down and up targets
+differ (something moves or is re-rendered under the pointer). If `click` fires
+with the right target but nothing happens, it is a handler/navigation problem
+instead. Those two point at opposite fixes.
