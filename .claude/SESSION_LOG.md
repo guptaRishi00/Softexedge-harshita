@@ -12362,3 +12362,85 @@ deprecated alias.
 
 Note: the slide's image is now `/assets/collage.png` (changed outside this
 task); left as found.
+
+---
+
+## 2026-08-07 — /about navbar: reduced mobile y-padding
+
+**Task:** mobile only — reduce the navbar's y-axis padding a little. Desktop
+untouched.
+
+### What changed
+One className in `components/page/resizable-navbar.tsx`, the dropdown-mode
+`MobileNavHeader`:
+- `pb-3.5` -> `pb-2.5` (14px -> 10px)
+- `pt-3.5` -> `pt-2.5` (14px -> 10px, the scrolled/pill state)
+- `pt-8` -> `pt-6` (32px -> 24px, the at-rest full-width state)
+
+`px-7` deliberately left alone — the ask was y-axis only, and the x padding was
+set in an earlier task.
+
+Mobile-only by construction twice over: this branch runs only when `dropdown` is
+passed (only `/about` does), and `MobileNav` is `lg:hidden`.
+
+### Verified (prod build, `next start -p 3100`)
+- @390 at rest: `padTop 24px`, `padBottom 10px`, header height **66px**
+  (was 32+14+32 = 78). Scrolled state (class forced — the pane delivers no
+  scroll events): `padTop/padBottom 10px`, header **52px** (was 60).
+- `padX` still `28px` at both states — x-axis untouched.
+- Toggle still renders as `BUTTON` (the iOS single-tap fix from the previous
+  task is intact).
+- @1266 desktop: mobile bar `display: none`, NavBody `flex`, padding
+  `32px 40px`, 7 links, width 1250 — unchanged.
+- `/career` @390 (non-dropdown branch, all other routes): still
+  `px-6 py-4` = 24px/16px, `position: fixed` — untouched.
+- tsc clean; build compiled; biome unchanged at 9 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — Safari double-tap, attempt 3 failed -> switched to instrumenting
+
+User: still not solved on mobile. Third failed attempt, so per grounded-loops
+the approach changed: stop proposing mechanisms, start measuring on the device.
+
+### Ruled out this round
+- **globals.css read in full** (not just grepped). Nothing page-wide that could
+  eat a tap: no `touch-action`, no `*` rules, no tap-highlight or user-select
+  overrides. Only marquee/lenis/shadcn tokens and the `[data-no-mobile-entry]`
+  block.
+- **Full hit-test sweep at PHONE width with touch emulation on**
+  (`mobile` preset: `hover: none`, `pointer: coarse`, maxTouchPoints 5).
+  **0 of 119** `a[href]`/`button` elements covered, each scrolled to centre.
+  So nothing is overlaying the controls.
+
+### Could not reproduce, again
+The pane cannot deliver a real tap: `computer{left_click}` times out with
+"Browser pane is not displayed, so the page is not compositing frames". Between
+that, frozen rAF and undelivered scroll/IO callbacks, this environment cannot
+exercise the failure. And there is no Safari here at all.
+
+### What was built instead
+`src/components/ui/TapDebug.tsx`, mounted in `app/layout.tsx`.
+An on-screen tap tracer for a real iPhone, no Mac or Web Inspector needed.
+- Renders **nothing** unless the URL has `?debug=tap`; flag read from
+  `window.location.search` in an effect rather than `useSearchParams`, so no
+  page is opted into dynamic rendering.
+- Logs `touchstart/touchend/touchcancel/pointerdown/pointerup/mousedown/
+  mouseup/click` in the CAPTURE phase with target and `defaultPrevented`.
+- Header line counts `touchend` vs `click` and prints `<= TAPS LOST` when they
+  diverge — that single line identifies the failure mode.
+- Panel is `pointer-events: none` throughout, so the instrument cannot alter
+  what it measures.
+
+### Verified
+- Without the flag: string absent from the served HTML (`grep -c` = 0) and no
+  panel in the DOM. The `div.pointer-events-none fixed` at the end of `<body>`
+  is ServiceSection's "View Services" cursor pill, not this.
+- With `?debug=tap`: panel renders, `pointer-events: none`, `z-index 9999`, and
+  a simulated tap sequence logged in order —
+  `1. pointerdown button.flex`, `2. mousedown`, `3. pointerup`, `4. mouseup`,
+  `5. click`, summary `touchend: 0 click: 1 ok`.
+- tsc clean; build compiled; biome clean on both files.
+
+### To remove afterwards
+Delete `TapDebug.tsx` and its two lines in `app/layout.tsx`.

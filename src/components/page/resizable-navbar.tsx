@@ -481,8 +481,8 @@ export const MobileNavHeader = ({
     return (
       <div
         className={cn(
-          "relative flex w-full shrink-0 flex-row items-center justify-between px-7 pb-3.5",
-          visible ? "pt-3.5" : "pt-8",
+          "relative flex w-full shrink-0 flex-row items-center justify-between px-7 pb-2.5",
+          visible ? "pt-2.5" : "pt-6",
           className,
         )}
       >

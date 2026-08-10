@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import TapDebug from "@/components/ui/TapDebug";
 import VideoViewportPause from "@/components/ui/VideoViewportPause";
 import { cn } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
@@ -23,6 +24,8 @@ export default function RootLayout({
     <html lang="en" className={cn("h-full", "antialiased", "font-sans")}>
       <body className="min-h-full flex flex-col">
         <VideoViewportPause />
+        {/* Inert unless the URL carries `?debug=tap`. */}
+        <TapDebug />
         {children}
       </body>
     </html>
