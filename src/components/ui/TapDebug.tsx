@@ -31,6 +31,12 @@ const TRACKED = [
   "touchcancel",
   "pointerdown",
   "pointerup",
+  // `mouseover` is the synthetic hover pass iOS runs before deciding whether to
+  // dispatch a click. Seeing it arrive and then NOT be followed by mousedown is
+  // the signature of Safari cancelling the tap because the page changed under
+  // the finger — the one remaining explanation that the first trace could not
+  // distinguish. `mousemove` is deliberately not tracked: it floods.
+  "mouseover",
   "mousedown",
   "mouseup",
   "click",

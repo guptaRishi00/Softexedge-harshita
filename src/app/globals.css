@@ -35,6 +35,24 @@ body {
   animation-play-state: paused;
 }
 
+/* iOS holds a tap's click back while it waits to see whether a second tap is
+   coming (double-tap-to-zoom). The device-width viewport is not enough on its
+   own: the tap trace on an iPhone showed a full touchstart/touchend with NO
+   mouse events, and tap 1's mousedown/mouseup/click arriving only after tap 2 —
+   the first tap's click, deferred. `manipulation` declares that these elements
+   have no double-tap gesture to arbitrate, so the click is dispatched at once.
+   It still permits panning and pinch-zoom, so carousels and page scroll are
+   unaffected. */
+a,
+button,
+summary,
+label,
+select,
+[role="button"],
+[onclick] {
+  touch-action: manipulation;
+}
+
 /* Native scroll containers used as carousels: keep the drag, hide the bar. */
 .no-scrollbar {
   scrollbar-width: none;

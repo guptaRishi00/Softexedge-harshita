@@ -12444,3 +12444,59 @@ An on-screen tap tracer for a real iPhone, no Mac or Web Inspector needed.
 
 ### To remove afterwards
 Delete `TapDebug.tsx` and its two lines in `app/layout.tsx`.
+
+---
+
+## 2026-08-07 — Safari double-tap: traced on device, `touch-action: manipulation`
+
+The on-device tracer gave the decisive read. iPhone trace, oldest first:
+
+```
+1. pointerdown path   2. touchstart path   3. pointerup path   4. touchend path
+5. pointerdown svg    6. touchstart svg    7. pointerup svg    8. touchend svg
+9. mousedown path    10. mouseup path     11. click path
+touchend: 2  click: 1  <= TAPS LOST
+```
+
+Two facts: tap 1 completes a full touch cycle and produces **no** mouse events
+at all (nothing `[prevented]` — they simply never arrive); and the mouse events
+that do fire target **`path`**, which was TAP 1's target, not tap 2's `svg`.
+So iOS **deferred tap 1's click and released it only after tap 2** — gesture
+arbitration for double-tap-to-zoom, not a swallowed or mis-targeted event.
+
+**Viewport was checked, not assumed:** the served HTML already carries
+`<meta name="viewport" content="width=device-width, initial-scale=1"/>`, so the
+usual cause was already ruled out and the deferral is per-element gesture
+arbitration instead.
+
+### What changed
+`src/app/globals.css` — one rule:
+```css
+a, button, summary, label, select, [role="button"], [onclick] {
+  touch-action: manipulation;
+}
+```
+`manipulation` declares these elements have no double-tap gesture to wait for,
+so the click dispatches immediately. It still permits pan and pinch-zoom.
+
+Also extended `TapDebug` to track `mouseover` (the synthetic hover pass), so if
+this does not land, the next trace distinguishes "hover pass ran then Safari
+aborted" from "deferral" without another round trip. `mousemove` deliberately
+left untracked — it floods.
+
+### Verified (prod build, `next start -p 3100`, mobile preset w/ touch emulation)
+- Rule survives minification: emitted as
+  `a,button,summary,label,select,[role=button],[onclick]{touch-action:manipulation}`.
+- Computed on the real controls @375: menu toggle (`BUTTON`), nav logo link,
+  ContactSection channel card, ServiceSection link — all `manipulation`.
+- **Carousels unaffected:** all three `.no-scrollbar` scrollers still
+  `touch-action: auto` with `overflow-x: auto`; `body` still `auto`. Panning and
+  page scroll are not restricted.
+- Tracer upgrade works: logged `mouseover -> pointerdown -> mousedown ->
+  pointerup -> mouseup -> click`.
+- tsc clean; build compiled; biome clean on the touched files.
+
+### Not verified on Safari
+No Safari in this environment. The diagnosis is now evidence-based rather than
+speculative, but confirmation still has to come from the device. `?debug=tap`
+remains available for the next trace.
