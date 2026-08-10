@@ -12174,3 +12174,60 @@ If pointerdown/pointerup fire but `click` does not, the down and up targets
 differ (something moves or is re-rendered under the pointer). If `click` fires
 with the right target but nothing happens, it is a handler/navigation problem
 instead. Those two point at opposite fixes.
+
+---
+
+## 2026-08-07 — Safari "needs two clicks" — diagnosed, fix applied (UNVERIFIED on Safari)
+
+Follow-up to the previous entry. The user's Safari console gave the decisive
+datapoint.
+
+### The evidence
+User aimed at a button; the logged event target was
+`<p class="text-xl leading-[1.25em] text-zinc-600 font-regular max-md:text-lg">`
+= AboutSection.tsx:166, with `same: true` (down and up agreed) and
+`click` DID fire. So nothing is swallowing the click — **the click is landing on
+the wrong element**. The "Connect With Us" `<Link>` (AboutSection.tsx:178) sits
+immediately below that `<p>` in the same `space-y-6` stack.
+
+Measured the geometry at 1280 wide, applying the exact end-state the
+ScrollTrigger scrubs to (`translateY(40px) scale(0.85)`, `origin-top`) on
+`aboutInnerRef`:
+- link height **64px**
+- layout centre `(144, 360)`, visual centre `(217, 313)`
+- **vertical offset 46px** — more than half the link's height, so the visible
+  button falls outside its own layout box
+- element at the visual point in untransformed coords:
+  `DIV.mt-10 max-w-2xl space-y-6` — the paragraph+button stack, and 46px up is
+  the paragraph
+
+i.e. WebKit hit-tests the composited layer against stale/untransformed geometry:
+you click the button you can see, the event goes to the `<p>` behind it. Chrome
+follows the transform, which is why it is Safari-only.
+
+### What changed
+`src/app/home/page.tsx` — dropped `md:will-change-transform` from the two GSAP
+scrubbed wrappers (`aboutInnerRef`, `testimonialsInnerRef`). `will-change` is
+what pins them into a permanently composited layer; without it WebKit
+recomputes hit geometry from the live transform. GSAP still promotes the layer
+for the duration of the tween, and the class was `md:`-gated so **mobile is
+byte-identical**.
+
+### Verified
+- `willChange: "auto"` on both wrappers now; `origin-top` preserved.
+- With the transform applied, the hit at the link's visual centre resolves to
+  `SPAN` inside the Link (`hitIsInsideTheLink: true`) — no regression to the
+  already-correct Chromium behaviour.
+- tsc clean; build compiled; biome clean on the file.
+
+### NOT verified — no Safari in this environment
+This is a hypothesis-driven fix. The mechanism is well corroborated (user's log
++ the 46px measurement agree), but whether removing `will-change` is enough to
+make WebKit recompute is untested. Confirmation snippet for Safari:
+
+```
+document.addEventListener('click', e => { const el = [...document.querySelectorAll('a,button')].find(n => { const r = n.getBoundingClientRect(); return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom; }); console.log('target:', e.target.tagName, '| geometry says:', el ? el.textContent.trim().slice(0,30) : 'none'); }, true)
+```
+If `target` is still a `P` while `geometry says` names the button, the layer is
+still stale and the next step is to drop the scrubbed `scale` on the About /
+Testimonials wrappers (the visual/layout mismatch itself), not just the hint.
