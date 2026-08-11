@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import IosClickRescue from "@/components/ui/IosClickRescue";
-import TapDebug from "@/components/ui/TapDebug";
 import VideoViewportPause from "@/components/ui/VideoViewportPause";
 import { cn } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
@@ -28,8 +27,6 @@ export default function RootLayout({
         {/* Touch devices only: re-dispatches the click iOS withholds when the
             page mutates during a tap's synthetic hover pass. */}
         <IosClickRescue />
-        {/* Inert unless the URL carries `?debug=tap`. */}
-        <TapDebug />
         {children}
       </body>
     </html>

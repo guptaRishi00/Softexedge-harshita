@@ -78,9 +78,16 @@ export default function OurValuesSection() {
               </span>
             </div>
 
-            <h2 className="text-5xl max-md:text-[2.5rem] md:text-7xl lg:text-[80px] font-bold tracking-tighter leading-[0.9em] mb-8 max-md:mb-6 text-white">
+            {/* Metrics match AboutTraditional's mobile heading: same 40px size
+                it already had, plus its leading (1.11 vs 0.9em) and
+                `tracking-tight` (-1px vs -2px). Desktop keeps the tighter set. */}
+            <h2 className="text-5xl max-md:text-[2.5rem] md:text-7xl lg:text-[80px] font-bold tracking-tighter max-md:tracking-tight leading-[0.9em] max-md:leading-[1.11] mb-8 max-md:mb-6 text-white">
               We've built a culture of
-              <span className="pl-5 max-md:pl-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              {/* JSX swallows the newline before the span, so the word space has
+                  to be a real inset. Desktop's pl-5 already did that job; mobile
+                  had pl-0 and rendered "oftrust." — 0.25em is one word space at
+                  whatever the font size is. */}
+              <span className="pl-5 max-md:pl-[0.25em] bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 trust.
               </span>
             </h2>
@@ -102,7 +109,12 @@ export default function OurValuesSection() {
                   transition={{ duration: 0.5, ease: premiumEase }}
                   className="flex flex-col gap-8"
                 >
-                  <p className="text-xl max-md:text-lg md:text-2xl font-medium leading-[1.2em] tracking-tight text-white">
+                  {/* The quotes wrap to 4 or 5 lines depending on which one is
+                      showing, so the card jumped 350 <-> 372px on every
+                      rotation. Reserving the tallest keeps it still. Expressed
+                      in em (6em = 5 lines at this 1.2em leading) rather than px
+                      so it tracks the font size instead of one screen width. */}
+                  <p className="text-xl max-md:text-lg md:text-2xl font-medium leading-[1.2em] tracking-tight text-white max-md:min-h-[6em]">
                     {quotes[quoteIndex].text}
                   </p>
 
@@ -129,13 +141,18 @@ export default function OurValuesSection() {
                     <Link href="/about" className="shrink-0 w-full sm:w-auto">
                       <button
                         type="button"
-                        className="group relative flex h-14 w-full sm:w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-5 pr-2 transition-colors duration-300 hover:border-white before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100"
+                        // Mobile geometry copied from ExperimentalTestimonials'
+                        // CTA (h-16, w-fit, pl-0/pr-3, 40px icon at rounded-lg,
+                        // h-5 arrows, text-lg). Colours are deliberately NOT
+                        // copied — that CTA is dark-on-white, this one lives on
+                        // a dark card and keeps its white-on-transparent sweep.
+                        className="group relative flex h-14 max-md:h-16 w-full sm:w-fit max-md:w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-5 pr-2 max-md:pl-0 max-md:pr-3 transition-colors duration-300 hover:border-white before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100"
                       >
-                        <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors group-hover:text-black">
+                        <span className="relative z-10 text-base max-md:text-lg font-bold tracking-tight text-white transition-colors group-hover:text-black">
                           Connect With Me
                         </span>
 
-                        <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
+                        <div className="relative z-10 flex h-9 w-9 max-md:h-10 max-md:w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl max-md:rounded-lg bg-white text-black transition-colors duration-300 group-hover:bg-black">
                           <svg width="0" height="0" className="absolute">
                             <title>Connect arrow gradient</title>
                             <defs>
@@ -152,9 +169,9 @@ export default function OurValuesSection() {
                             </defs>
                           </svg>
 
-                          <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                          <MdArrowOutward className="absolute z-10 h-4 w-4 max-md:h-5 max-md:w-5 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
                           <MdArrowOutward
-                            className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
+                            className="absolute z-10 h-4 w-4 max-md:h-5 max-md:w-5 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
                             style={{ fill: "url(#culture-icon-grad)" }}
                           />
                         </div>

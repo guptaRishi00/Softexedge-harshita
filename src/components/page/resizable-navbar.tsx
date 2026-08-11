@@ -481,7 +481,7 @@ export const MobileNavHeader = ({
     return (
       <div
         className={cn(
-          "relative flex w-full shrink-0 flex-row items-center justify-between px-7 pb-2.5",
+          "relative flex w-full shrink-0 flex-row items-center justify-between px-6 pb-2.5",
           visible ? "pt-2.5" : "pt-6",
           className,
         )}
@@ -544,7 +544,7 @@ export const MobileNavMenu = ({
             className="w-full overflow-hidden"
           >
             <div
-              className={cn("flex w-full flex-col px-7 pt-1 pb-5", className)}
+              className={cn("flex w-full flex-col px-6 pt-1 pb-5", className)}
             >
               {children}
             </div>

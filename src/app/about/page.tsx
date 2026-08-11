@@ -55,17 +55,22 @@ export default function AboutPage({}: Props) {
           <OurTeamSection />
         </div>
       </div>
-      <div className="[&>section]:pt-16 [&>section]:pb-6 md:[&>section]:pt-24 md:[&>section]:pb-10">
+      <div className="[&>section]:pt-16 [&>section]:pb-6 max-md:[&>section]:pb-10 md:[&>section]:pt-24 md:[&>section]:pb-10">
         <ExperimentalTestimonials />
       </div>
-      <TechLogoCarousel />
-      <div className="px-3 [&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-0">
+      {/* Overrides TechLogoCarousel's own `max-md:pb-20` for this page only —
+          the component is shared with /home, and a descendant selector from
+          here outranks a plain utility on the section itself. */}
+      <div className="max-md:[&>section]:pb-10">
+        <TechLogoCarousel />
+      </div>
+      <div className="px-3 [&>section]:py-16 max-md:[&>section]:pt-8 max-md:[&>section]:pb-8 md:[&>section]:pb-24 md:[&>section]:pt-0">
         <CtaSection />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-3">
+      <div className="[&>section]:py-16 max-md:[&>section]:pt-8 max-md:[&>section]:pb-8 md:[&>section]:pb-24 md:[&>section]:pt-3">
         <FaqSection />
       </div>
-      <div className="[&>section]:py-16 md:[&>section]:pb-14 md:[&>section]:pt-10">
+      <div className="[&>section]:py-16 max-md:[&>section]:pt-8 md:[&>section]:pb-14 md:[&>section]:pt-10">
         <BlogSection />
       </div>
       <div className="px-3 pt-16 pb-3 md:pt-24">

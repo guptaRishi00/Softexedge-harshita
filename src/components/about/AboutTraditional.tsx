@@ -21,7 +21,12 @@ export default function AboutTraditional() {
             </span>
           </div>
 
-          <h2 className="text-5xl max-md:text-[2.5rem] md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter leading-[0.9em] mb-8 max-md:mb-6">
+          {/* Mobile matches ServiceSection's heading treatment. The font SIZE
+              already did (both resolve to 40px); what differed was the leading
+              (0.9em -> 36px vs its 44.44px) and `tracking-tighter` (-2px vs its
+              -1px), which is what made this one read compressed next to it.
+              Desktop keeps its own tighter setting. */}
+          <h2 className="text-5xl max-md:text-[2.5rem] md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter max-md:tracking-tight leading-[0.9em] max-md:leading-[1.11] mb-8 max-md:mb-6">
             A collective of <br className="hidden md:block" />
             <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               digital innovators.
@@ -42,7 +47,12 @@ export default function AboutTraditional() {
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-            className="group relative aspect-video w-full overflow-hidden rounded-2xl bg-zinc-900"
+            // Mobile matches OurValuesSection's portrait image. Both sit in a
+            // `px-3` container at the same 351px content width, so copying its
+            // 4/5 ratio yields the identical rendered height — and unlike a
+            // fixed px height it tracks whatever the viewport is. Desktop keeps
+            // 16/9.
+            className="group relative aspect-video max-md:aspect-[4/5] w-full overflow-hidden rounded-2xl bg-zinc-900"
           >
             <video
               src="/assets/video1.mp4"

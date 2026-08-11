@@ -12668,3 +12668,763 @@ The mutation churn the trace exposed is real work happening every frame
 reliable regardless; calming those writers is a perf task for another day.
 `TapDebug` stays until the user confirms on-device, then remove it and its two
 layout lines.
+
+---
+
+## 2026-08-07 — Safari double-tap CONFIRMED FIXED; debug scaffolding removed
+
+User confirmed on device: taps land on the first try.
+
+`IosClickRescue` is the fix that closed it — on `pointerup` over an interactive
+element it waits 120ms and dispatches `.click()` itself if WebKit never
+delivered one. The three CSS changes made along the way are kept; each is
+individually correct and none of them alone was sufficient:
+- `touch-action: manipulation` on interactive elements
+- `cursor: pointer` on `body` under `(hover: none) and (pointer: coarse)`
+- mouse handlers gated to desktop in ChannelCard / ServiceSection /
+  PortfolioSection, and `MobileNavToggle` as a real `<button>` (that one also
+  fixed a genuine a11y gap: the control had no name and no keyboard access)
+
+### Removed now that it has served its purpose
+- deleted `src/components/ui/TapDebug.tsx`
+- removed its import and `<TapDebug />` from `app/layout.tsx`
+- reworded the one comment in `IosClickRescue` that named the deleted file
+
+Verified: `grep -rn "TapDebug\|debug=tap" src/` returns nothing, the file is
+gone, tsc clean, build compiled, biome clean on both touched files.
+
+### Left for later (raised, not done)
+The trace exposed real per-frame churn at rest — the hero canvas rewriting its
+`width`/`height` attributes and framer writing inline `@style` on absolute
+elements. Taps are reliable regardless now, but that is genuine ongoing work on
+every frame and is worth a perf pass at some point.
+
+---
+
+## 2026-08-07 — /about navbar: reduced mobile x-padding
+
+**Task:** mobile only — reduce the navbar's x-axis padding a little. Desktop
+untouched.
+
+### What changed
+`components/page/resizable-navbar.tsx`, dropdown mode, `px-7` -> `px-6`
+(28px -> 24px) in BOTH places:
+- `MobileNavHeader` (the logo + toggle row)
+- `MobileNavMenu`'s inner list
+
+Changed together on purpose: the two share the bar's inset, so trimming only the
+header would have stepped the nav links 4px in from the logo above them. Not a
+widening of scope — it is what "the navbar's x padding" means here.
+
+Mobile-only twice over: the branch runs only when `dropdown` is passed (only
+`/about`), and `MobileNav` is `lg:hidden`.
+
+### Verified (prod build, `next start -p 3100`, mobile preset)
+- @375: header `padding-left/right 24px` (was 28), menu list `24px` — equal.
+- Alignment holds: logo left edge **25px**, first nav link left edge **25px**
+  (`alignedWithLogo: true`); toggle sits **25px** from the right, so the bar is
+  symmetric.
+- Y padding untouched by this change: still `24px` top / `10px` bottom from the
+  previous task.
+- @1280 desktop: mobile bar `display: none`; NavBody `flex`, padding
+  `32px 40px`, 7 links — unchanged.
+- `/career` @375 (non-dropdown branch, every other route): still `px-6 py-4`
+  = 24/16 — untouched.
+- tsc clean; build compiled; biome unchanged at 9 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — /about hero: smaller mobile title, taller carousel images
+
+**Task:** mobile only — reduce the title size, increase the image height.
+Desktop untouched.
+
+### What changed
+- `components/about/AboutHeroSection.tsx` — both `<h1>` halves,
+  `text-[3.4rem]` -> `text-[3rem]` (54.4px -> 48px). Base step only;
+  `sm:text-6xl md:text-7xl lg:text-[6rem]` re-assert above 640px.
+- `components/about/EdgeToEdgeCarousel.tsx` — tile `h-[100px]` -> `h-[130px]`
+  (+30%). Base only; `md:h-[140px] md:w-[210px]` untouched.
+
+Width left at `w-[150px]`: the ask was height only. The images are
+`object-cover`, so the taller box crops rather than distorts.
+
+### Verified (prod build, `next start -p 3100`)
+- @375 mobile: titles `48px` (was 54.4), tile `130px x 150px`,
+  `object-fit: cover`. Stats row still inside the `overflow-hidden` main
+  (bottom 1052 vs inner height 1068) and no horizontal overflow — the taller
+  images did not push anything out.
+- @700 (`sm` band): title `60px` from `sm:text-6xl`; tile still the mobile base
+  `130px` since the override starts at `md` — consistent with how this
+  component already laddered.
+- @1280 desktop: titles `96px`, 1 line each, tile `140px x 210px`,
+  `margin-right 12px`, trailing period `inline` — all unchanged.
+- tsc clean; build compiled; biome unchanged at the 3 pre-existing diagnostics
+  (unused `React` import, two array-index keys).
+
+---
+
+## 2026-08-07 — /about hero: title/image rebalance, second pass
+
+**Task:** same as the previous entry, "more".
+
+### What changed
+- `AboutHeroSection.tsx` — both `<h1>`, `text-[3rem]` -> `text-[2.5rem]`
+  (48px -> 40px). Base step only.
+- `EdgeToEdgeCarousel.tsx` — tile `h-[130px]` -> `h-[165px]` (+27%, and +65%
+  over the original 100px). Base only; `md:h-[140px]` untouched.
+
+### The title now fits on one line
+40px crosses the wrap threshold this container has had all along: at 375 the
+copy column is ~351px, and the two halves measure **326px** and **303px**, so
+each renders on a SINGLE line. The title block goes 4 lines -> 2. Worth
+flagging because it is a larger composition change than the font delta alone
+suggests — anything above ~44px wraps here, anything below does not.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: titles `40px`, **1 line each** (was 2 each), widths 326/303 inside
+  ~351. Tile `165px x 150px`, `object-fit: cover`. Stats row still inside the
+  `overflow-hidden` main (1052 vs 1068); no horizontal overflow.
+- Measurement note: the carousel strip's rect reads 158px against a 165px tile
+  because the wrapper sits at its framer `initial` `scale: 0.96` — rAF is frozen
+  in the preview pane so the entry animation never runs. 165 x 0.96 = 158.4.
+  Not clipping.
+- @700 (`sm` band): title `60px` (`sm:text-6xl`), tile still the mobile base
+  `165px` until `md`; no horizontal overflow.
+- @1280 desktop: titles `96px` 1 line each, tile `140px x 210px`, gap 12px,
+  period `inline` — unchanged.
+- tsc clean; build compiled; biome unchanged at 3 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — /about hero: carousel images taller again (third pass)
+
+**Task:** mobile only — increase the image height, more. Title left alone this
+time (the ask named only the images).
+
+### What changed
+`components/about/EdgeToEdgeCarousel.tsx`: tile `h-[165px]` -> `h-[210px]`
+(+27%; 110% over the original 100px). Base step only — `md:h-[140px]
+md:w-[210px]` untouched. Width stays `w-[150px]`, so with `object-cover` the
+taller box crops further rather than distorting.
+
+### The earlier "fits" checks were weaker than they looked
+The carousel's wrapper is a framer element held at `initial` `height: 0` until
+its entry animation runs, and rAF is frozen in the preview pane — so the strip
+contributed ZERO height to every measurement in the previous two passes. Forced
+it to the settled state (`height: auto`, opacity 1) to get the real device
+layout: strip **290px**, tile 202px as rendered (210 x the 0.96 entry scale).
+
+Result: `main` height and the stats position did **not** move — 1068 / 1052
+before and after. The first block is `min-h-screen` (812) and its content with
+the strip open is only ~550px, so there is substantial headroom before the
+strip starts displacing anything. That is why the last two passes also showed
+no movement, and it means this size is safe rather than accidentally fitting.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: tile `210px x 150px`, `object-fit: cover`; all 4 stats rendered and
+  inside the `overflow-hidden` main; no horizontal overflow.
+- @700 (`sm` band, mobile base still in force until `md`): tile `210px`, no
+  horizontal overflow.
+- @1280 desktop: tile `140px x 210px`, gap 12px, titles `96px` — unchanged.
+- tsc clean; build compiled; biome unchanged (1 pre-existing array-index key).
+
+---
+
+## 2026-08-07 — /about hero: reduced the gap above the stats (mobile)
+
+**Task:** mobile only — reduce the gap between the hero content and the stats.
+
+### Where the gap came from (measured, with the framer entry forced open)
+Last title -> stat numbers was **209px**:
+- ~101px centring slack — the hero block is `min-h-screen` with `justify-center`
+  and its content is only ~550px, so the leftover splits above and below
+- 64px block `max-md:pb-16`
+- 32px stats `max-md:py-8` (top half)
+
+Note the block's `pb` only buys HALF its value: shrinking it enlarges the
+padding box, and centring hands half of that back below the content.
+gap_below = (H - pt - content)/2 + pb/2.
+
+### What changed
+`components/about/AboutHeroSection.tsx`, two mobile-only classes:
+- hero block `max-md:pb-16` -> `max-md:pb-4` (64px -> 16px)
+- stats `max-md:py-8` -> `max-md:pt-2 max-md:pb-8` — split so only the TOP
+  inset shrinks (32px -> 8px); the space BELOW the stats is a different gap and
+  is deliberately left at 32px.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: block `padding-bottom 16px` (was 64), stats `padding-top 8px` (was 32),
+  stats `padding-bottom 32px` unchanged. Gap last-title -> stat numbers
+  **209px -> 161px** (-48px, -23%); title -> grid box 177 -> 153.
+- All 4 stats render, still inside the `overflow-hidden` main; no horizontal
+  overflow.
+- @1280 desktop: block `pt 200 / pb 128 / px 40`, stats `py 80 / px 48`,
+  4 columns — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+### Harness note (cost two wasted measurements)
+`next start` had silently failed with EADDRINUSE while an older instance kept
+serving the previous build, so the first post-edit measurement returned the OLD
+numbers. Check `/tmp/next3100.log` for EADDRINUSE after every start, or free the
+port first.
+
+### If more is wanted
+The remaining ~161px is now dominated by the centring slack (~113px), which
+comes from `min-h-screen` on the hero block. That class is unprefixed and shared
+with desktop, so cutting it needs a mobile-only override such as
+`max-md:min-h-[80svh]` — a structural change, not done here.
+
+---
+
+## 2026-08-07 — /about hero carousel: shorter + wider tiles (mobile)
+
+**Task:** mobile only — reduce image height a little, increase width a little.
+
+### Baseline was not what the log said
+The tile was `h-[270px]`, not the `h-[210px]` this log last recorded — it was
+raised outside the session. Worked from the actual value in the file.
+
+### What changed
+`components/about/EdgeToEdgeCarousel.tsx`:
+- tile `h-[270px] w-[150px]` -> `h-[240px] w-[175px]` (-30px tall, +25px wide).
+  Base step only; `md:h-[140px] md:w-[210px]` untouched.
+- `sizes` mobile hint `150px` -> `175px`. Not cosmetic: next/image picks its
+  candidate from `sizes`, so a 150px hint in a 175px slot renders soft.
+
+Aspect goes 0.56 -> **0.73**, so `object-cover` crops these landscape sources
+noticeably less.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: tile `240px x 175px`, gap 16px, `object-fit: cover`. All 4 stats render,
+  inside the `overflow-hidden` main; no horizontal overflow. Strip 320px.
+- Forced the lazy image to load (IO frozen in the pane): served candidate
+  **w=384** at DPR 2 for a 175px box — comfortably above the 350 needed, so the
+  updated `sizes` is doing its job.
+- @1280 desktop: tile `140px x 210px`, gap 12px, served `w=256` — unchanged.
+- tsc clean; build compiled; biome unchanged at 1 pre-existing diagnostic.
+
+### Harness
+Checked `grep -c EADDRINUSE` on the server log after starting this time (the
+previous task lost two measurements to a stale instance). Clean.
+
+---
+
+## 2026-08-07 — AboutTraditional: title matched to ServiceSection (mobile)
+
+**Task:** mobile only — make the title and description the same size as the
+homepage ServiceSection.
+
+### The premise needed correcting: the SIZES already matched
+Measured both at 375 before editing:
+
+| | ServiceSection | AboutTraditional |
+|---|---|---|
+| title font-size | 40px | 40px (already equal) |
+| title line-height | 44.44px | **36px** (`leading-[0.9em]`) |
+| title letter-spacing | -1px (`tracking-tight`) | **-2px** (`tracking-tighter`) |
+| description | 18px / 300 / 22.5px | identical already |
+
+Both resolve to `max-md:text-[2.5rem]` and 18px respectively. What made this
+title read smaller/denser was its leading and tracking, not its size.
+
+### What changed
+`components/about/AboutTraditional.tsx`, the `<h2>`, two mobile-only classes
+added: `max-md:tracking-tight` and `max-md:leading-[1.11]`. Base
+`tracking-tighter leading-[0.9em]` retained for desktop.
+
+Description untouched — already identical on every property. Its `max-w-3xl`
+vs ServiceSection's `max-w-2xl` differs, but at 375 the container is ~351px so
+neither constraint binds; changing it would alter nothing on mobile.
+
+### Verified (prod build, `next start -p 3100`)
+- @375 AboutTraditional now: title `40px / 44.4px / -1px / 700`, description
+  `18px / 22.5px / normal / 300` — programmatically compared against the
+  ServiceSection values captured from `/home` in the same session:
+  `titleMatchesServiceSection: true`, `descriptionMatchesServiceSection: true`.
+- @1280 desktop: title `104px / 93.6px / -5.2px`, description `20px / 25px` —
+  unchanged.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+---
+
+## 2026-08-07 — AboutTraditional video card matched to OurValues image (mobile)
+
+**Task:** mobile only — make the video container's height match the
+OurValuesSection image.
+
+### What changed
+`components/about/AboutTraditional.tsx`, the video card:
+`aspect-video` -> `aspect-video max-md:aspect-[4/5]`. Base retained, so desktop
+keeps 16/9.
+
+Used the ratio rather than a fixed `max-md:h-[439px]`: both elements sit in a
+`px-3` container at the same 351px content width, so copying OurValues'
+`aspect-[4/5]` produces the identical rendered height AND tracks any viewport,
+whereas a px height would only be correct on a 375px screen.
+
+### Measurement trap worth remembering
+The card first measured **327px** wide against the image's 351px, which looked
+like a genuine width mismatch that would have ruled out the ratio approach. It
+was the framer entry: the card sits at `initial` `scale: 0.93` and the
+animation never runs in this pane (IO frozen). 351 x 0.93 = 326.4. Its true
+layout width was 351 all along. Re-measured with the transform cleared.
+
+### Verified (prod build, `next start -p 3100`)
+- @375, entry transforms neutralised on both: video card **351 x 439**,
+  OurValues image **351 x 439** — `heightsMatch: true`, `widthsMatch: true`,
+  both `aspect-ratio: 4 / 5`. `<video>` still present, `object-fit: cover`, so
+  the taller box crops rather than letterboxing.
+- @1280 desktop: `aspect-ratio: 16 / 9`, box 1185x667, measured ratio 1.778 —
+  unchanged.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+---
+
+## 2026-08-07 — AboutTraditional "border bottom": no such element; skipped
+
+**Task:** mobile only — stop the bottom border touching the edge, reduce its
+width. **No code changed** — user chose to skip after I reported the finding.
+
+### Finding
+`AboutTraditional.tsx` contains no `border` class at all (`grep -n "border"`
+returns nothing). Confirmed against the rendered page at 375 too: swept every
+element for a visible `border-bottom` OR `border-top` OR a thin box
+(height <= 3px, width >= 250px) within the section's scroll range
+(1044-1900) plus 40px above / 120px below. **Zero hits.**
+
+The nearest bordered element is OurValuesSection's quote card
+(`OurValuesSection.tsx:95`, `border border-white/[0.06]`) at absTop 2770 —
+well below this section.
+
+### Note for whenever this comes back
+That card measured `left: 52, width: 351, rightGap: -28` at 375, i.e. appearing
+to overflow the right edge by 28px. That is almost certainly a preview-pane
+artifact rather than a real defect: the section's framer entry
+(`initial={{ x: -40 }}` and friends) never runs here because IO is frozen, so
+elements sit at their pre-animation offsets. Worth re-measuring with transforms
+cleared before treating it as a bug.
+
+---
+
+## 2026-08-07 — OurValuesSection: four mobile fixes
+
+All in `components/about/OurValuesSection.tsx`, all `max-md:` so desktop is
+untouched.
+
+### 1. Gradient word ran into the text ("oftrust.")
+JSX drops the newline between `...culture of` and the `<span>`, so the only
+thing separating them was padding — and mobile had `max-md:pl-0`.
+`max-md:pl-[0.25em]`. Verified at glyph level with Ranges (the naive
+measurement spans both wrapped lines and reads -56.9px, which is meaningless):
+"of" ends at x=220, "trust." now starts at x=230 — a **10px / 0.250em** word
+space where it was 0.
+
+### 2. Title + description matched to AboutTraditional
+Title already shared the 40px size; it differed on leading (0.9em -> 36px) and
+`tracking-tighter` (-2px). Added `max-md:leading-[1.11] max-md:tracking-tight`
+-> now `40px / 44.4px / -1px / 700`, identical to AboutTraditional. Description
+was ALREADY identical (18px / 22.5px / 300) — left alone.
+
+### 3. Quote card no longer jumps
+Measured the three quotes: paragraph 86 / 86 / **108px** (4 vs 5 lines), card
+350 <-> 372px on every 6s rotation. Added `max-md:min-h-[6em]` to the quote `<p>`
+(6em = 5 lines at its 1.2em leading). Card now **372 / 372 / 372** across all
+three — `cardHeightConstant: true`. Chose `em` over px so it tracks the font
+size rather than one screen width.
+
+### 4. CTA geometry matched to ExperimentalTestimonials, colours kept
+`h-14 -> max-md:h-16`, `w-full -> max-md:w-fit`, `pl-5 pr-2 ->
+max-md:pl-0 max-md:pr-3`, label `text-base -> max-md:text-lg`, icon
+`h-9 w-9 rounded-xl -> max-md:h-10 max-md:w-10 max-md:rounded-lg`, arrows
+`h-4 w-4 -> max-md:h-5 max-md:w-5`. Measured @375: 64px tall, gap 16, pl 0 /
+pr 12, label 18px, icon 40x40 at radius 10px, arrows 20x20 — matches
+ExperimentalTestimonials. Colours deliberately NOT copied (that CTA is
+dark-on-white; this one is on a dark card): label still white, icon still
+white bg.
+
+### Verified
+- @1280 desktop unchanged: title `80px / 72px / -4px`, gradient pad `20px`,
+  description `20px / 25px`, quote `min-height: auto`, CTA `56px` tall with
+  `pl 20 / pr 8`, label 16px, icon 36x36 radius 14px, arrows 16x16.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+---
+
+## 2026-08-07 — OurTeamSection matched to ExperimentalTestimonials (mobile)
+
+All in `components/about/OurTeamSection.tsx`, `max-md:`/`md:hidden` scoped.
+
+### Reference captured by measurement, not assumption
+Read ExperimentalTestimonials live @375 first: title `40px / 44.44px / -1px`,
+eyebrow `12px / mb 32px`, description `18px / 22.5px`, card `287px` + `mr-4`,
+CTA `64px` tall / label `18px` / icon `40x40` at radius `10px`.
+
+### What changed
+1. **Title** — already 40px, but its leading came from `text-5xl` (1.0 -> 40px)
+   where ExperimentalTestimonials' comes from `text-4xl` (1.111 -> 44.44px).
+   Added `max-md:leading-[1.11]`. Same root cause as the AboutTraditional and
+   OurValues headings earlier today.
+2. **Eyebrow** — `mb-4` -> `+ max-md:mb-8` (16 -> 32px). Size already 12px.
+3. **Carousel** — item `max-md:basis-[calc(100vw-4.5rem)]`, and the parallax
+   wrapper's 114%/-7% bleed neutralised below md (`max-md:w-full max-md:ml-0`).
+   First pass used `calc(100vw-5.5rem)` copied straight from the reference and
+   the card came out **271px, not 287** — `CarouselItem` carries `pl-4` inside
+   its border box, so the basis must be one gutter wider than the target card.
+4. **Arrows -> CTA** — the prev/next pair is now `max-md:hidden` (NOT deleted;
+   desktop still uses them) and ExperimentalTestimonials' "Connect With Us"
+   Link is added as `hidden ... max-md:flex`. Gradient id is `team-icon-grad`,
+   not the reference's `testimonial-icon-grad` — ids must be unique per
+   document and both sections can be mounted together.
+
+### Verified (prod build, `next start -p 3100`)
+- @375, all eight checks programmatically compared against the captured
+  reference: title size / leading / tracking, eyebrow size+margin, card width
+  **287px** with a **16px** gap, arrows `display: none`, CTA visible, CTA
+  geometry — `allMatch: true`. No horizontal overflow.
+- @1280 desktop unchanged: title `60px / 63px`, eyebrow `mb 16px`, card `352px`,
+  both arrow buttons present at `48px` and `display: flex`, CTA
+  `display: none`, parallax track still `1442.09px` at `-88.55px`.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+### Judgement calls worth confirming
+- **"description"**: OurTeamSection has no description paragraph — only the
+  eyebrow. Matched the eyebrow rather than inventing body copy. Say the word if
+  a real description should be added.
+- **"the button"**: read as ExperimentalTestimonials' CTA, since that is its
+  only button. Note that removing the arrows leaves mobile with no manual
+  control — the carousel still auto-scrolls and drags (`dragFree`), and
+  ExperimentalTestimonials pairs its CTA with `CarouselDots`. Dots were NOT
+  added here; easy to add if wanted.
+
+---
+
+## 2026-08-07 — CtaSection mobile pass (SHARED FILE — 7 routes)
+
+**Scope flag:** `components/brand-strategy/CtaSection.tsx` is imported by
+**/about, /blog, /blog/[slug], /brand-strategy, /contact, /work, /work/[slug]**.
+The task said "in Aboutpage", but these are mobile refinements that would look
+wrong diverging per-route, so they were made in the shared file rather than
+gated to /about. Confirmed live: /blog's CTA picks up the new treatment. Easy to
+gate behind an opt-in prop (the `dropdown` pattern from the navbar) if the other
+six should keep the old look.
+
+### Measured first (375, before)
+Card **811px** tall but the pattern grid only **291px** — 36% coverage, so the
+"doesn't cover the card" complaint was real. Cells were already
+`aspect-ratio: 1/1` with an 18px radius (`rounded-2xl` resolves to radius x 1.8
+in this theme) — just tiny at 25.9px. Title 48px. Description already 18px.
+
+### What changed
+- `ui/SpotlightGrid.tsx` — `gridTemplateColumns` now
+  `repeat(var(--spotlight-cols, ${COLUMNS}), ...)`. Same CSS-var escape hatch
+  ChannelCard already uses (`max-sm:[--channel-cols:6]`); a JS prop cannot vary
+  by breakpoint without changing the SSR cell count (hydration mismatch).
+  Strict no-op for the other 8 callers — verified.
+- `CtaSection` card — `max-md:[--spotlight-cols:5]`. 80 cells over 5 columns is
+  16 rows, so the grid now overflows the card instead of floating in it, and
+  cells go **25.9px -> 63.8px**.
+- Scrims — left gradient `max-md:from-black/60 max-md:via-black/30` (was
+  solid black -> black/90; at 351px its `max-w-3xl` covers the whole card, so at
+  full strength it buried the pattern), bottom `max-md:opacity-25` (was 0.5).
+- Title — `max-md:text-[2.5rem] max-md:leading-[1.11]`. `tracking-tight`
+  already yields -1px at 40px, so tracking needed nothing. Description was
+  already 18px / 22.5px — untouched.
+- Avatars — `max-md:h-10 max-md:w-10` (56 -> 40px), `max-md:rounded-xl`, and
+  `sizes` updated to `(max-width: 768px) 40px, 56px` so next/image stops
+  fetching for a 56px box.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: grid **1201px vs a 777px card -> `coversCard: true`**, 5 cols, cells
+  63.8px at `aspect-ratio 1/1` radius 18px. Title `40px / 44.4px / -1px` and
+  description `18px / 22.5px` — all four `matchesExpTestimonials` true. Avatars
+  40x40. Scrims `0.6 -> 0.3` and opacity `0.25`.
+- @1280 desktop: title `80px / 84px / -2px`, description 20px, avatars 56px,
+  **10 columns**, cells 119px, scrims back at solid-black / opacity 0.5 —
+  unchanged.
+- Shared-component safety: /blog renders two SpotlightGrids — BlogHeroSection's
+  still **10 cols / 25.9px cells** (var falls back to its own prop), the CTA's
+  at 5 cols. Only `brand-strategy/CtaSection` sets the var (grep confirms).
+- tsc clean; build compiled; biome unchanged at 3 pre-existing diagnostics.
+
+### Known cosmetic caveat
+The sweep animation indexes cells with the JS `COLUMNS` (10) while CSS now lays
+them out in 5, so the travelling highlight no longer maps to visual rows. With
+`scatter` enabled the order is already shuffled, so it still reads as random
+twinkling rather than a coherent sweep — but the `plus` arms light
+non-adjacent cells. Fixable properly by threading the mobile column count into
+the JS too, which needs a resize listener; not done.
+
+---
+
+## 2026-08-07 — FaqSection mobile type pass (SHARED FILE — 3 routes)
+
+**Scope flag:** `components/brand-strategy/FaqSection.tsx` is imported by
+**/about, /brand-strategy, /work**. Task said "in Aboutpage"; as with CtaSection
+these are mobile type refinements that would look wrong diverging per-route, so
+they went in the shared file. Gate behind an opt-in prop if the other two should
+keep the old sizes.
+
+### What changed
+- **Title** — `max-md:text-[2.5rem] max-md:leading-[1.11]` (48 -> 40px, leading
+  50.4 -> 44.4). `tracking-tight` already yields -1px at 40px, so tracking
+  needed nothing — same as CtaSection.
+- **"Description"** — this section has none, only the eyebrow (same situation as
+  OurTeamSection). Gave the eyebrow ExperimentalTestimonials' treatment:
+  `max-md:text-xs max-md:mb-8` (14 -> 12px, mb 24 -> 32px).
+- **Card question** — `max-md:text-lg` (20 -> 18px).
+
+### Verified (prod build, `next start -p 3100`)
+- @375, compared against the ExperimentalTestimonials reference captured earlier
+  today: title `40px / 44.4px / -1px`, eyebrow `12px / mb 32px`, card question
+  `18px` — `allMatch: true`.
+- @1280 desktop: title `60px / 63px / -1.5px`, eyebrow `14px / mb 24px`, card
+  question `24px` — unchanged.
+- tsc clean; build compiled; biome unchanged at 4 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — FaqSection: narrower title measure (mobile)
+
+**Task:** mobile only — reduce the title's width. Shared file, same 3 routes as
+the previous entry (/about, /brand-strategy, /work).
+
+### What changed
+`components/brand-strategy/FaqSection.tsx`, the `<h2>`: added
+`max-md:max-w-[12rem]`.
+
+### Why 12rem
+At full width (343px) the line broke as **312px + a 52px orphan** ("Let's Clear
+Things" / "Up"). Probed a ladder of caps before choosing:
+
+| max-width | lines | line widths |
+|---|---|---|
+| none (343) | 2 | 312 / 52 |
+| 16rem | 2 | 185 / 180 |
+| 14rem | 2 | 185 / 180 |
+| 13rem | 2 | 185 / 180 |
+| 12rem | 2 | 185 / 180 |
+| 11rem | **4** | 80 / 95 / 118 / 52 |
+
+Anything 12-16rem produces the same balanced break; below ~11.6rem it collapses
+to four lines. 12rem is the round value just clear of the 185px longest line.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: `max-width: 192px`, 2 lines at **185 / 180** — rag delta **5px**, down
+  from 260px. Title height unchanged at 89px (no reflow of what follows), font
+  still 40px. FAQ cards still full width at 343px; no horizontal overflow.
+- @1280 desktop: `max-width: none`, 60px, box 323px, lines 277 / 269 —
+  unchanged.
+- tsc clean; build compiled; biome unchanged at 4 pre-existing diagnostics.
+
+### Side effect, harmless
+The `motion.div` wrapping the eyebrow + title sits in an `items-start` flex
+column, so it shrink-wraps its widest child — capping the h2 also narrows that
+box to 192px, which the "FAQs" eyebrow inherits. The eyebrow is short and
+left-aligned, so nothing moves visually.
+
+---
+
+## 2026-08-07 — OurTeamSection: team member names visible on mobile
+
+**Task:** mobile only — make the name on the card visible.
+
+### Cause
+The name panel was hover-gated (`opacity-0 translate-y-4` +
+`group-hover:opacity-100 group-hover:translate-y-0`). Tailwind v4 wraps `hover:`
+in `@media (hover: hover)`, so on a touch device the panel never appeared at
+all — names were simply unreachable on mobile.
+
+### What changed
+`components/about/OurTeamSection.tsx`:
+- name panel: `max-md:translate-y-0 max-md:opacity-100` (pinned visible), plus
+  `max-md:bg-transparent max-md:backdrop-blur-none`
+- bottom scrim (`h-40` gradient): `max-md:opacity-100`
+
+**Why the blur is dropped rather than kept:** this carousel auto-scrolls
+continuously, so a `backdrop-filter` on an always-visible panel would re-sample
+and re-blur the photo behind it every frame, for every visible card — the same
+class of cost this session already stripped out of the hero and ChannelCard.
+The pinned gradient gives the contrast instead, at zero per-frame cost. Desktop
+keeps `bg-black/50 backdrop-blur-sm` since it only appears on hover.
+
+### Verified (prod build, `next start -p 3100`)
+- @375 clean load, first three cards: panel `opacity 1`, `transform none`,
+  `backdrop-filter none`, bg transparent, scrim `opacity 1`, name white 20px —
+  "Alex Rivera" / "Sarah Chen" / "Marcus Vance" all rendering.
+- @1280 clean load: panel `opacity 0`, `bg oklab(0 0 0 / 0.5)`, `blur(8px)`,
+  scrim `opacity 0` — hidden until hover exactly as before.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+### HARNESS TRAP — cost ~6 tool calls, worth remembering
+Resizing an ALREADY-LOADED page and then reading computed styles gave false
+"desktop is broken" readings: panel opacity 1, blur(0px) at 1280 with
+`maxMdMatches: false`. Cause: `transition-all duration-500` starts animating the
+max-md -> base change on resize, and this pane freezes rAF, so the transition
+never advances — computed style stays pinned at the mobile end indefinitely.
+**Always re-navigate after resize before trusting transitioned properties.**
+Two further red herrings chased along the way: `@layer` blocks are not
+CSSRule.MEDIA_RULE, so a naive styleSheets walk that only recurses into media
+rules finds nothing (reported 130 top-level rules and zero matches); and
+`max-md:opacity-100` measured alone reads `1` simply because opacity defaults
+to 1, which proves nothing. An isolated two-class probe
+(`opacity-0 max-md:opacity-100` -> `0` at desktop) is what actually settled it.
+
+---
+
+## 2026-08-07 — OurTeamSection: name panel background restored on mobile
+
+**Task:** mobile only — add the background that sits behind the name on
+desktop hover. Reverses part of the previous entry, at the user's request.
+
+### What changed
+`components/about/OurTeamSection.tsx`: dropped `max-md:bg-transparent`, so the
+panel's `bg-black/50` now applies on mobile too — the same 50% black fill the
+desktop hover state uses.
+
+`max-md:backdrop-blur-none` was **kept**. The ask was for the background; the
+blur is the part that costs per-frame work, because this carousel auto-scrolls
+continuously and a backdrop-filter on an always-visible panel re-samples and
+re-blurs the photo behind it every frame on every visible card. The 50% fill
+carries the look without that. Trivial to restore (`max-md:backdrop-blur-sm`)
+if an exact match matters more than the frame cost.
+
+### Verified (prod build, `next start -p 3100`)
+- @375 clean load, first three cards: panel `oklab(0 0 0 / 0.5)`, `opacity 1`,
+  `backdrop-filter none`, box 286x96 — names on a solid dark panel.
+- @1280 clean load: panel `opacity 0`, bg `oklab(0 0 0 / 0.5)`,
+  `backdrop-filter blur(8px)`, scrim `opacity 0` — hidden until hover, blur
+  intact.
+- tsc clean; build compiled; biome clean on the file.
+
+### Harness note — the resize trap has a second half
+The previous entry's rule ("re-navigate after resize") is necessary but NOT
+sufficient: resize and navigate RACE. The first post-resize navigation still
+reported the mobile state at `vw: 1280` (`opacity 1`, `blur(0px)`), because the
+page loaded before the viewport had actually applied. A SECOND navigation
+returned the correct values. Reliable sequence: resize -> navigate -> navigate
+again (or verify `document.documentElement.clientWidth` matches the target
+before trusting the read).
+
+---
+
+## 2026-08-07 — /about: tightened the gap above CtaSection (mobile)
+
+**Task:** mobile only — reduce the spacing between CtaSection and
+ExperimentalTestimonials. All edits in `src/app/about/page.tsx`, so About-only
+by construction (no shared-file question this time).
+
+### Note: they are not adjacent
+`TechLogoCarousel` sits between them. Measured @375, ExpT bottom -> CTA card top
+was **224px**: ExpT's own `pb-6` (24) + the logo strip (160px, of which **80 is
+its own `max-md:pb-20`**) + CTA's `pt-16` (64). The largest single contributor
+was the logo strip's bottom padding, not either section's.
+
+### What changed
+- ExpT wrapper: `+ max-md:[&>section]:pb-2` (24 -> 8px)
+- CTA wrapper: `+ max-md:[&>section]:pt-8` (64 -> 32px)
+- `TechLogoCarousel` wrapped in `<div className="max-md:[&>section]:pb-10">`
+  (80 -> 40px). The component is shared with /home, so it was **overridden from
+  this page rather than edited** — a `[&>section]` descendant selector (0,2,1)
+  outranks the plain `max-md:pb-20` utility on the section itself (0,1,0).
+
+### Verified (prod build, `next start -p 3100`)
+- @375 /about: gap **224 -> 152px** (-72px, -32%). Computed:
+  ExpT `pb 8px`, logo strip `pb 40px` (height 160 -> 120), CTA `pt 32px`.
+- @375 **/home**: logo strip still `pb 80px`, height 160 — the shared component
+  is untouched, the override really is scoped to /about.
+- @1280 /about: ExpT `pb 40px`, logo strip `pb 128px`, CTA `pt 0px`, gap 240px —
+  unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+### Harness
+The resize race bit again and needed a third measure. `documentWidth` came back
+as **0** mid-navigation, so the earlier `clientWidth > 500` guard is not enough
+on its own. The reliable form is a poll: loop up to ~3s waiting for
+`document.documentElement.clientWidth` to reach the target band before reading
+anything.
+
+---
+
+## 2026-08-07 — /about: tightened the CtaSection -> FaqSection gap (mobile)
+
+**Task:** mobile only — reduce the spacing between CtaSection and FaqSection.
+Both wrappers live in `src/app/about/page.tsx`, so About-only by construction.
+
+### Unlike the previous gap, these two ARE adjacent
+Measured @375: the sections abut exactly (`sectionsAbut: true`, 0px between
+them), so the whole gap is padding — CTA `pb 64px` + Faq `pt 64px` = **128px**.
+
+### What changed
+- CTA wrapper: `+ max-md:[&>section]:pb-8` (64 -> 32px)
+- Faq wrapper: `+ max-md:[&>section]:pt-8` (64 -> 32px)
+
+### Verified (prod build, `next start -p 3100`)
+- @375: `ctaPadBottom 32px`, `faqPadTop 32px`, padding gap **128 -> 64px**.
+  Card-bottom to the "FAQs" eyebrow 158 -> 94px.
+- @1280 desktop: CTA `pt 0 / pb 96`, Faq `pt 12 / pb 96` — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+### Measurement note
+The raw card-to-eyebrow number overstates the gap by ~30px: the FAQ heading
+block is a framer `motion.div` with `initial={{ y: 30 }}`, and `whileInView`
+never fires in this pane, so it sits 30px low. The padding figures are the
+trustworthy ones.
+
+---
+
+## 2026-08-07 — /about: more room between ExperimentalTestimonials and the logo strip (mobile)
+
+**Task:** mobile only — increase the spacing between ExperimentalTestimonials
+and TechLogoCarousel. One class in `src/app/about/page.tsx`.
+
+### Context: this partially reverses an earlier edit
+The ExpT wrapper's mobile `pb` was pulled to **8px** earlier today while
+tightening the ExpT -> CtaSection gap. TechLogoCarousel carries `max-md:pt-0`,
+so that 8px was the ENTIRE separation between the two — hence the cramping.
+
+### What changed
+ExpT wrapper: `max-md:[&>section]:pb-2` -> `max-md:[&>section]:pb-10`
+(8 -> 40px).
+
+### The earlier tightening is NOT undone
+Measured: `gap_expTbottom_to_ctaCard` stays **152px**, exactly as after that
+task. The padding lives INSIDE the ExpT section, so growing it moves the
+section's bottom edge and everything below it down together — the
+between-sections whitespace is unchanged. What grew is only the space beneath
+the testimonials' own content, which is what was asked for.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: ExpT `pb 40px`, logo strip `pt 0px` -> separation **8 -> 40px**. Logo
+  strip `pb` still 40px (the /about-scoped override from two tasks ago intact).
+- @1280 desktop: ExpT `pt 96 / pb 40`, logo strip `pt 0 / pb 128` — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — /about: tightened the FaqSection -> BlogSection gap (mobile)
+
+**Task:** mobile only — reduce the spacing between FaqSection and BlogSection.
+Two classes in `src/app/about/page.tsx`, About-only.
+
+### Same shape as the CtaSection -> FaqSection gap
+Sections abut exactly (`sectionsAbut: true`), so the gap is entirely padding:
+Faq `pb 64` + Blog `pt 64` = **128px**.
+
+### What changed
+- Faq wrapper: `+ max-md:[&>section]:pb-8` (64 -> 32px)
+- Blog wrapper: `+ max-md:[&>section]:pt-8` (64 -> 32px)
+
+### Verified (prod build, `next start -p 3100`)
+- @375: `faqPadBottom 32px`, `blogPadTop 32px`, gap **128 -> 64px**, sections
+  still abutting. Faq's `pt` still 32px, so the CTA -> Faq tightening from the
+  earlier task is intact.
+- @1280 desktop: Faq `pt 12 / pb 96`, Blog `pt 40 / pb 56` — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+### Running state of /about mobile section rhythm
+After today's passes: ExpT `pt 64 / pb 40` -> logo strip `pt 0 / pb 40` ->
+Cta `pt 32 / pb 32` -> Faq `pt 32 / pb 32` -> Blog `pt 32 / pb 64` -> Footer
+wrapper `pt 64`. Every inter-section gap below the testimonials is now 64px
+except ExpT -> logos (40px) and Blog -> Footer (128px), which has not been
+touched.

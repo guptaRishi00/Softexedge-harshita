@@ -233,7 +233,7 @@ export default function SpotlightGrid({
         <div
           className="grid w-[120%] -ml-[5%] gap-3"
           style={{
-            gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(var(--spotlight-cols, ${COLUMNS}), minmax(0, 1fr))`,
           }}
         >
           {Array.from({ length: TOTAL_ITEMS }).map((_, index) => {

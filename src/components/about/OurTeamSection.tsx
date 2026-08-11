@@ -10,7 +10,8 @@ import {
 } from "framer-motion";
 import Image from "next/image";
 import { useCallback, useRef, useState } from "react";
-import { MdArrowBack, MdArrowForward } from "react-icons/md";
+import Link from "next/link";
+import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
 
 import {
   Carousel,
@@ -131,7 +132,7 @@ export default function OurTeamSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, ease: premiumEase }}
-                className="mb-4 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs"
+                className="mb-4 max-md:mb-8 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs"
               >
                 The Minds Behind the Craft
               </motion.p>
@@ -141,7 +142,7 @@ export default function OurTeamSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: 0.1, ease: premiumEase }}
-                className="text-5xl font-bold tracking-tight text-zinc-900 max-md:text-[2.5rem] md:text-6xl lg:text-6xl lg:leading-[1.05]"
+                className="text-5xl font-bold tracking-tight text-zinc-900 max-md:text-[2.5rem] max-md:leading-[1.11] md:text-6xl lg:text-6xl lg:leading-[1.05]"
               >
                 Meet Our{" "}
                 <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
@@ -150,7 +151,7 @@ export default function OurTeamSection() {
               </motion.h2>
             </div>
 
-            <div className="relative flex gap-4 items-center min-w-24 min-h-12 max-md:min-h-10">
+            <div className="relative flex gap-4 items-center min-w-24 min-h-12 max-md:hidden">
               <button
                 type="button"
                 onClick={handlePrev}
@@ -168,21 +169,58 @@ export default function OurTeamSection() {
                 <MdArrowForward className="h-5 w-5 max-md:h-4 max-md:w-4" />
               </button>
             </div>
+
+            {/* Mobile takes ExperimentalTestimonials' CTA in the arrows' slot,
+                copied verbatim apart from the gradient's id (ids must be unique
+                per document, and both sections can be on screen together).
+                `md:hidden` keeps desktop on its prev/next arrows. */}
+            <Link
+              href="/contact"
+              className="group hidden h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:flex max-md:gap-4 max-md:border-0 max-md:pr-3"
+            >
+              <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
+                Connect With Us
+              </span>
+
+              <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-10 max-md:w-10 max-md:rounded-lg">
+                <svg width="0" height="0" className="absolute">
+                  <title>Connect arrow gradient</title>
+                  <defs>
+                    <linearGradient
+                      id="team-icon-grad"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="0%"
+                    >
+                      <stop stopColor="#2E5BFF" offset="0%" />
+                      <stop stopColor="#149CCB" offset="100%" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                <MdArrowOutward
+                  className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
+                  style={{ fill: "url(#team-icon-grad)" }}
+                />
+              </div>
+            </Link>
           </div>
 
-          <motion.div style={{ x }} className="w-[114%] -ml-[7%]">
+          <motion.div style={{ x }} className="w-[114%] -ml-[7%] max-md:w-full max-md:ml-0">
             <CarouselContent className="-ml-4 md:-ml-3">
               {[...teamMembers, ...teamMembers].map((member, index) => (
                 <CarouselItem
                   key={`${member.id}-${index}`}
-                  className="pl-4 md:pl-3 basis-[85%] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                  className="pl-4 md:pl-3 basis-[85%] max-md:basis-[calc(100vw-4.5rem)] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
                 >
                   <div className="group relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] bg-zinc-100 border border-zinc-200/60 shadow-xs transition-all duration-500 hover:shadow-xl hover:shadow-zinc-200/40">
-                    <div className="absolute inset-x-0 bottom-0 z-0 h-40 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
+                    <div className="absolute inset-x-0 bottom-0 z-0 h-40 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 max-md:opacity-100 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
 
                     <div className="absolute inset-0 z-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
 
-                    <div className="absolute bottom-0 inset-x-0 z-10 p-6 md:p-8 flex flex-col gap-1 bg-black/50 backdrop-blur-sm translate-y-4 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 group-hover:opacity-100">
+                    <div className="absolute bottom-0 inset-x-0 z-10 p-6 md:p-8 flex flex-col gap-1 bg-black/50 backdrop-blur-sm max-md:backdrop-blur-none translate-y-4 opacity-0 max-md:translate-y-0 max-md:opacity-100 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 group-hover:opacity-100">
                       <h3 className="text-xl font-bold tracking-tight text-white transition-colors duration-300 md:text-2xl">
                         {member.name}
                       </h3>

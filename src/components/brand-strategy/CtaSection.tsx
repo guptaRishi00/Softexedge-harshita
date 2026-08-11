@@ -20,7 +20,7 @@ export default function CtaSection() {
   return (
     <section className="relative w-full bg-white px-0 md:px-0 md:pt-0">
       <div className="mx-auto w-full">
-        <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black">
+        <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black max-md:[--spotlight-cols:5]">
           <SpotlightGrid
             speed={0.15}
             sweep
@@ -33,9 +33,9 @@ export default function CtaSection() {
           />
 
 
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent max-md:from-black/60 max-md:via-black/30" />
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50 max-md:opacity-25" />
 
           <div className="pointer-events-none relative z-10 px-4 py-8 pt-12 md:px-10 md:py-12 lg:py-16 lg:pb-0">
             <motion.div
@@ -44,7 +44,7 @@ export default function CtaSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: premiumEase }}
             >
-              <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl lg:text-[5rem]">
+              <h2 className="text-5xl max-md:text-[2.5rem] font-bold leading-[1.05] max-md:leading-[1.11] tracking-tight text-white md:text-6xl lg:text-[5rem]">
                 Let's build something <br className="hidden md:block" />
                 <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-4 text-transparent">
                   extraordinary.
@@ -63,13 +63,13 @@ export default function CtaSection() {
                     {avatars.map((src, i) => (
                       <div
                         key={i}
-                        className="relative h-14 w-14 cursor-pointer overflow-hidden rounded-[16px] border-[2px] border-black bg-zinc-800 shadow-sm transition-transform hover:z-20 hover:scale-110"
+                        className="relative h-14 w-14 max-md:h-10 max-md:w-10 cursor-pointer overflow-hidden rounded-[16px] max-md:rounded-xl border-[2px] border-black bg-zinc-800 shadow-sm transition-transform hover:z-20 hover:scale-110"
                       >
                         <Image
                           src={src}
                           alt={`Creator ${i + 1}`}
                           fill
-                          sizes="56px"
+                          sizes="(max-width: 768px) 40px, 56px"
                           className="h-full w-full object-cover"
                         />
                       </div>

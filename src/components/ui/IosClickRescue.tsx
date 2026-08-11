@@ -5,7 +5,7 @@ import { useEffect } from "react";
 /**
  * Rescues taps that iOS Safari eats.
  *
- * On-device traces (TapDebug, three sessions) established the failure shape:
+ * On-device event traces (three sessions on an iPhone) established the shape:
  * `pointerdown`/`pointerup` fire on 100% of taps, but the synthetic mouse
  * sequence — including `click` — arrives on only ~1 in 3; every lost tap ends
  * `touchend -> mouseover -> nothing`, with nothing `defaultPrevented`. WebKit
