@@ -34,7 +34,7 @@ export default function AboutPage({}: Props) {
         </div>
         <div
           id="about-traditional"
-          className="relative z-10 bg-black md:pb-[150vh] [&>section]:pt-14 [&>section]:pb-12 md:[&>section]:pt-45 md:[&>section]:pb-24"
+          className="relative z-10 bg-black md:pb-[150vh] [&>section]:pt-20 [&>section]:pb-12 md:[&>section]:pt-45 md:[&>section]:pb-24"
         >
           <AboutTraditional />
         </div>
@@ -50,17 +50,15 @@ export default function AboutPage({}: Props) {
         </div>
         <div
           id="our-team"
-          className="relative z-10 bg-white md:pb-[100vh] [&>section]:py-12 md:[&>section]:pb-10 md:[&>section]:pt-30"
+          className="relative z-10 bg-white md:pb-[100vh] [&>section]:pt-16 [&>section]:pb-8 md:[&>section]:pb-10 md:[&>section]:pt-30"
         >
           <OurTeamSection />
         </div>
       </div>
-      <div className="[&>section]:pt-16 [&>section]:pb-6 max-md:[&>section]:pb-10 md:[&>section]:pt-24 md:[&>section]:pb-10">
+      <div className="[&>section]:pt-12 [&>section]:pb-6 max-md:[&>section]:pb-10 md:[&>section]:pt-24 md:[&>section]:pb-10">
         <ExperimentalTestimonials />
       </div>
-      {/* Overrides TechLogoCarousel's own `max-md:pb-20` for this page only —
-          the component is shared with /home, and a descendant selector from
-          here outranks a plain utility on the section itself. */}
+
       <div className="max-md:[&>section]:pb-10">
         <TechLogoCarousel />
       </div>
@@ -70,10 +68,10 @@ export default function AboutPage({}: Props) {
       <div className="[&>section]:py-16 max-md:[&>section]:pt-8 max-md:[&>section]:pb-8 md:[&>section]:pb-24 md:[&>section]:pt-3">
         <FaqSection />
       </div>
-      <div className="[&>section]:py-16 max-md:[&>section]:pt-8 md:[&>section]:pb-14 md:[&>section]:pt-10">
+      <div className="[&>section]:py-16 max-md:[&>section]:pt-8 max-md:[&>section]:pb-10 md:[&>section]:pb-14 md:[&>section]:pt-10">
         <BlogSection />
       </div>
-      <div className="px-3 pt-16 pb-3 md:pt-24">
+      <div className="px-3 pt-10 pb-3 md:pt-24">
         <Footer />
       </div>
     </div>

@@ -13428,3 +13428,222 @@ Cta `pt 32 / pb 32` -> Faq `pt 32 / pb 32` -> Blog `pt 32 / pb 64` -> Footer
 wrapper `pt 64`. Every inter-section gap below the testimonials is now 64px
 except ExpT -> logos (40px) and Blog -> Footer (128px), which has not been
 touched.
+
+---
+
+## 2026-08-07 — OurTeamSection: CTA out, pagination dots in (mobile)
+
+**Task:** mobile only — remove the CTA, add pagination dots. Reverses the CTA
+half of the earlier "match ExperimentalTestimonials" pass; the dots were flagged
+as the open option at the time.
+
+### The shared CarouselDots could NOT be reused
+`components/ui/CarouselDots.tsx` drives a NATIVE scroll container: it reads
+`scrollLeft`, measures stride from `[data-slide]` offsets, and tweens via
+`tweenScrollLeft`. OurTeamSection is an **embla** carousel (`ui/carousel` +
+`embla-carousel-auto-scroll`) with no such scroller. Dots here are driven off
+the embla api instead — same visual language (`h-1.5`, active `w-6` gradient,
+idle `w-1.5 bg-zinc-300`), different mechanism.
+
+### What changed
+`components/about/OurTeamSection.tsx`:
+- removed the `<Link>` CTA (and its now-unused `Link` / `MdArrowOutward`
+  imports — biome would have flagged both)
+- added `selected` state synced from `api.selectedScrollSnap()` on embla's
+  `select` + `reInit`, **modulo `teamMembers.length`**: the track renders two
+  copies of the list, so raw snap indices run 0-9 and must fold to 5 dots
+- `scrollToMember(i)` stops the AutoScroll plugin before `api.scrollTo(i)`,
+  matching what the existing arrow handlers already do
+- dots block is `md:hidden`; the arrows keep their `max-md:hidden`, so each
+  breakpoint has exactly one control
+
+### Verified (prod build, `next start -p 3100`)
+- @375: CTA gone, arrows `display: none`, **5** dots labelled
+  "Show Alex Rivera" ... "Show Daniel Reeves". Clicking dot 3 -> active index 2;
+  dot 4 -> index 3; dot 1 -> index 0. `aria-current` and the active class move
+  together (`consistent: true`).
+- @1280: arrows `display: flex` (2 buttons, 48px), dots container
+  `display: none`, no CTA, card 351px — desktop unchanged.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+### Measurement note
+Reading the dots' computed WIDTH is useless in this pane: `transition-all`
+cannot advance with rAF frozen, so the 24px/6px widths stay stuck at their
+pre-click values even though state moved. `aria-current` and the className are
+the honest signals — attributes and classes are not transitioned.
+
+---
+
+## 2026-08-07 — /about: more top padding on AboutTraditional (mobile)
+
+**Task:** mobile only — increase AboutTraditional's top padding.
+
+### What changed
+`src/app/about/page.tsx`, the `#about-traditional` wrapper:
+`[&>section]:pt-14` -> `[&>section]:pt-20` (56 -> 80px).
+
+Edited the BASE step rather than adding a `max-md:` variant — `md:[&>section]:pt-45`
+re-asserts above 768px, so the base only ever governs mobile. Same idiom used
+for the type ladders elsewhere in this component tree.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: section `padding-top 80px` (was 56). Gap from the hero's bottom to the
+  "Who We Are" eyebrow **96 -> 120px**. `padding-bottom` untouched at 48px.
+- @1280 desktop: section `pt 180px` (`md:pt-45`), `pb 96px` (`md:pb-24`),
+  wrapper `pb 1350px` (`md:pb-[150vh]`) — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+### Note on the raw gap figure
+120px includes ~40px of framer's un-run `initial={{ y: 40 }}` on the eyebrow's
+motion.div (`whileInView` never fires in this pane). On device the visible gap
+is the 80px padding plus the hero's 16px bottom inset.
+
+---
+
+## 2026-08-07 — /about: more bottom padding on AboutHeroSection (mobile)
+
+**Task:** mobile only — increase AboutHeroSection's bottom padding.
+
+### What changed
+`components/about/AboutHeroSection.tsx`, `#about-hero-inner`:
+`pb-4` -> `pb-10` (16 -> 40px). Base step only; `md:pb-25` re-asserts above
+768px.
+
+### This is the third pass over the same gap
+hero `pb` + AboutTraditional `pt` are the two halves of one boundary:
+- originally 64 + 56 = 120px
+- cut to 16 + 56 = 72px ("reduce the gap between AboutHeroSection and
+  AboutTraditional")
+- 16 + 80 = 96px (last task, AboutTraditional `pt` raised)
+- now **40 + 80 = 120px** — back to where it started, from the other direction.
+
+Flagged rather than silently applied, since the two levers feed one gap and it
+is easy to lose track of which one is being turned.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: hero `padding-bottom 40px` (was 16). Combined gap 120px. Stats grid
+  still inside the `overflow-hidden` main (`statsStillInsideMain: true`), stats
+  bottom -> AboutTraditional top 40px.
+- @1280 desktop: hero `pb 100px` (`md:pb-25`), AboutTraditional `pt 180px`
+  (`md:pt-45`) — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — /about: OurTeamSection top padding matched to AboutTraditional (mobile)
+
+**Task:** mobile only — give OurTeamSection the same top padding as
+AboutTraditional (80px, set two tasks ago).
+
+### What changed
+`src/app/about/page.tsx`, the `#our-team` wrapper:
+`[&>section]:py-12` -> `[&>section]:pt-20 [&>section]:pb-12`.
+
+`py-12` set both sides at 48px, so it had to be split to raise only the top;
+the bottom stays at 48. Base steps only — `md:[&>section]:pt-30` and
+`md:[&>section]:pb-10` still win above 768px.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: OurTeam `padding-top 80px` (was 48), `padding-bottom 48px` (unchanged),
+  and `matchesAboutTraditional: true` — compared against the live
+  `#about-traditional` value in the same measurement rather than assumed.
+- @1280 desktop: OurTeam `pt 120px` (`md:pt-30`), `pb 40px` (`md:pb-10`),
+  wrapper `pb 900px` (`md:pb-[100vh]`) — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — /about: tightened OurTeamSection -> ExperimentalTestimonials (mobile)
+
+**Task:** mobile only — reduce the gap a little.
+
+### What changed
+`src/app/about/page.tsx`, two base steps (each has a `md:` override, so both
+are mobile-only by construction):
+- `#our-team` wrapper: `[&>section]:pb-12` -> `pb-8` (48 -> 32px)
+- ExpT wrapper: `[&>section]:pt-16` -> `pt-12` (64 -> 48px)
+
+Sections abut, so the gap is entirely these two: **112 -> 80px** (-32px).
+
+### Verified (prod build, `next start -p 3100`)
+- @375: OurTeam `pb 32px`, ExpT `pt 48px`, gap **112 -> 80px**, still abutting.
+- Earlier tuning survived, checked in the same read: OurTeam `pt 80px` still
+  equals AboutTraditional's (`stillMatchesAboutTraditional: true`), and ExpT
+  `pb 40px` — the ExpT -> logo strip spacing — is intact.
+- @1280 desktop: OurTeam `pt 120 / pb 40`, ExpT `pt 96 / pb 40` — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+### /about mobile section rhythm, current
+AboutHero `pb 40` | AboutTraditional `pt 80 / pb 48` | OurValues | OurTeam
+`pt 80 / pb 32` | ExpT `pt 48 / pb 40` | logo strip `pt 0 / pb 40` | Cta
+`pt 32 / pb 32` | Faq `pt 32 / pb 32` | Blog `pt 32 / pb 64` | Footer `pt 64`.
+
+---
+
+## 2026-08-07 — /about: tightened BlogSection -> Footer (mobile)
+
+**Task:** mobile only — reduce the gap a little. This was the 128px outlier
+flagged after the FaqSection -> BlogSection pass.
+
+### What changed
+`src/app/about/page.tsx`:
+- Blog wrapper: `+ max-md:[&>section]:pb-10` (64 -> 40px)
+- Footer wrapper: `pt-16` -> `pt-10` (64 -> 40px). Base only; `md:pt-24`
+  re-asserts above 768px.
+
+Gap **128 -> 80px**, which now matches the OurTeam -> ExpT boundary.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: Blog `pb 40px`, footer wrapper `pt 40px`, combined **80px**. Blog's
+  `pt 32px` (from the Faq -> Blog pass) and the footer wrapper's `pb 12px` both
+  intact; no horizontal overflow.
+- @1280 desktop: Blog `pt 40 / pb 56`, footer wrapper `pt 96 / pb 12` —
+  unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+### /about mobile rhythm — every boundary now
+AboutHero->Traditional 120 | Traditional->OurValues 48+section | OurTeam
+pt 80 / pb 32 | ->ExpT 80 | ExpT->logos 40 | logos->Cta 72 | Cta->Faq 64 |
+Faq->Blog 64 | Blog->Footer 80. No outliers left above 120.
+
+---
+
+## 2026-08-07 — /about hero: stats become an edge-to-edge marquee (mobile)
+
+**Task:** mobile only — stats as an auto-moving infinite carousel, edge to edge,
+very smooth.
+
+### What changed
+`components/about/AboutHeroSection.tsx`:
+- the existing 2-col grid gains `max-md:hidden` (desktop keeps it verbatim)
+- a new `md:hidden` marquee renders `[...stats, ...stats]` in
+  `.marquee` / `.marquee-track` — the CSS-keyframe mechanism already in
+  globals.css — at `animationDuration: 26s`, with a soft edge mask and
+  `motion-reduce:animate-none`.
+
+**Smoothness comes from using a CSS keyframe on `transform`, not JS.**
+`.marquee-track` animates `translateX(0 -> -50%)` under `@keyframes scroll`, so
+the browser runs it on the compositor: no rAF, no scroll listener, nothing on
+the main thread per frame. That is the same reason LogoLoop was moved to
+`logoloop-marquee` earlier.
+
+**Seam is exact, verified numerically:** track measures **1320px = 8 x 165px**,
+so -50% = 660px = precisely one 4-item copy. No drift per lap.
+
+### Counter is deliberately NOT used in the marquee
+`Counter` counts up on its OWN first intersection (`useInView`, `once: true`).
+Eight copies drifting past would each trigger at a different moment, showing the
+same stat with different numbers side by side. The marquee renders values
+statically with the gradient suffix; the count-up stays on desktop, where each
+stat appears exactly once.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: grid `display: none`, marquee visible and **full bleed** (left 0,
+  width 375 = viewport, `fullBleed: true`), `overflow: hidden`. Track
+  `animation: scroll 26s linear infinite`, `display: flex`, width 1320px.
+  8 items, first four `aria-hidden="false"` and the duplicate run `"true"`.
+  All values present (10+ / 250+ / 98% / 40+). No horizontal overflow.
+- @1280 desktop: grid `display: grid`, 4 columns, padding `80px 48px`, 4 stats,
+  `<Counter>` still driving the first value, `md:border-l` dividers intact,
+  marquee `display: none` — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.

@@ -36,7 +36,7 @@ export default function AboutHeroSection() {
     <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-white font-sans selection:bg-[#2E5BFF]/20">
       <div
         id="about-hero-inner"
-        className="flex w-full flex-1 flex-col pb-4 md:pb-25 origin-[center_calc(100%-100vh)]"
+        className="flex w-full flex-1 flex-col pb-10 md:pb-25 origin-[center_calc(100%-100vh)]"
       >
         <div className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 pt-48 pb-32 max-md:px-3 max-md:pt-28 max-md:pb-4 md:pt-50 text-center md:px-10">
           <h1 className="text-[2.5rem] font-bold leading-[1.05] tracking-tight text-zinc-900 sm:text-6xl md:text-7xl lg:text-[6rem]">
@@ -107,7 +107,7 @@ export default function AboutHeroSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-          className="relative z-10 grid w-full grid-cols-2 gap-8 px-6 py-12 max-md:gap-10 max-md:px-3 max-md:pt-2 max-md:pb-8 md:grid-cols-4 md:gap-4 md:px-12 md:py-20"
+          className="relative z-10 grid w-full grid-cols-2 gap-8 px-6 py-12 max-md:hidden max-md:gap-10 max-md:px-3 max-md:pt-2 max-md:pb-8 md:grid-cols-4 md:gap-4 md:px-12 md:py-20"
         >
           {stats.map((stat, index) => (
             <div
@@ -129,6 +129,47 @@ export default function AboutHeroSection() {
             </div>
           ))}
         </motion.div>
+
+        {/* Mobile: the stats run as an edge-to-edge marquee instead of the
+            2-col grid above. Two identical copies translate by -50%, which is
+            exactly one copy, so the seam is invisible — and the travel is a CSS
+            keyframe on `transform`, so the browser runs it on the compositor
+            with no per-frame JS. Same `.marquee-track` mechanism globals.css
+            already drives elsewhere.
+
+            Values are rendered statically rather than through <Counter>: that
+            component counts up on ITS OWN first intersection, so eight copies
+            drifting past would each start at a different moment and show the
+            same stat with different numbers side by side. The count-up stays on
+            desktop, where each stat is on screen exactly once. */}
+        <div
+          className="marquee relative z-10 w-full py-6 md:hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
+        >
+          <div
+            className="marquee-track motion-reduce:animate-none"
+            style={{ animationDuration: "26s" }}
+          >
+            {[...stats, ...stats].map((stat, index) => (
+              <div
+                key={`${stat.label}-${index}`}
+                // The second run is decorative: screen readers should hear each
+                // stat once. Same guard EdgeToEdgeCarousel uses for its copy.
+                aria-hidden={index >= stats.length}
+                className="flex w-[44vw] shrink-0 flex-col items-center text-center"
+              >
+                <h4 className="mb-3 text-[2.5rem] font-bold tracking-tighter text-zinc-900">
+                  {stat.value}
+                  <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent ml-1 pr-1">
+                    {stat.suffix}
+                  </span>
+                </h4>
+                <p className="text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </main>
   );

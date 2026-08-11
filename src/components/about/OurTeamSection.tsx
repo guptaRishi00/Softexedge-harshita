@@ -9,9 +9,8 @@ import {
   useTransform,
 } from "framer-motion";
 import Image from "next/image";
-import { useCallback, useRef, useState } from "react";
-import Link from "next/link";
-import { MdArrowBack, MdArrowForward, MdArrowOutward } from "react-icons/md";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MdArrowBack, MdArrowForward } from "react-icons/md";
 
 import {
   Carousel,
@@ -101,6 +100,35 @@ export default function OurTeamSection() {
     api.scrollPrev();
   }, [api]);
 
+  // Embla reports the raw slide index across BOTH copies of the list; fold it
+  // back so five members map to five dots.
+  const [selected, setSelected] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+    const sync = () =>
+      setSelected(api.selectedScrollSnap() % teamMembers.length);
+    sync();
+    api.on("select", sync);
+    api.on("reInit", sync);
+    return () => {
+      api.off("select", sync);
+      api.off("reInit", sync);
+    };
+  }, [api]);
+
+  const scrollToMember = useCallback(
+    (index: number) => {
+      if (!api) return;
+      // Same courtesy the arrows extend: a deliberate jump should not be
+      // fought by the autoplay a frame later.
+      const autoScrollPlugin = api.plugins().autoScroll;
+      if (autoScrollPlugin) autoScrollPlugin.stop();
+      api.scrollTo(index);
+    },
+    [api],
+  );
+
   const handleNext = useCallback(() => {
     if (!api) return;
     const autoScrollPlugin = api.plugins().autoScroll;
@@ -170,42 +198,28 @@ export default function OurTeamSection() {
               </button>
             </div>
 
-            {/* Mobile takes ExperimentalTestimonials' CTA in the arrows' slot,
-                copied verbatim apart from the gradient's id (ids must be unique
-                per document, and both sections can be on screen together).
-                `md:hidden` keeps desktop on its prev/next arrows. */}
-            <Link
-              href="/contact"
-              className="group hidden h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:flex max-md:gap-4 max-md:border-0 max-md:pr-3"
-            >
-              <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
-                Connect With Us
-              </span>
-
-              <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-10 max-md:w-10 max-md:rounded-lg">
-                <svg width="0" height="0" className="absolute">
-                  <title>Connect arrow gradient</title>
-                  <defs>
-                    <linearGradient
-                      id="team-icon-grad"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="0%"
-                    >
-                      <stop stopColor="#2E5BFF" offset="0%" />
-                      <stop stopColor="#149CCB" offset="100%" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-
-                <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
-                <MdArrowOutward
-                  className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
-                  style={{ fill: "url(#team-icon-grad)" }}
+            {/* Mobile pagination, in the slot the desktop arrows occupy.
+                Driven by the embla api rather than the shared CarouselDots:
+                that component measures a native scroll container's scrollLeft
+                and `[data-slide]` stride, which this embla carousel does not
+                have. The track renders two copies of the list, so the snap
+                index is folded back into one run for the dot count. */}
+            <div className="flex items-center gap-2 md:hidden">
+              {teamMembers.map((member, i) => (
+                <button
+                  key={member.id}
+                  type="button"
+                  aria-label={`Show ${member.name}`}
+                  aria-current={i === selected}
+                  onClick={() => scrollToMember(i)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === selected
+                      ? "w-6 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+                      : "w-1.5 bg-zinc-300"
+                  }`}
                 />
-              </div>
-            </Link>
+              ))}
+            </div>
           </div>
 
           <motion.div style={{ x }} className="w-[114%] -ml-[7%] max-md:w-full max-md:ml-0">
