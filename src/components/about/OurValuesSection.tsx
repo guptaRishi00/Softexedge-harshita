@@ -72,7 +72,7 @@ export default function OurValuesSection() {
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
             className="w-full lg:w-7/12 flex flex-col justify-center py-6 lg:py-12"
           >
-            <div className="mb-8 max-md:mb-6">
+            <div className="mb-8 max-md:mb-8">
               <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs">
                 Our Culture
               </span>
@@ -81,7 +81,7 @@ export default function OurValuesSection() {
             {/* Metrics match AboutTraditional's mobile heading: same 40px size
                 it already had, plus its leading (1.11 vs 0.9em) and
                 `tracking-tight` (-1px vs -2px). Desktop keeps the tighter set. */}
-            <h2 className="text-5xl max-md:text-[2.5rem] md:text-7xl lg:text-[80px] font-bold tracking-tighter max-md:tracking-tight leading-[0.9em] max-md:leading-[1.11] mb-8 max-md:mb-6 text-white">
+            <h2 className="text-5xl max-md:text-[2.5rem] md:text-7xl lg:text-[80px] font-bold tracking-tighter max-md:tracking-tight leading-[0.9em] max-md:leading-[1.11] mb-8 max-md:mb-10 text-white">
               We've built a culture of
               {/* JSX swallows the newline before the span, so the word space has
                   to be a real inset. Desktop's pl-5 already did that job; mobile
@@ -99,7 +99,7 @@ export default function OurValuesSection() {
               recommendation or further work from that client.
             </p>
 
-            <div className="mt-12 relative flex flex-col rounded-3xl border border-white/[0.06] bg-[#100f0f] p-8 max-md:mt-8 max-md:p-5 md:p-10">
+            <div className="mt-12 relative flex flex-col rounded-3xl border border-white/[0.06] bg-[#100f0f] p-8 max-md:mt-8 max-md:overflow-hidden max-md:p-5 max-md:py-12 md:p-10">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={quoteIndex}
@@ -114,7 +114,7 @@ export default function OurValuesSection() {
                       rotation. Reserving the tallest keeps it still. Expressed
                       in em (6em = 5 lines at this 1.2em leading) rather than px
                       so it tracks the font size instead of one screen width. */}
-                  <p className="text-xl max-md:text-lg md:text-2xl font-medium leading-[1.2em] tracking-tight text-white max-md:min-h-[6em]">
+                  <p className="text-xl md:text-2xl font-medium leading-[1.2em] tracking-tight text-white max-md:min-h-[6em]">
                     {quotes[quoteIndex].text}
                   </p>
 

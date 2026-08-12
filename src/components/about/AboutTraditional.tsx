@@ -15,29 +15,34 @@ export default function AboutTraditional() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col items-center text-center max-w-5xl z-10 px-4 max-md:px-3 md:px-10"
         >
-          <div className="mb-8 inline-flex items-center justify-center rounded-full max-md:mb-6">
+          <div className="mb-8 inline-flex items-center justify-center rounded-full max-md:mb-8">
             <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs">
               Who We Are
             </span>
           </div>
 
-          {/* Mobile matches ServiceSection's heading treatment. The font SIZE
-              already did (both resolve to 40px); what differed was the leading
-              (0.9em -> 36px vs its 44.44px) and `tracking-tighter` (-2px vs its
-              -1px), which is what made this one read compressed next to it.
-              Desktop keeps its own tighter setting. */}
-          <h2 className="text-5xl max-md:text-[2.5rem] md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter max-md:tracking-tight leading-[0.9em] max-md:leading-[1.11] mb-8 max-md:mb-6">
-            A collective of <br className="hidden md:block" />
+          <h2 className="text-5xl max-md:text-[2.6rem] md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter max-md:tracking-tight leading-[0.9em] max-md:leading-[1.11] mb-8 max-md:mb-10">
+            <span className="max-md:hidden">
+              A collective of <br className="hidden md:block" />
+            </span>
+            <span className="md:hidden">{"Built by "}</span>
             <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               digital innovators.
             </span>
           </h2>
 
           <p className="max-w-3xl text-lg font-light leading-[1.25em] text-white md:text-xl">
-            Founded on the belief that technology and creativity should
-            seamlessly intersect. We operate globally, partnering with visionary
-            businesses to transform their digital presence. Founded on the
-            belief that technology and.
+            <span className="max-md:hidden">
+              Founded on the belief that technology and creativity should
+              seamlessly intersect. We operate globally, partnering with
+              visionary businesses to transform their digital presence. Founded
+              on the belief that technology and.
+            </span>
+            <span className="md:hidden">
+              Technology and creativity, working as one. We partner with
+              visionary businesses worldwide to transform their digital
+              presence.
+            </span>
           </p>
         </motion.div>
 

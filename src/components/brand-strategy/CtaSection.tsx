@@ -20,7 +20,7 @@ export default function CtaSection() {
   return (
     <section className="relative w-full bg-white px-0 md:px-0 md:pt-0">
       <div className="mx-auto w-full">
-        <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black max-md:[--spotlight-cols:5]">
+        <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black max-md:[--spotlight-cols:4] max-md:[&_.grid]:gap-2">
           <SpotlightGrid
             speed={0.15}
             sweep

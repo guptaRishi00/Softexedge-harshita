@@ -229,7 +229,7 @@ export default function OurTeamSection() {
                   key={`${member.id}-${index}`}
                   className="pl-4 md:pl-3 basis-[85%] max-md:basis-[calc(100vw-4.5rem)] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
                 >
-                  <div className="group relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] bg-zinc-100 border border-zinc-200/60 shadow-xs transition-all duration-500 hover:shadow-xl hover:shadow-zinc-200/40">
+                  <div className="group relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] max-md:rounded-3xl bg-zinc-100 border border-zinc-200/60 shadow-xs transition-all duration-500 hover:shadow-xl hover:shadow-zinc-200/40">
                     <div className="absolute inset-x-0 bottom-0 z-0 h-40 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 max-md:opacity-100 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />
 
                     <div className="absolute inset-0 z-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none" />

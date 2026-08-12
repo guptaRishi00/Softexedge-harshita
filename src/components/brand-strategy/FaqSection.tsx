@@ -61,7 +61,7 @@ export default function FaqSection() {
         </defs>
       </svg>
 
-      <div className="mx-auto flex w-full flex-col items-start gap-16 lg:flex-row lg:gap-24">
+      <div className="mx-auto flex w-full flex-col items-start gap-16 max-md:gap-8 lg:flex-row lg:gap-24">
         <div className="flex w-full flex-col items-start lg:sticky lg:top-5 lg:w-[40%]">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

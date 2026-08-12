@@ -13647,3 +13647,466 @@ stat appears exactly once.
   `<Counter>` still driving the first value, `md:border-l` dividers intact,
   marquee `display: none` — unchanged.
 - tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — AboutTraditional: shorter mobile copy
+
+**Task:** mobile only — rephrase the title and description, shorter.
+
+### Approach
+Both variants render; a CSS toggle (`max-md:hidden` / `md:hidden`) picks one.
+NOT a `useIsMobile()` branch: differing markup between server and first client
+render is a hydration mismatch. `display: none` also removes the unused copy
+from the accessibility tree, so neither string is announced twice.
+
+### Copy
+- **Title** — desktop "A collective of / digital innovators." (the `<br>` stays
+  `hidden md:block`); mobile **"Built by digital innovators."** The gradient
+  span is shared, so the treatment is identical on both.
+- **Description** — desktop unchanged at 30 words; mobile
+  **"Technology and creativity, working as one. We partner with visionary
+  businesses worldwide to transform their digital presence."** (17 words).
+
+### Verified (prod build, `next start -p 3100`)
+Measured with `innerText`, which reports only what is DISPLAYED, so the hidden
+variant cannot pollute the reading.
+- @375: title "Built by digital innovators." — 4 words, **2 lines**.
+  Description 17 words, **3 lines**. Two spans computed `display: none` (the
+  desktop copies). Gradient intact (`-webkit-text-fill-color: transparent`).
+- @1280: title "A collective of digital innovators." with the `<br>` still
+  displayed, description the original 30 words ending "...technology and." —
+  `desktop copy unchanged`. Title still 104px.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+### Pre-existing defect, left alone
+The desktop description ends "...transform their digital presence. **Founded on
+the belief that technology and.**" — the opening sentence repeated and cut off
+mid-clause. Clearly unintended filler, but it is desktop copy and the task was
+mobile-only, so it was not touched. The new mobile string simply does not carry
+it over.
+
+---
+
+## 2026-08-07 — AboutTraditional: rhythm matched to ServiceSection (mobile)
+
+**Task:** mobile only — make the tag, title and description the same size as
+ServiceSection.
+
+### Every SIZE already matched
+Measured both live at 375 before editing:
+
+| | ServiceSection | AboutTraditional |
+|---|---|---|
+| tag | 12px / 16px / 3.6px / 500 | identical |
+| title | 40px / 44.44px / -1px / 700 | identical |
+| description | 18px / 22.5px / 300 | identical |
+
+Title and description were matched in the earlier AboutTraditional pass; the
+tag was already the same. The only real deltas were **vertical rhythm**, which
+is presumably what read as "not the same":
+- tag -> title: **24px** vs ServiceSection's 32px
+- title -> description: **24px** vs its 40px (ServiceSection gets that from the
+  header flex's `max-md:gap-10`, not a margin)
+
+### What changed
+`components/about/AboutTraditional.tsx`, two mobile-only classes:
+- tag wrapper `max-md:mb-6` -> `max-md:mb-8` (24 -> 32px)
+- `<h2>` `max-md:mb-6` -> `max-md:mb-10` (24 -> 40px)
+
+### Verified (prod build, `next start -p 3100`)
+- @375: all ten checks against the captured ServiceSection reference —
+  tag size/tracking/space, title size/leading/tracking/space, description
+  size/leading/weight — `allMatchServiceSection: true`.
+- @1280 desktop: tag 14px, title 104px, description 20px, both margins still
+  `32px` (`mb-8`) — unchanged.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+---
+
+## 2026-08-07 — OurValuesSection: rhythm matched to ServiceSection (mobile)
+
+**Task:** mobile only — tag, title and description the same size as
+ServiceSection. Identical outcome to the AboutTraditional pass.
+
+### Sizes already matched; only spacing differed
+Measured at 375 before editing — tag `12px / 3.6px / 500`, title
+`40px / 44.4px / -1px / 700`, description `18px / 22.5px / 300`, all equal to
+the ServiceSection reference. (Title metrics came from the earlier four-part
+OurValues pass.) The two deltas:
+- tag -> title: **24px** vs 32px
+- title -> description: **24px** vs 40px
+
+### What changed
+`components/about/OurValuesSection.tsx`, two mobile-only classes:
+- tag wrapper `max-md:mb-6` -> `max-md:mb-8` (24 -> 32px)
+- `<h2>` `max-md:mb-6` -> `max-md:mb-10` (24 -> 40px)
+
+### Verified (prod build, `next start -p 3100`)
+- @375: twelve checks against the ServiceSection reference (tag size/tracking/
+  weight/space, title size/leading/tracking/weight/space, description
+  size/leading/weight) — `allMatchServiceSection: true`.
+- Earlier fixes in this component still hold, checked in the same read: quote
+  `min-height 108px` and the gradient word-space `padding-left 10px`.
+- @1280 desktop: tag 14px, title `80px / 72px`, description 20px, both margins
+  `32px` — unchanged.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+### Pattern worth noting
+Three sections in a row (AboutTraditional, FaqSection, OurValuesSection) have
+been asked to "match ServiceSection's sizes" and in each case the sizes were
+already identical — the visible difference was the 24px vs 32/40px rhythm.
+Any remaining section asked for the same treatment is likely the same fix.
+
+---
+
+## 2026-08-07 — /about: swept the remaining sections for ServiceSection rhythm
+
+**Task:** "sweep the rest in one pass" — finish the tag/title/description
+alignment across /about rather than one section per turn.
+
+### Measured every section first
+Walked all seven `<section>`s with an `<h2>` at 375 and compared tag size,
+tag->title space, title size/leading/tracking, title->description space and
+description size against the ServiceSection reference. Only **two** real deltas
+survived; the rest were already done or detector artifacts.
+
+### Changed (2)
+- `home/BlogSection.tsx` eyebrow `max-md:mb-6` -> `max-md:mb-8` (24 -> 32px)
+- `brand-strategy/CtaSection.tsx` description `+ max-md:mt-10` (24 -> 40px).
+  This section spaces with `mt` on the description rather than `mb` on the
+  title, so the override belongs there.
+
+Both files are **shared**: BlogSection with /home, CtaSection with 7 routes.
+
+### Deliberately NOT changed (3)
+- **AboutTraditional title is 41.6px, not 40** — its class is
+  `max-md:text-[2.6rem]`, changed outside this session after I set 2.5rem.
+  Treated as an intentional edit and left alone; matching ServiceSection exactly
+  would mean reverting it to `2.5rem`.
+- **ExperimentalTestimonials title->description is 28px** (vs the 40px pattern).
+  It is the REFERENCE component OurTeam, FaqSection and CtaSection's title were
+  matched against, and it is shared with /home — changing it would invalidate
+  that earlier work and ripple. Flagged, not touched.
+- **CtaSection has no eyebrow**, so its `tagSpace: 0px` in the sweep table is a
+  false positive from the detector matching "Drop us a line" further down the
+  card, not a missing element.
+
+### Verified (prod build, `next start -p 3100`)
+- @375 /about, post-sweep table — every eyebrow **32px**, every title **40px**
+  except AboutTraditional's deliberate 41.6px. Blog tag space 24 -> **32px**;
+  Cta title->description 24 -> **40px**.
+- @375 /home: Blog eyebrow now **32px**, equal to ServiceSection's own
+  (`blogNowMatchesReference: true`) — the shared change lands consistently.
+- @1280 desktop: Blog eyebrow `mb 12px` at 14px, Cta description `mt 24px` —
+  both unchanged.
+- tsc clean; build compiled; biome unchanged at 3 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — REVERTED the "sweep the rest in one pass" changes
+
+User asked to revert the sweep. Both edits undone; nothing else touched.
+
+### Reverted (2)
+- `home/BlogSection.tsx` eyebrow `max-md:mb-8` -> `max-md:mb-6` (32 -> 24px)
+- `brand-strategy/CtaSection.tsx` description: `max-md:mt-10` removed
+  (40 -> 24px)
+
+Note `grep -c "max-md:mb-8"` still reports 2 hits in BlogSection — those are a
+wrapper class on line 251 and a comment on line 373, both pre-existing and
+unrelated to the eyebrow. The eyebrow itself is back to `max-md:mb-6`.
+
+### The per-section work from earlier tasks is NOT affected
+Checked in the same measurement, since the sweep touched different files:
+AboutTraditional and OurValuesSection both still read tag space **32px** and
+title space **40px**. Only the two shared-file edits were rolled back.
+
+### Verified (prod build, `next start -p 3100`)
+- @375 /about: Blog eyebrow **24px**, Cta title->description **24px** —
+  `sweep reverted`.
+- @375 /home: Blog eyebrow back to **24px** (ServiceSection stays at its own
+  32px, i.e. the pre-sweep mismatch is restored as intended).
+- @1280 desktop: Blog eyebrow `mb 12px` at 14px, Cta description `mt 24px` —
+  unchanged throughout; desktop was never touched by the sweep.
+- tsc clean; build compiled; biome unchanged at 3 pre-existing diagnostics.
+
+### Standing decisions unchanged
+The three items the sweep deliberately skipped remain as they were:
+AboutTraditional's `max-md:text-[2.6rem]` title, ExperimentalTestimonials' 28px
+title->description gap, and CtaSection having no eyebrow.
+
+---
+
+## 2026-08-07 — OurValuesSection: more y padding on the quote card (mobile)
+
+**Task:** mobile only — increase the quote card's y-axis padding.
+
+### What changed
+`components/about/OurValuesSection.tsx`, the quote card:
+`max-md:p-5` -> `max-md:p-5 max-md:py-8` (y 20 -> 32px, x untouched at 20px).
+
+Kept `p-5` and layered `py-8` on top rather than rewriting to `px-5 py-8`:
+Tailwind emits `py-*` after `p-*`, so the y override wins regardless of class
+order in the attribute, and the diff stays a single added token.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: `padding-top/bottom 32px` (was 20), `padding-left/right 20px`
+  (`xUnchanged: true`). Card 351x396.
+- The earlier constant-height fix still holds: quote `min-height 108px`, dots
+  still rendered.
+- @1280 desktop: `40px` on all four sides (`md:p-10`), `margin-top 48px` —
+  unchanged.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+---
+
+## 2026-08-07 — OurValuesSection quote card: y padding raised again (mobile)
+
+**Task:** same as the previous entry, "more".
+
+### What changed
+`components/about/OurValuesSection.tsx`: `max-md:py-8` -> `max-md:py-12`
+(32 -> 48px). `max-md:p-5` still supplies x at 20px.
+
+Running total for this card on mobile: y **20 -> 32 -> 48px**, x unchanged at
+20px throughout. Card height 396 -> 428px.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: `padding-top/bottom 48px`, `padding-left/right 20px`
+  (`xUnchanged: true`). Card 428px tall, no horizontal overflow. Quote
+  `min-height 108px` still holding the card steady between rotations.
+- @1280 desktop: 40px on all four sides (`md:p-10`) — unchanged.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+### Note
+y is now 2.4x x (48 vs 20). If the card starts to read letterboxed, the x inset
+is the other half of that ratio and has not been touched in either pass.
+
+---
+
+## 2026-08-07 — OurValuesSection: bigger quote text (mobile)
+
+**Task:** mobile only — make the quote a little bigger.
+
+### What changed
+`components/about/OurValuesSection.tsx`: dropped `max-md:text-lg` from the
+quote `<p>`, so mobile takes the base `text-xl` (18 -> **20px**). Desktop keeps
+`md:text-2xl`. Removing the override is a smaller diff than adding a competing
+one, and mobile now simply follows the base.
+
+### The em-based reserve absorbed the change on its own
+The card's constant-height fix is `max-md:min-h-[6em]`, chosen in em rather
+than px precisely so it would track the font size. It did: the reserve went
+**108px -> 120px** automatically (6 x 20px), and all three quotes still wrap to
+**5 lines = 120px**, so `reservedCoversTallest: true` and the card stays
+constant at **440px** across all three (`cardHeightConstant: true`). No
+follow-up edit was needed — a px value would have needed re-tuning here.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: quote `20px / 24px` line-height, `min-height 120px`. Natural heights
+  measured with the reserve temporarily zeroed: 120 / 120 / 120 (5 lines each).
+  Card 428 -> 440px, constant across rotations.
+- @1280 desktop: quote `24px / 28.8px`, `min-height: auto`, card padding 40px —
+  unchanged.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+---
+
+## 2026-08-07 — OurValuesSection: quote slide no longer spills the card (mobile)
+
+**Task:** mobile only — the card overflows its div when the quote changes.
+
+### Cause, measured
+`AnimatePresence` slides the quote `x: 32 -> 0 -> -32`, but the mobile card has
+only **20px** padding and `overflow: visible`. Measured at 375: at the enter
+pose the inner block's right edge sat at 414 against the card's 403, and at the
+exit pose its left edge at 41 against the card's 52 — **11px of spill on each
+side** (32 travel - 20 padding - 1 border), painted over the rounded edge.
+
+Desktop never had the problem: `md:p-10` is 40px, which already contains the
+same 32px travel (`travelFitsInPadding: true`).
+
+### What changed
+`components/about/OurValuesSection.tsx`, the quote card:
+`+ max-md:overflow-hidden`. The slide now reads as a mask at the card boundary
+instead of a spill.
+
+Chose `overflow-hidden` over `overflow-clip` deliberately: `clip` would also
+avoid creating a scroll container, but it is Safari 16+ only, and Safari has
+been this session's problem browser — on Safari 15 the declaration would be
+dropped and the spill would come straight back.
+
+Did NOT shrink the travel per-breakpoint: `initial`/`exit` are framer props that
+emit inline transforms into the SSR HTML, so branching them on `useIsMobile()`
+is a hydration mismatch. CSS clipping is the safe lever.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: card `overflow: hidden`, radius 22px. The overhang is contained —
+  `scrollWidth 361` vs `clientWidth 349` — and the page has no horizontal
+  overflow. Nothing else regressed: padding 48/20px, quote 20px with
+  `min-height 120px`, dots present.
+- @1280 desktop: `overflow: visible`, padding 40px — unchanged.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+### Note
+The 12px overhang only exists DURING the ~500ms transition; at rest the content
+sits at `x: 0` entirely inside, so the clipped container has nothing to scroll
+to. (The measurement above reads mid-pose because the preview pane freezes
+framer at its `initial` state.)
+
+---
+
+## 2026-08-07 — OurTeamSection: card radius matched to ExperimentalTestimonials (mobile)
+
+**Task:** mobile only — match the team card's border radius to
+ExperimentalTestimonials'.
+
+### Measured both on /about (both sections render there)
+OurTeam card `rounded-[2rem]` = **32px**; ExperimentalTestimonials card
+`rounded-3xl` = **22px** (the theme defines `--radius-3xl` as
+`calc(var(--radius) * 2.2)`, so `3xl` is NOT 24px here).
+
+### What changed
+`components/about/OurTeamSection.tsx`: `+ max-md:rounded-3xl` on the card.
+
+Used the utility rather than a literal `max-md:rounded-[22px]` — it is the same
+token ExperimentalTestimonials uses, so the two stay in step if `--radius` ever
+moves.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: all three visible team cards **22px**, equal to the testimonials card
+  measured in the same pass (`allMatch: true`). Card box 287x383; the pinned
+  name panel still renders (`opacity: 1`), so the tighter clip did not disturb
+  it.
+- @1280 desktop: **32px** (`rounded-[2rem]`), card 352px — unchanged.
+- tsc clean; build compiled; biome clean on the file (0 diagnostics).
+
+---
+
+## 2026-08-07 — FaqSection: tighter title -> cards gap (mobile)
+
+**Task:** mobile only — reduce the gap between the title and the cards below.
+Shared file (/about, /brand-strategy, /work), as flagged in the earlier Faq
+passes.
+
+### Where the gap came from
+Below `lg` the two-column wrapper stacks
+(`flex-col ... gap-16 lg:flex-row lg:gap-24`), so its **gap IS** the
+title -> cards distance: measured `64px` at 375, flex-direction `column`.
+
+### What changed
+`components/brand-strategy/FaqSection.tsx`: `+ max-md:gap-8` (64 -> 32px).
+
+Used `max-md:` rather than editing the base `gap-16`: the 768-1023 band is still
+stacked but roomier, and keeps its 64px.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: wrapper `gap: 32px`, title bottom -> first card **64 -> 32px**.
+  Earlier tuning in this component intact, checked in the same read: title
+  `40px` capped at `max-width 192px`, card question `18px`, eyebrow space
+  `32px`.
+- @1280 desktop: `flex-direction: row`, `gap: 96px` (`lg:gap-24`) — unchanged.
+- tsc clean; build compiled; biome unchanged at 4 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — CtaSection: bigger pattern cells, tighter gaps (mobile)
+
+**Task:** mobile only — make the bg pattern bigger and reduce the gap between
+the boxes.
+
+### What changed
+`components/brand-strategy/CtaSection.tsx`, one class pair on the card:
+`max-md:[--spotlight-cols:5]` -> `max-md:[--spotlight-cols:4] max-md:[&_.grid]:gap-1`
+- columns 5 -> 4: cells **63.8 -> 88.6px** (+39%) at the same container width
+- gap 12 -> 4px
+
+**No shared-component edit this time.** SpotlightGrid hardcodes `gap-3` on its
+grid, but `[&_.grid]` overrides it from the call site — a descendant selector
+(0,2,0) outranks `.gap-3` (0,1,0), so the other 8 SpotlightGrid callers keep
+their spacing without a second CSS variable being threaded through.
+
+### Verified (prod build, `next start -p 3100`)
+- @375 /about: grid 4 columns, `gap: 4px`, cells `88.6 x 88.6px`,
+  `aspect-ratio 1/1`, radius 18px. Grid still covers the card (1848 vs 777) and
+  no horizontal overflow.
+- @375 **/blog** — the page with TWO SpotlightGrids: BlogHeroSection's is still
+  **10 cols / 12px gap / 25.8px cells**, only the CtaSection one changed. The
+  call-site scoping holds.
+- @1280 desktop: 10 columns, `gap 12px`, cells 119px — unchanged.
+- tsc clean; build compiled; biome unchanged at 3 pre-existing diagnostics.
+
+### Caveat still standing
+The sweep animation indexes cells with the JS `COLUMNS` (10) while CSS now lays
+them out in 4, so the travelling highlight does not map to visual rows. With
+`scatter` on it reads as random twinkling; the `plus` arms light non-adjacent
+cells. Unchanged from when the 5-column override went in.
+
+---
+
+## 2026-08-07 — CtaSection: pattern gap nudged back up (mobile)
+
+**Task:** mobile only — increase the gap between the pattern boxes a little.
+Partial walk-back of the previous entry, which took it 12 -> 4px.
+
+### What changed
+`components/brand-strategy/CtaSection.tsx`:
+`max-md:[&_.grid]:gap-1` -> `max-md:[&_.grid]:gap-2` (4 -> 8px).
+
+Running total for this pattern on mobile: gap **12 -> 4 -> 8px**, columns
+still 4.
+
+### Verified (prod build, `next start -p 3100`)
+- @375 /about: `gap: 8px`, 4 columns, cells `85.6px` (down from 88.6 — the
+  wider gutters take that width out of the track, as expected). Grid still
+  covers the card (1864 vs 777); no horizontal overflow.
+- @375 /blog: BlogHeroSection's grid still **10 cols / 12px / 25.8px**
+  (`blogHeroUntouched: true`) — the `[&_.grid]` override remains scoped to this
+  call site.
+- @1280 desktop: 10 columns, `gap 12px`, cells 119px — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+---
+
+## 2026-08-07 — /about: the "border" between AboutTraditional and OurValues was a sub-pixel seam
+
+**Task:** "there is a border in between, it should not be edge to edge, reduce
+its width" (mobile). This is the same line the earlier "border bottom" task
+asked about and the user skipped — the screenshot this time located it.
+
+### It is not a border, so there was nothing to narrow
+Swept the gap between the video card and the CEO image for anything that could
+draw a line:
+- elements with a visible `border-top`/`border-bottom`, or a box <= 3px tall and
+  >= 200px wide: **none**
+- **pseudo-elements** (`::before`/`::after`) painting a background or border —
+  the gap in the previous sweep: **none**
+- every element painting a background in the region: only the two black blocks,
+  the noise overlay (invisible: `mix-blend-overlay` over pure black resolves to
+  black), and the two card backgrounds
+
+### Actual cause
+`#about-traditional` and the black block holding `#culture` abut at a
+**fractional** boundary — `y = 1850.563` at **dpr 2** — and the common ancestor
+is the page's `.bg-white` root. Two opaque boxes antialiasing their edges
+independently can leave the shared device-pixel row blending toward the parent,
+which reads as a bright hairline spanning the full width.
+
+### What changed
+`src/app/about/page.tsx`, `#about-traditional`: `+ max-md:-mb-px`.
+The blocks now overlap by 1px, so there is no shared edge to antialias. Both
+sides are black and this block is `z-10`, so the overlap is invisible.
+
+### Verified (prod build, `next start -p 3100`)
+- @375: `margin-bottom: -1px`; `#about-traditional` bottom **1850.563** vs
+  `#culture` top **1849.563** -> `overlapPx: 1`, `sharedEdgeGone: true`. Both
+  backgrounds identical, `z-index: 10`, no horizontal overflow.
+- @1280 desktop: `margin-bottom: 0px`, `padding-bottom: 1350px`
+  (`md:pb-[150vh]`) — unchanged.
+- tsc clean; build compiled; biome unchanged at 2 pre-existing diagnostics.
+
+### Not visually confirmed
+The preview pane does not composite, so the hairline itself could never be seen
+here — the diagnosis is from geometry (fractional edge + white-rooted parent)
+and the fix is verified as a geometry change. Needs an eye on the device.

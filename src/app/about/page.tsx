@@ -34,7 +34,7 @@ export default function AboutPage({}: Props) {
         </div>
         <div
           id="about-traditional"
-          className="relative z-10 bg-black md:pb-[150vh] [&>section]:pt-20 [&>section]:pb-12 md:[&>section]:pt-45 md:[&>section]:pb-24"
+          className="relative z-10 bg-black max-md:-mb-px md:pb-[150vh] [&>section]:pt-20 [&>section]:pb-12 md:[&>section]:pt-45 md:[&>section]:pb-24"
         >
           <AboutTraditional />
         </div>
