@@ -14110,3 +14110,23 @@ sides are black and this block is `z-10`, so the overlap is invisible.
 The preview pane does not composite, so the hairline itself could never be seen
 here — the diagnosis is from geometry (fractional edge + white-rooted parent)
 and the fix is verified as a geometry change. Needs an eye on the device.
+
+## AboutHeroSection — mobile stat marquee sized up
+`src/components/about/AboutHeroSection.tsx`: marquee stat number `text-[2.5rem]` → `text-[2.75rem]` (40 → 44px). Mobile-only by construction — the whole marquee block is `md:hidden`, the desktop grid is a separate `max-md:hidden` node.
+
+Label deliberately left at `text-xs`. Measured single-line widths in the 165px item at 375px: 12px → 151px worst case; 13px → 164px (1px headroom); 14px → 176px, which wrapped "Projects shipped" and "Client retention" onto two lines and staggered the baselines. 12px is the only size with real margin.
+
+Verified @375: numbers 44px / labels 12px on all four, no wrap (labelH 16 = one line), items uniform at 165px, track 1320px = 8 × 165 so the -50% seam still lands exactly on one copy, no horizontal overflow. @1265: grid `display:grid` at 80px/16px, marquee `display:none` — desktop untouched. tsc clean, build compiled, biome unchanged.
+
+## AboutHeroSection — mobile stat marquee, second size bump
+`src/components/about/AboutHeroSection.tsx`, marquee only (`md:hidden`, so mobile-only by construction):
+- number `text-[2.75rem]` -> `text-[3.25rem]` (44 -> 52px)
+- item `w-[44vw]` -> `w-[52vw]` (165 -> 195px @375)
+- label `text-xs` -> `text-sm` (12 -> 14px)
+- `animationDuration` 26s -> 31s
+
+The item had to widen with the number: 14px labels need 176px worst case ("Projects shipped") and wrapped inside the old 165px item, staggering baselines mid-marquee. At 195px there is 19px of headroom and nothing wraps. Duration follows the width so perceived speed is unchanged — 780px of travel over 31s = 25.2 px/s, matching the previous 660/26 = 25.4.
+
+Verified @375: number 52px, label 14px, `anyLabelWraps: false`, items uniform 195px, `trackW 1560 = 8 x 195` so `seamExact: true`, marquee height 158px, no horizontal overflow. @1265: grid `display:grid`, 4 columns, 80px/16px, marquee `display:none` — desktop untouched. tsc clean, `Compiled successfully in 33.8s`, biome unchanged at the 2 pre-existing diagnostics (unused `React` import, index key on the desktop grid).
+
+Note: a stale `.next/dev/types/routes.d.ts` (dev server killed mid-write, duplicated `outRoute]>` fragment) failed tsc and the build's type check. `rm -rf .next/dev` cleared it — not a source error.

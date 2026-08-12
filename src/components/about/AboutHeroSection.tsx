@@ -147,7 +147,7 @@ export default function AboutHeroSection() {
         >
           <div
             className="marquee-track motion-reduce:animate-none"
-            style={{ animationDuration: "26s" }}
+            style={{ animationDuration: "31s" }}
           >
             {[...stats, ...stats].map((stat, index) => (
               <div
@@ -155,15 +155,15 @@ export default function AboutHeroSection() {
                 // The second run is decorative: screen readers should hear each
                 // stat once. Same guard EdgeToEdgeCarousel uses for its copy.
                 aria-hidden={index >= stats.length}
-                className="flex w-[44vw] shrink-0 flex-col items-center text-center"
+                className="flex w-[52vw] shrink-0 flex-col items-center text-center"
               >
-                <h4 className="mb-3 text-[2.5rem] font-bold tracking-tighter text-zinc-900">
+                <h4 className="mb-3 text-[3.25rem] font-bold tracking-tighter text-zinc-900">
                   {stat.value}
                   <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent ml-1 pr-1">
                     {stat.suffix}
                   </span>
                 </h4>
-                <p className="text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
+                <p className="text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
                   {stat.label}
                 </p>
               </div>
