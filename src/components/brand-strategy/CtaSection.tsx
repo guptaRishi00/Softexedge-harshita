@@ -35,7 +35,12 @@ export default function CtaSection() {
 
           <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent max-md:from-black/60 max-md:via-black/30" />
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50 max-md:opacity-25" />
+          {/* The bottom scrim stacks on top of SpotlightGrid's own `to-black/30`
+              bottom fade and its vignette, leaving the foot of the card ~30%
+              darker than the head — enough to swallow the pattern's glow down
+              there. Desktop needs the full weight to carry the contact row over
+              a busier grid; mobile's 4-column grid is far darker to begin with. */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50 max-md:opacity-10" />
 
           <div className="pointer-events-none relative z-10 px-4 py-8 pt-12 md:px-10 md:py-12 lg:py-16 lg:pb-0">
             <motion.div

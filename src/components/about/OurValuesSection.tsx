@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
@@ -29,16 +29,36 @@ const quotes = [
   },
 ];
 
+// Past this much travel, or this much flick speed, a drag reads as a deliberate
+// swipe rather than a slipped tap on the card.
+const SWIPE_DISTANCE = 60;
+const SWIPE_VELOCITY = 400;
+
+// `custom` is threaded through AnimatePresence as well as the child so the
+// LEAVING quote resolves `exit` against the new direction. Without that the
+// outgoing card keeps whatever direction it entered with, and a backwards swipe
+// throws both cards the same way.
+const quoteVariants = {
+  enter: (dir: number) => ({ opacity: 0, x: 32 * dir }),
+  center: { opacity: 1, x: 0 },
+  exit: (dir: number) => ({ opacity: 0, x: -32 * dir }),
+};
+
 export default function OurValuesSection() {
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: quoteIndex re-arms the timer so a manual dot click gets a full 6s dwell
+  const goTo = useCallback((next: number, dir: number) => {
+    setDirection(dir);
+    setQuoteIndex((next + quotes.length) % quotes.length);
+  }, []);
+
+  // quoteIndex is a real dependency: it re-arms the timer, so a swipe or a dot
+  // click gets a full 6s dwell rather than the remainder of the previous one.
   useEffect(() => {
-    const id = setInterval(() => {
-      setQuoteIndex((prev) => (prev + 1) % quotes.length);
-    }, 6000);
+    const id = setInterval(() => goTo(quoteIndex + 1, 1), 6000);
     return () => clearInterval(id);
-  }, [quoteIndex]);
+  }, [quoteIndex, goTo]);
   return (
     <section
       id="culture"
@@ -99,15 +119,40 @@ export default function OurValuesSection() {
               recommendation or further work from that client.
             </p>
 
-            <div className="mt-12 relative flex flex-col rounded-3xl border border-white/[0.06] bg-[#100f0f] p-8 max-md:mt-8 max-md:overflow-hidden max-md:p-5 max-md:py-12 md:p-10">
-              <AnimatePresence mode="wait">
+            <div className="mt-12 relative flex flex-col overflow-hidden rounded-3xl border border-white/[0.06] bg-[#100f0f] p-8 max-md:mt-8 max-md:p-5 max-md:py-12 md:p-10">
+              <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
                   key={quoteIndex}
-                  initial={{ opacity: 0, x: 32 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -32 }}
+                  custom={direction}
+                  variants={quoteVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
                   transition={{ duration: 0.5, ease: premiumEase }}
-                  className="flex flex-col gap-8"
+                  // Constrained to zero on both sides with a little elasticity:
+                  // the card rubber-bands under the finger and snaps back, and
+                  // the index change is what actually moves the quote. framer
+                  // sets `touch-action: pan-y` for drag="x", so vertical page
+                  // scrolling over the card is untouched.
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.18}
+                  dragMomentum={false}
+                  onDragEnd={(_, info) => {
+                    const { offset, velocity } = info;
+                    if (
+                      offset.x < -SWIPE_DISTANCE ||
+                      velocity.x < -SWIPE_VELOCITY
+                    ) {
+                      goTo(quoteIndex + 1, 1);
+                    } else if (
+                      offset.x > SWIPE_DISTANCE ||
+                      velocity.x > SWIPE_VELOCITY
+                    ) {
+                      goTo(quoteIndex - 1, -1);
+                    }
+                  }}
+                  className="flex cursor-grab flex-col gap-8 active:cursor-grabbing"
                 >
                   {/* The quotes wrap to 4 or 5 lines depending on which one is
                       showing, so the card jumped 350 <-> 372px on every
@@ -138,7 +183,10 @@ export default function OurValuesSection() {
                       </div>
                     </div>
 
-                    <Link href="/about" className="shrink-0 w-full sm:w-auto">
+                    <Link
+                      href="/about"
+                      className="shrink-0 w-full sm:w-auto max-md:hidden"
+                    >
                       <button
                         type="button"
                         // Mobile geometry copied from ExperimentalTestimonials'
@@ -187,7 +235,7 @@ export default function OurValuesSection() {
                     key={q.name}
                     type="button"
                     aria-label={`Show quote ${i + 1}`}
-                    onClick={() => setQuoteIndex(i)}
+                    onClick={() => goTo(i, i > quoteIndex ? 1 : -1)}
                     className={`h-1.5 rounded-full transition-all duration-300 ${
                       i === quoteIndex
                         ? "w-6 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"

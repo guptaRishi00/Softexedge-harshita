@@ -69,10 +69,10 @@ export default function FaqSection() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
           >
-            <p className="mb-6 max-md:mb-8 text-sm max-md:text-xs uppercase tracking-[0.3em] text-zinc-500 font-medium">
+            <p className="mb-6 text-sm max-md:text-xs uppercase tracking-[0.3em] text-zinc-500 font-medium">
               FAQs
             </p>
-            <h2 className="text-5xl max-md:text-[2.5rem] max-md:max-w-[12rem] font-bold leading-[1.05] max-md:leading-[1.11] tracking-tight text-zinc-900 md:text-6xl lg:text-6xl">
+            <h2 className="text-5xl max-md:text-[2.5rem] max-md:max-w-[12rem] font-bold leading-[1.05] max-md:leading-[1.3em] tracking-tight text-zinc-900 md:text-6xl lg:text-6xl">
               Let's{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Clear

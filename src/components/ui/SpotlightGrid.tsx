@@ -54,16 +54,64 @@ export default function SpotlightGrid({
   /** Corner treatment for both cell layers, e.g. "rounded-none" for square. */
   cellClassName?: string;
 }) {
-  const COLUMNS = columns;
-  const ROWS = rows;
   const TOTAL_ITEMS = columns * rows;
-  // Resolved here rather than as destructuring defaults: a default cannot
-  // reference a parameter declared after it.
-  const colEnd = sweepColEnd ?? COLUMNS - 1;
-  const rowEnd = sweepRowEnd ?? ROWS - 1;
 
   const reduce = useReducedMotion();
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
+
+  // A call site can re-shape the CSS grid at a breakpoint via
+  // `--spotlight-cols` (CtaSection does, at max-md). The sweep maths indexed
+  // cells by the `columns` prop, so at those breakpoints it addressed a grid
+  // that was not the one on screen: cells lit in a scattered comb and whole
+  // bands of the rendered grid stayed dark. Read the real track count instead.
+  // Seeded with `columns` so SSR and the first client render agree, and the
+  // item count is fixed by the props, so no markup ever moves.
+  const [renderedCols, setRenderedCols] = useState(columns);
+
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    const read = () => {
+      const tracks = getComputedStyle(el)
+        .gridTemplateColumns.split(" ")
+        .filter(Boolean).length;
+      if (tracks > 0) setRenderedCols(tracks);
+    };
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const COLUMNS = renderedCols;
+  const ROWS = Math.ceil(TOTAL_ITEMS / COLUMNS);
+
+  // Region bounds are authored against the prop shape, so they only mean
+  // anything once rescaled into the shape actually rendered. Ends are mapped
+  // through their exclusive edge (end + 1) so a region that reached the last
+  // column still reaches it after rescaling. When nothing was re-shaped this
+  // is the identity, which is what keeps every existing call site byte-equal.
+  const gridClamp = (v: number, hi: number) => Math.min(hi, Math.max(0, v));
+  const reshaped = COLUMNS !== columns;
+  const colStart = reshaped
+    ? gridClamp(Math.round((sweepColStart / columns) * COLUMNS), COLUMNS - 1)
+    : sweepColStart;
+  const rowStart = reshaped
+    ? gridClamp(Math.round((sweepRowStart / rows) * ROWS), ROWS - 1)
+    : sweepRowStart;
+  const colEnd = reshaped
+    ? gridClamp(
+        Math.round((((sweepColEnd ?? columns - 1) + 1) / columns) * COLUMNS) - 1,
+        COLUMNS - 1,
+      )
+    : (sweepColEnd ?? COLUMNS - 1);
+  const rowEnd = reshaped
+    ? gridClamp(
+        Math.round((((sweepRowEnd ?? rows - 1) + 1) / rows) * ROWS) - 1,
+        ROWS - 1,
+      )
+    : (sweepRowEnd ?? ROWS - 1);
 
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
@@ -72,7 +120,7 @@ export default function SpotlightGrid({
 
   const scatterSteps = useMemo(() => {
     if (!scatter) return null;
-    const n = (colEnd - sweepColStart + 1) * (rowEnd - sweepRowStart + 1);
+    const n = (colEnd - colStart + 1) * (rowEnd - rowStart + 1);
     let seed = 0x9e3779b9;
     const rnd = () => {
       seed = (seed * 1664525 + 1013904223) >>> 0;
@@ -86,7 +134,7 @@ export default function SpotlightGrid({
     const steps = new Array<number>(n);
     for (let s = 0; s < n; s++) steps[order[s]] = s;
     return steps;
-  }, [scatter, sweepColStart, colEnd, sweepRowStart, rowEnd]);
+  }, [scatter, colStart, colEnd, rowStart, rowEnd]);
 
   useEffect(() => {
     if (reduce) return;
@@ -111,7 +159,7 @@ export default function SpotlightGrid({
 
       if (sweep) {
         const regionCount =
-          (colEnd - sweepColStart + 1) * (rowEnd - sweepRowStart + 1);
+          (colEnd - colStart + 1) * (rowEnd - rowStart + 1);
         const period = regionCount + sweepTrail;
         const next = (t * SWEEP_CELLS_PER_SEC) % period;
         setSweepHead((cur) =>
@@ -156,9 +204,9 @@ export default function SpotlightGrid({
     speed,
     travel,
     sweep,
-    sweepColStart,
+    colStart,
     colEnd,
-    sweepRowStart,
+    rowStart,
     rowEnd,
     sweepTrail,
     COLUMNS,
@@ -168,12 +216,11 @@ export default function SpotlightGrid({
   const getIntensity = (index: number) => {
     if (sweep) {
       const centreAt = (row: number, col: number) => {
-        if (row < sweepRowStart || row > rowEnd) return 0;
-        if (col < sweepColStart || col > colEnd) return 0;
+        if (row < rowStart || row > rowEnd) return 0;
+        if (col < colStart || col > colEnd) return 0;
 
-        const regionCols = colEnd - sweepColStart + 1;
-        const ordinal =
-          (row - sweepRowStart) * regionCols + (col - sweepColStart);
+        const regionCols = colEnd - colStart + 1;
+        const ordinal = (row - rowStart) * regionCols + (col - colStart);
         const step = scatterSteps ? scatterSteps[ordinal] : ordinal;
 
         const behind = sweepHead - step;
@@ -183,8 +230,8 @@ export default function SpotlightGrid({
 
       const r = Math.floor(index / COLUMNS);
       const c = index % COLUMNS;
-      if (r < sweepRowStart || r > rowEnd) return 0;
-      if (c < sweepColStart || c > colEnd) return 0;
+      if (r < rowStart || r > rowEnd) return 0;
+      if (c < colStart || c > colEnd) return 0;
 
       const own = centreAt(r, c);
       if (!plus) return own;
@@ -231,9 +278,14 @@ export default function SpotlightGrid({
         }
       >
         <div
+          ref={gridRef}
           className="grid w-[120%] -ml-[5%] gap-3"
           style={{
-            gridTemplateColumns: `repeat(var(--spotlight-cols, ${COLUMNS}), minmax(0, 1fr))`,
+            // The fallback is the `columns` prop, never the measured count:
+            // feeding the measured value back in would latch. Resize past the
+            // breakpoint and back, and the var is gone but the fallback would
+            // still read 4, pinning the grid at the mobile shape forever.
+            gridTemplateColumns: `repeat(var(--spotlight-cols, ${columns}), minmax(0, 1fr))`,
           }}
         >
           {Array.from({ length: TOTAL_ITEMS }).map((_, index) => {
@@ -256,7 +308,6 @@ export default function SpotlightGrid({
                   style={{
                     opacity: intensity * 0.8,
                     transition: sweepTween && `opacity ${sweepTween}`,
-                    willChange: sweep ? "opacity" : undefined,
                     background:
                       glowColor && glowVia
                         ? `linear-gradient(to bottom, ${glowColor}, ${glowVia}, ${glowColor})`

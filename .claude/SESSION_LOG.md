@@ -14130,3 +14130,63 @@ The item had to widen with the number: 14px labels need 176px worst case ("Proje
 Verified @375: number 52px, label 14px, `anyLabelWraps: false`, items uniform 195px, `trackW 1560 = 8 x 195` so `seamExact: true`, marquee height 158px, no horizontal overflow. @1265: grid `display:grid`, 4 columns, 80px/16px, marquee `display:none` — desktop untouched. tsc clean, `Compiled successfully in 33.8s`, biome unchanged at the 2 pre-existing diagnostics (unused `React` import, index key on the desktop grid).
 
 Note: a stale `.next/dev/types/routes.d.ts` (dev server killed mid-write, duplicated `outRoute]>` fragment) failed tsc and the build's type check. `rm -rf .next/dev` cleared it — not a source error.
+
+## CtaSection (mobile) — bg pattern glow missing toward the bottom
+Reported on Safari with a screenshot. Two measured causes, neither Safari-specific.
+
+1. **Grid shape mismatch** (`src/components/ui/SpotlightGrid.tsx`). CtaSection re-shapes the CSS grid at `max-md:[--spotlight-cols:4]`, but the sweep maths still indexed cells as `floor(i / columns)` with the `columns` prop (10). Rendered layout is 4 x 20; the JS addressed 10 x 8. The sweep region (rows 2-5, cols 2-9) therefore scattered across the real grid as a comb: measured on-card rows alternated 2/4 and 4/4 lightable cells, lit 32-68% of the cycle. Fixed by reading the real track count off the grid element (`gridTemplateColumns`, ResizeObserver) and rescaling the region into the rendered shape; ends map through their exclusive edge so a region touching the last column still touches it. Mobile now resolves to rows 5-14 x cols 1-3 -- exactly the measured on-card band -- 3/4 cells per row, 42-58% lit, uniform top to bottom.
+   - Hydration-safe: state seeded with the `columns` prop so SSR and first client render agree; `TOTAL_ITEMS` is prop-derived so the item count never moves.
+   - Desktop and the other 8 callers are identity: `reshaped` is false unless `--spotlight-cols` is set, and grep confirms only brand-strategy/CtaSection sets it, only at max-md.
+   - The CSS fallback is pinned to the `columns` prop, not the measured count. Feeding the measured value back would latch: cross the breakpoint and return, the var is gone but the fallback would still read 4.
+
+2. **Scrim stacking** (`src/components/brand-strategy/CtaSection.tsx`). The bottom scrim sits on top of SpotlightGrid's own `to-black/30` fade and its vignette. Computed transmittance across the card: top 0.659, middle 0.950, bottom 0.461 -- the foot was ~30% darker than the head. `max-md:opacity-25` -> `max-md:opacity-10` puts the bottom at 0.553. Desktop keeps `opacity-50`.
+
+Also removed the blanket `will-change: opacity` on all 80 cells. No visual change; persistent will-change on 80 nodes is documented misuse, and layer-budget exhaustion dropping the *last* layers is the one plausible Safari-only mechanism for "bottom specifically" -- unverified, no Safari available here.
+
+Verified @375: 4 cols / 80 cells, scrim opacity 0.1, `will-change: auto`. @1265: 10 cols, scrim 0.5. Live resize 375 -> 1265 -> 375 gives 4 -> 10 -> 4 with fallback pinned at 10 (latch test). /web-development @375 still 10 cols, untouched. tsc clean, `Compiled successfully in 17.7s`, biome unchanged at 3 pre-existing diagnostics.
+
+Caveat: the Browser pane is hidden here so requestAnimationFrame never fires -- the sweep itself cannot be observed in this environment. Region coverage was verified arithmetically against the measured cell geometry, not by watching it animate.
+
+## OurValuesSection — quote card is now drag/swipeable
+`src/components/about/OurValuesSection.tsx`. The card had dots and a 6s auto-rotate but no gesture.
+- `drag="x"` on the slide, `dragConstraints={{left:0,right:0}}`, `dragElastic={0.18}`, `dragMomentum={false}` -- it rubber-bands under the finger and snaps back; the index change is what moves the quote. framer sets `touch-action: pan-y` itself, so vertical page scroll over the card is unaffected (verified: computed `pan-y`).
+- Commit threshold: 60px of travel OR 400px/s of flick, either direction.
+- Added a `direction` state and moved the transition to variants, with `custom` on BOTH AnimatePresence and the child. Without `custom` on AnimatePresence the leaving card keeps the direction it entered with, so a backwards swipe throws both cards the same way.
+- `goTo(next, dir)` now backs the dots, the autoplay, and the swipe; wrap-around handled by the modulo inside it.
+- Panel `max-md:overflow-hidden` -> `overflow-hidden` so the drag overshoot is clipped on desktop too.
+
+Scope note: enabled at all breakpoints, not gated to mobile. Dragging is an interaction, not a layout change, and OurTeamSection's carousel is already drag-enabled on desktop, so this matches the house pattern. Desktop at rest is unchanged -- the only new desktop-visible thing is `cursor: grab` over the card.
+
+Verified @375: framer applied `touch-action: pan-y`, `cursor: grab`, panel `overflow: hidden`. Dots still drive state through the refactored `goTo` -- clicked 0 -> 2 -> 1 and the active dot followed each time, which exercises the backwards branch too. @1265: checked the new `overflow-hidden` clips nothing that was visible -- the only non-degenerate overhang is the translated arrow icon, already clipped by its own 36x36 `overflow-hidden` container which sits fully inside the panel; every other "overhang" was a 0x0 SVG defs/title/stop node that paints nothing. tsc clean, `Compiled successfully in 28.0s`, biome clean on the file.
+
+Caveat: the swipe gesture itself could not be exercised here. framer processes pointermoves inside its rAF frameloop and the Browser pane is hidden, so rAF never fires -- a synthesized pointerdown/move/up sequence produced no index change. Same environment limit that froze the CtaSection sweep. Needs a real device to confirm the gesture end to end.
+
+## FaqSection (mobile) — title y-spacing matched to BlogSection
+`src/components/brand-strategy/FaqSection.tsx`: eyebrow `mb-6 max-md:mb-8 ...` -> `mb-6 ...`. Dropping the override lets the base 24px apply everywhere; desktop was already `mb-6`, so it is untouched by construction.
+
+Measured the two title blocks at 375 rather than reading classes. Only one genuine difference existed:
+
+| | Blog | Faq before | Faq after |
+|---|---|---|---|
+| eyebrow font/line-height | 12px/16px | 12px/16px | 12px/16px |
+| eyebrow margin-bottom | 24px | **32px** | **24px** |
+| eyebrow bottom -> title top | 24px | **32px** | **24px** |
+| title font/line-height | 40px/44.4444px | 40px/44.4px | 40px/44.4px |
+| section padding-top | 32px | 32px | 32px |
+
+Title line-heights differ by 0.04px and were left alone: Blog inherits `text-4xl`'s 1.1111 ratio applied to the 40px override, Faq sets `leading-[1.11]` explicitly. Not worth a class change.
+
+Trap avoided: a first pass measured section-top-to-eyebrow as 32px (Blog) vs 62px (Faq) and looked like a 30px spacing bug. It is an artifact -- the Faq header motion.div was frozen at `translateY(30px)`/`opacity:0` because the Browser pane is hidden so rAF never fires and the whileInView entrance never runs; Blog's had already settled to identity. Real spacing above the eyebrow is 32px in both. Do not "fix" spacing from a measurement taken while an entrance transform is stuck.
+
+Verified @375 after: eyebrow 24px margin and 24px gap to title on both, matching. @1265: Faq eyebrow still 14px/24px, title 60px/63px -- desktop unchanged. tsc clean, `Compiled successfully in 14.9s`, biome clean on the file.
+
+Blast radius: FaqSection is shared by about, brand-strategy and work. The change is mobile-only on all three and aligns them with BlogSection, which is itself sitewide.
+
+## OurValuesSection (mobile) — quote card CTA removed
+`src/components/about/OurValuesSection.tsx`: `max-md:hidden` on the `Link` wrapping the "Connect With Me" button. CSS-only, so no hydration surface and the desktop markup is untouched.
+
+Left the surrounding row alone. It is `flex ... justify-between gap-6` with two children; with the CTA out, the avatar block is the only laid-out child and sits left, which is where it already sat on mobile (the row is `flex-col` below sm). `gap-6` has nothing to space. No dead gap to reclaim.
+
+Verified @375: CTA `display: none`, 0x0, `offsetParent` null; row down to 1 laid-out child at 48px; the 3 pagination dots all still rendered; quote panel 351.6px. @1265: CTA `display: block`, 204.8x56 button, `href="/about"` — desktop unchanged. tsc clean, `Compiled successfully in 14.3s`, biome clean on the file.
+
+The drag/swipe added in the previous task is unaffected — it lives on the slide wrapper, not the CTA.
