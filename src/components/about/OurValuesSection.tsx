@@ -44,6 +44,15 @@ const quoteVariants = {
   exit: (dir: number) => ({ opacity: 0, x: -32 * dir }),
 };
 
+// Mobile moves the whole card rather than swapping its contents: the outgoing
+// card leaves the viewport entirely and the next one arrives from the far side.
+// Percentages, not pixels, so the travel is always exactly one card width.
+const cardVariants = {
+  enter: (dir: number) => ({ opacity: 0, x: `${100 * dir}%` }),
+  center: { opacity: 1, x: "0%" },
+  exit: (dir: number) => ({ opacity: 0, x: `${-100 * dir}%` }),
+};
+
 export default function OurValuesSection() {
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -119,7 +128,7 @@ export default function OurValuesSection() {
               recommendation or further work from that client.
             </p>
 
-            <div className="mt-12 relative flex flex-col overflow-hidden rounded-3xl border border-white/[0.06] bg-[#100f0f] p-8 max-md:mt-8 max-md:p-5 max-md:py-12 md:p-10">
+            <div className="mt-12 relative flex max-md:hidden flex-col overflow-hidden rounded-3xl border border-white/[0.06] bg-[#100f0f] p-8 md:p-10">
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
                   key={quoteIndex}
@@ -229,7 +238,7 @@ export default function OurValuesSection() {
                 </motion.div>
               </AnimatePresence>
 
-              <div className="mt-8 flex items-center gap-2">
+              <div className="lg:mt-8 flex items-center gap-2">
                 {quotes.map((q, i) => (
                   <button
                     key={q.name}
@@ -240,6 +249,100 @@ export default function OurValuesSection() {
                       i === quoteIndex
                         ? "w-6 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
                         : "w-1.5 bg-white/20 hover:bg-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile: the card itself is the carousel. Same index/direction
+                state as the desktop block above, so the two never disagree —
+                only the presentation differs. Profile leads, quote follows, and
+                the dots sit outside the card. */}
+            <div className="mt-8 md:hidden">
+              {/* popLayout, not "wait": "wait" holds the incoming card until the
+                  outgoing one has fully left, so slowing the transition just
+                  stretches an empty viewport. popLayout takes the leaving card
+                  out of flow so both move at once — one slides out as the next
+                  slides in, which is what actually reads as a carousel. The
+                  clipper is `relative` so the popped card is positioned against
+                  it; every slide is the same height, so nothing collapses while
+                  the outgoing card is out of flow. */}
+              <div className="relative overflow-hidden">
+                <AnimatePresence mode="popLayout" custom={direction}>
+                  <motion.div
+                    key={quoteIndex}
+                    custom={direction}
+                    variants={cardVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.7, ease: premiumEase }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.18}
+                    dragMomentum={false}
+                    onDragEnd={(_, info) => {
+                      const { offset, velocity } = info;
+                      if (
+                        offset.x < -SWIPE_DISTANCE ||
+                        velocity.x < -SWIPE_VELOCITY
+                      ) {
+                        goTo(quoteIndex + 1, 1);
+                      } else if (
+                        offset.x > SWIPE_DISTANCE ||
+                        velocity.x > SWIPE_VELOCITY
+                      ) {
+                        goTo(quoteIndex - 1, -1);
+                      }
+                    }}
+                    className="flex cursor-grab flex-col gap-8 rounded-3xl border border-white/[0.06] bg-[#100f0f] p-5 py-8 active:cursor-grabbing"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-zinc-800">
+                        <Image
+                          src={quotes[quoteIndex].avatar}
+                          alt={quotes[quoteIndex].name}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex flex-col">
+                        <h4 className="text-lg font-bold text-white">
+                          {quotes[quoteIndex].name}
+                        </h4>
+                        <p className="text-sm font-medium uppercase tracking-wide text-zinc-500">
+                          {quotes[quoteIndex].role}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Reserve 5 lines so the card — and the dots beneath it —
+                        hold still across slides. Measured line counts move in
+                        lockstep at 320/360/375/390/430; only 414 splits them
+                        (5 lines vs 4), which this floor absorbs. At 320 all
+                        three run to 6 lines and grow together, so the floor
+                        costs nothing there. In em so it tracks the font size
+                        rather than one screen width. */}
+                    <p className="min-h-[6em] text-xl font-medium leading-[1.2em] tracking-tight text-white">
+                      {quotes[quoteIndex].text}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              <div className="mt-6 flex items-center justify-center gap-2">
+                {quotes.map((q, i) => (
+                  <button
+                    key={q.name}
+                    type="button"
+                    aria-label={`Show quote ${i + 1}`}
+                    onClick={() => goTo(i, i > quoteIndex ? 1 : -1)}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      i === quoteIndex
+                        ? "w-6 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+                        : "w-1.5 bg-white/20"
                     }`}
                   />
                 ))}

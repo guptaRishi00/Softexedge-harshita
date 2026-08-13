@@ -69,14 +69,54 @@ export default function SpotlightGrid({
   // item count is fixed by the props, so no markup ever moves.
   const [renderedCols, setRenderedCols] = useState(columns);
 
+  // Re-shaping the columns also multiplies the ROW count (80 cells over 5
+  // columns is 16 rows, not 8), and the grid is centred, so it overflows the
+  // container top and bottom. A row window authored against the prop shape then
+  // lands short of the rows actually on screen — which reads as the pattern
+  // glowing everywhere except the bottom edge. Measure the visible band instead.
+  const [visibleRows, setVisibleRows] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
+
+  // Where the sweep starts horizontally, overridable per breakpoint via
+  // `--spotlight-sweep-col-start` — the same escape hatch as `--spotlight-cols`,
+  // and for the same reason: the bound is a prop, so it cannot vary by media
+  // query, and a call site may want the glow off the text and over to one side
+  // on narrow screens only. Unset (the default) keeps the prop-derived value.
+  const [sweepColOverride, setSweepColOverride] = useState<number | null>(null);
+
   useEffect(() => {
     const el = gridRef.current;
     if (!el) return;
     const read = () => {
-      const tracks = getComputedStyle(el)
-        .gridTemplateColumns.split(" ")
-        .filter(Boolean).length;
+      const style = getComputedStyle(el);
+      const tracks = style.gridTemplateColumns.split(" ").filter(Boolean).length;
       if (tracks > 0) setRenderedCols(tracks);
+
+      const rawCol = style
+        .getPropertyValue("--spotlight-sweep-col-start")
+        .trim();
+      const parsedCol = Number.parseInt(rawCol, 10);
+      setSweepColOverride(
+        rawCol !== "" && Number.isInteger(parsedCol) ? parsedCol : null,
+      );
+
+      const root = rootRef.current;
+      const cell = el.firstElementChild;
+      if (!root || !cell) return;
+      const pitch =
+        cell.getBoundingClientRect().height + (parseFloat(style.rowGap) || 0);
+      if (!(pitch > 0)) return;
+      const offset =
+        el.getBoundingClientRect().top - root.getBoundingClientRect().top;
+      const start = Math.max(0, Math.floor(-offset / pitch));
+      const end = Math.ceil((root.clientHeight - offset) / pitch) - 1;
+      // Same object when nothing moved: this runs from a ResizeObserver, and a
+      // fresh object every tick would re-render on every scroll-driven reflow.
+      setVisibleRows((prev) =>
+        prev && prev.start === start && prev.end === end ? prev : { start, end },
+      );
     };
     read();
     const ro = new ResizeObserver(read);
@@ -94,11 +134,23 @@ export default function SpotlightGrid({
   // is the identity, which is what keeps every existing call site byte-equal.
   const gridClamp = (v: number, hi: number) => Math.min(hi, Math.max(0, v));
   const reshaped = COLUMNS !== columns;
-  const colStart = reshaped
-    ? gridClamp(Math.round((sweepColStart / columns) * COLUMNS), COLUMNS - 1)
-    : sweepColStart;
+  const colStart = gridClamp(
+    sweepColOverride ??
+      (reshaped
+        ? Math.round((sweepColStart / columns) * COLUMNS)
+        : sweepColStart),
+    COLUMNS - 1,
+  );
+  // Rows use the measured band rather than the proportional map: the authored
+  // window describes a grid that fitted its container, and the re-shaped one
+  // does not. Falls back to the proportional map until the first measurement.
   const rowStart = reshaped
-    ? gridClamp(Math.round((sweepRowStart / rows) * ROWS), ROWS - 1)
+    ? gridClamp(
+        visibleRows
+          ? visibleRows.start
+          : Math.round((sweepRowStart / rows) * ROWS),
+        ROWS - 1,
+      )
     : sweepRowStart;
   const colEnd = reshaped
     ? gridClamp(
@@ -108,7 +160,9 @@ export default function SpotlightGrid({
     : (sweepColEnd ?? COLUMNS - 1);
   const rowEnd = reshaped
     ? gridClamp(
-        Math.round((((sweepRowEnd ?? rows - 1) + 1) / rows) * ROWS) - 1,
+        visibleRows
+          ? visibleRows.end
+          : Math.round((((sweepRowEnd ?? rows - 1) + 1) / rows) * ROWS) - 1,
         ROWS - 1,
       )
     : (sweepRowEnd ?? ROWS - 1);

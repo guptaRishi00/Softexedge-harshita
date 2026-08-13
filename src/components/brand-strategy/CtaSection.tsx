@@ -20,7 +20,7 @@ export default function CtaSection() {
   return (
     <section className="relative w-full bg-white px-0 md:px-0 md:pt-0">
       <div className="mx-auto w-full">
-        <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black max-md:[--spotlight-cols:4] max-md:[&_.grid]:gap-2">
+        <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black max-md:[--spotlight-cols:5] max-md:[--spotlight-sweep-col-start:3] max-md:[&_.grid]:gap-2">
           <SpotlightGrid
             speed={0.15}
             sweep
@@ -33,7 +33,7 @@ export default function CtaSection() {
           />
 
 
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent max-md:from-black/60 max-md:via-black/30" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent max-md:from-black/90 max-md:from-50% max-md:via-black/45 max-md:via-85%" />
 
           {/* The bottom scrim stacks on top of SpotlightGrid's own `to-black/30`
               bottom fade and its vignette, leaving the foot of the card ~30%
@@ -42,7 +42,7 @@ export default function CtaSection() {
               a busier grid; mobile's 4-column grid is far darker to begin with. */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50 max-md:opacity-10" />
 
-          <div className="pointer-events-none relative z-10 px-4 py-8 pt-12 md:px-10 md:py-12 lg:py-16 lg:pb-0">
+          <div className="pointer-events-none relative z-10 px-4 py-8 pt-12 max-md:px-5 max-md:pb-12 max-md:pt-16 md:px-10 md:py-12 lg:py-16 lg:pb-0">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -56,13 +56,17 @@ export default function CtaSection() {
                 </span>
               </h2>
 
-              <p className="mt-6 max-w-2xl text-lg font-light leading-[1.25em] text-white md:text-xl">
+              {/* pr-12 on mobile only: the sweep now lives in the right 40% of the
+                  card, and this was the one block whose lines ran into it.
+                  Shortening the measure keeps body copy off the moving
+                  pattern instead of relying on the scrim to hide it. */}
+              <p className="mt-6 max-w-2xl text-lg font-light leading-[1.25em] text-white max-md:mt-8 max-md:pr-12 md:text-xl">
                 Join the waitlist and be the first one to experience
                 photorealism at scale. Get additional 50% discount on the first
                 100 people.
               </p>
 
-              <div className="mt-10 flex w-fit pointer-events-auto flex-col gap-3">
+              <div className="mt-10 flex w-fit pointer-events-auto flex-col gap-3 max-md:mt-12 max-md:gap-4">
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex -space-x-3">
                     {avatars.map((src, i) => (
@@ -102,7 +106,7 @@ export default function CtaSection() {
             </motion.div>
           </div>
 
-          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
+          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 max-md:gap-12 max-md:px-5 max-md:pt-8 max-md:pb-14 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -112,13 +116,13 @@ export default function CtaSection() {
             >
               <button
                 type="button"
-                className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100"
+                className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100 max-md:h-16 max-md:pl-6 max-md:pr-3.5 max-md:before:scale-x-100"
               >
-                <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
+                <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black max-md:text-lg max-md:text-black">
                   Connect With Us
                 </span>
 
-                <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
+                <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black max-md:h-10 max-md:w-10 max-md:bg-black">
                   <svg width="0" height="0" className="absolute">
                     <title>Connect arrow gradient</title>
                     <defs>
@@ -135,9 +139,9 @@ export default function CtaSection() {
                     </defs>
                   </svg>
 
-                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8 max-md:h-5 max-md:w-5 max-md:-translate-y-8 max-md:translate-x-8" />
                   <MdArrowOutward
-                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0 max-md:h-5 max-md:w-5 max-md:translate-x-0 max-md:translate-y-0"
                     style={{ fill: "url(#cta-icon-grad)" }}
                   />
                 </div>

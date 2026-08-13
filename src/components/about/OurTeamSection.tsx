@@ -244,10 +244,17 @@ export default function OurTeamSection() {
                       </p>
                     </div>
 
+                    {/* Eager, not lazy: AutoScroll runs `direction: "backward"`,
+                        so cards enter the viewport from the LEFT on a continuous
+                        transform. Browser lazy-loading tracks transform movement
+                        poorly (Safari worst), so a card became visible before
+                        its image started loading — blank card, then pop-in, at
+                        the left edge. The track renders two copies of a 5-member
+                        list, so all 10 cards resolve to 5 files. */}
                     <Image
                       src={member.image}
                       alt={member.name}
-                      loading="lazy"
+                      loading="eager"
                       fill
                       sizes="(max-width: 640px) 85vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                       className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] "

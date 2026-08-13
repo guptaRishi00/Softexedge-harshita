@@ -147,7 +147,14 @@ export default function AboutHeroSection() {
         >
           <div
             className="marquee-track motion-reduce:animate-none"
-            style={{ animationDuration: "31s" }}
+            // reverse: the shared `scroll` keyframe runs 0 -> -50% (leftward),
+            // TechLogoCarousel runs -50% -> 0. Reversing playback matches it
+            // without touching the global keyframe. Set inline, not as a
+            // utility: `.marquee-track` is unlayered CSS setting the `animation`
+            // SHORTHAND, so it both outranks @layer utilities and resets
+            // animation-direction to normal. Inline is the only level above it —
+            // which is why animationDuration already lives here.
+            style={{ animationDuration: "31s", animationDirection: "reverse" }}
           >
             {[...stats, ...stats].map((stat, index) => (
               <div

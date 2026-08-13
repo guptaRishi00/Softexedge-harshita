@@ -1,11 +1,17 @@
 "use client";
 
+import AutoScroll from "embla-carousel-auto-scroll";
 import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { MdArrowOutward } from "react-icons/md";
 import { AiFillInstagram } from "react-icons/ai";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 import { NO_ENTRY, useIsMobile } from "@/lib/useIsDesktop";
 
 const footerLinkGroups = [
@@ -141,6 +147,39 @@ const subscribeToTick = (onTick: () => void) => {
 const getTick = () => sharedNow;
 const getServerTick = () => null;
 
+// DOM order, which is the order the desktop grid renders in. The old markup
+// also carried `max-md:order-*` (1,3,2,4) to re-sequence the two-column mobile
+// grid; that grid is gone, so the override goes with it and the carousel simply
+// follows this list.
+const offices = [
+  { city: "Toronto", timeZone: "America/Toronto" },
+  { city: "Tokyo", timeZone: "Asia/Tokyo" },
+  { city: "London", timeZone: "Europe/London" },
+  { city: "Paris", timeZone: "Europe/Paris" },
+];
+
+function OfficeClock({
+  city,
+  timeZone,
+}: {
+  city: string;
+  timeZone: string;
+}) {
+  return (
+    <div className="flex flex-col items-start gap-3">
+      <div className="flex items-center gap-2">
+        <span className="block h-1.5 w-1.5 rounded-full bg-white" />
+        <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text font-black leading-none text-transparent">
+          {city}
+        </span>
+      </div>
+      <div className="tabular-nums text-white/40">
+        <LocalTime timeZone={timeZone} />
+      </div>
+    </div>
+  );
+}
+
 function LocalTime({ timeZone }: { timeZone: string }) {
   const time = useSyncExternalStore(subscribeToTick, getTick, getServerTick);
 
@@ -155,6 +194,22 @@ function LocalTime({ timeZone }: { timeZone: string }) {
 export default function Footer() {
   // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
   const isMobile = useIsMobile();
+
+  // Mobile clocks are an embla carousel rather than a CSS marquee: the ask was
+  // infinite AND draggable, and a keyframe marquee cannot be dragged — the
+  // animation owns the transform. embla + AutoScroll is already how
+  // OurTeamSection does exactly this, and drag comes free with it. `backward`
+  // matches the travel direction of every other carousel on the site
+  // (rightward, entering from the left) per TechLogoCarousel.
+  const clockAutoScroll = useRef(
+    AutoScroll({
+      speed: 0.7,
+      direction: "backward",
+      playOnInit: true,
+      stopOnInteraction: false,
+      stopOnMouseEnter: false,
+    }),
+  );
   return (
     <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-10 text-white md:pt-24 lg:pt-32">
       <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay" />
@@ -322,55 +377,37 @@ export default function Footer() {
             transition={
               isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
             }
-            className="grid grid-cols-2 justify-items-center gap-x-8 gap-y-12 text-xs font-semibold uppercase tracking-widest max-md:order-3 md:grid-cols-4"
+            className="text-xs font-semibold uppercase tracking-widest max-md:order-3"
           >
-            <div className="flex flex-col items-start gap-3 max-md:order-1">
-              <div className="flex items-center gap-2">
-                <span className="block h-1.5 w-1.5 rounded-full bg-white" />
-                <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text font-black leading-none text-transparent">
-                  Toronto
-                </span>
-              </div>
-              <div className="tabular-nums text-white/40">
-                <LocalTime timeZone="America/Toronto" />
-              </div>
+            <div className="grid grid-cols-4 justify-items-center gap-x-8 gap-y-12 max-md:hidden">
+              {offices.map((office) => (
+                <OfficeClock key={office.city} {...office} />
+              ))}
             </div>
 
-            <div className="flex flex-col items-start gap-3 max-md:order-3">
-              <div className="flex items-center gap-2">
-                <span className="block h-1.5 w-1.5 rounded-full bg-white" />
-                <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text font-black leading-none text-transparent">
-                  Tokyo
-                </span>
-              </div>
-              <div className="tabular-nums text-white/40">
-                <LocalTime timeZone="Asia/Tokyo" />
-              </div>
-            </div>
-
-            <div className="flex flex-col items-start gap-3 max-md:order-2">
-              <div className="flex items-center gap-2">
-                <span className="block h-1.5 w-1.5 rounded-full bg-white" />
-                <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text font-black leading-none text-transparent">
-                  London
-                </span>
-              </div>
-              <div className="tabular-nums text-white/40">
-                <LocalTime timeZone="Europe/London" />
-              </div>
-            </div>
-
-            <div className="flex flex-col items-start gap-3 max-md:order-4">
-              <div className="flex items-center gap-2">
-                <span className="block h-1.5 w-1.5 rounded-full bg-white" />
-                <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text font-black leading-none text-transparent">
-                  Paris
-                </span>
-              </div>
-              <div className="tabular-nums text-white/40">
-                <LocalTime timeZone="Europe/Paris" />
-              </div>
-            </div>
+            {/* Two copies so the loop has something to wrap into; the second is
+                decorative, and every clock reads the same shared tick, so the
+                duplicate never disagrees with its original. */}
+            <Carousel
+              opts={{ align: "start", loop: true, dragFree: true }}
+              plugins={[clockAutoScroll.current]}
+              // -mx-6 cancels the container's px-6 so the track runs to the
+              // black panel's own edges; w-auto lets the negative margins
+              // actually widen the box, which a fixed w-full would not.
+              className="w-full md:hidden max-md:-mx-6 max-md:w-auto"
+            >
+              <CarouselContent className="-ml-6">
+                {[...offices, ...offices].map((office, index) => (
+                  <CarouselItem
+                    key={`${office.city}-${index}`}
+                    aria-hidden={index >= offices.length}
+                    className="basis-1/2 pl-6"
+                  >
+                    <OfficeClock {...office} />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
           </motion.div>
 
           <motion.div

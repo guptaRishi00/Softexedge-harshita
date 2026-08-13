@@ -14190,3 +14190,174 @@ Left the surrounding row alone. It is `flex ... justify-between gap-6` with two 
 Verified @375: CTA `display: none`, 0x0, `offsetParent` null; row down to 1 laid-out child at 48px; the 3 pagination dots all still rendered; quote panel 351.6px. @1265: CTA `display: block`, 204.8x56 button, `href="/about"` — desktop unchanged. tsc clean, `Compiled successfully in 14.3s`, biome clean on the file.
 
 The drag/swipe added in the previous task is unaffected — it lives on the slide wrapper, not the CTA.
+
+## OurValuesSection (mobile) — quote card rebuilt as a card carousel
+`src/components/about/OurValuesSection.tsx`. Mobile and desktop now want genuinely different mechanics (one card sliding across a viewport vs. contents swapping inside a fixed card), so they are two blocks toggled by CSS rather than one contorted structure. Desktop block gained `max-md:hidden` and had its dead `max-md:mt-8/p-5/py-12` dropped; a new `md:hidden` block sits after it.
+
+Mobile block:
+- Profile (avatar + name + role) first, quote second — inverted from desktop.
+- New `cardVariants`: the whole card enters from `${100*dir}%` and exits to `${-100*dir}%` inside an `overflow-hidden` clipper, so the card itself travels a full card width instead of the contents shuffling. Percentages, not px, so travel always equals one card width.
+- Dots moved out of the card, `mt-6 justify-center` beneath it.
+- Same `quoteIndex`/`direction`/`goTo` state drives both blocks, so they can never disagree; the drag handler is the same threshold pair (60px / 400px per sec).
+
+Quote height reserve: started at `min-h-[7.2em]`, measured, tightened to `min-h-[6em]` (120px = 5 lines). Natural line counts move in lockstep at 320/360/375/390/430; only 414 splits them (Arjun 5 lines vs the other two at 4), and the 5-line floor absorbs exactly that. At 320 all three run to 6 lines and grow together, so the floor costs nothing. 7.2em would have carried 24px of dead space at every common width for no benefit — card went 282px -> 258px.
+
+Verified @375: one laid-out card, width equals its clipper, profile above quote, dots outside the card at `justify-content: center` with centre offset 0.0px and 24px below, height 258px identical on all three slides (driven via dot clicks), `touch-action: pan-y`, CTA still hidden. @1265: one card, quote is the first child with profile below, dots still inside the card panel at `justify-content: normal`, CTA visible, panel 611px at 40px padding, mobile block `display: none`. tsc clean, `Compiled successfully in 23.9s`, biome clean on the file.
+
+Measurement trap hit twice, both times the hidden-pane frozen rAF: the entering card parks at `matrix(1,0,0,1,351,0)` — exactly `translateX(100%)` of the 351px clipper — so it reads as sitting outside the viewport. Centre offsets must be taken against the clipper, not the card. Separately, `card.querySelector('p')` grabs the ROLE label inside the profile block, not the quote; the quote is the direct child `p`. That mis-target reported line-height 20px and a null min-height before I caught it.
+
+## OurValuesSection (mobile) — carousel pacing, gap, and overlap
+`src/components/about/OurValuesSection.tsx`, mobile block only.
+- Card `gap-6` -> `gap-8`: profile-to-quote 24px -> 32px.
+- Transition `duration: 0.45` -> `0.7`, ease unchanged (`premiumEase`).
+- `AnimatePresence mode="wait"` -> `mode="popLayout"`, clipper `overflow-hidden` -> `relative overflow-hidden`.
+
+The mode change is the substance of "slow and smooth". Under `wait` the incoming card is held until the outgoing one has fully left, so raising the duration only stretches an empty viewport — it gets slower and *less* smooth. `popLayout` takes the leaving card out of flow so both animate at once: one slides out as the next slides in. The clipper needs `relative` so the popped card positions against it, and every slide is the same height so nothing collapses while the outgoing card is out of flow.
+
+Drag untouched — same `drag="x"`, constraints, elasticity and 60px/400px-per-sec thresholds.
+
+Verified @375: card `row-gap: 32px` and measured profile-bottom to quote-top exactly 32px; clipper `position: relative`, `overflow: hidden`; drag intact (`touch-action: pan-y`, `cursor: grab`); dots still outside the card and centred at offset 0.0px; card 265.6px (258 + the extra 8px of gap). popLayout proven structurally: mid-transition the clipper holds exactly one `static` card in flow with the outgoing ones `position: absolute`, clip height steady at 266px, in-flow card 266px on all three slides. @1265: mobile block `display: none`, desktop card still quote-first with `row-gap: 32px`, dots inside the panel at `justify-content: normal`, CTA visible, panel 611px / 40px padding. tsc clean, `Compiled successfully in 35.3s`, biome clean.
+
+Caveats: the 0.7s duration cannot be observed here — framer drives it in JS, not CSS, so it does not appear in computed style, and rAF is frozen in the hidden pane. Same reason the popped cards accumulate in the DOM during this test: exit animations never finish, so they never unmount. In a real browser they unmount after 0.7s.
+
+## AboutHeroSection (mobile) — image carousel flickering at the right edge
+`src/components/about/EdgeToEdgeCarousel.tsx`: `loading="lazy"` -> `loading="eager"` on the card images. One attribute; no class or layout change.
+
+Mechanism: the track moves by continuous transform, so cards enter the viewport from the RIGHT. Browser lazy-loading is driven by proximity scans that track transform movement poorly (Safari worst), so an entering card became visible before its image began loading — blank card, then pop-in, repeating at the right edge as each card arrived. Measured pre-fix at 375: all 30 imgs `loading="lazy"`, loadedCount 0 — even the 3 on-screen cards. Lazy also buys nothing here: every card passes through the viewport within half a 65s loop, and the 30 cards share 5 unique files.
+
+Trap: the first edit just REMOVED `loading="lazy"` — a no-op, because next/image defaults to lazy without the prop (unlike native img). Verified post-noop: all 30 still `lazy`. The fix must be an explicit `loading="eager"`. Chose eager over `priority` — priority would add preload/fetchpriority-high hints for a below-the-fold marquee and compete with real LCP content.
+
+Verified post-fix @375: all 30 `eager`, loadedCount 30/30 (was 0), 5 unique srcs. @1265: card 210x140 (measured 202x134 = x0.96 frozen-entrance artifact), mr-3 12px, DOM unchanged. tsc clean, `Compiled successfully in 21.7s`, biome clean on the file.
+
+Scope note: the attribute applies at all widths — loading strategy isn't a "view", and desktop had the same latent pop-in. The flicker itself can't be watched here (rAF frozen, marquee parked at transform:none); the fix is verified by load-state, not by watching the animation.
+
+## OurTeamSection (mobile) — team carousel flickering at the left edge
+`src/components/about/OurTeamSection.tsx`: `loading="lazy"` -> `loading="eager"` on the member card Image. Same defect as the AboutHeroSection carousel one task earlier, mirrored: that track scrolls forward so cards entered from the right, this one runs embla AutoScroll with `direction: "backward"` so cards enter from the LEFT — which is exactly the edge reported.
+
+Browser lazy-loading is driven by proximity scans that track continuous transform movement poorly (Safari worst), so a card became visible before its image began loading: blank card, then pop-in, repeating at the entering edge. Measured pre-fix at 375: all 10 imgs `loading="lazy"`, loadedCount 0 — including the 2 on screen. The track renders two copies of the 5-member list, so all 10 cards resolve to 5 files; eager costs 5 requests.
+
+Verified post-fix @375: all 10 `eager`, loadedCount 10/10 (was 0), 5 unique srcs. @1265: item 363px at `padding-left: 12px`, card radius 22px, 2 arrows visible, 0 dots — unchanged, and no class was touched. tsc clean, `Compiled successfully in 31.1s`, biome clean on the file.
+
+Sweep after the fix: `grep -rn 'loading="lazy"' src/components` returns 12 remaining lazy images. Eleven are static layouts (ProjectShowcase x8, BlogCard, ProjectCard, ApplicationJourney) — all grep 0 for `requestAnimationFrame|AutoScroll|animate={{ x:`, so lazy is correct there and they are NOT this bug.
+
+The twelfth, `src/components/ui/LogoLoop.tsx:483`, IS the same pattern: it drives `track.style.transform = translate3d(...)` from a rAF loop with `loading="lazy"` images. Same latent pop-in at its entering edge. NOT fixed — it renders only on /home and this task was scoped to OurTeamSection. Flagged for a follow-up.
+
+Scope note: as with the hero carousel, the attribute applies at all widths. Loading strategy isn't a "view", and desktop had the same latent pop-in. The flicker cannot be watched here (rAF frozen in the hidden pane); verified by load-state, not by watching it move.
+
+## /about (mobile) — all auto-carousels aligned to TechLogoCarousel's direction
+Reference: TechLogoCarousel -> LogoCarousel animates `translate3d(-50%,0,0)` -> `translate3d(0,0,0)`. Content travels RIGHTWARD, new items entering from the LEFT. Confirmed live via WAAPI `getKeyframes()`.
+
+Audited every auto-moving track reachable from `src/app/about/page.tsx`:
+
+| track | before | action |
+|---|---|---|
+| AboutHeroSection stats marquee | `scroll` 0 -> -50%, leftward | reversed |
+| AboutHeroSection EdgeToEdgeCarousel | framer `x: ["0%","-50%"]`, leftward | reversed below md |
+| OurTeamSection embla AutoScroll | `direction: "backward"` | already rightward — untouched |
+| BlogSection DesktopAutoScroll | desktop-only marquee | out of mobile scope |
+| OurValuesSection quotes, BlogSection mobile rail | user-driven, no autoplay direction | not applicable |
+
+embla semantics verified from the installed package rather than memory: `directionSign = options.direction === 'forward' ? -1 : 1`, so `"backward"` is +1 = rightward. OurTeamSection already matched; no edit.
+
+`EdgeToEdgeCarousel` moved off framer onto the existing global `scroll` keyframe. Direction has to differ per breakpoint and framer resolves `animate` in JS, so a per-viewport value would mean `useIsMobile()` writing a transform into the SSR markup — a hydration mismatch. A CSS animation flips with a plain `max-md:` variant. Travel/timing identical (0 -> -50%, 65s, linear, infinite). Deliberately NOT reusing `.marquee-track`: it carries `:hover { animation-play-state: paused }`, which would be new desktop behaviour — asserted absent in verification. Side benefits: the marquee is now compositor-driven with no rAF loop, and it picked up a `motion-reduce` guard the framer version never had.
+
+Cascade trap, caught by measuring: `[animation-direction:reverse]` as a Tailwind utility did NOT apply to the stats marquee — first run measured `direction: "normal"`. `.marquee-track` is UNLAYERED css setting the `animation` SHORTHAND, so it both outranks `@layer utilities` and resets animation-direction. Moved to the inline `style` object next to `animationDuration`, which was already there for exactly this reason. The image strip took the utility fine because nothing competes for its `animation` property.
+
+Verified @375: TechLogoCarousel keyframes `-50% -> 0` running; stats marquee `scroll`/reverse/31s; image strip `scroll`/reverse/65s — all three rightward. @1265: image strip back to `direction: normal`, 65s linear infinite, card 210x140 (measured 202x134 = the x0.96 frozen-entrance artifact) at mr-3 12px, stats marquee `display: none`, and the strip confirmed not carrying `.marquee-track`. tsc clean, `Compiled successfully in 22.7s`, biome clean on both files.
+
+## CtaSection (mobile) — height, spacing, pattern scale, scrim reach, active CTA
+Six asks in one pass. `src/components/brand-strategy/CtaSection.tsx` (shared by 7 routes, all changes `max-md:`) plus one structural fix in `src/components/ui/SpotlightGrid.tsx`.
+
+| ask | change | measured |
+|---|---|---|
+| taller card | `max-md:px-5`, top block `pb-12 pt-16`, bottom block `pt-8 pb-14` | 777 -> 877px (+100) |
+| breathing space | desc `max-md:mt-8`, avatar block `max-md:mt-12 max-md:gap-4`, bottom block `max-md:gap-12` | desc mt 24->32, block gap 40->48, between blocks 64->80 |
+| smaller pattern squares | `--spotlight-cols` 4 -> 5 | cell 86 -> 67px |
+| gradient reach behind text | `from-black/60 via-black/30` -> `from-black/70 via-black/40 via-70%` | stop moved 50% -> 70% |
+| glow missing at the bottom | SpotlightGrid: reshaped sweep rows now follow the MEASURED visible band | rows 2-13 = the full on-card band |
+| CTA in desktop-hover state | `max-md:` mirrors of every `hover:`/`group-hover:` | h-16, pad 24/14, black label 18px, black 40px icon, arrows 32/-32 and 0 |
+
+The bottom-glow fix is structural, not cosmetic. Re-shaping columns also multiplies ROWS (80 cells over 5 columns is 16 rows, not 8) and the grid is centred, so it overflows the card top and bottom. The proportional row map from the previous task described a grid that fitted its container; the re-shaped one does not, so the window landed short of the rows on screen — the pattern glowed everywhere except the bottom edge, exactly as reported. SpotlightGrid now measures the band from the container height and row pitch in the same ResizeObserver that reads the column count, and uses it for `rowStart`/`rowEnd` when reshaped. Returns the SAME state object when nothing moved, so an RO tick does not re-render. Desktop and the other 8 callers are untouched: `reshaped` is false unless `--spotlight-cols` is set, and only this component sets it.
+
+Verified @375: card 877px, cell 67px over 5 cols x 16 rows, sweep band 2-13, block paddings `64px 20px 48px` / `32px 20px 56px`, desc mt 32px, scrim `black/0.7 0% -> black/0.4 70% -> transparent`, bottom scrim 0.1, transmittance top .658 / mid .950 / bottom .553, CTA fully in active state, no horizontal overflow. @1265 after re-navigating: card 628px, grid 10 cols at 119px / gap 12, scrim `black 0% -> black/0.9 50%`, bottom scrim 0.5, blocks `64px 40px 0` / `64px 40px` gap 40, CTA AT REST (h-14, pad 0/8, white label 16px, white 36px icon, arrows `none` and `-32px 32px`). /web-development @375 still 10 cols / 12px gap — the new band logic is inert there. tsc clean, `Compiled successfully in 33.4s`, biome clean on both files.
+
+Two measurement traps, both self-inflicted, both caught before reporting:
+1. Read `transform` on the arrows and got `none` for both, which looked like the mobile active state had failed. Tailwind v4 translate utilities set the standalone `translate` property, not `transform`. Reading `translate` showed `32px -32px` and `0px` — correct all along.
+2. Read desktop after resizing WITHOUT re-navigating and got the CTA in its active state with h-16 and black label. The button carries `transition-all duration-300`, so every animated property was frozen mid-transition at the mobile end while the icon (only `transition-colors`) had already snapped to 36px — that mismatch is the tell. Re-navigating gave the true rest state. Also `.includes('to-t')` matches `to-transparent`, so it selected the LEFT scrim; match on `bg-gradient-to-t`.
+
+## CtaSection (mobile) — moving pattern pushed off the text, into the right third
+Two changes. `src/components/ui/SpotlightGrid.tsx` gains a `--spotlight-sweep-col-start` CSS var (same escape hatch as `--spotlight-cols`, same reason: the bound is a prop so it cannot vary by media query). `src/components/brand-strategy/CtaSection.tsx` sets `max-md:[--spotlight-sweep-col-start:3]` and gives the description `max-md:pr-12`.
+
+Sweep now starts at column 3 of 5 => glow band x 208-350, the right 41% of a 351px card, beginning at 59% across. The card's left-to-right scrim already fades to transparent by x=246, so the glow sits exactly where the scrim is weakest — brightest on the right, suppressed on the left.
+
+The request has a real internal tension, measured rather than assumed. Text is left-aligned starting at x=21; the glow starts at x=208. Clearing it entirely needs every line under 187px wide, and "extraordinary." is a single unbreakable word 244px wide at the current `max-md:text-[2.5rem]`. So full clearance is impossible without shrinking the headline — which a previous task set deliberately to match ExperimentalTestimonials, so I left it.
+
+What was achievable: `max-md:pr-12` on the description pulled its widest line 313 -> 281px and dropped max overlap 105 -> 73px, with no extra wrapping (still 4 lines, card still 877px). 7 of 13 text lines are now fully clear of the glow band; the 6 that still reach in do so by 12-73px, all in the region where scrim alpha is under ~0.3.
+
+Two levers left if the residual still reads wrong, both the user's call: shrink the mobile headline so `extraordinary.` fits left of 208, or raise the sweep's `rowStart` so the glow begins below the description (y>350) — that clears every headline and body line but empties the top-right corner.
+
+Verified @375: `--spotlight-sweep-col-start` resolves to "3" on the grid element, 5 cols, glow band 208-350 (41% of card), description 4 lines widest 281, card 877px, no horizontal overflow. @1265 after re-navigating: both vars resolve to "" so the override is null and colStart falls back to the prop, 10 cols at 119px, description `padding-right: 0px` / `max-width: 672px`, card 628px — desktop untouched. tsc clean, `Compiled successfully in 16.5s`, biome clean on both files.
+
+## CtaSection (mobile) — scrim behind the text extended further
+`src/components/brand-strategy/CtaSection.tsx`, one class pair: `max-md:via-black/40 max-md:via-70%` -> `max-md:via-black/45 max-md:via-85%`. Resolved gradient is now `black/0.7 0% -> black/0.45 85% -> transparent 100%` (was 70%).
+
+Alpha at the points that matter, measured by resolving the computed gradient stops rather than eyeballing:
+
+| x | what is there | before | after |
+|---|---|---|---|
+| 21 | text starts | .700 | .682 |
+| 208 | glow band starts | .446 | .526 |
+| 281 | widest text line ends | .267 | .465 |
+| 350 | card right edge | .004 | .010 |
+
+Backing behind the description's right tail is up 74% (.267 -> .465), which is what the request was about.
+
+Trade-off, stated because it partly walks back the previous task: the scrim and the sweep occupy the same strip, so extending one dims the other. The glow band (x 208-350) now sits under .526-.010 of black instead of .446-.004 — brightest at its right end, noticeably more muted at its left. If the pattern now reads too faint, the lever is the sweep's start column (`--spotlight-sweep-col-start`, currently 3 of 5) rather than the scrim.
+
+Verified @375: gradient `oklab(0 0 0 / 0.7) 0%, oklab(0 0 0 / 0.45) 85%, rgba(0,0,0,0) 100%`, scrim 350px wide over a 351px card, card still 877px. @1265 after re-navigating: `rgb(0,0,0) 0%, oklab(0 0 0 / 0.9) 50%, rgba(0,0,0,0) 100%` with `max-width: 768px` — no stop-position override reaches desktop, card still 628px. tsc clean, `Compiled successfully in 19.2s`, biome clean.
+
+## CtaSection (mobile) — left scrim darkened and held flat to the midpoint
+`src/components/brand-strategy/CtaSection.tsx`: `max-md:from-black/70` -> `max-md:from-black/90 max-md:from-50%`. Moving the from-stop to 50% makes the first half a FLAT run at .90 rather than an immediate fade, so the dark reaches the middle at full strength and only then falls away through the existing .45@85% stop.
+
+Resolved gradient @375: `oklab(0 0 0 / 0.9) 50%, oklab(0 0 0 / 0.45) 85%, rgba(0,0,0,0) 100%`.
+
+| x | | before | after |
+|---|---|---|---|
+| 0 | card left | .700 | .900 |
+| 21 | text starts | .682 | .900 |
+| 175 | midpoint | .575 | .900 |
+| 208 | glow band starts | .526 | .781 |
+| 281 | widest text line | .465 | .514 |
+| 350 | card right edge | .010 | .009 |
+
+`flatToMidpoint: true` — alpha at x0 and x175 are identical, which is the "extends to the middle" part.
+
+Same trade-off as the last two turns, now larger and noted once rather than argued: the scrim and the sweep share this strip, so the glow band's left end sits under .781 of black (was .526). The pattern will read essentially only in the last ~20% of the card. That is the direct consequence of what was asked for, and the lever if it goes too far is `--spotlight-sweep-col-start` (currently 3 of 5) rather than pulling the scrim back.
+
+Verified @375: stops as above, `flatToMidpoint: true`, card still 877px. @1265 after re-navigating: `rgb(0, 0, 0) 0%, oklab(0 0 0 / 0.9) 50%, rgba(0,0,0,0) 100%` — first stop still pinned at 0%, so neither the darker value nor the 50% from-position reaches desktop; scrim 768px, card 628px. tsc clean, `Compiled successfully in 18.8s`, biome clean.
+
+## Footer (mobile) — city clocks became a self-scrolling draggable carousel
+`src/components/layout/Footer.tsx`. Four hand-written city blocks (~48 lines of duplicated markup) collapsed into an `offices` array plus an `OfficeClock` component, then rendered twice: the existing grid at `md+` (`max-md:hidden`) and a new embla carousel below md (`md:hidden`).
+
+Mechanism choice: the ask was infinite AND draggable, which rules out a CSS keyframe marquee — the animation owns the transform, so there is nothing to drag against. embla + `embla-carousel-auto-scroll` gives both, is already a dependency, and is exactly how OurTeamSection does this. No new dependencies. `direction: "backward"` to match every other carousel on the site (rightward, entering from the left) per TechLogoCarousel; `speed: 0.7`, `loop: true`, `dragFree: true`, `stopOnInteraction: false`.
+
+Two copies of the list render so the loop has something to wrap into, with `aria-hidden` on the second — the same guard OurTeamSection and the hero marquee use. Safe here because every clock reads the SAME shared tick via `useSyncExternalStore`, so a duplicate can never show a different time from its original.
+
+Desktop regression caught and fixed mid-task: I first built the array in the old `max-md:order-*` sequence (1,3,2,4 = Toronto, London, Tokyo, Paris), but those orders only ever applied below md — desktop rendered in DOM order. Measuring desktop showed `Toronto, London, Tokyo, Paris`, i.e. London and Tokyo silently swapped. Array reordered to the real DOM order; re-measured `matchesOriginal: true`. The `order-*` classes are gone with the two-column mobile grid they existed for.
+
+Verified @375: 12 city instances = 4 in the `display:none` desktop grid + 8 in the carousel; items 164px at `flex-basis: 50%`, order Toronto/Tokyo/London/Paris x2, `aria-hidden` false x4 then true x4, viewport `overflow: hidden`, clocks live and consistent (Toronto 08:02:41 AM vs London 01:02:41 PM, exactly 5h). @1265: grid `display: grid`, 4 cols at x 158/445/731/1017, `justify-items: center`, gap 32/48, 12px uppercase at 1.2px tracking, all four clocks on the same second, carousel `display: none`.
+
+`touch-action: auto` on the carousel viewport looked wrong for a draggable embla, so I probed OurTeamSection's known-working carousel on the same page as a control: identical values on every axis. It is how this wrapper renders, not a defect. The drag gesture itself is still unobservable here (rAF frozen in the hidden pane), as is the auto-scroll — both verified structurally.
+
+tsc clean, `Compiled successfully in 16.2s`. biome: 2 diagnostics, confirmed pre-existing by stashing the file and re-running (2 before, 2 after) — an `href="#"` privacy link and an index key on socialLinks, neither in the touched region.
+
+## Footer (mobile) — clock carousel now full-bleed to the black panel
+`src/components/layout/Footer.tsx`, one class change on the Carousel root: `w-full md:hidden` -> `w-full md:hidden max-md:-mx-6 max-md:w-auto`.
+
+`-mx-6` cancels the wrapper's `px-6`. `w-auto` is the part that matters and is easy to miss: with `width: 100%` still in force the negative margins would only shift the box left, not widen it — the element has to be auto-width for them to expand it.
+
+Measured @375 before: carousel 36-339 (303px) inside a black panel spanning 12-363 (351px), i.e. inset 24px each side. After: carousel root and viewport both 12-363, `flushLeft: true`, `flushRight: true`, no horizontal overflow. Item width follows the wider viewport, 164 -> 188px at the same `flex-basis: 50%`. Every sibling block still sits at 36-339, so only the carousel broke out.
+
+The first item's content lands exactly on the panel edge: track is `-ml-6` and items are `pl-6`, so content starts at 12 = the black edge. The city label reads at x=26 because the 6px status dot plus the 8px flex gap precede it — the dot is the flush element, which is correct.
+
+Verified @1265 after re-navigating: carousel `display: none` with `margin: 0px / 0px` (the max-md margins do not reach desktop), grid still `display: grid` at 76-1189, order Toronto/Tokyo/London/Paris, columns at x 158/445/731/1017 — identical to the pre-change desktop measurement. tsc clean, `Compiled successfully in 33.0s`, biome unchanged at the 2 pre-existing diagnostics.

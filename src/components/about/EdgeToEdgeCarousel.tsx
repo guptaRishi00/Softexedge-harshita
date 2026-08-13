@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Image from "next/image";
 
 export default function EdgeToEdgeCarousel({ images }: { images: string[] }) {
@@ -10,35 +9,44 @@ export default function EdgeToEdgeCarousel({ images }: { images: string[] }) {
 
   return (
     <div className="relative flex w-full overflow-hidden py-6">
-      <motion.div
-        className="flex w-max"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{
-          repeat: Infinity,
-          repeatType: "loop",
-          ease: "linear",
-          duration: 65,
-        }}
-      >
+      {/* Driven by the global `scroll` keyframe rather than framer: direction
+          has to differ per breakpoint, and framer resolves `animate` in JS, so
+          a per-viewport value would mean useIsMobile() writing a transform into
+          the SSR markup — a hydration mismatch. A CSS animation flips with a
+          plain media variant. Deliberately NOT the `.marquee-track` class: that
+          carries `:hover { animation-play-state: paused }`, which would be new
+          desktop behaviour. Travel and timing are identical to the framer
+          version (0 -> -50%, 65s, linear, infinite); mobile plays it in reverse
+          to run rightward like TechLogoCarousel. */}
+      <div className="flex w-max [animation:scroll_65s_linear_infinite] motion-reduce:[animation:none] max-md:[animation-direction:reverse]">
         {[...set, ...set].map((src, idx) => (
           <div
             key={idx}
             aria-hidden={idx >= set.length}
             className="relative h-[240px] w-[175px] shrink-0 overflow-hidden rounded-lg mr-4 md:mr-3 md:h-[140px] md:w-[210px]"
           >
+            {/* Eager, not lazy: cards stream through the viewport on a
+                continuous transform, which browser lazy-loading tracks poorly
+                (Safari worst) — images started loading only after becoming
+                visible, so each entering card flashed blank then popped in.
+                Every card cycles through the viewport within half a loop and
+                there are only 5 unique files behind the 30 cards, so eager
+                costs 5 requests up front and ends the pop-in. Must be an
+                explicit loading="eager" — next/image defaults to lazy even
+                without the prop (unlike native img). */}
             <Image
               src={src}
               alt=""
               width={210}
               height={140}
-              loading="lazy"
+              loading="eager"
               draggable={false}
               sizes="(max-width: 768px) 175px, 210px"
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out hover:scale-105"
             />
           </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }
