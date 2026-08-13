@@ -14361,3 +14361,20 @@ Measured @375 before: carousel 36-339 (303px) inside a black panel spanning 12-3
 The first item's content lands exactly on the panel edge: track is `-ml-6` and items are `pl-6`, so content starts at 12 = the black edge. The city label reads at x=26 because the 6px status dot plus the 8px flex gap precede it — the dot is the flush element, which is correct.
 
 Verified @1265 after re-navigating: carousel `display: none` with `margin: 0px / 0px` (the max-md margins do not reach desktop), grid still `display: grid` at 76-1189, order Toronto/Tokyo/London/Paris, columns at x 158/445/731/1017 — identical to the pre-change desktop measurement. tsc clean, `Compiled successfully in 33.0s`, biome unchanged at the 2 pre-existing diagnostics.
+
+## Safari/WebKit compatibility audit — one defect found, one line-region fixed
+No WebKit runtime exists in this environment, so this was a static audit of source + built CSS against known engine differences, with non-regression checked in the Chromium pane. Sweep covered: form-control font sizes (iOS zoom-on-focus), background-attachment, unguarded :hover rules, -webkit prefixes in the production chunk, @property/oklab floors, mask/backdrop/clip-text prefixing, tap-delay handling.
+
+Verified already-correct (no change):
+- Production chunk has `-webkit-backdrop-filter` x10, `-webkit-mask` x5, `-webkit-background-clip`, `-webkit-user-select`, `-webkit-text-size-adjust`, `-webkit-line-clamp` — lightningcss prefixing is doing its job.
+- ContactSection inputs are `text-base` (16px) with an existing comment showing iOS zoom-on-focus was deliberately designed around. Mobile shrink comes from padding, not font size.
+- No `background-attachment: fixed` anywhere.
+- SpotlightGrid sets `WebkitMaskImage` and `maskImage` together inline.
+- The iOS tap-delay/synthetic-click work from the earlier double-click investigation (touch-action: manipulation, body cursor:pointer under hover:none, IosClickRescue) already covers the click path.
+- Known floor, not fixable surgically: built CSS uses `@property` (x97) and oklab (x134) — Tailwind v4's official support floor is Safari 16.4+. Older Safari degrades at the framework level, not per-component.
+
+The defect: `.marquee-track:hover { animation-play-state: paused }` in globals.css was unguarded. The only `.marquee-track` on the site is AboutHeroSection's stats marquee, which is `md:hidden` — it EXISTS only on touch devices, where `:hover` can only ever be iOS/Android synthetic tap-hover. iOS latches :hover on the tapped element until a tap lands elsewhere (the earlier on-device traces showed exactly this hover pass), so tapping the stats freezes the marquee indefinitely with no cursor on screen to explain why. The rule as written could never perform its intended desktop function. Fix: wrapped in `@media (hover: hover)` — the same guard Tailwind v4 already applies to every `hover:` utility in the codebase (previously audited 156/161).
+
+Verified: production chunk now reads `@media (hover:hover){.marquee-track:hover{animation-play-state:paused}}` (grep). Pane @375 touch emulation: `(hover:hover)` matches false so the rule cannot apply, marquee running `scroll 31s reverse` — at-rest mobile rendering identical. @1265: `(hover:hover)` matches true and the marquee is `display:none` — the rule's only subject never renders on desktop, so desktop is unchanged by construction. tsc clean, `Compiled successfully in 25.7s`.
+
+Environment note: the long-lived dev server on :3000 finally died during this task (HTTP 000); restarted via preview_start. Dev-served CSSOM was not enumerable for rule inspection (0 marquee rules found despite computed styles proving application) — verification of the rule text was done against the production chunk instead.

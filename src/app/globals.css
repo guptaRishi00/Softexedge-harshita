@@ -31,8 +31,16 @@ body {
   animation: scroll 18s linear infinite;
 }
 
-.marquee-track:hover {
-  animation-play-state: paused;
+/* Pause-on-hover is a pointer-device affordance. Unguarded, it also fires on
+   iOS/Android synthetic hover: tapping the marquee latches :hover on it (iOS
+   keeps that latch until a tap lands elsewhere) and the track freezes with no
+   cursor on screen to explain why. Guarding matches how every Tailwind hover:
+   utility in this codebase already behaves under v4. On devices with a real
+   pointer nothing changes. */
+@media (hover: hover) {
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
 }
 
 /* iOS holds a tap's click back while it waits to see whether a second tap is
