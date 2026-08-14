@@ -14468,3 +14468,43 @@ Verified @375: measured description-bottom to card-top exactly 48.0px (was 32). 
 Same request a third time, so the diagnosis changed. The visible gap was never mainly the padding: intrinsic clock content is only 89.8px wide (widest line is the time string) while items were `basis-1/2` = 179.5px, leaving ~90px of whitespace between one clock's text and the next. The two padding steps (24 -> 16 -> 8) shaved 16px of 98 and could never close the rest.
 
 Fix: `basis-1/2` -> `basis-[30%]` on the CarouselItem (`src/components/layout/Footer.tsx`, md:hidden so mobile-only by construction). Pitch 179.5 -> 107.7px; measured text-to-text gap 89.7 -> 17.9px; 4 clocks now on screen at once (was 2); first clock still flush with the panel edge (0.0). Loop safety: 8 items x 107.7 = 861px of track against a 375px viewport, ample for embla's loop. @1265: carousel `display:none`, grid at the 158/445/731/1017 baseline. tsc clean, `Compiled successfully in 30.7s`.
+
+## /work — mobile responsive pass, desktop frozen
+Two files: `src/app/work/page.tsx` and `src/components/work/WorkProjectShowcase.tsx`. Done inline rather than delegated: the value here is the accumulated /about conventions (max-md idiom, data-no-mobile-entry, exact wrapper values, the frozen-rAF and transition-freeze verification traps), which a fresh subagent would have had to rediscover.
+
+Root problem, measured before touching anything: the desktop scroll choreography was running on phones. At 375 the page had `margin-bottom: -812px`, hero wrapper `position: sticky`, showcase `position: sticky; top: -3284px` (calc(100vh-4096px)), and `padding-bottom: 812px` on the testimonials block. /about gates every one of these behind `md:`; /work did not. Fixed by mirroring /about exactly: `md:-mb-[100vh]`, `md:sticky md:top-0`, `md:sticky md:top-[calc(100vh-4096px)]`, `md:pb-[100vh]`. ShrinkOnOverlap needed nothing — its GSAP is already inside `mm.add("(min-width: 768px)")`.
+
+Section rhythm matched to /about's mobile values (pt/pb): testimonials 52/44, TechLogo 4/44, Cta 36/36, Faq 36/40, Blog 40/44, Footer wrapper 44/16. Where a `md:` class re-asserts the desktop value the base was edited (mobile-only by construction); elsewhere `max-md:` was added.
+
+WorkProjectShowcase mobile scale, following /about: gutter `max-md:px-3`, `max-md:py-16`, header block `max-md:mb-8`, eyebrow `max-md:mb-6` (the 24px tag gap), title `max-md:text-[2.5rem] max-md:leading-[1.11]` (48 -> 40px at the house 1.11), description `max-md:text-lg`, filter row `max-md:mb-8`. Plus `data-no-mobile-entry` on its 5 scroll entries — every shared section on this page already had it, so without this the page was internally inconsistent.
+
+Header gained `dropdown` so /work uses the same mobile navbar as /about. Verified prop-safe: `dropdown` is passed only to MobileNav/MobileNavHeader, and at desktop the mobile pill is `display:none` while the desktop nav is `flex`.
+
+Trap avoided: a first regex tagged 6 `initial={{ opacity: 0` sites, but one is the AnimatePresence category-switch (`animate=`, not `whileInView=`) — tagging it would have frozen the filter transition on mobile. The assert fired before the write so nothing was written; retargeted to require `whileInView` within the same props block, giving exactly 5.
+
+Verified at 320 / 375 / 414 / 700 / 768 / 1265. Mobile (320-700): no horizontal overflow at any width (`scrollWidth === clientWidth`), zero unclipped escapes after excluding overflow-hidden ancestors, choreography static with 0px margins, title 40px, gutter 12px, grid 1 column, 46/46 tagged entries at final state. 768 is where `md:` engages (same breakpoint as /about, unchanged per the brief). Desktop 1265 property-by-property against the authored spec: choreography sticky/-800px/top -3296px/pb 800px; showcase `128px 40px`, header mb 96px, eyebrow mb 20px, title 80px/72px, desc 20px, grid 2 cols at 32px gap; section paddings testimonials 104/40, techlogo 0/96, Cta 40/96, Faq 20/120, Blog 0/56, Footer 96/12; entry animations live (36/46 at initial). tsc clean, `Compiled successfully in 19.9s`, biome unchanged vs the stashed baseline.
+
+Observation, not changed: the hero's DomeGallery renders a 3D auto-rotating dome at `h-[140vh]` on phones. Layout-wise it is contained (clipped by the hero's overflow-hidden, no overflow at any tested width), but it is a heavy element on mobile and is worth a perf look separately.
+
+## 2026-08-06 — Navbar mobile "Get in Touch" → brand gradient + rounded-2xl (desktop untouched)
+Both headers edited in tandem per the map's duplicate-nav rule:
+ - layout/Header.tsx:258 (home)  — rounded-xl bg-white text-black → rounded-2xl
+   bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white
+ - page/Header.tsx:340 (inner pages) — rounded-full + border-gray-800 → rounded-2xl + same
+   brand gradient; also removed the off-brand purple hover sweep
+   (bg-gradient-to-r #a881fb→#d0bfff, w-0→w-full) and its group-hover:text-black, because it
+   would have painted purple OVER the new gradient on any hover-capable device under 1024px.
+   Flagged as the one judgment call beyond the literal ask.
+DESKTOP SAFETY: both edits sit inside MobileNavMenu, which is `lg:hidden`; desktop NavBody is
+`hidden lg:flex`. The desktop CTA is a separate <DynamicButton rounded-lg> — not touched.
+Verified live: @375 home menu open → backgroundImage linear-gradient(rgb(46,91,255)→
+rgb(20,156,203)), border-radius 18px, color white, href /contact; @375 /about (page/Header)
+→ identical gradient, 18px, border 0px; @1280 desktop → only the DynamicButton renders,
+backgroundColor white, backgroundImage NONE, radius 10px = unchanged.
+NOTE: rounded-2xl computes 18px here, not Tailwind's stock 16px — globals.css @theme sets
+--radius:0.625rem and --radius-2xl:calc(var(--radius)*1.8). Correct token, custom scale.
+tsc 0; biome findings on both files all pre-existing (lines 186-276: array-index keys,
+noSvgWithoutTitle, useButtonType) — none from this diff.
+PRE-EXISTING (not fixed): page/Header's mobile CTA href is "#contact"; verified
+document.querySelector('#contact') === null on /about, so it's a dead anchor on inner pages
+(home's correctly uses /contact). Not committed.

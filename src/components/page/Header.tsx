@@ -337,11 +337,10 @@ export default function Header({
               <Link
                 href="#contact"
                 onClick={closeMobileMenu}
-                className="relative px-5 py-3 border border-gray-800 text-white font-semibold rounded-full overflow-hidden group transition-all duration-300 text-center"
+                className="relative px-5 py-3 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white font-semibold rounded-2xl overflow-hidden transition-all duration-300 text-center"
               >
-                <span className="absolute inset-0 w-0 bg-gradient-to-r from-[#a881fb] to-[#d0bfff] transition-all duration-[250ms] ease-out group-hover:w-full"></span>
                 <span
-                  className={`relative z-10 group-hover:text-black uppercase tracking-wide text-sm font-semibold transition-colors duration-200`}
+                  className={`relative z-10 uppercase tracking-wide text-sm font-semibold transition-colors duration-200`}
                 >
                   Get in Touch
                 </span>

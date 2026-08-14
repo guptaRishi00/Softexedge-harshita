@@ -20,27 +20,29 @@ export default function WorkProjectShowcase() {
       : projects.filter((p) => p.category === activeCategory);
 
   return (
-    <section className="relative overflow-hidden bg-black px-4 py-24 font-sans text-white md:px-10 md:py-32">
+    <section className="relative overflow-hidden bg-black px-4 py-24 font-sans text-white max-md:px-3 max-md:py-16 md:px-10 md:py-32">
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 
-      <div className="relative mx-auto mb-16 w-full md:mb-24">
+      <div className="relative mx-auto mb-16 w-full max-md:mb-8 md:mb-24">
         <motion.span
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: premiumEase }}
-          className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60"
+          className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:mb-6"
         >
           Case Studies
         </motion.span>
 
         <div className="flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <motion.h2
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[5rem]"
+            className="text-5xl font-bold leading-[0.9] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-7xl lg:text-[5rem]"
           >
             Featured{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
@@ -49,11 +51,12 @@ export default function WorkProjectShowcase() {
           </motion.h2>
 
           <motion.p
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-            className="max-w-xl text-xl font-light leading-[1.25em] text-white md:text-left"
+            className="max-w-xl text-xl font-light leading-[1.25em] text-white max-md:text-lg md:text-left"
           >
             Delivering scalable, high-performance solutions that elevate brands
             and drive measurable results.
@@ -61,8 +64,9 @@ export default function WorkProjectShowcase() {
         </div>
       </div>
 
-      <div className="relative mx-auto mb-12 flex w-full md:mb-16">
+      <div className="relative mx-auto mb-12 flex w-full max-md:mb-8 md:mb-16">
         <motion.div
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -109,6 +113,7 @@ export default function WorkProjectShowcase() {
             {filteredProjects.map((project, index) => (
               <motion.div
                 key={project.id}
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}

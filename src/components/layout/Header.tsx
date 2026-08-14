@@ -255,7 +255,7 @@ export default function Header() {
             <Link
               href="/contact"
               onClick={closeMobileMenu}
-              className="mt-5 flex w-full items-center justify-center rounded-xl bg-white py-3.5 text-base font-bold tracking-tight text-black"
+              className="mt-5 flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] py-3.5 text-base font-bold tracking-tight text-white"
             >
               Get in Touch
             </Link>
