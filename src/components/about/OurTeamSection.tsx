@@ -156,16 +156,18 @@ export default function OurTeamSection() {
           <div className="mb-12 flex flex-col items-start justify-between gap-6 px-4 max-md:mb-8 max-md:px-3 md:px-10 md:mb-20 md:flex-row md:items-end">
             <div className="mb-3">
               <motion.p
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, ease: premiumEase }}
-                className="mb-4 max-md:mb-8 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs"
+                className="mb-4 max-md:mb-6 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs"
               >
                 The Minds Behind the Craft
               </motion.p>
 
               <motion.h2
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
@@ -222,7 +224,16 @@ export default function OurTeamSection() {
             </div>
           </div>
 
-          <motion.div style={{ x }} className="w-[114%] -ml-[7%] max-md:w-full max-md:ml-0">
+          {/* The scroll parallax translates this wrapper by +/-6%. Desktop absorbs
+              the travel inside the 114%-wide / -7%-margin overhang; mobile is
+              w-full with no overhang, so the same translate exposed a gap equal
+              to the shift -- left edge at the top of the travel, right edge at
+              the bottom. transform-none! outranks framer's inline transform and
+              holds from first paint, so no hydration gate is needed. */}
+          <motion.div
+            style={{ x }}
+            className="w-[114%] -ml-[7%] max-md:w-full max-md:ml-0 max-md:transform-none!"
+          >
             <CarouselContent className="-ml-4 md:-ml-3">
               {[...teamMembers, ...teamMembers].map((member, index) => (
                 <CarouselItem

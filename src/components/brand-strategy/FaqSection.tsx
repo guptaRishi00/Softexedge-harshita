@@ -64,6 +64,7 @@ export default function FaqSection() {
       <div className="mx-auto flex w-full flex-col items-start gap-16 max-md:gap-8 lg:flex-row lg:gap-24">
         <div className="flex w-full flex-col lg:mb-0 mb-3 items-start lg:sticky lg:top-5 lg:w-[40%]">
           <motion.div
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -72,7 +73,7 @@ export default function FaqSection() {
             <p className="mb-6 text-sm max-md:text-xs uppercase tracking-[0.3em] text-zinc-500 font-medium">
               FAQs
             </p>
-            <h2 className="text-5xl max-md:text-[2.5rem] max-md:max-w-[12rem] font-bold leading-[1.05] max-md:leading-[1.3em] tracking-tight text-zinc-900 md:text-6xl lg:text-6xl">
+            <h2 className="text-5xl max-md:text-[2.5rem] max-md:max-w-[12rem] font-bold leading-[1.05] max-md:leading-[1.11] tracking-tight text-zinc-900 md:text-6xl lg:text-6xl">
               Let's{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Clear
@@ -89,6 +90,7 @@ export default function FaqSection() {
             return (
               <motion.div
                 key={index}
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}

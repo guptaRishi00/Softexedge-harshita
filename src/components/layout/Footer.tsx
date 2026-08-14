@@ -396,12 +396,12 @@ export default function Footer() {
               // actually widen the box, which a fixed w-full would not.
               className="w-full md:hidden max-md:-mx-6 max-md:w-auto"
             >
-              <CarouselContent className="-ml-6">
+              <CarouselContent className="-ml-2">
                 {[...offices, ...offices].map((office, index) => (
                   <CarouselItem
                     key={`${office.city}-${index}`}
                     aria-hidden={index >= offices.length}
-                    className="basis-1/2 pl-6"
+                    className="basis-[30%] pl-2"
                   >
                     <OfficeClock {...office} />
                   </CarouselItem>

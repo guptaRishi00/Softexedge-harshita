@@ -14378,3 +14378,88 @@ The defect: `.marquee-track:hover { animation-play-state: paused }` in globals.c
 Verified: production chunk now reads `@media (hover:hover){.marquee-track:hover{animation-play-state:paused}}` (grep). Pane @375 touch emulation: `(hover:hover)` matches false so the rule cannot apply, marquee running `scroll 31s reverse` — at-rest mobile rendering identical. @1265: `(hover:hover)` matches true and the marquee is `display:none` — the rule's only subject never renders on desktop, so desktop is unchanged by construction. tsc clean, `Compiled successfully in 25.7s`.
 
 Environment note: the long-lived dev server on :3000 finally died during this task (HTTP 000); restarted via preview_start. Dev-served CSSOM was not enumerable for rule inspection (0 marquee rules found despite computed styles proving application) — verification of the rule text was done against the production chunk instead.
+
+## /about (mobile) — entry animations removed everywhere except AboutHeroSection
+Applied the codebase's existing mechanism rather than inventing one: the `[data-no-mobile-entry]` block in globals.css (`@media not (min-width: 48rem)` forcing opacity/transform/translate/filter to final state with `!important`, which beats framer's inline styles and needs no hydration — content is correct in the first SSR paint). ExperimentalTestimonials, BlogSection and Footer already carried the attribute; the gap was 12 entry elements across 5 files, found by auditing every `initial=` on the page:
+
+- AboutTraditional: header block, video card
+- OurValuesSection: image column, content column (the quote-carousel variants use `initial="enter"` — carousel motion, not entry, untouched)
+- OurTeamSection: eyebrow, title (parallax `style={{x}}` untouched — not an entry)
+- CtaSection: title block, CTA button, email, phone (shared, 7 routes)
+- FaqSection: header, accordion cards (`initial={false}` / `initial={{height:0}}` accordion open-close untouched)
+
+AboutHeroSection deliberately not touched — excluded by the request.
+
+Verified @375: 39 `[data-no-mobile-entry]` elements on the page (12 JSX sites render to more DOM nodes via maps), ALL at final state — opacity 1, identity transform — 0 offenders; stats marquee still `scroll` (its transform animation is untouched by the attribute). @1265: all 39 sit at their frozen authored `initial` (opacity 0, matrix y=40 / scale .93 / x=-40) because rAF is frozen in the hidden pane and the override doesn't match at desktop widths — which is direct proof the desktop entry animations are intact. tsc clean (after clearing another corrupt `.next/dev/types` — dev server writing while tsc read; same failure mode as before, not a source error), `Compiled successfully in 20.2s`, biome clean on all five files.
+
+Two verification traps specific to this check, so the next audit doesn't re-trip them: computed `transform` for an at-rest element can read `matrix(1,0,0,1,0,0)` (identity) rather than `none` — treat identity as final state. And SpotlightGrid's glow layers legitimately idle at inline `opacity: 0` — they are sweep state, not stuck entries.
+
+Scope note: the attribute on CtaSection/FaqSection also removes mobile entries on the other routes that render them, same as the already-shipped ET/Blog/Footer attributes. Mobile-only by the media query; desktop everywhere is untouched.
+
+## /about (mobile) — title leading aligned to BlogSection
+Measured every non-hero h2 at 375 against Blog's reference ratio (1.1111, inherited from `text-4xl`'s unitless line-height over the 40px override) before touching anything. Six of seven were already 1.11 — within 0.046px per line of Blog, sub-device-pixel even at DPR 3. The real outlier was FaqSection: its title measured `max-md:leading-[1.3em]` (52px, +7.6px per line) — the FILE had changed since last read; the DOM class did not match my last-known state, so this was a user edit made between tasks, and it is presumably what prompted the request.
+
+Fix: `src/components/brand-strategy/FaqSection.tsx` `max-md:leading-[1.3em]` -> `max-md:leading-[1.11]` — the value the rest of the about-title family already uses (AboutTraditional, OurValues, OurTeam, Cta). One class, one file.
+
+Deliberately NOT normalized: the family's `1.11` vs Blog's exact `1.1111` (0.04px/line). Changing five files to chase a sub-pixel would be noise; the family value is itself the established house pattern from earlier tasks. Hero untouched (excluded).
+
+Verified @375 after: all seven titles 1.11 or 1.1111, max |delta| 0.046px/line vs Blog; Faq at -0.044 (was +7.6). @1265: Faq title 60px/63px (`leading-[1.05]`) — desktop unchanged. tsc clean, `Compiled successfully in 13.6s`, biome: same 4 pre-existing diagnostics on FaqSection (established in the previous task's stash comparison), none on this line.
+
+## /about (mobile) — tag-to-title gap aligned to BlogSection (24px)
+Measured every non-hero section at 375. Blog reference: 24px. Faq already matched (fixed earlier); CtaSection has no tag; four sections sat at 32px and were changed, one class each, all mobile-only:
+
+- AboutTraditional tag wrapper: `max-md:mb-8` -> `max-md:mb-6`
+- OurValuesSection tag wrapper: `max-md:mb-8` -> `max-md:mb-6`
+- OurTeamSection eyebrow: `max-md:mb-8` -> `max-md:mb-6` (desktop keeps its own `mb-4`)
+- ExperimentalTestimonials eyebrow: dropped `max-md:mb-8`, base `mb-6` now applies everywhere (same pattern as the earlier Faq fix; shared with /home, mobile-only there too)
+
+Post-fix @375: five sections at exactly 24.0px; OurValuesSection measures 27.2px. Its margin IS 24 — the extra 3.2px is line-box slack: the tag is an inline span inside the margin-carrying wrapper, and the span's glyph rect bottom sits above the wrapper's line-box bottom. Blog's tag is a block p, so its rect includes the full line box. Like-for-like (margin box to title) they match; glyph-to-glyph OurValues reads ~1.6px looser. Left as-is: closing it would need an arbitrary `mb-[20.8px]` chasing a sub-2px visual difference.
+
+Verified @1265: all four desktop margins unchanged (32/32/16/24). tsc clean, `Compiled successfully in 13.9s`, biome clean on all four files.
+
+## /about (mobile) — every non-hero section +4px padding top and bottom
+Single file: `src/app/about/page.tsx`. All nine wrappers bumped one Tailwind step, two techniques matching how each value was authored: base-class edits where a `md:` class re-asserts the desktop value (mobile-only by construction: AboutTraditional pt-20->21/pb-12->13, OurValues py-12->13, OurTeam pt-16->17/pb-8->9, ET pt-12->13, Footer pt-10->11), and `max-md:` overrides elsewhere (ET pb-10->11, TechLogo pb-10->11 + new pt-1, Cta/Faq pt/pb-8->9, Blog pt-8->9/pb-10->11, Footer max-md:pb-4 added since its pb-3 has no md: override).
+
+Caught my own error mid-edit: the Footer replacement string accidentally injected a duplicate `md:pt-10` next to `md:pt-24` — two same-property md: utilities whose winner depends on emitted rule order. Removed before building.
+
+Verified @375, before -> after: AboutTraditional 80/48 -> 84/52, culture 48/48 -> 52/52, team 64/32 -> 68/36, testimonials 48/40 -> 52/44, TechLogo 0/40 -> 4/44, Cta 32/32 -> 36/36, Faq 32/32 -> 36/36, Blog 32/40 -> 36/44, footer wrapper 40/12 -> 44/16 — all exactly +4/+4. The nested "Technology partners" section inside TechLogo stayed 0/0 by design (its parent section carries the bump; touching both would double it). @1265: every section matches its authored desktop spec exactly (180/96, 64/144, 120/40, 96/40, 0/96, 12/96, 40/56, footer 96/12). tsc clean, `Compiled successfully in 21.5s`.
+
+## /about (mobile) — Faq -> Blog gap widened 72 -> 80px
+`src/app/about/page.tsx`, the two wrappers: Faq `max-md:[&>section]:pb-9 -> pb-10`, Blog `max-md:[&>section]:pt-9 -> pt-10`. Split symmetrically so neither section's internal rhythm shifts more than 4px.
+
+Verified @375: faq pb 40px, blog pt 40px, section edges abut (0px), last FAQ card to Blog tag exactly 80px (was 72). @1265: faq pb 96 / blog pt 40 — authored md: values, untouched. tsc clean, `Compiled successfully in 23.6s`.
+
+## CtaSection (mobile) — button size, link affordances, stars position, uniform rhythm
+`src/components/brand-strategy/CtaSection.tsx`, all `max-md:`. Five asks in one pass:
+
+1. Button reduced: h-16 -> h-12 (64 -> 48px), label text-lg -> text-base (18 -> 16px), icon 40 -> 32px (h-8 w-8), arrows 20 -> 16px, padding 24/14 -> 20/10. Still parked in its active state (black label/icon, sweep filled) per the earlier task.
+2. Email + phone: `max-md:underline max-md:decoration-white/40 max-md:underline-offset-4` plus an inline `MdArrowOutward` (`ml-1 hidden h-3.5 w-3.5 max-md:inline-block`) on both. The hover-animated underline span is untouched — it idles at scale-x-0 and remains desktop-only behaviour.
+3. Stars above the avatars: proof row gained `max-md:flex-col max-md:items-start max-md:gap-3`, stars div `max-md:order-first`. Desktop row layout intact.
+4. Equal gaps: proof block `max-md:mt-12 -> mt-8`, bottom rows `max-md:gap-12 -> gap-8`. Measured rhythm at 375 after: title->desc 32, desc->proof 32, button->email 32, email->phone 32 — uniform.
+
+Verified @375: button 48px/16px/32px icon; both links `text-decoration: underline` (white at .4 alpha, 4px offset) with arrow `inline-block`; stars y=5260 above avatars y=5296; all four inter-element gaps exactly 32px. @1265 (fresh navigation, avoiding the frozen-transition trap): button 56px at rest with white label, both links `underline: none` and arrows `display: none`, stars beside avatars (row layout), bottom block `flex-direction: row` — desktop untouched. tsc clean, `Compiled successfully in 25.0s`, biome at the same 2 pre-existing diagnostics.
+
+## CtaSection (mobile) — Trusted-line -> button gap reduced 80 -> 32px
+`src/components/brand-strategy/CtaSection.tsx`, one class: top content block `max-md:pb-12` -> `max-md:pb-0`. The screenshot's gap was the between-blocks seam (top pb 48 + bottom pt 32 = 80px) — the one gap the uniform-rhythm task didn't cover because it spans two blocks. With the top block's mobile pb at 0 the seam is the bottom block's pt alone = 32px, so every vertical gap in the card now reads 32: title->desc, desc->proof, trusted->button, button->email, email->phone. Card 877 -> 757px as a side effect (the height ask predates the rhythm asks; if it now feels short the lever is the blocks' outer pt-16/pb-14, not the seam).
+
+Verified @375: trusted->button exactly 32.0px (was 80), top block pb 0px, bottom pt 32px. @1265: top block `64px 40px 0px` — desktop already had `lg:pb-0`, so its value is untouched; card 628px. tsc clean, `Compiled successfully in 20.7s`.
+
+## Footer (mobile) — clock carousel item gap 24 -> 16px
+`src/components/layout/Footer.tsx`: `CarouselContent -ml-6 -> -ml-4`, `CarouselItem pl-6 -> pl-4`. The pair must move together — the negative track margin exists to cancel the first item's padding so the lead clock sits on the panel edge. The whole carousel is `md:hidden`, so the edit is mobile-only by construction.
+
+Verified @375: item padding 16px, track margin -16px, measured content gap between adjacent clocks exactly 16.0px (was 24), first clock's content still flush with the black panel's left edge (0.0px), full-bleed intact. @1265: carousel `display:none`, desktop grid columns at x 158/445/731/1017 — identical to every previous desktop measurement. tsc clean, `Compiled successfully in 19.8s`.
+
+## Footer (mobile) — clock carousel gap reduced again, 16 -> 8px
+Same request repeated immediately after the 24 -> 16 step, so one more step down: `-ml-4/pl-4` -> `-ml-2/pl-2`. Measured @375: content gap between adjacent clocks exactly 8.0px, first clock still flush with the panel edge (0.0). @1265: carousel `display:none`, grid columns at the 158/445/731/1017 baseline. tsc clean, `Compiled successfully in 26.5s`.
+
+## OurTeamSection (mobile) — edge gap while cards move: root cause + fix
+The "why": the scroll parallax. `style={{ x }}` sweeps the carousel wrapper +/-6% of its width as the section scrolls (spring-smoothed, hence "sometimes" and side-swapping: +6% at the top of the travel exposes the LEFT edge, -6% at the bottom exposes the RIGHT). Desktop absorbs the whole travel inside the `w-[114%] -ml-[7%]` overhang — +/-6% never escapes +/-7%. An earlier mobile task set the wrapper to `max-md:w-full max-md:ml-0` (to fix card sizing) but left the transform running: 6% of 375 = 22.5px of exposed edge. Measured before the fix: inline `transform: translateX(6%)`, wrapper left edge 22.5px right of the section edge.
+
+Fix: `max-md:transform-none!` on the wrapper (`src/components/about/OurTeamSection.tsx`). The `!important` utility outranks framer's continuously-rewritten inline transform — verified: inline still says `translateX(6%)` while computed reads `none`. CSS, so it holds from first SSR paint with no hydration gate (a JS gate on `useIsMobile` would flash 22.5px shifted until hydration).
+
+Verified @375: computed transform `none`, wrapper flush with the section at 0.0px both edges, `edgeGapsGone: true`. @1265: transform live (`matrix(...86.5, 0)` ≈ +6% of 1442px at the top of the travel), wrapper 114.0% wide at -2px left — parallax intact. tsc clean, `Compiled successfully in 20.3s`, biome clean.
+
+## OurValuesSection (mobile) — description-to-card gap 32 -> 48px
+`src/components/about/OurValuesSection.tsx`: mobile carousel block `mt-8 -> mt-12`. The block is `md:hidden`, so mobile-only by construction. 48px also matches the desktop card's own `mt-12`, so the two breakpoints now share the same rhythm at this seam.
+
+Verified @375: measured description-bottom to card-top exactly 48.0px (was 32). @1265: mobile block `display:none`; desktop card still `mt-12` at a measured 48.0px below the description — untouched. tsc clean, `Compiled successfully in 21.1s`.

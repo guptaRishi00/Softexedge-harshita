@@ -34,7 +34,7 @@ export default function AboutPage({}: Props) {
         </div>
         <div
           id="about-traditional"
-          className="relative z-10 bg-black max-md:-mb-px md:pb-[150vh] [&>section]:pt-20 [&>section]:pb-12 md:[&>section]:pt-45 md:[&>section]:pb-24"
+          className="relative z-10 bg-black max-md:-mb-px md:pb-[150vh] [&>section]:pt-21 [&>section]:pb-13 md:[&>section]:pt-45 md:[&>section]:pb-24"
         >
           <AboutTraditional />
         </div>
@@ -43,35 +43,35 @@ export default function AboutPage({}: Props) {
         <div className="md:sticky md:top-[calc(100vh-994px)] z-0 bg-black">
           <ShrinkOnOverlap
             endSelector="#our-team"
-            className="[&>section]:py-12 md:[&>section]:pt-16 md:[&>section]:pb-36"
+            className="[&>section]:py-13 md:[&>section]:pt-16 md:[&>section]:pb-36"
           >
             <OurValuesSection />
           </ShrinkOnOverlap>
         </div>
         <div
           id="our-team"
-          className="relative z-10 bg-white md:pb-[100vh] [&>section]:pt-16 [&>section]:pb-8 md:[&>section]:pb-10 md:[&>section]:pt-30"
+          className="relative z-10 bg-white md:pb-[100vh] [&>section]:pt-17 [&>section]:pb-9 md:[&>section]:pb-10 md:[&>section]:pt-30"
         >
           <OurTeamSection />
         </div>
       </div>
-      <div className="[&>section]:pt-12 [&>section]:pb-6 max-md:[&>section]:pb-10 md:[&>section]:pt-24 md:[&>section]:pb-10">
+      <div className="[&>section]:pt-13 [&>section]:pb-6 max-md:[&>section]:pb-11 md:[&>section]:pt-24 md:[&>section]:pb-10">
         <ExperimentalTestimonials />
       </div>
 
-      <div className="max-md:[&>section]:pb-10">
+      <div className="max-md:[&>section]:pt-1 max-md:[&>section]:pb-11">
         <TechLogoCarousel />
       </div>
-      <div className="px-3 [&>section]:py-16 max-md:[&>section]:pt-8 max-md:[&>section]:pb-8 md:[&>section]:pb-24 md:[&>section]:pt-0">
+      <div className="px-3 [&>section]:py-16 max-md:[&>section]:pt-9 max-md:[&>section]:pb-9 md:[&>section]:pb-24 md:[&>section]:pt-0">
         <CtaSection />
       </div>
-      <div className="[&>section]:py-16 max-md:[&>section]:pt-8 max-md:[&>section]:pb-8 md:[&>section]:pb-24 md:[&>section]:pt-3">
+      <div className="[&>section]:py-16 max-md:[&>section]:pt-9 max-md:[&>section]:pb-10 md:[&>section]:pb-24 md:[&>section]:pt-3">
         <FaqSection />
       </div>
-      <div className="[&>section]:py-16 max-md:[&>section]:pt-8 max-md:[&>section]:pb-10 md:[&>section]:pb-14 md:[&>section]:pt-10">
+      <div className="[&>section]:py-16 max-md:[&>section]:pt-10 max-md:[&>section]:pb-11 md:[&>section]:pb-14 md:[&>section]:pt-10">
         <BlogSection />
       </div>
-      <div className="px-3 pt-10 pb-3 md:pt-24">
+      <div className="px-3 pt-11 pb-3 max-md:pb-4 md:pt-24">
         <Footer />
       </div>
     </div>

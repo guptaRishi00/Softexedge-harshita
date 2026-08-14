@@ -103,7 +103,7 @@ export default function ExperimentalTestimonials() {
               transition={
                 isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
               }
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-8 max-md:text-xs"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:text-xs"
             >
               Testimonials
             </motion.p>

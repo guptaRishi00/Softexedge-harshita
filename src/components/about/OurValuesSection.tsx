@@ -76,6 +76,7 @@ export default function OurValuesSection() {
       <div className="relative z-10 mx-auto w-full px-4 max-md:px-3 md:px-10">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-stretch">
           <motion.div
+            data-no-mobile-entry
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -95,13 +96,14 @@ export default function OurValuesSection() {
           </motion.div>
 
           <motion.div
+            data-no-mobile-entry
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
             className="w-full lg:w-7/12 flex flex-col justify-center py-6 lg:py-12"
           >
-            <div className="mb-8 max-md:mb-8">
+            <div className="mb-8 max-md:mb-6">
               <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs">
                 Our Culture
               </span>
@@ -259,7 +261,7 @@ export default function OurValuesSection() {
                 state as the desktop block above, so the two never disagree —
                 only the presentation differs. Profile leads, quote follows, and
                 the dots sit outside the card. */}
-            <div className="mt-8 md:hidden">
+            <div className="mt-12 md:hidden">
               {/* popLayout, not "wait": "wait" holds the incoming card until the
                   outgoing one has fully left, so slowing the transition just
                   stretches an empty viewport. popLayout takes the leaving card

@@ -42,8 +42,9 @@ export default function CtaSection() {
               a busier grid; mobile's 4-column grid is far darker to begin with. */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50 max-md:opacity-10" />
 
-          <div className="pointer-events-none relative z-10 px-4 py-8 pt-12 max-md:px-5 max-md:pb-12 max-md:pt-16 md:px-10 md:py-12 lg:py-16 lg:pb-0">
+          <div className="pointer-events-none relative z-10 px-4 py-8 pt-12 max-md:px-5 max-md:pb-0 max-md:pt-16 md:px-10 md:py-12 lg:py-16 lg:pb-0">
             <motion.div
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -66,8 +67,8 @@ export default function CtaSection() {
                 100 people.
               </p>
 
-              <div className="mt-10 flex w-fit pointer-events-auto flex-col gap-3 max-md:mt-12 max-md:gap-4">
-                <div className="flex flex-wrap items-center gap-4">
+              <div className="mt-10 flex w-fit pointer-events-auto flex-col gap-3 max-md:mt-8 max-md:gap-3">
+                <div className="flex flex-wrap items-center gap-4 max-md:flex-col max-md:items-start max-md:gap-3">
                   <div className="flex -space-x-3">
                     {avatars.map((src, i) => (
                       <div
@@ -85,7 +86,7 @@ export default function CtaSection() {
                     ))}
                   </div>
 
-                  <div className="flex items-center gap-1 text-[#FFC107]">
+                  <div className="flex items-center gap-1 text-[#FFC107] max-md:order-first">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <svg
                         key={star}
@@ -106,8 +107,9 @@ export default function CtaSection() {
             </motion.div>
           </div>
 
-          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 max-md:gap-12 max-md:px-5 max-md:pt-8 max-md:pb-14 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
+          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 max-md:gap-8 max-md:px-5 max-md:pt-8 max-md:pb-14 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
             <motion.div
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -116,13 +118,13 @@ export default function CtaSection() {
             >
               <button
                 type="button"
-                className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100 max-md:h-16 max-md:pl-6 max-md:pr-3.5 max-md:before:scale-x-100"
+                className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100 max-md:h-12 max-md:pl-5 max-md:pr-2.5 max-md:before:scale-x-100"
               >
-                <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black max-md:text-lg max-md:text-black">
+                <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black max-md:text-base max-md:text-black">
                   Connect With Us
                 </span>
 
-                <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black max-md:h-10 max-md:w-10 max-md:bg-black">
+                <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black max-md:h-8 max-md:w-8 max-md:bg-black">
                   <svg width="0" height="0" className="absolute">
                     <title>Connect arrow gradient</title>
                     <defs>
@@ -139,9 +141,9 @@ export default function CtaSection() {
                     </defs>
                   </svg>
 
-                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8 max-md:h-5 max-md:w-5 max-md:-translate-y-8 max-md:translate-x-8" />
+                  <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8 max-md:h-4 max-md:w-4 max-md:-translate-y-8 max-md:translate-x-8" />
                   <MdArrowOutward
-                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0 max-md:h-5 max-md:w-5 max-md:translate-x-0 max-md:translate-y-0"
+                    className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0 max-md:h-4 max-md:w-4 max-md:translate-x-0 max-md:translate-y-0"
                     style={{ fill: "url(#cta-icon-grad)" }}
                   />
                 </div>
@@ -149,6 +151,7 @@ export default function CtaSection() {
             </motion.div>
 
             <motion.div
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -160,14 +163,16 @@ export default function CtaSection() {
               </span>
               <a
                 href="mailto:hello@youragency.com"
-                className="group relative w-fit text-base font-bold text-white/90 transition-colors duration-300 hover:text-white md:text-lg"
+                className="group relative w-fit text-base font-bold text-white/90 transition-colors duration-300 hover:text-white max-md:underline max-md:decoration-white/40 max-md:underline-offset-4 md:text-lg"
               >
                 hello@youragency.com
+                <MdArrowOutward className="ml-1 hidden h-3.5 w-3.5 max-md:inline-block" />
                 <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
               </a>
             </motion.div>
 
             <motion.div
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -177,8 +182,9 @@ export default function CtaSection() {
               <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">
                 Give us a call
               </span>
-              <span className="group relative w-fit cursor-pointer text-base font-bold text-white/90 transition-colors duration-300 hover:text-white md:text-lg">
+              <span className="group relative w-fit cursor-pointer text-base font-bold text-white/90 transition-colors duration-300 hover:text-white max-md:underline max-md:decoration-white/40 max-md:underline-offset-4 md:text-lg">
                 +1 (555) 123-4567
+                <MdArrowOutward className="ml-1 hidden h-3.5 w-3.5 max-md:inline-block" />
                 <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
               </span>
             </motion.div>
