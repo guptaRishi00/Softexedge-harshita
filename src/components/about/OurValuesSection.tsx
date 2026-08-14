@@ -44,6 +44,14 @@ const quoteVariants = {
   exit: (dir: number) => ({ opacity: 0, x: -32 * dir }),
 };
 
+// Six columns of square boxes under a parked radial mask — the same pattern
+// ChannelCard paints behind the contact cards. Its cells are pointer-reactive;
+// on touch the hover intensity is always 0, so every cell resolves to #161616
+// and the whole thing collapses to this static markup. 36 cells (6 rows) is
+// what clears the card height; ChannelCard renders 80 because its cards are
+// taller, and the surplus is clipped either way.
+const patternCellIds = Array.from({ length: 36 }, (_, i) => `values-box-${i}`);
+
 // Mobile moves the whole card rather than swapping its contents: the outgoing
 // card leaves the viewport entirely and the next one arrives from the far side.
 // Percentages, not pixels, so the travel is always exactly one card width.
@@ -262,6 +270,25 @@ export default function OurValuesSection() {
                 only the presentation differs. Profile leads, quote follows, and
                 the dots sit outside the card. */}
             <div className="mt-12 md:hidden">
+              {/* Defined once here, not inside the card: popLayout keeps the
+                  outgoing card mounted during a swipe, so a per-card def would
+                  put two or three identical ids in the document at the same
+                  time. A paint server resolves document-wide, so one is enough. */}
+              <svg width="0" height="0" className="absolute">
+                <title>Connect arrow gradient</title>
+                <defs>
+                  <linearGradient
+                    id="values-cta-grad"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <stop stopColor="#2E5BFF" offset="0%" />
+                    <stop stopColor="#149CCB" offset="100%" />
+                  </linearGradient>
+                </defs>
+              </svg>
               {/* popLayout, not "wait": "wait" holds the incoming card until the
                   outgoing one has fully left, so slowing the transition just
                   stretches an empty viewport. popLayout takes the leaving card
@@ -298,9 +325,29 @@ export default function OurValuesSection() {
                         goTo(quoteIndex - 1, -1);
                       }
                     }}
-                    className="flex cursor-grab flex-col gap-8 rounded-3xl border border-white/[0.06] bg-[#100f0f] p-5 py-8 active:cursor-grabbing"
+                    className="relative flex cursor-grab flex-col gap-8 overflow-hidden rounded-3xl border border-white/10 bg-zinc-950/20 p-5 py-8 active:cursor-grabbing"
                   >
-                    <div className="flex items-center gap-4">
+                    {/* Mask parked at 85%/50% with ChannelCard's own touch
+                        alphas (0.5 core, 0.04 edge) — on touch it never follows
+                        a pointer, so the position is fixed and this needs no JS
+                        or motion values at all. */}
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 z-0 overflow-hidden [mask-image:radial-gradient(280px_circle_at_85%_50%,rgba(0,0,0,0.5)_0%,rgba(0,0,0,0.04)_100%)]"
+                    >
+                      <div className="relative -left-[5%] grid w-[110%] -translate-y-6 grid-cols-6 gap-2">
+                        {patternCellIds.map((id) => (
+                          <div
+                            key={id}
+                            className="relative aspect-square w-full overflow-hidden rounded-md bg-[#161616] p-[0.8px]"
+                          >
+                            <div className="relative z-10 h-full w-full rounded-md bg-[#161616]" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="relative z-10 flex items-center gap-4">
                       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-zinc-800">
                         <Image
                           src={quotes[quoteIndex].avatar}
@@ -327,9 +374,29 @@ export default function OurValuesSection() {
                         three run to 6 lines and grow together, so the floor
                         costs nothing there. In em so it tracks the font size
                         rather than one screen width. */}
-                    <p className="min-h-[6em] text-xl font-medium leading-[1.2em] tracking-tight text-white">
+                    <p className="relative z-10 flex min-h-[6em] items-center text-xl font-normal leading-[1.2em] tracking-tight text-white">
                       {quotes[quoteIndex].text}
                     </p>
+
+                    {/* Compact version of the desktop card's CTA: same white
+                        pill / dark icon idiom, 40px instead of 56. Self
+                        contained — it does not reference the desktop button's
+                        `culture-icon-grad` def, which lives in a max-md:hidden
+                        subtree. */}
+                    <Link href="/about" className="relative z-10 w-fit">
+                      <button
+                        type="button"
+                        className="flex h-10 w-fit cursor-pointer items-center gap-2 rounded-lg bg-white pl-4 pr-1.5 text-sm font-bold tracking-tight text-black"
+                      >
+                        Connect With Me
+                        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-black text-white">
+                          <MdArrowOutward
+                            className="h-3.5 w-3.5"
+                            style={{ fill: "url(#values-cta-grad)" }}
+                          />
+                        </span>
+                      </button>
+                    </Link>
                   </motion.div>
                 </AnimatePresence>
               </div>

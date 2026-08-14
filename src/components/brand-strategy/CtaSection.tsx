@@ -32,7 +32,6 @@ export default function CtaSection() {
             sweepRowEnd={5}
           />
 
-
           <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent max-md:from-black/90 max-md:from-50% max-md:via-black/45 max-md:via-85%" />
 
           {/* The bottom scrim stacks on top of SpotlightGrid's own `to-black/30`
@@ -107,7 +106,7 @@ export default function CtaSection() {
             </motion.div>
           </div>
 
-          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 max-md:gap-8 max-md:px-5 max-md:pt-8 max-md:pb-14 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
+          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 max-md:gap-10 max-md:px-5 max-md:pt-8 max-md:pb-16 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
             <motion.div
               data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
@@ -124,7 +123,7 @@ export default function CtaSection() {
                   Connect With Us
                 </span>
 
-                <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black max-md:h-8 max-md:w-8 max-md:bg-black">
+                <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black max-md:h-9.5 max-md:w-9.5 max-md:bg-black">
                   <svg width="0" height="0" className="absolute">
                     <title>Connect arrow gradient</title>
                     <defs>
@@ -166,7 +165,10 @@ export default function CtaSection() {
                 className="group relative w-fit text-base font-bold text-white/90 transition-colors duration-300 hover:text-white max-md:underline max-md:decoration-white/40 max-md:underline-offset-4 md:text-lg"
               >
                 hello@youragency.com
-                <MdArrowOutward className="ml-1 hidden h-3.5 w-3.5 max-md:inline-block" />
+                <MdArrowOutward
+                  className="ml-1 hidden h-3.5 w-3.5 max-md:inline-block"
+                  style={{ fill: "url(#cta-icon-grad)" }}
+                />
                 <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
               </a>
             </motion.div>
@@ -184,7 +186,10 @@ export default function CtaSection() {
               </span>
               <span className="group relative w-fit cursor-pointer text-base font-bold text-white/90 transition-colors duration-300 hover:text-white max-md:underline max-md:decoration-white/40 max-md:underline-offset-4 md:text-lg">
                 +1 (555) 123-4567
-                <MdArrowOutward className="ml-1 hidden h-3.5 w-3.5 max-md:inline-block" />
+                <MdArrowOutward
+                  className="ml-1 hidden h-3.5 w-3.5 max-md:inline-block"
+                  style={{ fill: "url(#cta-icon-grad)" }}
+                />
                 <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
               </span>
             </motion.div>

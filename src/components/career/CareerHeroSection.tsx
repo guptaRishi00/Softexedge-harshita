@@ -65,7 +65,7 @@ export default function CareerHeroSection() {
       <div className="relative z-10 flex w-full flex-col pt-16 md:pt-24">
         <div
           id="career-hero-copy"
-          className="px-6 md:px-12 w-full max-w-[1200px] mx-auto text-center"
+          className="px-6 max-md:px-3 md:px-12 w-full max-w-[1200px] mx-auto text-center"
         >
           <motion.div
             variants={containerVariants}
@@ -97,7 +97,7 @@ export default function CareerHeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-center text-zinc-600 font-regular text-lg md:text-xl max-w-xl mx-auto leading-[1.25em] mb-16"
+            className="text-center text-zinc-600 font-regular text-lg md:text-xl max-w-xl mx-auto leading-[1.25em] mb-16 max-md:mb-10"
           >
             We’re creating impactful digital solutions.
             <br />

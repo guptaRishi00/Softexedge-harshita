@@ -29,6 +29,7 @@ function BentoCard({
 }: BentoCardProps) {
   return (
     <motion.div
+      data-no-mobile-entry
       variants={{
         hidden: { opacity: 0, y: 20 },
         show: {
@@ -109,25 +110,27 @@ export default function WhyJoinUs() {
   ];
 
   return (
-    <section className="relative w-full overflow-hidden bg-black px-4 pt-24 pb-16 md:px-10 md:pt-32 md:pb-20 text-white">
+    <section className="relative w-full overflow-hidden bg-black px-4 pt-24 pb-16 max-md:px-3 md:px-10 md:pt-32 md:pb-20 text-white">
       <div className="w-full">
         <div className="flex flex-col items-center text-center mb-16 md:mb-30">
           <motion.div
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-6 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500"
+            className="mb-6 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs"
           >
             Benefits
           </motion.div>
 
           <motion.h2
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-4xl font-bold leading-[1.05em] tracking-tighter text-white md:text-5xl lg:text-[6.5rem]"
+            className="text-4xl font-bold leading-[1.05em] tracking-tighter text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-5xl lg:text-[6.5rem]"
           >
             Why{" "}
             <span className="inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pb-[0.2em] pr-[0.08em] text-transparent">
@@ -135,6 +138,7 @@ export default function WhyJoinUs() {
             </span>
           </motion.h2>
           <motion.p
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}

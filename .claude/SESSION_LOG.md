@@ -14508,3 +14508,140 @@ noSvgWithoutTitle, useButtonType) — none from this diff.
 PRE-EXISTING (not fixed): page/Header's mobile CTA href is "#contact"; verified
 document.querySelector('#contact') === null on /about, so it's a dead anchor on inner pages
 (home's correctly uses /contact). Not committed.
+
+## /career — mobile responsive pass, desktop frozen
+Six files: `src/app/career/page.tsx` plus the five components in `src/components/career/`. Same shape as the /work pass; done inline for the same reason (the /about conventions and the verification traps live in this session's context).
+
+Root problem, measured first: both scroll-choreography blocks ran on phones. At 375 two wrappers were `position: sticky` at top `-388px` and `-404px` (calc(100vh-1200px) / calc(100vh-1216px)) inside `-mb-[100vh]` parents with `pb-[100vh]` siblings. /about gates all of this behind `md:`. Fixed identically: `md:-mb-[100vh]`, `md:sticky md:top-[...]`, `md:pb-[100vh]`. ShrinkOnOverlap needed nothing (its GSAP is already inside a 768px matchMedia).
+
+Everything else was convention drift from /about, not breakage — the page already had no overflow and already stacked to one column:
+- Gutters: `px-4`/`px-6` -> `max-md:px-3` on all five components (16/24 -> 12px)
+- Section titles: `text-4xl` (36px) -> `max-md:text-[2.5rem] max-md:leading-[1.11]` (40px at the house 1.11)
+- Eyebrows: `max-md:text-xs` everywhere, and `mb-8 -> max-md:mb-6` on OpenPositions/PerksSection (32 -> the 24px tag gap)
+- Page rhythm mirroring /about: WhyJoinUs 84/52, OpenPositions 52/52, OurValues 52/52, Perks 52/52, OurTeam 68/36, ApplicationJourney 40/44, Footer 44/16
+- `Header` -> `Header dropdown` for /about's mobile navbar; verified prop-safe (desktop nav `flex`, mobile pill `none` at 1265)
+- 14 scroll entries gated with `data-no-mobile-entry`
+
+Three entry-shape traps, each caught by an assert before any write:
+1. WhyJoinUs has 4 whileInView but only 3 match `initial={{ opacity: 0`. The 4th is `initial="hidden" whileInView="show"` on a stagger CONTAINER — and the element that actually renders at opacity 0 is the `BentoCard` child with its own variants. The CSS rule targets the element, not descendants, so the attribute had to go on the card.
+2. PerksSection matched 0: its entries are `initial={reduce ? false : { opacity: 0, ... }}` — a different shape needing its own pattern.
+3. Partial-write hazard: the loop writes per file, so the PerksSection assert left WhyJoinUs and OpenPositions already written. Completed the remaining three in a second pass rather than re-running the whole batch.
+
+Verified at 320 / 375 / 414 / 700 / 1265. Mobile 320-700: no horizontal overflow at any width, 0 unclipped escapes, 0 sticky blocks, titles 40px, gutters 12px, 47/47 tagged entries at final state. Job listings: collapsed rows 92px tall, Apply button 56px, no overflow inside an expanded listing, bullet lists `pl-5`. Desktop 1265 against the authored spec: sticky tops -400/-416px, both negative margins -800px, section paddings 120/96, 96/96, 96/96, 96/140, 112/96, 40/56, gutters 40px, titles 104px/109.2px, hero 96px, entry animations live (37/47 at initial). tsc clean, `Compiled successfully in 25.9s`, biome unchanged vs the stashed baseline.
+
+Two things found and deliberately NOT changed, both pre-existing and outside "responsive adaptation":
+- 35 interactive elements measure under 32px tall, ALL in shared components: 25 footer text links (23px) and 8 carousel pagination dots (6px). Identical on /about, the reference page. None belong to Career's own sections.
+- The OpenPositions accordion toggle is a `<div onClick>` carrying two biome-ignore comments (useKeyWithClickEvents, noStaticElementInteractions) — a deliberate suppression. Its touch area is fine at 92px; the gap is keyboard access, which is an a11y task rather than a responsive one.
+
+## CtaSection (mobile) — card top and bottom insets equalised
+`src/components/brand-strategy/CtaSection.tsx`: bottom block `max-md:pb-14` -> `max-md:pb-16` (56 -> 64px), matching the top block's `max-md:pt-16`.
+
+Measured both ways rather than just matching the numbers, because line-box slack can make equal padding look unequal. Box insets were 64.8 top / 56.8 bottom; glyph insets (headline cap to card top, phone baseline-box to card bottom) 61.6 / 52.8 — an 8.8px visual difference. After: box 64.8 / 64.8, glyph 61.6 / 60.8, delta 0.8px. The residual is the phone link's descender space vs the headline's ascender slack; closing it exactly would need `pb-[64.8px]`, which is not worth an arbitrary value for sub-pixel.
+
+Card 757 -> 765px. Verified @1265: top block `64px 40px 0px`, bottom `64px 40px`, card 628px — desktop untouched (`lg:pb-0` and `md:py-12`/`lg:py-16` own those values). tsc clean, `Compiled successfully in 22.0s`.
+
+## OurValuesSection (mobile) — quote card: symmetric spacing + lighter quote
+`src/components/about/OurValuesSection.tsx`, mobile card's quote `<p>`: added `flex items-center`, `font-medium` -> `font-normal`.
+
+The marked gaps were unequal because of the `min-h-[6em]` reserve, not the padding. Card padding is already symmetric (32px top and bottom) and the profile->quote gap is `gap-8` (32px) — but the reserve holds 5 lines, so wherever a quote wraps shorter the leftover pooled entirely BELOW the text. At 430 the quotes run 4 lines: 24px of slack, giving 32 top vs 56.8 bottom.
+
+`flex items-center` centres the text inside its reserved box, so the slack splits evenly instead of collecting at the bottom — self-correcting at every width and every quote length, rather than a hand-tuned padding that would only be right at one width. A `<p>` set to flex wraps its text as a single anonymous flex item, so line breaking is unaffected.
+
+Verified @430 (4-line wrap, 24px slack): 43.2 top / 44.8 bottom, delta 1.6px — was 32 / 56.8, delta 24.8. @375 (5-line wrap, zero slack) across all three slides via dot clicks: 31.2 / 32.8 on every slide, delta 1.6px, card height stable at 266. The residual 1.6px is ascender-vs-descender in the glyph box, not spacing. Quote weight now 400. @1265: desktop quote still `font-weight: 500`, `display: block`, `min-height: auto`, 24px, and the mobile block `display: none` — the two are separate subtrees, so desktop is untouched by construction. tsc clean, `Compiled successfully in 23.3s`.
+
+## Footer (mobile) — carousel gap nudged up + subtle edge fade
+`src/components/layout/Footer.tsx`. Two changes on the `md:hidden` clock carousel:
+- Gap back up one step: `-ml-2/pl-2` -> `-ml-3/pl-3` (8 -> 12px). Measured content gap 12.0px.
+- Edge fade: `max-md:[mask-image:linear-gradient(to_right,transparent_0%,black_6%,black_94%,transparent_100%)]` on the Carousel root — the same mask idiom as AboutHeroSection's stats marquee, so no new technique. 6% a side = 21.1px of a 351px panel, enough to soften clocks entering and leaving without reading as a vignette.
+
+A mask rather than a real blur on purpose: `backdrop-filter` on edge overlays would need two extra absolutely-positioned nodes over a full-bleed track and would blur the black panel behind it to no visible effect, while costing two more compositor layers on a phone. The mask fades the content itself, which is what "very less prominent" wants.
+
+Verified @375: item padding 12px, track margin -12px, measured gap 12.0 (was 8); mask resolves to `linear-gradient(to right, rgba(0,0,0,0) 0%, rgb(0,0,0) 6%, rgb(0,0,0) 94%, ...)`; first clock still flush with the panel edge (0.0); no horizontal overflow. Prefixing confirmed in the production chunk (`-webkit-mask` count 5 -> 6 after this change), so Safari gets it. @1265: carousel `display:none`, `mask-image: none` (the max-md gate holds), desktop grid at the 158/445/731/1017 baseline. tsc clean, `Compiled successfully in 26.4s`.
+
+## Footer (mobile) — carousel gap 12 -> 16px
+`src/components/layout/Footer.tsx`: `-ml-3/pl-3` -> `-ml-4/pl-4`. Measured @375: content gap 16.0px, item pitch 110.2, track 881px against a 375px viewport (loop still has ample room), first clock flush at 0.0, edge mask still applied, no horizontal overflow. @1265: carousel `display:none`, grid at the 158/445/731/1017 baseline. tsc clean, `Compiled successfully in 14.4s`.
+
+## Footer (mobile) — carousel gap 16 -> 20px, item width made intrinsic
+`src/components/layout/Footer.tsx`: `-ml-4/pl-4` -> `-ml-5/pl-5`, and `basis-[30%]` -> `basis-auto`.
+
+The basis change was forced by the gap change, not cosmetic. With a percentage basis the item width is fixed while padding eats into it: at pl-5 the content box was 91.3px against an intrinsic 89.8px time string — 1.5px of headroom at 375, and at 320 the same 30% resolves to an 88.8px item leaving 68.8px of content, so the time would have wrapped to two lines. `basis-auto` sizes each item to its own content plus the padding, so the gap IS the padding at every width and the clock can never be squeezed. It also removes the last of the dead space the basis-30% step was originally chasing: content boxes now measure exactly the 89.8px intrinsic width.
+
+Verified @375: `flex-basis: auto`, gap 20.0px, content box 89.8, items ~109.5, no wrap, first clock flush at 0.0, track 875px vs a 375px viewport. @320 (the case that would have broken): gap 20.0, content box still 89.8, item 109.8, all four clocks single-line, no horizontal overflow. @1265: carousel `display:none`, desktop grid 4 clocks at the 158/445/731/1017 baseline. tsc clean, `Compiled successfully in 35.5s`.
+
+## Footer (mobile) — carousel type 12 -> 11px
+`src/components/layout/Footer.tsx`: `text-[11px]` on the Carousel root. The block is `md:hidden`, so it is mobile-only by construction and the desktop grid keeps the inherited `text-xs`.
+
+Note: with `basis-auto` (previous task) the items now track the type. Content boxes went 89.8 -> 83.4px and item width 109.8 -> 103.4, while the gap stayed exactly 20px — which is the point of intrinsic sizing: type changes no longer risk squeezing the time string, they just make each slide narrower.
+
+Verified @375: mobile city and time both 11px, the desktop grid copy still 12px in the same DOM, content box 83.4, gap 20.0, no wrap, first clock flush at 0.0, no horizontal overflow. @1265: both desktop values 12px, carousel `display:none`, grid at the 158/445/731/1017 baseline. tsc clean, `Compiled successfully in 15.2s`.
+
+## Footer (mobile) — carousel gap 20 -> 32px, and why the earlier steps read as "nothing changed"
+`src/components/layout/Footer.tsx`: `-ml-5/pl-5` -> `-ml-8/pl-8`. Measured content gap 32.0px (was 20), pitch 115.4, no overflow.
+
+User pushed back that repeated increases were not visible. Two causes, both worth recording:
+
+1. NOTHING IN THIS SESSION IS COMMITTED. `git log` shows a single "first commit" and `git status` lists 10 modified files. The user's screenshots are all from `2026-draft-one.vercel.app` — the deployed build — which cannot contain any of it. Every measurement in this session is against localhost:3000. Before assuming a change "did not work", check which origin the screenshot is from.
+
+2. Even locally, the earlier 4px steps were near-invisible because the gap is ragged, not uniform. `basis-auto` sizes each item to its widest child, which is the TIME string (~83px); the city rows are much narrower. Measured slack between a city row's right edge and its own box edge: Toronto 5.5px, London 12.8, Tokyo 24.3, Paris 30.8. So the perceived gap on the city line is contentGap + that slack, varying 37-63px at a 32px setting. A 4px change to one term of a 25px-varying quantity is not perceptible — hence jumping a full step this time rather than nudging again.
+
+## Footer (mobile) — gap between clock carousel and the Softexedge wordmark 48 -> 72px
+`src/components/layout/Footer.tsx`: wordmark wrapper `max-md:pt-0` -> `max-md:pt-6`.
+
+The 48px was purely the footer column's `max-md:gap-12` — the wrapper explicitly zeroed its own top padding on mobile (`max-md:pt-0` against a base `pt-8`/`md:pt-10`). Adding 24px there is the correct lever: raising the column `gap-12` instead would have moved every mobile footer block (nav groups, clocks, bottom bar), not just this seam.
+
+Verified @375: wrapper `padding-top: 24px`, flex gap still 48px, clock-bottom to wordmark-box-top 72.0px (was 48), no horizontal overflow. @1265: wrapper `40px 0px 80px` from `md:pt-10`/`md:pb-20`, wordmark 230.4px — desktop untouched. tsc clean, `Compiled successfully in 22.2s`.
+
+## Footer (mobile) — carousel now sits symmetrically, 72px above and below
+`src/components/layout/Footer.tsx`: `max-md:pt-6` on the clock block (the `max-md:order-3` motion.div), mirroring the 24px added to the wordmark wrapper last task. Each side is now 48px column gap + 24px padding = 72px.
+
+Verified @375: gap above (nav-links grid -> carousel) 72.0, gap below (carousel -> wordmark content) 72.0, delta 0.0. @1265: clock block `padding-top: 0px` (the max-md gate holds), column gap 96px, grid at the 158/445/731/1017 baseline.
+
+Two measurement traps hit while verifying, both mine, both worth remembering:
+1. Box-vs-content: after adding the padding, block-to-block distance still read 48px because the padding lives INSIDE the block. Symmetry has to be measured content edge to content edge, not border box to border box.
+2. `[class*="md:hidden"]` also matches `max-md:hidden`, so it selected the DISPLAY:NONE desktop grid and produced ±8500px garbage. Same substring trap as `to-t` matching `to-transparent` earlier in this session. Selected on `[class*="mask-image"]` instead, which is unique to the carousel root.
+
+tsc clean, `Compiled successfully in 13.6s`.
+
+## CtaSection (mobile) — CTA/email/phone gap + gradient arrows
+`src/components/brand-strategy/CtaSection.tsx`:
+- Bottom block `max-md:gap-8` -> `max-md:gap-10` (32 -> 40px between the button, email and phone rows).
+- Both inline `MdArrowOutward` arrows on the email and phone links now carry `style={{ fill: "url(#cta-icon-grad)" }}`.
+
+Reused the button's existing `<linearGradient id="cta-icon-grad">` rather than defining a second one — it already lives in this component's DOM (inside the button's `width=0 height=0` defs svg), an SVG paint server resolves document-wide regardless of the defining svg's size, and the button's own hover arrow proves the pattern renders here. No max-md prefix needed on the fill: the arrows are `hidden` above md, so it only ever paints on mobile.
+
+This deliberately breaks the uniform 32px card rhythm set two tasks ago — the request was specifically for more air in that group, so the bottom three rows are now 40 while the upper stack stays 32.
+
+Verified @375: `row-gap: 40px` with measured gaps [40, 40]; both arrows `display: inline-block`, 14x14, `fill: url("#cta-icon-grad")`, matching the button arrow's computed fill; gradient def resolves with stops #2E5BFF -> #149CCB. @1265: bottom block still `flex-direction: row` at 40px (the base `gap-10` was already 40, so no desktop value moved), both inline arrows `display: none`, email underline `none`, card 628px. tsc clean, `Compiled successfully in 13.9s`, biome at the 2 pre-existing diagnostics.
+
+## OurValuesSection (mobile) — ChannelCard pattern behind the quote card + small CTA
+`src/components/about/OurValuesSection.tsx`, mobile card only (the `md:hidden` subtree, so desktop is untouched by construction).
+
+**Pattern.** Reproduced ChannelCard's boxy grid as STATIC markup rather than importing or copying its component. ChannelCard's cells are pointer-reactive (`getIntensity` off `hoveredIndex`), but on touch nothing ever hovers, so intensity is permanently 0 and every cell resolves to a flat `#161616` outer and `rgb(22,22,22)` inner. The mask likewise never follows a pointer there — `parkMaskRight` fixes it at 85% width / 50% height with the touch alphas (0.5 core, 0.04 edge). So the mobile appearance needs no motion values, no ResizeObserver and no mouse handlers: a plain grid under a CSS radial mask. 36 cells (6 rows) is what clears the card; ChannelCard's 80 exist for its taller cards and the surplus is clipped either way.
+
+Fidelity checked against a live ChannelCard on /home rather than from source: 6 cols, 8px gap, outer AND inner `rgb(22, 22, 22)`, 8px radius, 0.8px padding, 280px mask at 0.5 -> 0.04. All match. (The live one's mask reads `at -1000px -1000px` in this pane because its parking runs inside a double-rAF and rAF is frozen — 85%/50% is the on-device resting value, which is what I hardcoded.)
+
+Card gained `relative overflow-hidden`; profile, quote and CTA gained `relative z-10` — an absolutely positioned z-0 layer otherwise paints ABOVE static flex siblings.
+
+**CTA.** Compact take on the desktop card's button: same white-pill / dark-icon-square idiom at 40px instead of 56, `text-sm`, `MdArrowOutward`. Deliberately self-contained — it does NOT reference the desktop button's `culture-icon-grad` def, which lives inside a `max-md:hidden` subtree; depending on a paint server in a display:none tree is fragile. Sits 32px under the quote on the card's existing `gap-8`.
+
+Verified @375: card `position: relative`/`overflow: hidden`, 338px (was 266); pattern z-0 with mask applied, 36 cells at 6 cols, 57px each, `rgb(22,22,22)`, grid clipped 23px past the card foot; profile and quote both `z-index: 10`; CTA 40x167, white bg / black text / 14px, 32px below the quote, href `/about`; no horizontal overflow. @1265: mobile block `display: none`, zero pattern layers inside the desktop panel, desktop card `overflow: visible`, quote `z-index: auto` and weight 500, desktop CTA still 56px. tsc clean, `Compiled successfully in 19.8s`, biome clean on the file.
+
+## OurValuesSection (mobile) — card surface matched to ChannelCard
+`src/components/about/OurValuesSection.tsx`, mobile card: `bg-[#100f0f]` -> `bg-zinc-950/20`, `border-white/[0.06]` -> `border-white/10`.
+
+The grid itself was already identical (width 383.891px, left -17.4375px, translate 0/-24, gap 8, cells rgb(22,22,22)). What made it read differently was the CARD, not the overlay: ChannelCard's near-transparent `zinc-950/20` lets the section's pure black through, so the #161616 cells sit on true black; mine had an opaque #100f0f base, lifting the floor and flattening the pattern's contrast. Both sections are `bg-black` behind, so with a matching translucent surface the composite is now the same.
+
+Property-by-property against a live ChannelCard on /home: 9 of 10 identical (bg, border colour, overflow, layer z-index, grid width/left/translate/gap, cell background). The tenth was my own 30-char truncation of the mask string — and the live card's mask reads `at -1000px -1000px` in this pane because its parking runs in a frozen double-rAF, so literal equality was never available; the parked on-device value is the 85%/50% already hardcoded.
+
+`rounded-3xl` (22px) deliberately kept against ChannelCard's `rounded-[2rem]` (32px): an earlier task explicitly set this card's radius to match ExperimentalTestimonials. Say the word if the radius should follow ChannelCard too.
+
+Verified @375: card `oklab(0.141 ... / 0.2)` and border `white/0.1`, exactly ChannelCard's values. @1265: desktop panel still `rgb(16, 15, 15)`, border `white/0.06`, radius 22px, mobile block `display: none` — untouched. tsc clean, `Compiled successfully in 20.3s`.
+
+## OurValuesSection (mobile) — CTA arrow now gradient
+`src/components/about/OurValuesSection.tsx`: the mobile CTA's `MdArrowOutward` gets `fill: url(#values-cta-grad)`, with a new `<linearGradient>` (#2E5BFF -> #149CCB) rendered ONCE in the `md:hidden` block.
+
+Placement of the def mattered: putting it inside the card would have emitted duplicate ids, because popLayout keeps the outgoing card(s) mounted through a swipe. Measured mid-transition: 3 cards in the DOM, still exactly 1 `#values-cta-grad`. A paint server resolves document-wide, so one def serves whichever card is on screen.
+
+Same treatment as CtaSection's mobile button (black icon square, gradient arrow), and still self-contained — it does not borrow the desktop card's `culture-icon-grad`, which lives in a `max-md:hidden` subtree.
+
+Verified @375: arrow `fill: url("#values-cta-grad")` at 14x14 on a `rgb(0,0,0)` square, def stops #2E5BFF -> #149CCB, id unique at rest and mid-swipe. @1265: mobile block `display: none` (the def ships but never paints), desktop CTA untouched — arrows still `rgb(0,0,0)` and `url("#culture-icon-grad")`, button 56px. tsc clean, `Compiled successfully in 13.9s`, biome clean on the file (the `<title>` keeps noSvgWithoutTitle quiet).

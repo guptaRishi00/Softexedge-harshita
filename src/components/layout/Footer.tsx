@@ -326,7 +326,7 @@ export default function Footer() {
           </motion.div>
         </div>
 
-        <div className="relative flex w-full justify-center pt-8 pb-16 max-md:order-4 max-md:-mx-6 max-md:w-[calc(100%+3rem)] max-md:pt-0 max-md:pb-6 md:pt-10 md:pb-20 overflow-hidden">
+        <div className="relative flex w-full justify-center pt-8 pb-16 max-md:order-4 max-md:-mx-6 max-md:w-[calc(100%+3rem)] max-md:pt-6 max-md:pb-6 md:pt-10 md:pb-20 overflow-hidden">
           <motion.h1
             variants={isMobile ? brandContainerInstant : brandContainer}
             initial="hidden"
@@ -377,7 +377,7 @@ export default function Footer() {
             transition={
               isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
             }
-            className="text-xs font-semibold uppercase tracking-widest max-md:order-3"
+            className="text-xs font-semibold uppercase tracking-widest max-md:order-3 max-md:pt-6"
           >
             <div className="grid grid-cols-4 justify-items-center gap-x-8 gap-y-12 max-md:hidden">
               {offices.map((office) => (
@@ -394,14 +394,18 @@ export default function Footer() {
               // -mx-6 cancels the container's px-6 so the track runs to the
               // black panel's own edges; w-auto lets the negative margins
               // actually widen the box, which a fixed w-full would not.
-              className="w-full md:hidden max-md:-mx-6 max-md:w-auto"
+              // Edge fade uses the same mask idiom as the hero stats
+              // marquee. Kept to 6% a side (~21px of a 351px panel) so it
+              // only softens clocks entering and leaving, rather than
+              // reading as a vignette.
+              className="w-full text-[11px] md:hidden max-md:-mx-6 max-md:w-auto max-md:[mask-image:linear-gradient(to_right,transparent_0%,black_6%,black_94%,transparent_100%)]"
             >
-              <CarouselContent className="-ml-2">
+              <CarouselContent className="-ml-8">
                 {[...offices, ...offices].map((office, index) => (
                   <CarouselItem
                     key={`${office.city}-${index}`}
                     aria-hidden={index >= offices.length}
-                    className="basis-[30%] pl-2"
+                    className="basis-auto pl-8"
                   >
                     <OfficeClock {...office} />
                   </CarouselItem>

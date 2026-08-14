@@ -19,10 +19,10 @@ export const metadata: Metadata = {
 export default function CareerPage() {
   return (
     <main className="bg-white min-h-screen">
-      <Header />
+      <Header dropdown />
 
-      <div className="relative z-0 -mb-[100vh]">
-        <div className="sticky top-[calc(100vh-1200px)] z-0 bg-white">
+      <div className="relative z-0 md:-mb-[100vh]">
+        <div className="z-0 bg-white md:sticky md:top-[calc(100vh-1200px)]">
           <ShrinkOnOverlap
             endSelector="#why-join-us"
             targetSelector="#career-hero-copy, #career-hero-carousel"
@@ -33,42 +33,42 @@ export default function CareerPage() {
         </div>
         <div
           id="why-join-us"
-          className="relative z-10 bg-black pb-[100vh] [&>section]:pt-24 [&>section]:pb-16 md:[&>section]:pt-30 md:[&>section]:pb-24"
+          className="relative z-10 bg-black md:pb-[100vh] [&>section]:pt-21 [&>section]:pb-13 md:[&>section]:pt-30 md:[&>section]:pb-24"
         >
           <WhyJoinUs />
         </div>
       </div>
 
-      <div className="relative z-10 [&>section]:py-16 md:[&>section]:pt-24 md:[&>section]:pb-24">
+      <div className="relative z-10 [&>section]:py-13 md:[&>section]:pt-24 md:[&>section]:pb-24">
         <OpenPositions />
       </div>
 
-      <div className="[&>section]:py-16 md:[&>section]:py-24">
+      <div className="[&>section]:py-13 md:[&>section]:py-24">
         <OurValuesSection />
       </div>
 
-      <div className="relative z-0 -mb-[100vh]">
-        <div className="sticky top-[calc(100vh-1216px)] z-0 bg-black">
+      <div className="relative z-0 md:-mb-[100vh]">
+        <div className="z-0 bg-black md:sticky md:top-[calc(100vh-1216px)]">
           <ShrinkOnOverlap
             endSelector="#our-team-career"
-            className="[&>section]:py-16 md:[&>section]:pb-35 md:[&>section]:pt-24"
+            className="[&>section]:py-13 md:[&>section]:pb-35 md:[&>section]:pt-24"
           >
             <PerksSection />
           </ShrinkOnOverlap>
         </div>
         <div
           id="our-team-career"
-          className="relative z-10 bg-white pb-[100vh] [&>section]:py-16 md:[&>section]:pb-24 md:[&>section]:pt-28"
+          className="relative z-10 bg-white md:pb-[100vh] [&>section]:pt-17 [&>section]:pb-9 md:[&>section]:pb-24 md:[&>section]:pt-28"
         >
           <OurTeamSection />
         </div>
       </div>
 
-      <div className="[&>section]:py-16 md:[&>section]:pb-14 md:[&>section]:pt-10">
+      <div className="[&>section]:pt-10 [&>section]:pb-11 md:[&>section]:pb-14 md:[&>section]:pt-10">
         <ApplicationJourney />
       </div>
 
-      <div className="px-3 pt-16 pb-3 md:pt-24">
+      <div className="px-3 pt-11 pb-3 max-md:pb-4 md:pt-24">
         <Footer />
       </div>
     </main>

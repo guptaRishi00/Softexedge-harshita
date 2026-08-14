@@ -49,25 +49,27 @@ const steps: Step[] = [
 
 export default function ApplicationJourney() {
   return (
-    <section className="relative w-full bg-white px-6 py-24 text-zinc-900 md:py-32">
+    <section className="relative w-full bg-white px-6 max-md:px-3 py-24 text-zinc-900 md:py-32">
       <div className="mx-auto w-full">
-        <div className="mx-auto flex max-w-3xl flex-col items-center text-center mb-16 md:mb-35">
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-center mb-16 max-md:mb-8 md:mb-35">
           <motion.div
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-6 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500"
+            className="mb-6 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs"
           >
             The Process
           </motion.div>
 
           <motion.h2
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-4xl font-bold leading-[1.05em] tracking-tighter text-zinc-900 md:text-5xl lg:text-[6.5rem]"
+            className="text-4xl font-bold leading-[1.05em] tracking-tighter text-zinc-900 max-md:text-[2.5rem] max-md:leading-[1.11] md:text-5xl lg:text-[6.5rem]"
           >
             Your Application{" "}
             <span className="inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pb-[0.2em] pr-[0.08em] text-transparent">
@@ -76,6 +78,7 @@ export default function ApplicationJourney() {
           </motion.h2>
 
           <motion.p
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -91,6 +94,7 @@ export default function ApplicationJourney() {
           {steps.map((step, index) => (
             <motion.div
               key={step.number}
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
