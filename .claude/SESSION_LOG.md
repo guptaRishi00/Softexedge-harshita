@@ -14463,3 +14463,8 @@ Verified @375: computed transform `none`, wrapper flush with the section at 0.0p
 `src/components/about/OurValuesSection.tsx`: mobile carousel block `mt-8 -> mt-12`. The block is `md:hidden`, so mobile-only by construction. 48px also matches the desktop card's own `mt-12`, so the two breakpoints now share the same rhythm at this seam.
 
 Verified @375: measured description-bottom to card-top exactly 48.0px (was 32). @1265: mobile block `display:none`; desktop card still `mt-12` at a measured 48.0px below the description — untouched. tsc clean, `Compiled successfully in 21.1s`.
+
+## Footer (mobile) — carousel gap, third pass: the real lever was item width
+Same request a third time, so the diagnosis changed. The visible gap was never mainly the padding: intrinsic clock content is only 89.8px wide (widest line is the time string) while items were `basis-1/2` = 179.5px, leaving ~90px of whitespace between one clock's text and the next. The two padding steps (24 -> 16 -> 8) shaved 16px of 98 and could never close the rest.
+
+Fix: `basis-1/2` -> `basis-[30%]` on the CarouselItem (`src/components/layout/Footer.tsx`, md:hidden so mobile-only by construction). Pitch 179.5 -> 107.7px; measured text-to-text gap 89.7 -> 17.9px; 4 clocks now on screen at once (was 2); first clock still flush with the panel edge (0.0). Loop safety: 8 items x 107.7 = 861px of track against a 375px viewport, ample for embla's loop. @1265: carousel `display:none`, grid at the 158/445/731/1017 baseline. tsc clean, `Compiled successfully in 30.7s`.
