@@ -333,7 +333,7 @@ export default function OurValuesSection() {
                         or motion values at all. */}
                     <div
                       aria-hidden
-                      className="pointer-events-none absolute inset-0 z-0 overflow-hidden [mask-image:radial-gradient(280px_circle_at_85%_50%,rgba(0,0,0,0.5)_0%,rgba(0,0,0,0.04)_100%)]"
+                      className="pointer-events-none absolute inset-0 z-0 overflow-hidden [mask-image:radial-gradient(280px_circle_at_85%_50%,rgba(0,0,0,0.36)_0%,rgba(0,0,0,0.04)_100%)]"
                     >
                       <div className="relative -left-[5%] grid w-[110%] -translate-y-6 grid-cols-6 gap-2">
                         {patternCellIds.map((id) => (

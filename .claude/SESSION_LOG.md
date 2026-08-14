@@ -14645,3 +14645,14 @@ Placement of the def mattered: putting it inside the card would have emitted dup
 Same treatment as CtaSection's mobile button (black icon square, gradient arrow), and still self-contained — it does not borrow the desktop card's `culture-icon-grad`, which lives in a `max-md:hidden` subtree.
 
 Verified @375: arrow `fill: url("#values-cta-grad")` at 14x14 on a `rgb(0,0,0)` square, def stops #2E5BFF -> #149CCB, id unique at rest and mid-swipe. @1265: mobile block `display: none` (the def ships but never paints), desktop CTA untouched — arrows still `rgb(0,0,0)` and `url("#culture-icon-grad")`, button 56px. tsc clean, `Compiled successfully in 13.9s`, biome clean on the file (the `<title>` keeps noSvgWithoutTitle quiet).
+
+## OurValuesSection (mobile) — right-side pattern blob dimmed
+`src/components/about/OurValuesSection.tsx`: pattern mask core alpha `rgba(0,0,0,0.5)` -> `rgba(0,0,0,0.36)`, a 28% reduction. Edge stays 0.04 and the blob stays parked at 85%/50%.
+
+The mask is what makes the pattern read at all, and its centre sits at 85% of the card width — 299px of 351 — so the core alpha IS the right-side intensity. Lowering it dims that blob without touching where it sits or how far it reaches; shrinking the 280px radius instead would have pulled the pattern away from the right edge rather than softening it.
+
+This is a deliberate step away from last task's exact ChannelCard match (which used 0.5). Everything else still matches: 36 cells, 6 cols, 8px gap, cells rgb(22,22,22), card `zinc-950/20` + `white/0.1`.
+
+Verified @375: mask now `rgba(0, 0, 0, 0.36) 0%, rgba(0, 0, 0, 0.04) 100%`, blob centre at x=299 of a 351px card, grid untouched. @1265: mobile block `display: none`, zero pattern layers in the desktop panel, panel still `rgb(16, 15, 15)` / `white/0.06`. tsc clean, `Compiled successfully in 21.4s`.
+
+Env note: the browser tab wedged at `/` mid-task (readyState complete, no content) while the dev server answered 200 — `preview_start` with the URL recovered it. Second time this session the pane has needed re-opening rather than re-navigating.
