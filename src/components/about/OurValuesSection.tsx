@@ -44,12 +44,14 @@ const quoteVariants = {
   exit: (dir: number) => ({ opacity: 0, x: -32 * dir }),
 };
 
-// Six columns of square boxes under a parked radial mask — the same pattern
+// Six columns of square boxes under a parked black overlay — the same pattern
 // ChannelCard paints behind the contact cards. Its cells are pointer-reactive;
-// on touch the hover intensity is always 0, so every cell resolves to #161616
-// and the whole thing collapses to this static markup. 36 cells (6 rows) is
-// what clears the card height; ChannelCard renders 80 because its cards are
-// taller, and the surplus is clipped either way.
+// on touch the hover intensity is always 0, so every cell resolves to a flat
+// tone and the whole thing collapses to this static markup. These sit at
+// #262626 rather than ChannelCard's #161616: the overlay reaches 0.96 black at
+// the edges, which left the darker grey with almost nothing to show. 36 cells
+// (6 rows) is what clears the card height; ChannelCard renders 30 because its
+// cards are shorter, and the surplus is clipped either way.
 const patternCellIds = Array.from({ length: 36 }, (_, i) => `values-box-${i}`);
 
 // Mobile moves the whole card rather than swapping its contents: the outgoing
@@ -327,24 +329,36 @@ export default function OurValuesSection() {
                     }}
                     className="relative flex cursor-grab flex-col gap-8 overflow-hidden rounded-3xl border border-white/10 bg-zinc-950/20 p-5 py-10 active:cursor-grabbing"
                   >
-                    {/* Mask parked at 85%/50% with ChannelCard's own touch
-                        alphas (0.5 core, 0.04 edge) — on touch it never follows
-                        a pointer, so the position is fixed and this needs no JS
-                        or motion values at all. */}
+                    {/* No mask — the darkening is an overlay painted OVER the
+                        grid, byte-for-byte ChannelCard's mobile treatment.
+                        Masking the grid to alpha `a` over a black card and
+                        painting black at `1 - a` over it are the same result,
+                        and the overlay skips the offscreen composite pass that
+                        `mask-image` forces on the whole subtree every paint.
+                        Parked at 85%/50% because touch never moves it. */}
                     <div
                       aria-hidden
-                      className="pointer-events-none absolute inset-0 z-0 overflow-hidden [mask-image:radial-gradient(280px_circle_at_85%_50%,rgba(0,0,0,0.36)_0%,rgba(0,0,0,0.28)_100%)]"
+                      className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
                     >
                       <div className="relative -left-[5%] grid w-[110%] -translate-y-6 grid-cols-6 gap-2">
                         {patternCellIds.map((id) => (
                           <div
                             key={id}
-                            className="relative aspect-square w-full overflow-hidden rounded-md bg-[#161616] p-[0.8px]"
+                            className="relative aspect-square w-full overflow-hidden rounded-md bg-[#262626] p-[0.8px]"
                           >
-                            <div className="relative z-10 h-full w-full rounded-md bg-[#161616]" />
+                            <div className="relative z-10 h-full w-full rounded-md bg-[#262626]" />
                           </div>
                         ))}
                       </div>
+
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0"
+                        style={{
+                          background:
+                            "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.96) 100%)",
+                        }}
+                      />
                     </div>
 
                     <div className="relative z-10 flex items-center gap-4">

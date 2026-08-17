@@ -420,10 +420,18 @@ export const MobileNav = ({
           // CSS transitions rather than framer `animate`: no JS per frame, and
           // every state is readable from computed style.
           "transition-[width,translate,border-radius,background-color,border-color] duration-200 ease-out",
-          isOpen ? "w-[96%]" : visible ? "w-[80%]" : "w-full",
+          // Width and radius move together, so they live in one ternary. The
+          // 69% width is measured off the reference recording, where the
+          // scrolled bar spans 65..355 of a 420px viewport. The reference's
+          // ends are fully rounded; this deliberately uses rounded-2xl instead.
+          isOpen
+            ? "w-[96%] rounded-[18px]"
+            : visible
+              ? "w-[69%] rounded-2xl"
+              : "w-full rounded-none",
           floating
-            ? "translate-y-2.5 rounded-[18px] border border-white/10 bg-[#0b0b10]/90 backdrop-blur-md shadow-2xl"
-            : "translate-y-0 rounded-none border border-transparent bg-transparent",
+            ? "translate-y-2.5 border border-white/10 bg-[#0b0b10]/90 backdrop-blur-md shadow-2xl"
+            : "translate-y-0 border border-transparent bg-transparent",
           className,
         )}
       >

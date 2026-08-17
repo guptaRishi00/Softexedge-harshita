@@ -71,13 +71,13 @@ export default function WorkProjectShowcase() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3, ease: premiumEase }}
-          className="flex flex-wrap gap-2 max-md:gap-x-7 md:gap-3"
+          className="flex flex-wrap gap-2 md:gap-3"
         >
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className="relative rounded-full px-5 py-2.5 text-sm font-medium transition-colors duration-300 max-md:px-3"
+              className="relative rounded-full px-5 py-2.5 text-sm font-medium transition-colors duration-300"
             >
               {activeCategory === category && (
                 <motion.div

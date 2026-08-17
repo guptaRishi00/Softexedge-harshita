@@ -14997,3 +14997,108 @@ Left alone: line-height still differs — /work `leading-[1em]` gives 40px, /abo
   3+2+1 at 320, 4+2 at 414; no horizontal overflow.
 - Desktop @1250 unchanged: marginLeft 0px, gap 12px, padding 20px, bg 40 / label 60, single row.
 - `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — mobile card pattern/overlay matched to ChannelCard
+- The two had diverged: ChannelCard switches `mask-image` OFF below md and paints an equivalent black
+  overlay instead (`radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.96) 100%)`),
+  while OurValues still used a mask at alphas 0.36 core / 0.28 edge. Grid geometry and cell colour were
+  already identical.
+- Dropped the `[mask-image:...]` class and appended ChannelCard's overlay div inside the same layer.
+  Whole block is already `md:hidden`, so no `max-md:` variants needed.
+- NOTE for future sessions: this deliberately reverses the two earlier "reduce the opacity of the black
+  gradient" requests — ChannelCard's edge is 0.96 black vs the 0.72 equivalent OurValues had. User asked
+  for parity explicitly; flagged to them.
+- Verified @375 by diffing 14 computed properties of the pattern layer against the live ChannelCard on
+  /home: maskImage, webkitMaskImage, overlay presence/background/display/inset, grid columns/gap/
+  width%/translate, cell outer+inner bg, radius, padding — `identical: true`, zero diffs. cellCount
+  stays 36 vs ChannelCard's 30 (taller card); `gridCoversCard: true`.
+- Desktop @1250 untouched: mobile block `display: none`, desktop card still flex, bg rgb(16,15,15),
+  radius 22px, 0 box-grid cells.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — mobile pattern cells lightened
+- Pattern cells `bg-[#161616]` -> `bg-[#262626]` (rgb 22 -> 38) on both the outer and inner layer of the
+  36 grid cells. They exist only inside the `md:hidden` block (desktop card has 0 box cells, verified),
+  so no `max-md:` variant needed. Overlay and mask left exactly as ChannelCard-matched.
+- Verified @375: all 36 cells report rgb(38,38,38) on both layers (single unique value each), overlay
+  still `rgba(0,0,0,0.5) -> rgba(0,0,0,0.96)`, maskImage still `none`.
+- Composite effect (black at alpha a over cell v renders v*(1-a)): bright spot 11 -> 19, card edge
+  0.9 -> 1.5. The edge is still nearly black because the overlay is 0.96 there — if the user wants the
+  pattern visible across the whole card, the overlay's edge alpha is the knob, not the cell colour.
+- Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), 0 box cells.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Mobile navbar matched to the madebyshape.co.uk reference recording
+- Source: user-supplied 420x758 screen recording (9.9s, 298f). Extracted with ffmpeg (fps/tile contact
+  sheets + drawgrid overlays) since the Read tool cannot open mp4.
+- Reference states, measured off a 3x grid overlay at 20px pitch:
+  * top of page: full width, transparent, no pill, logo left edge ~42px
+  * scrolled: pill spanning 65..355 of 420 => 290px = 69% width, centred, height ~50px, top offset
+    ~7px, FULLY rounded ends, ~20px inner padding
+  * hides completely on scroll down, reveals as the pill on scroll up
+- Our behaviour already matched (hide >120px on scroll down, reveal on up, pill above 80px). The deltas
+  were geometric: `w-[80%]` -> `w-[69%]` and `rounded-[18px]` -> `rounded-full`, applied in BOTH
+  navbar variants (ui/ for home, page/ for every other route).
+- Radius had to be split out of the `floating` branch: the open state keeps `rounded-[18px]`, because
+  `rounded-full` on the tall dropdown card bows its sides in.
+- ENVIRONMENT LIMITATION hit twice, worth remembering: (1) scroll events never dispatch in the hidden
+  Browser pane - a freshly attached listener logged 0 hits while scrollY read 900, because scroll is
+  delivered on the frame lifecycle and rAF is frozen; (2) width/border-radius are CSS-transitioned, so
+  computed style stays at the OLD value. Fix for (2): set `style.transition='none'` and force reflow
+  before reading. The scroll-driven transition itself cannot be exercised here - user confirms on device.
+- Verified @420 with transitions neutralised: scrolled = left 65, right 355, width 290, 69.0%, radius
+  full pill -> exact match to the reference. Open = 96% / 18px. Top = full width / 0px.
+- Remaining knowable gaps, NOT changed (flagged to user): our scrolled pill is 57px tall vs ~50, inner
+  padding 29px vs 20 (logo at 94 vs 85), and top-state side padding 28px vs ~42.
+- Desktop @1250 untouched: mobile pill display:none, NavBody still flex, 1250 wide, padding 32/40,
+  radius 0. Edit is entirely inside the `lg:hidden` branch.
+- `tsc --noEmit` clean; `next build` compiled. Confirmed Tailwind emits `.w-\[69\%\]{width:69%}` and
+  `.rounded-full` in the production chunk (grep needs the percent escaped, and single-quoted shell
+  patterns must use SINGLE backslashes - over-escaping gave a false negative first try).
+
+## Mobile navbar radius: rounded-full -> rounded-2xl
+- Scrolled-and-closed branch only, in BOTH variants (ui/ for home, page/ for every other route).
+  Width (69%), hide/reveal behaviour and the open state are unchanged.
+- `rounded-2xl` is NOT 16px in this project: globals.css sets `--radius: .625rem` and the built rule is
+  `.rounded-2xl{border-radius:calc(var(--radius) * 1.8)}` = 10 * 1.8 = 18px. That is the exact radius
+  the bar had before the rounded-full change, so this round is effectively a revert to the original.
+  It also means the closed (rounded-2xl) and open (rounded-[18px]) radii are now numerically identical
+  — the `rounded-[18px]` literal could be collapsed to `rounded-2xl`, left alone as out of scope.
+- Verified @420 with transitions neutralised (`style.transition='none'` + reflow — required, computed
+  style otherwise reports the pre-transition value): scrolled = left 65 / right 355 / width 290 /
+  69.0% / radius 18px, `isFullPill: false`. Open = 96% / 18px. Top = full width / 0px.
+- Desktop @1250 untouched: mobile pill display:none, NavBody flex, 1250 wide, padding 32/40, radius 0.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## WorkProjectShowcase — active category chip no longer a circle on mobile
+- Cause was self-inflicted: the earlier `max-md:px-3` left "All" at exactly 40x40, and `rounded-full`
+  resolves to half the SHORTER side, so the same class renders a pill on the wide labels (SaaS 55x40,
+  Branding 81x40, E-Commerce 108x40 — aspect 1.38-2.71) but a literal circle on "All" (aspect 1.00,
+  0px straight edge). Desktop was never affected: px-5 leaves "All" at 56x40, aspect 1.40, already a pill.
+- Added `max-md:rounded-2xl` to the `layoutId="activeCategory"` indicator — a FIXED 18px radius rounds
+  every chip identically regardless of label width. Left the button's own `rounded-full` alone; it
+  paints nothing (no bg/border), only the indicator is visible.
+- Verified @375: declared 18px, effective 18, `isCircle: false`, 4px straight edge on both axes; after
+  clicking E-Commerce the radius is still 18px, i.e. fixed, not size-derived. (The indicator's BOX
+  reading is stale after a switch — it is a framer layout animation and rAF is frozen in this pane —
+  but the radius is plain CSS and reads true.)
+- Desktop @1250 untouched: declared radius still 3.35e7px (rounded-full), effective 20, box 56x40,
+  aspect 1.40, renders as a pill.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## WorkProjectShowcase — category chip x padding back to px-5 (fixes the circle properly)
+- The chip being a 40x40 SQUARE was the root cause of the circle, not the radius token. Restoring the
+  x padding to 20px makes "All" 56x40 (aspect 1.40, 15.8px straight edge) so `rounded-full` renders a
+  pill exactly like the wide labels — the previous `max-md:rounded-2xl` only shaved 20px -> 18px, which
+  is invisible on a 40px-tall box, hence "it didn't work".
+- Removed all three mobile overrides on this component: `max-md:px-3`, `max-md:rounded-2xl`, and
+  `max-md:gap-x-7` (the last existed only to keep 3+3 with the narrower chips; at px-5 the original
+  gap-2 gives 3+3 on its own — verified, not assumed).
+- Trade-off now accepted by the user: labels sit 32px from the edge again (was 24px with px-3). The
+  pill background is still at 12 == descriptionLeft, so the "not stuck to the edge" fix still holds.
+- Verified @375: chip 56x40 aspect 1.40 `isCircle:false`, bg left 12 == description left 12, rows 3+3,
+  no overflow. @320: chip identical, bg 12, rows 3+2+1, no overflow.
+- Desktop @1250 unchanged: padding 20px, gap 12px, margin 0, rounded-full, 1 row.
+- NOTE: HEAD already contained the earlier `max-md:px-3` / `max-md:gap-x-7`, so that work had been
+  committed by someone outside this session; this change removes them rather than being a no-op.
+- `tsc --noEmit` clean; `next build` compiled.
