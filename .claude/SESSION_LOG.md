@@ -14927,3 +14927,73 @@ Alpha by x across the three steps (card 351px):
 Worth noting for the next step if there is one: the right side is now close to the floor. Between the midpoint and 85% the scrim is the only thing dimming the pattern, so further reduction has little room — a visible change beyond this would mean moving the 85% stop earlier (fading sooner) or lifting the `from-50%` flat run, and the latter is the text's backing.
 
 @1265: scrim `rgb(0,0,0) 0%, oklab(0 0 0 / 0.9) 50%, transparent 100%` at `max-width: 768px`, string-compared identical to the pre-change baseline; card 628px. tsc clean, `Compiled successfully in 30.5s`.
+
+## WorkHeroSection (mobile) — dome images scaled down, title matched to /about
+Two files:
+- `src/components/ui/DomeGallery.tsx`: added a bare `data-dome-card` attribute to the card div. Inert — a selector hook only, no styling.
+- `src/components/work/WorkHeroSection.tsx`: dome wrapper gains `max-md:[&_[data-dome-card]]:scale-[0.7]`; hero title `text-[2.75rem]` -> `text-[2.5rem]`.
+
+Why scale rather than resize: DomeGallery derives every card from module-level `WIDTH_PATTERN`/`HEIGHT_PATTERN` constants, so editing those would hit desktop too. The cards are positioned with `left`/`top` (not transform) and Tailwind v4's `scale-*` writes the standalone `scale` property, so each card shrinks about its own centre with the dome's geometry and the track transform untouched.
+
+The title edit is phone-scoped by construction: the base size only applies below `sm`, since `sm:text-6xl` takes over at 640 — and /about's hero uses the same `sm:text-6xl`, so the two already agreed from 640 up. Only the sub-640 values differed, 44 vs 40.
+
+Verified @375: /about hero reference 40px; /work hero now 40px (`matchesAboutSize: true`), was 44. All 162 dome cards report `scale: 0.7`, first card rendering 210x271 from a declared 300x386.58 — a measured ratio of exactly 0.70. No horizontal overflow. @1265: title 112px (`lg:text-[7rem]`), cards `scale: none` rendering 300px against a declared 300px (`unscaled: true`) — desktop untouched. tsc clean, `Compiled successfully in 15.0s`, biome clean on both files.
+
+Left alone: line-height still differs — /work `leading-[1em]` gives 40px, /about `leading-[1.05]` gives 42px. The ask was size, and the two are 2px/line apart; say the word to match leading too.
+
+## WorkHeroSection — mobile dome scaled proportionally (cards AND gaps)
+- Reverted `max-md:[&_[data-dome-card]]:scale-[0.7]` on `#work-hero-dome`. Cards are absolutely
+  positioned from `left`/`top` accumulated as `colW + gap`, so scaling only the rendered card left
+  the stride intact — the gaps grew by exactly what the cards lost. Wrong layer.
+- Moved the reduction into `DomeGallery`'s layout math: `compact` state set in the existing
+  `measure()` pass via `matchMedia("(max-width: 767px)")`, factor `f = compact ? 0.7 : 1` applied to
+  `colW`, `cardH` and `gap` (`const g = gap * f`), strides now `+ g`. `compact` added to the memo
+  deps — without it the factor never recomputed and the change was inert.
+- `max-sm:leading-[1.1]` on the h1 restores the original 44px line-height at the new 40px size.
+- Verified @375: card 210px (300x0.7), gaps 11.2h/11.2v (16x0.7), per-card `scale: none`, card count
+  162 -> 222 as the fill loops compensated, dome still covers its container (spans left edge exactly,
+  overhangs top/right/bottom), no horizontal overflow, title 40px/44px.
+- Verified @1250: colW 300, gap 16, 162 cards, title 112px/112px — identical to before (`f === 1`).
+- `tsc --noEmit` clean; `next build` compiled. Only biome hit is the pre-existing unused `premiumEase`
+  (confirmed present at HEAD via stash).
+
+## WorkHeroSection — mobile title size up
+- `text-[2.5rem]` -> `text-[2.875rem]` (40px -> 46px, +15%) on the h1. Base value only, so it applies
+  below sm(640) where `sm:text-6xl` takes over — mobile-only by construction. `max-sm:leading-[1.1]`
+  left alone, so leading tracks the size (44px -> 50.6px).
+- Sized against the `whitespace-nowrap` "Our Creative" line, not by eye: at 375 it needs 259 of 327px
+  available. Measured ceiling before it overflows is 57.6px @375, but only ~48px @320, so 46px is the
+  largest safe step for a 320px phone (13px spare, verified at a real 320 viewport).
+- Verified @375: 46px/50.6px, 2 lines, no horizontal overflow. @320: fits, 13px spare, no overflow.
+- Verified unchanged: @700 60px/60px (sm tier), @1250 112px/112px (lg tier).
+- `tsc --noEmit` clean; `next build` compiled.
+
+## WorkProjectShowcase — mobile category pills flush-left
+- Diagnosis (measured, not guessed): every pill has `px-5`, so "All" and "Branding" labels were ALREADY
+  aligned at x=32. The apparent indent was that row 1's leftmost ink is the active pill's background at
+  x=12 (flush with the heading) while row 2's is bare text at 32 — the padding only shows where there
+  is no pill behind it.
+- Constraint: `text_left - bg_left` always equals the pill padding, so labels can sit at 12 (the section
+  `px-3` content edge) with the bg still on-screen only if mobile padding <= 12px. Used exactly 12 and
+  shifted the row by the same amount: `max-md:px-3` on the button + `max-md:-ml-3` on the wrapper.
+  Labels land at 12, active bg at 0 (flush to the viewport edge, nothing clipped).
+- Side effect of the narrower chips: a 4th fit on row 1, changing the 3+3 grouping. `max-md:gap-x-7`
+  restores 3+3 at 375. gap-x-4 (16px) and gap-x-6 (24px) were both still 4+2 — measured slack, needed
+  >=27px. Label-to-label rhythm is 52px vs the original 48px.
+- Verified @375 3+3, @320 3+2+1, @414 4+2 — every row's first label at 12 == headingLeft, no horizontal
+  overflow at any width (composition was always width-dependent).
+- Desktop untouched: @768 and @1250 marginLeft 0px, gap 12px (`md:gap-3`), padding 20px (`px-5`),
+  bg 40 / label 60 — the original 20px offset.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## WorkProjectShowcase — mobile pill back inside the gutter
+- Dropped `max-md:-ml-3` (the edge-bleed from the previous entry). Active pill bg now at x=12, exactly
+  `descriptionLeft` — the section's `px-3`, which is the padding the user asked to match.
+- Kept `max-md:px-3` + `max-md:gap-x-7`, so the label indent vs the description is 12px rather than the
+  original 20px. Note the two asks conflict: `bg_left = text_left - pill_padding`, so the pill cannot be
+  12px off the edge AND have labels start at 12 unless the pill has zero padding around its text. 12px
+  is the smallest indent a pill with breathing room allows.
+- Verified bg at 12 == descriptionLeft at 320 / 375 / 414; label indent 12 on every row; 3+3 at 375,
+  3+2+1 at 320, 4+2 at 414; no horizontal overflow.
+- Desktop @1250 unchanged: marginLeft 0px, gap 12px, padding 20px, bg 40 / label 60, single row.
+- `tsc --noEmit` clean; `next build` compiled.

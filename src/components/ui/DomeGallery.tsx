@@ -68,12 +68,22 @@ export default function DomeGallery({
   const rootRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [dims, setDims] = useState({ w: 0, h: 0 });
+  // Compact geometry below md. Scaling the RENDERED card is not enough: x/y are
+  // accumulated from colW/cardH + gap, so shrinking only the card leaves the
+  // stride intact and the gaps visibly grow. The factor has to go into the
+  // layout inputs so card size and spacing shrink together.
+  // Read here rather than via a hook: cards only exist once `dims` is measured
+  // (both start at 0, so the server renders none), and this is set in the same
+  // measure pass, so there is nothing to mismatch on hydration.
+  const [compact, setCompact] = useState(false);
 
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
-    const measure = () =>
+    const measure = () => {
       setDims({ w: el.clientWidth, h: el.clientHeight });
+      setCompact(window.matchMedia("(max-width: 767px)").matches);
+    };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
@@ -99,21 +109,26 @@ export default function DomeGallery({
     }
 
     const built: Card[] = [];
+    // One factor for size AND stride, so the composition scales uniformly.
+    // `copies` and the row loop below both refill from these, so coverage of the
+    // container holds automatically at any factor.
+    const f = compact ? 0.7 : 1;
+    const g = gap * f;
     let x = 0;
     for (let c = 0; c < COLUMNS; c++) {
-      const colW = WIDTH_PATTERN[c % WIDTH_PATTERN.length];
+      const colW = WIDTH_PATTERN[c % WIDTH_PATTERN.length] * f;
       let hIdx = (c * 5) % HEIGHT_PATTERN.length;
       let y = -OFFSET_PATTERN[(c * 5 + 2) % OFFSET_PATTERN.length] * h;
       let r = 0;
       while (y < h && r < 12) {
-        const cardH = HEIGHT_PATTERN[hIdx] * h;
+        const cardH = HEIGHT_PATTERN[hIdx] * h * f;
         const img = pool[(r + 2 * c) % pool.length];
         built.push({ x, y, w: colW, h: cardH, src: img.src, alt: img.alt });
-        y += cardH + gap;
+        y += cardH + g;
         hIdx = (hIdx + 1) % HEIGHT_PATTERN.length;
         r++;
       }
-      x += colW + gap;
+      x += colW + g;
     }
 
     const pitch = x; 
@@ -122,7 +137,7 @@ export default function DomeGallery({
       stripPitch: pitch,
       copies: Math.max(2, Math.ceil(w / pitch) + 1),
     };
-  }, [dims, pool, gap]);
+  }, [dims, pool, gap, compact]);
 
   useEffect(() => {
     if (!autoRotate || stripPitch === 0) return;
@@ -182,6 +197,9 @@ export default function DomeGallery({
                 // biome-ignore lint/suspicious/noArrayIndexKey: static layout, never reorders
                 i
               }`}
+              // Targeting hook for call sites that need to resize the cards at a
+              // breakpoint. Purely a selector; carries no styling of its own.
+              data-dome-card
               className={`absolute overflow-hidden${
                 cardOverlay ? " group pointer-events-auto" : ""
               }`}
