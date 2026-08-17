@@ -48,8 +48,12 @@ const quoteVariants = {
 // ChannelCard paints behind the contact cards. Its cells are pointer-reactive;
 // on touch the hover intensity is always 0, so every cell resolves to a flat
 // tone and the whole thing collapses to this static markup. These sit at
-// #303030 rather than ChannelCard's #161616: even with the overlay lightened to
-// 0.4/0.88, the darker grey had almost nothing left to show. 36 cells
+// #2c2c2c rather than ChannelCard's #161616: even with the overlay lightened to
+// 0.4/0.88, the darker grey had almost nothing left to show. WebKit gets a
+// lighter #3c3c3c via `supports-[-webkit-touch-callout:none]` — the same value
+// reads noticeably darker on iOS Safari, to the point the pattern disappears.
+// That query is WebKit-only (Blink dropped the property), so it also covers
+// iOS Chrome, which is the same renderer and wants the same treatment. 36 cells
 // (6 rows) is what clears the card height; ChannelCard renders 30 because its
 // cards are shorter, and the surplus is clipped either way.
 const patternCellIds = Array.from({ length: 36 }, (_, i) => `values-box-${i}`);
@@ -345,9 +349,9 @@ export default function OurValuesSection() {
                         {patternCellIds.map((id) => (
                           <div
                             key={id}
-                            className="relative aspect-square w-full overflow-hidden rounded-md bg-[#303030] p-[0.8px]"
+                            className="relative aspect-square w-full overflow-hidden rounded-md bg-[#2c2c2c] p-[0.8px] supports-[-webkit-touch-callout:none]:bg-[#3c3c3c]"
                           >
-                            <div className="relative z-10 h-full w-full rounded-md bg-[#303030]" />
+                            <div className="relative z-10 h-full w-full rounded-md bg-[#2c2c2c] supports-[-webkit-touch-callout:none]:bg-[#3c3c3c]" />
                           </div>
                         ))}
                       </div>

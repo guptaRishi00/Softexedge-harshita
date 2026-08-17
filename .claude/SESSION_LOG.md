@@ -15155,3 +15155,24 @@ Two independent causes, both fixed in BOTH navbar variants.
 - `tsc --noEmit` clean; `next build` compiled.
 - Caveat: the scroll-driven transition still cannot be exercised in this pane (scroll events never
   dispatch with rAF frozen), so the lag fix is reasoned from the code diff, not measured at runtime.
+
+## OurValuesSection — pattern nudged darker + WebKit-only lighter branch
+- The two halves of the request conflict (darker overall, but MORE visible on Safari), so this is one
+  base value plus a browser-scoped override rather than a single number.
+  * base:   #303030 -> #2c2c2c (48 -> 44), a 4-unit step for "very little"
+  * WebKit: #3c3c3c (60) via `supports-[-webkit-touch-callout:none]:bg-[#3c3c3c]` on both cell layers
+- Chose `-webkit-touch-callout` because Blink dropped the property, so the query is WebKit-only and also
+  catches iOS Chrome (same renderer, same symptom). Verified all of -webkit-touch-callout, -webkit-hyphens,
+  -webkit-backdrop-filter, font:-apple-system-body and -webkit-overflow-scrolling report false here.
+- Also checked and RULED OUT the obvious suspect: `radial-gradient(280px circle at ...)` parses fine in
+  both stop orders (`CSS.supports` true for `280px circle` and `circle 280px`), so the gradient syntax
+  is not the cause and was left alone.
+- Cascade proof: both selectors are single-class (equal specificity), and the @supports rule sits at
+  byte 115008 vs the base rule at 35888 — i.e. LATER, so it wins on WebKit.
+- Verified @375 in Chromium: `-webkit-touch-callout` unsupported, all 36 cells rgb(44,44,44) on both
+  layers, overlay still [0.4, 0.88]. Composite: Chromium 26.4 bright / 5.3 edge; WebKit branch would be
+  36.0 / 7.2 (previous was 28.8 / 5.8).
+- Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), 0 box cells.
+- `tsc --noEmit` clean; `next build` compiled.
+- CAVEAT: no Safari available in this environment, so the WebKit value is an informed guess at how much
+  lift is needed — it could not be measured. Needs a screenshot from the user to tune.
