@@ -78,14 +78,17 @@ interface MobileNavMenuProps {
 export const Navbar = ({ children, className }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState<boolean>(false);
+  // Mirrors the homepage copy: tracks the last value handed to `setVisible` so
+  // the listener can tell whether a real change occurred BEFORE touching React.
+  const visibleRef = useRef(false);
 
   // Same treatment as the homepage copy (ui/resizable-navbar): a native passive
   // listener plus a direct style write and a CSS transition. framer's
   // useScroll/useMotionValueEvent ran library code on every scroll frame; the
-  // per-frame `setIsHidden` (unguarded in this copy) re-rendered the component
-  // and re-ran the cloneElement pass over the whole nav subtree on every scroll
-  // direction change; and the slide itself was a framer spring. The CSS
-  // transition below is the same 300ms ease-out, run by the compositor.
+  // per-frame `setIsHidden` re-rendered the component and re-ran the
+  // cloneElement pass over the whole nav subtree on every scroll direction
+  // change; and the slide itself was a framer spring. The CSS transition below
+  // is the same 300ms ease-out, run by the compositor.
   // `visible` stays React state — children restyle from it, but it flips only
   // when the 80px threshold is crossed, not per frame.
   useEffect(() => {
@@ -98,7 +101,16 @@ export const Navbar = ({ children, className }: NavbarProps) => {
       const latest = window.scrollY;
 
       const shouldBeVisible = latest > 80;
-      setVisible((prev) => (prev === shouldBeVisible ? prev : shouldBeVisible));
+      // Guard with a ref instead of handing setState a same-value functional
+      // update on every scroll event: React still runs the dispatcher (and pays
+      // its overhead) for every bail-out, and this listener fires 60-120x/sec
+      // on a momentum-scrolling phone. Skipping the call entirely when the
+      // boolean has not crossed the threshold removes that per-frame cost;
+      // `visible` still flips at exactly the same scroll positions.
+      if (shouldBeVisible !== visibleRef.current) {
+        visibleRef.current = shouldBeVisible;
+        setVisible(shouldBeVisible);
+      }
 
       const shouldHide = latest > lastScroll && latest > 120;
       if (shouldHide !== hidden) {
@@ -489,8 +501,12 @@ export const MobileNavHeader = ({
     return (
       <div
         className={cn(
-          "relative flex w-full shrink-0 flex-row items-center justify-between px-7 pb-3.5",
-          visible ? "pt-2.5" : "pt-8",
+          // The pill's two values are equal because it has a VISIBLE box, so
+          // any difference reads as a mis-centred logo — pt-2.5/pb-3.5 sat the
+          // row 2px high. 3+3 keeps the old 24px total, so only the centring
+          // moves, not the height.
+          "relative flex w-full shrink-0 flex-row items-center justify-between px-7",
+          visible ? "pt-3 pb-3" : "pt-8 pb-3.5",
           className,
         )}
       >

@@ -15129,3 +15129,29 @@ Left alone: line-height still differs — /work `leading-[1em]` gives 40px, /abo
 - Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), radius 22px,
   0 box cells.
 - `tsc --noEmit` clean; `next build` compiled.
+
+## Mobile navbar: logo mis-centred in the pill + scroll lag on every non-home page
+Two independent causes, both fixed in BOTH navbar variants.
+
+1) CENTRING. MobileNavHeader paired `pt-2.5` (10px) with a base `pb-3.5` (14px), so in the pill state
+   the row sat 2px above centre. Measured @420 before: gapAbove 10.8 / gapBelow 14.8, logo AND toggle
+   both offset -2.00 from the pill centre. Moved `pb-3.5` out of the base string into the ternary:
+   `visible ? "pt-3 pb-3" : "pt-8 pb-3.5"`. 12+12 keeps the previous 24px total, so the pill height is
+   unchanged and only the centring moves. The top state keeps its asymmetry deliberately — there is no
+   visible box there, and pt-8 is what holds the bar off the status bar.
+   Verified after: /about gapAbove 12.8 == gapBelow 12.8, offset 0.00, pill height 56.5 vs 56.4 before;
+   /home gapAbove 13 == gapBelow 13, offset 0.00.
+
+2) LAG. `page/resizable-navbar` (every route EXCEPT home) still called
+   `setVisible(prev => prev === next ? prev : next)` on EVERY scroll event. React bails out on the
+   same value but still enters the dispatcher, and the listener fires 60-120x/sec while
+   momentum-scrolling. The homepage copy had already been given a `visibleRef` guard that skips the
+   call entirely; that guard is now ported across, so the two listeners are identical. This is why the
+   lag showed up on "every page" and not the homepage.
+   Both files now contain `visibleRef`; no unguarded `setVisible((prev)` remains in either.
+
+- Desktop @1250 untouched: mobile pill display:none, NavBody flex, 1250 wide, padding 32/40, radius 0.
+  Everything changed sits inside the `lg:hidden` MobileNav or in a listener with no desktop-visible effect.
+- `tsc --noEmit` clean; `next build` compiled.
+- Caveat: the scroll-driven transition still cannot be exercised in this pane (scroll events never
+  dispatch with rAF frozen), so the lag fix is reasoned from the code diff, not measured at runtime.

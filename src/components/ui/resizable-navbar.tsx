@@ -493,10 +493,13 @@ export const MobileNavHeader = ({
   // and the positioning, so this is just the row.
   // Extra top room only while the bar is full-width: once it shrinks to a pill
   // the same value would read as a lopsided, top-heavy card.
+  // The pill's two values are equal because it has a VISIBLE box, so any
+  // difference reads as a mis-centred logo — pt-2.5/pb-3.5 sat the row 2px high.
+  // 3+3 keeps the old 24px total, so only the centring moves, not the height.
   const base = dropdown
     ? cn(
-        "relative flex w-full shrink-0 flex-row items-center justify-between px-7 pb-3.5",
-        visible ? "pt-2.5" : "pt-8",
+        "relative flex w-full shrink-0 flex-row items-center justify-between px-7",
+        visible ? "pt-3 pb-3" : "pt-8 pb-3.5",
       )
     : null;
 
