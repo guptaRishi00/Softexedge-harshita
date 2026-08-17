@@ -223,6 +223,8 @@ export default function HomePage() {
               className="relative z-30 lg:shadow-[0_-12px_24px_-2px_rgb(0_0_0_/_0.24),0_-6px_12px_-4px_rgb(0_0_0_/_0.2)]"
             >
               <ContactSection />
+
+              {/* hello? */}
             </div>
 
             <div className="[&>section]:pt-16 md:[&>section]:pt-30">

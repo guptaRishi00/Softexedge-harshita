@@ -14656,3 +14656,16 @@ This is a deliberate step away from last task's exact ChannelCard match (which u
 Verified @375: mask now `rgba(0, 0, 0, 0.36) 0%, rgba(0, 0, 0, 0.04) 100%`, blob centre at x=299 of a 351px card, grid untouched. @1265: mobile block `display: none`, zero pattern layers in the desktop panel, panel still `rgb(16, 15, 15)` / `white/0.06`. tsc clean, `Compiled successfully in 21.4s`.
 
 Env note: the browser tab wedged at `/` mid-task (readyState complete, no content) while the dev server answered 200 — `preview_start` with the URL recovered it. Second time this session the pane has needed re-opening rather than re-navigating.
+
+## git — merged origin/revert-1-sudeep into main and pushed
+`b7b32aa..e871e22 main -> main`. Local HEAD and origin/main verified identical afterwards.
+
+Sequence: local main was 0 ahead / 3 behind, working tree clean (this session's work had already been committed by the user between tasks). `git pull --ff-only origin main` synced, then `git merge origin/revert-1-sudeep` fast-forwarded — revert-1-sudeep was origin/main plus exactly one commit (`e871e22 Revert "Sudeep"`), with zero commits on main that it lacked, so no merge commit and no conflict.
+
+What the revert actually undoes, checked before pushing rather than after:
+- deletes `package-lock.json` (-5984 lines). The repo also carries `bun.lock`, and the project runs on bun, so this removes a duplicate npm lockfile. Worth knowing it can change which package manager Vercel picks on the next deploy.
+- `CtaSection`: drops `transform-gpu` from the CTA card
+- `SpotlightGrid`: cell markup back from `absolute inset-[2px]` to `p-[2px]` + `relative h-full w-full`
+- `plan.md`: removes a stray trailing "x"
+
+None of it collides with this session's work — confirmed post-merge that `--spotlight-sweep-col-start`, `values-cta-grad`, the 0.36 mask alpha and the footer `basis-auto pl-8` are all still present. tsc clean and `Compiled successfully in 19.2s` on the merged tree BEFORE pushing.
