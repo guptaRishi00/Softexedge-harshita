@@ -29,7 +29,7 @@ continues seamlessly. Declarative framer `repeat: Infinity` marquees
 keyframes and could visibly jump; their per-frame cost is one transform
 write each. Out of scope, flagged: 49.8MB `video1.mp4` re-encode (no ffmpeg
 on this machine), `SubServices` ReactLenis-per-section, portfolio chip
-blurs (visible change), dev-mode overhead (prod build is the honest judge).
+blurs (visible change), dev-mode overhead (prod build is the honest judge)x.
 
 ## Steps
 

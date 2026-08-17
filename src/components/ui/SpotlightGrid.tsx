@@ -350,7 +350,7 @@ export default function SpotlightGrid({
             return (
               <div
                 key={index}
-                className={`relative aspect-square w-full overflow-hidden ${cellClassName} p-[2px] transition-all duration-300 ease-out`}
+                className={`relative aspect-square w-full overflow-hidden ${cellClassName} transition-all duration-300 ease-out`}
                 style={{ backgroundColor: "#121212" }}
               >
                 <div
@@ -370,7 +370,7 @@ export default function SpotlightGrid({
                 />
 
                 <div
-                  className={`relative z-10 h-full w-full ${cellClassName} transition-colors duration-300`}
+                  className={`absolute inset-[2px] z-10 ${cellClassName} transition-colors duration-300`}
                   style={{
                     backgroundColor: bgColor,
                     transition: sweepTween && `background-color ${sweepTween}`,
