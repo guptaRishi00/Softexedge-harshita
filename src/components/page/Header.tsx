@@ -29,6 +29,11 @@ const CustomLogo = ({
       alt="Grovio Logo"
       width={85}
       height={30}
+      // next/image lazy-loads by default (unlike a native img), so the navbar
+      // mark — the topmost thing on the page — was waiting on the lazy pass and
+      // popping in late. `priority` makes it eager + fetchpriority=high and adds
+      // a preload hint.
+      priority
       style={{ height: "auto" }}
       className="w-[80px] object-contain transition-all duration-300 md:w-[90px]"
     />

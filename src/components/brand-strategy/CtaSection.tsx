@@ -20,7 +20,7 @@ export default function CtaSection() {
   return (
     <section className="relative w-full bg-white px-0 md:px-0 md:pt-0">
       <div className="mx-auto w-full">
-        <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black max-md:[--spotlight-cols:5] max-md:[--spotlight-sweep-col-start:3] max-md:[&_.grid]:gap-2 max-md:[&_.grid]:-translate-x-[3px] transform-gpu">
+        <div className="relative flex min-h-[45vh] w-full flex-col justify-between overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black max-md:[--spotlight-cols:5] max-md:[--spotlight-sweep-col-start:3] max-md:[&_.grid]:gap-2 max-md:[&_.grid]:-translate-x-[10px] transform-gpu">
           <SpotlightGrid
             speed={0.15}
             sweep
@@ -32,7 +32,7 @@ export default function CtaSection() {
             sweepRowEnd={5}
           />
 
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent max-md:from-black/90 max-md:from-50% max-md:via-black/45 max-md:via-85%" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent max-md:from-black/90 max-md:from-50% max-md:via-black/10 max-md:via-85%" />
 
           {/* The bottom scrim stacks on top of SpotlightGrid's own `to-black/30`
               bottom fade and its vignette, leaving the foot of the card ~30%

@@ -429,7 +429,7 @@ export const MobileNav = ({
           // is then readable from computed style instead of living inside
           // framer's internal frame loop.
           "transition-[width,translate,border-radius,background-color,border-color] duration-200 ease-out",
-          isOpen ? "w-[96%]" : visible ? "w-[88%]" : "w-full",
+          isOpen ? "w-[96%]" : visible ? "w-[80%]" : "w-full",
           floating
             ? "translate-y-2.5 rounded-[18px] border border-white/10 bg-[#0b0b10]/90 backdrop-blur-md shadow-2xl"
             : "translate-y-0 rounded-none border border-transparent bg-transparent",
@@ -488,7 +488,7 @@ export const MobileNavHeader = ({
   const base = dropdown
     ? cn(
         "relative flex w-full shrink-0 flex-row items-center justify-between px-7 pb-3.5",
-        visible ? "pt-3.5" : "pt-8",
+        visible ? "pt-2.5" : "pt-8",
       )
     : null;
 

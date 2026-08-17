@@ -36,6 +36,9 @@ const CustomLogo = ({
       alt="Grovio Logo"
       width={85}
       height={30}
+      // See page/Header: next/image defaults to lazy, which made the navbar
+      // mark pop in after first paint.
+      priority
       style={{ height: "auto" }}
       className="w-[80px] object-contain md:w-[90px]"
     />

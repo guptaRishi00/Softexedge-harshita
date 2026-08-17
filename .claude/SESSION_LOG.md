@@ -14833,3 +14833,97 @@ Node counts: ContactSection 559 -> 262 (-53%), whole page 1842 -> 1545 @375 (-16
 Also confirmed the previous two fixes still hold: masked layers 5 (down from 8), overlay present on every card at 375 and `display: none` at 1265, masks active on desktop, no horizontal overflow. tsc clean, `Compiled successfully in 19.3s`, biome unchanged at 1 pre-existing on this file.
 
 Minor inconsistency left alone: OurValuesSection's hand-built copy of this pattern uses 36 cells, derived separately for its own card height. Different card, different need; not worth forcing to one constant.
+
+## OurValuesSection (mobile) — pattern veil lifted again, edge 0.12 -> 0.28
+`src/components/about/OurValuesSection.tsx`: mask edge alpha `rgba(0,0,0,0.12)` -> `rgba(0,0,0,0.28)`. Core deliberately held at 0.36.
+
+Same request as two tasks ago, so a decisive step rather than another nudge — 0.28 is 2.3x the last value and 7x the original 0.04. The footer-gap thread earlier this session is the lesson: repeating small increments on a value the user has already asked about twice reads as nothing changing.
+
+Core stays 0.36 because that IS the right-side blob the user asked to tone down in a separate, still-standing instruction. Only the broad field is being lifted. Consequence worth naming: at 0.36 core / 0.28 edge the gradient is now nearly flat (`nearlyFlat: true`), i.e. the pattern reads at a fairly even 28-36% across the card rather than as a bright patch at 85% width. If the whole pattern should be brighter, the core is the lever, but raising it walks back that earlier request.
+
+Verified @375: mask `rgba(0, 0, 0, 0.36) 0%, rgba(0, 0, 0, 0.28) 100%`, veil now 64%-72% black (was 64%-88%), pattern untouched at 36 cells / 6 cols / rgb(22,22,22), card 356px. @1265: mobile block `display: none`, desktop panel `rgb(16, 15, 15)` at 40px with 0 pattern layers. tsc clean, `Compiled successfully in 19.2s`.
+
+Env: the dev server died mid-verification again (`curl` 000, port free) — restarted via `preview_start {name: "softexedge-dev"}`. Third time this session. Also note the pane's `location.assign` sometimes lands on `/home` and needs a second call.
+
+## CtaSection (mobile) — bg pattern shift 3px -> 5px left
+`src/components/brand-strategy/CtaSection.tsx`: `max-md:[&_.grid]:-translate-x-[3px]` -> `-translate-x-[5px]`.
+
+Read "like 5px" as the TOTAL shift, not 5 on top of the existing 3 — the identical phrasing ("like 3px") produced a 3px total last time, so 5 continues that scale. Net movement from where it was is 2px.
+
+Still done from the call site via the `[&_.grid]` descendant variant; `SpotlightGrid` (9 callers) has no diff.
+
+Verified @375 by toggling the translate off and re-measuring the same element: grid left -21.68px with the shift vs -16.68px without, a measured delta of exactly -5.00px; computed `translate: -5px`; cols 5, gap 8px, no horizontal overflow. @1265: `translate: none`, grid left -61.15px which matches the pre-change desktop baseline exactly, 10 cols / 12px gap. tsc clean, `Compiled successfully in 21.7s`.
+
+## Every page (mobile) — navbar shrinks further when scrolled
+Both navbar copies, identical edits, so /home and the 15 `page/Header` routes stay in sync:
+`src/components/page/resizable-navbar.tsx` and `src/components/ui/resizable-navbar.tsx`
+- MobileNav scrolled width `w-[88%]` -> `w-[80%]`
+- MobileNavHeader scrolled top padding `pt-3.5` -> `pt-2.5` (14 -> 10px)
+
+Both live inside `MobileNav*`, which is `lg:hidden`, so desktop is untouched by construction — confirmed at 1265: pill `display: none`, and the `lg:flex` desktop nav's width and class string are identical at scroll 0 and 300.
+
+Verified @375 by driving the real scroll listener (plain `window.scrollY > 80`, no framer, so `scrollTo` + a dispatched `scroll` event exercises it): at scroll 300 the pill's runtime class is `... w-[80%] translate-y-2.5 rounded-[18px] border-white/10 bg-[#0b0b10]/90 backdrop-blur-md shadow-2xl` and the header's is `... pb-3.5 pt-2.5`. Bar height 76 -> 54px (was 76 -> 58 before this change). Both new utilities confirmed present in the production CSS chunk.
+
+Measurement trap worth recording: the first scrolled reading showed width still 100.1% and radius 0px, which looked like the pill's `visible` branch not applying at all. It was a pane artifact — `width`, `border-radius`, `background-color` and `translate` are all in this element's `transition-[...]` list, and CSS transitions cannot advance while rAF is frozen, so they hold their START value indefinitely. `padding-top` is NOT in any transition list, which is precisely why the height change registered and the width change did not. Reading the runtime className is the reliable check here, not the geometry.
+
+Two earlier greps also returned false negatives before I got this right: Tailwind escapes arbitrary percent widths as `.w-\[80\%\]`, so a pattern without the escaped `%` finds nothing.
+
+## Navbar logo loading late — fixed on every route
+`priority` added to the `<Image>` in both `CustomLogo` implementations: `src/components/page/Header.tsx` (the 15 non-home routes) and `src/components/layout/Header.tsx` (/home).
+
+Cause: `next/image` lazy-loads by DEFAULT — unlike a native `<img>` — so the navbar mark, the topmost element on the page, was queued behind the lazy pass and popped in after first paint. Same trap as the EdgeToEdgeCarousel fix earlier this session; worth remembering that "no loading prop" means lazy here, not eager.
+
+Verified @375 on /about: 69 next/images on the page split `lazy: 27`, `eager: 40`, `(none): 2` — and the two with no loading attribute are exactly the two logo instances. That is precisely what next/image emits for a priority image, and the 27 still-lazy ones prove the default is unchanged around it. A `<link rel="preload" as="image">` carrying the logo's srcset is now in the head (Next uses `imagesrcset`, not `href`, for responsive preloads — an `href` check reads empty and looks like a failure). Same on /home: logo `(none)`, preloaded, 28 others still lazy.
+
+Desktop is unaffected in kind — the same component serves both, and making an above-the-fold logo eager is not a visual change; it only removes a delay.
+
+Two things found and deliberately NOT changed:
+- The logo PNGs are heavy for an 80-90px mark: `logo.png` 86.1 KB, `logoBlue.png` 150.6 KB. Preloading a 150 KB PNG is better than loading it late, but re-encoding (or an SVG) would fix the root cost. Separate task.
+- `page/Header` swaps `logoBlue.png` -> `logo.png` when `visible` flips on scroll. `priority` preloads only the initially rendered src, so the other file still fetches on first scroll and can flash. Fixable by preloading both, but that doubles the navbar's image budget — worth a decision rather than a silent change.
+
+## CtaSection (mobile) — bg pattern shift 5px -> 10px left
+`src/components/brand-strategy/CtaSection.tsx`: `-translate-x-[5px]` -> `-translate-x-[10px]`.
+
+The request arrived verbatim identical to two turns ago, and the source ALREADY read `-translate-x-[5px]` from that turn. Repeated identical requests have meant "the last step did not register" throughout this session (the footer-gap thread), so this is treated as an additional shift rather than a re-application: 5 -> 10, not 5 -> 5.
+
+Likely reason it did not appear to change: `CtaSection.tsx` is uncommitted (`git status` shows it modified against `a25dbc3`), so it is not on the deployed URL the user has been checking. Same disconnect flagged earlier in the session.
+
+Verified @375 by toggling the translate off and re-measuring: grid left -26.68px with the shift vs -16.68px without — measured delta exactly -10.00px, computed `translate: -10px`, 5 cols, no horizontal overflow. @1265: `translate: none`, grid left -60.94px against a -61.15px baseline (0.21px, percentage-width reflow rounding, not this change — the translate is none and only a `max-md:` class moved). tsc clean, `Compiled successfully in 19.7s`. SpotlightGrid untouched.
+
+## CtaSection (mobile) — right-side scrim opacity reduced
+`src/components/brand-strategy/CtaSection.tsx`: `max-md:via-black/45` -> `max-md:via-black/25`. The `from-black/90 from-50%` flat run and both stop positions (50%, 85%) are untouched.
+
+Why that stop is the right lever: the scrim is `to-right` with a flat 0.9 across the left half, then a fade through the via stop at 85% to transparent at 100%. Everything right of the midpoint is governed by that via value, so lowering it lightens only the right side — the left half where the headline and body copy sit keeps its full 0.9 backing.
+
+Measured alpha by x (card 351px wide):
+
+| x | | before | after |
+|---|---|---|---|
+| 21 | text starts | .900 | .900 |
+| 175 | midpoint | .900 | .900 |
+| 208 | glow band starts | .781 | .728 |
+| 281 | widest text line | .514 | .342 |
+| 350 | right edge | .009 | .005 |
+
+`leftHalfUnchanged: true`. The biggest lift is at x=281 (-33%), which is where the pattern's glow band overlaps the description's longest line — so the pattern reads more over the right third while text legibility on the left is identical.
+
+@1265: right scrim still `rgb(0,0,0) 0%, oklab(0 0 0 / 0.9) 50%, transparent 100%` at `max-width: 768px`, bottom scrim 0.5, card 628px — desktop untouched. tsc clean, `Compiled successfully in 22.7s`.
+
+## CtaSection (mobile) — right-side scrim reduced again, via 0.25 -> 0.10
+`src/components/brand-strategy/CtaSection.tsx`: `max-md:via-black/25` -> `max-md:via-black/10`. `from-black/90 from-50%` and the 50%/85% stops still untouched.
+
+Alpha by x across the three steps (card 351px):
+
+| x | | via .45 | via .25 | via .10 |
+|---|---|---|---|---|
+| 21 | text starts | .900 | .900 | .900 |
+| 175 | midpoint | .900 | .900 | .900 |
+| 208 | glow band starts | .781 | .728 | .688 |
+| 281 | widest text line | .514 | .342 | .213 |
+| 350 | right edge | .009 | .005 | .002 |
+
+`leftHalfStillFlat: true` — the headline/body backing is bit-identical through all three steps; only the right of the midpoint moved. Cumulative effect at x=281 is .514 -> .213, a 59% reduction.
+
+Worth noting for the next step if there is one: the right side is now close to the floor. Between the midpoint and 85% the scrim is the only thing dimming the pattern, so further reduction has little room — a visible change beyond this would mean moving the 85% stop earlier (fading sooner) or lifting the `from-50%` flat run, and the latter is the text's backing.
+
+@1265: scrim `rgb(0,0,0) 0%, oklab(0 0 0 / 0.9) 50%, transparent 100%` at `max-width: 768px`, string-compared identical to the pre-change baseline; card 628px. tsc clean, `Compiled successfully in 30.5s`.
