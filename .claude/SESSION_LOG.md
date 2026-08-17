@@ -15102,3 +15102,30 @@ Left alone: line-height still differs — /work `leading-[1em]` gives 40px, /abo
 - NOTE: HEAD already contained the earlier `max-md:px-3` / `max-md:gap-x-7`, so that work had been
   committed by someone outside this session; this change removes them rather than being a no-op.
 - `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — mobile pattern lighter again + overlay lightened
+- Cells #262626 -> #363636 (rgb 38 -> 54) on both layers of all 36 cells.
+- Overlay stops 0.5/0.96 -> 0.4/0.88 black. This is now a deliberate departure from ChannelCard's
+  mobile treatment (which the user asked to match three tasks ago, then asked to lighten twice);
+  both stale comments claiming byte-for-byte parity were corrected.
+- Composite effect (black at alpha a over cell v renders v*(1-a)):
+  bright spot 19 -> 32.4, card edge 1.5 -> 6.5. The edge is where the overlay change does the most
+  work — cell colour alone could not lift it because 0.96 black left only 4% through.
+- Verified @375: all 36 cells rgb(54,54,54) on both layers (one unique value each), overlay alphas
+  parsed as [0.4, 0.88], maskImage still `none`.
+- Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), radius 22px,
+  0 box cells. All of this lives inside the `md:hidden` block.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — mobile pattern nudged darker
+- Cells #363636 -> #303030 (rgb 54 -> 48), both layers of all 36 cells. Deliberately a 6-unit step,
+  vs the 16-unit jumps of the two previous rounds, since the ask was "a little darker very little".
+- Overlay left untouched at 0.4/0.88.
+- Composite: bright spot 32.4 -> 28.8, card edge 6.5 -> 5.8.
+- Running history of this cell colour, for anyone tuning it again: #161616 (ChannelCard parity) ->
+  #262626 -> #363636 -> #303030.
+- Verified @375: all 36 cells rgb(48,48,48) on both layers (one unique value each), overlay alphas
+  still [0.4, 0.88], maskImage `none`.
+- Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), radius 22px,
+  0 box cells.
+- `tsc --noEmit` clean; `next build` compiled.
