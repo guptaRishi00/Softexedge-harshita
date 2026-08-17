@@ -149,7 +149,7 @@ export default function HomePage() {
         <div className="lg:px-3 lg:pt-3 px-3 pt-4">
           <Herosection />
         </div>
-
+        {/* hello */}
         <section className="flex w-full flex-col items-start gap-4 overflow-hidden bg-white px-6 pt-12 pb-14 lg:pb-0 max-md:pt-16 sm:flex-row sm:items-center sm:gap-8 md:pt-20">
           <div className="w-full shrink-0 text-center sm:w-auto sm:text-left lg:mb-0 mb-3">
             <p className="text-sm font-medium tracking-wide text-black/60 max-md:text-base">
