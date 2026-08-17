@@ -22,6 +22,14 @@ export default function Herosection({}: any) {
 
     if (!video || !canvas) return;
 
+    // The canvas is `max-md:hidden`, so below md there is nothing to draw into.
+    // This guard is what actually saves the work: a display:none canvas reports
+    // clientWidth 0, sizeCanvas would fall back to the CSS_WIDTH constant, and
+    // the loop would keep uploading 440px frames to an invisible element.
+    // Matches how SmoothScroll gates Lenis — no resize listener, so crossing the
+    // breakpoint needs a reload, same trade-off as there.
+    if (window.matchMedia("(max-width: 767px)").matches) return;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -43,7 +51,14 @@ export default function Herosection({}: any) {
 
     const sizeCanvas = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const width = Math.round(CSS_WIDTH * dpr);
+      // Measure the element instead of trusting CSS_WIDTH: that constant is the
+      // xl size, but the box is w-20 (80px) on a phone, so the buffer was 440px
+      // wide to paint 78 — 7.6x the pixels by area, rescaled twice per frame.
+      // Runs inside drawFrame, so a breakpoint change is picked up on the next
+      // frame with no resize listener. CSS_WIDTH stays as the fallback for the
+      // first frame, before layout has given the canvas a width.
+      const cssWidth = canvas.clientWidth || CSS_WIDTH;
+      const width = Math.round(cssWidth * dpr);
       const height = Math.round((width * video.videoHeight) / video.videoWidth);
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
@@ -177,7 +192,8 @@ export default function Herosection({}: any) {
                 Digital
               </motion.p>
 
-              {/* Canvas is visible on all screens again */}
+              {/* Desktop only: the per-frame drawImage bought nothing on a phone, where
+                  the thumbnail rendered at 80x48. The loop is gated in the effect too. */}
               <motion.div
                 data-no-mobile-entry
                 initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
@@ -191,7 +207,7 @@ export default function Herosection({}: any) {
                         ease: premiumEase,
                       }
                 }
-                className="flex w-20 h-12 sm:w-28 sm:h-16 md:w-[150px] md:h-[80px] lg:w-[200px] lg:h-[106px] xl:w-[220px] xl:h-[118px] overflow-hidden rounded-[10px] lg:rounded-[20px] shrink-0 items-center justify-center border border-white/20 lg:shadow-xl"
+                className="hidden md:flex w-20 h-12 sm:w-28 sm:h-16 md:w-[150px] md:h-[80px] lg:w-[200px] lg:h-[106px] xl:w-[220px] xl:h-[118px] overflow-hidden rounded-[10px] lg:rounded-[20px] shrink-0 items-center justify-center border border-white/20 lg:shadow-xl"
               >
                 <canvas
                   ref={canvasRef}

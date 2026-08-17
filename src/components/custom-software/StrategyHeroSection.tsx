@@ -55,7 +55,7 @@ export default function StrategyHeroSection() {
       </div>
 
       <div className="absolute left-0 top-0 z-50 w-full">
-        <Header />
+        <Header dropdown />
       </div>
 
       <div className="relative z-10 flex flex-1 w-full max-w-7xl flex-col items-center justify-center text-center lg:mt-30 px-6 md:px-10">

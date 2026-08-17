@@ -28,7 +28,7 @@ export default function BrandStrategyPage({}: Props) {
   return (
     <div>
       <div className="overflow-x-clip w-full">
-        <Header />
+        <Header dropdown />
         <div className="relative z-0">
           <div className="sticky top-[min(0px,calc(100vh-992px))] z-0 bg-white">
             <ShrinkOnOverlap

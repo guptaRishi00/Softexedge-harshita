@@ -53,7 +53,7 @@ export default function BlogArticle({
       />
 
       <div className="absolute left-0 top-0 z-50 w-full">
-        <Header />
+        <Header dropdown />
       </div>
 
       <section className="relative w-full overflow-hidden bg-[#FAFAFA] px-6 pb-16 pt-36 md:px-10 md:pb-20 md:pt-44">

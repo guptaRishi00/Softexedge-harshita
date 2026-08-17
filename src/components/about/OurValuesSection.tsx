@@ -325,7 +325,7 @@ export default function OurValuesSection() {
                         goTo(quoteIndex - 1, -1);
                       }
                     }}
-                    className="relative flex cursor-grab flex-col gap-8 overflow-hidden rounded-3xl border border-white/10 bg-zinc-950/20 p-5 py-8 active:cursor-grabbing"
+                    className="relative flex cursor-grab flex-col gap-8 overflow-hidden rounded-3xl border border-white/10 bg-zinc-950/20 p-5 py-10 active:cursor-grabbing"
                   >
                     {/* Mask parked at 85%/50% with ChannelCard's own touch
                         alphas (0.5 core, 0.04 edge) — on touch it never follows
@@ -333,7 +333,7 @@ export default function OurValuesSection() {
                         or motion values at all. */}
                     <div
                       aria-hidden
-                      className="pointer-events-none absolute inset-0 z-0 overflow-hidden [mask-image:radial-gradient(280px_circle_at_85%_50%,rgba(0,0,0,0.36)_0%,rgba(0,0,0,0.04)_100%)]"
+                      className="pointer-events-none absolute inset-0 z-0 overflow-hidden [mask-image:radial-gradient(280px_circle_at_85%_50%,rgba(0,0,0,0.36)_0%,rgba(0,0,0,0.12)_100%)]"
                     >
                       <div className="relative -left-[5%] grid w-[110%] -translate-y-6 grid-cols-6 gap-2">
                         {patternCellIds.map((id) => (
@@ -386,7 +386,7 @@ export default function OurValuesSection() {
                     <Link href="/about" className="relative z-10 w-fit">
                       <button
                         type="button"
-                        className="flex h-10 w-fit cursor-pointer items-center gap-2 rounded-lg bg-white pl-4 pr-1.5 text-sm font-bold tracking-tight text-black"
+                        className="flex h-[42px] w-fit cursor-pointer items-center gap-2 rounded-lg bg-white pl-4 pr-1.5 text-sm font-bold tracking-tight text-black"
                       >
                         Connect With Me
                         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-black text-white">

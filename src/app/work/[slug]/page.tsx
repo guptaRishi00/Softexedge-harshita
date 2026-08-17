@@ -56,7 +56,7 @@ export default async function ProjectPage(props: {
   return (
     <div className="relative bg-[#0a0a0a]">
       <div className="absolute left-0 top-0 z-50 w-full">
-        <Header onDark />
+        <Header onDark dropdown />
       </div>
 
       <ProjectHero project={project} />

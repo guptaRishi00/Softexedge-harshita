@@ -14669,3 +14669,167 @@ What the revert actually undoes, checked before pushing rather than after:
 - `plan.md`: removes a stray trailing "x"
 
 None of it collides with this session's work — confirmed post-merge that `--spotlight-sweep-col-start`, `values-cta-grad`, the 0.36 mask alpha and the footer `basis-auto pl-8` are all still present. tsc clean and `Compiled successfully in 19.2s` on the merged tree BEFORE pushing.
+
+## Every route (mobile) — navbar unified on the homepage dropdown treatment
+Added `dropdown` to the 12 `page/Header` render sites that lacked it. Existing `onDark` preserved on all three that had it.
+
+Route -> navbar map, because it is not obvious: there are TWO Header components. `/home` renders `layout/Header` (via `Herosection`), which imports `ui/resizable-navbar`. Everything else renders `page/Header` -> `page/resizable-navbar`. Earlier this session `page/resizable-navbar` gained the full dropdown mode precisely to match the homepage, and only about/career/work were passing it. The 12 stragglers: brand-strategy, contact, work/[slug], blog/BlogArticle, blog/BlogHeroSection, and the 7 service `StrategyHeroSection` files (the service routes mount their navbar inside the hero, not the page).
+
+`dropdown` is mobile-only by construction: in `page/Header` it is passed to `MobileNav` and to the mobile menu items and nothing else; `NavBody` (desktop) accepts only children/className/visible. Verified at 1265 — desktop nav `display: flex`, 7 links at unchanged x positions, height 114, mobile pill `display: none`.
+
+Verified @375 on /web-development: the chain from the toggle button now nests identically to /home — same levels, radius 0, translate 0px, `aria-label="Open menu"`, `aria-expanded="false"`. /contact confirms `onDark dropdown` composes: same geometry plus the light logo.
+
+ONE DELIBERATE NON-MATCH, flagged rather than "fixed": the pill geometry is smaller than the homepage's — toggle 24px vs 28, header padding `24px 24px 10px` vs `32px 28px 14px`, pill height 67 vs 76. That gap is this session's own work: two earlier explicit requests ("Navbar only in mobile view: reduce the y-axis padding a little bit", then the same for x-axis) were applied to `page/resizable-navbar`, which is exactly the shared component all 15 non-home routes use. So all 15 are now identical TO EACH OTHER, and differ from /home only by that requested reduction. Matching /home pixel-for-pixel would mean reverting both of those instructions, so I did not.
+
+tsc clean, `Compiled successfully in 24.7s`, biome unchanged at 20 pre-existing diagnostics on the touched paths (verified by stashing and re-running).
+
+## Every route (mobile) — navbar MENU ported from the homepage, not just the prop
+Correcting the previous entry. Adding `dropdown` only switched the pill container; the menu CONTENTS still came from `page/Header`'s own markup, which was centre-aligned. The user was right that nothing visibly changed. My earlier verification compared the CLOSED pill geometry and never opened the menu — that is why it read as matching.
+
+What actually differed, once the menu was opened and inspected:
+
+| | /home (`layout/Header`) | other routes (was) |
+|---|---|---|
+| row | `w-full border-b border-white/[0.07]` | `w-full text-center` |
+| link | `block w-full py-3.5 text-left text-xl font-medium text-white/90` | `text-neutral-300 block py-2 text-lg` |
+| Services toggle | `w-full justify-between` (chevron at the edge) | `gap-2` (chevron beside the label) |
+| sub-items | panel `rounded-xl bg-white/[0.06]` | centred column |
+| CTA | `mt-5 w-full justify-center rounded-2xl py-3.5` -> `/contact` | inline `px-5 py-3` -> `#contact` (broken anchor) |
+| logo | 80px mobile / 90 desktop | 90px fixed |
+| header pad / toggle | `32px 28px 14px` / 28px | `24px 24px 10px` / 24px |
+
+Changes, all in `page/Header.tsx` + `page/resizable-navbar.tsx`, both mobile-only regions (`MobileNav*` is `lg:hidden`):
+- Replaced the whole `MobileNavMenu` body with the homepage's markup.
+- Dropped the `sections` branch: zero nav items use `sections` (`grep -c "sections:"` = 0), so it was dead. Removed the now-orphaned `expandedSection` state with it.
+- `MobileNavHeader` padding `px-6 pb-2.5`/`pt-2.5|pt-6` -> `px-7 pb-3.5`/`pt-3.5|pt-8`; `MobileNavMenu` inner `px-6` -> `px-7`; toggle icon gains `h-7 w-7`. This intentionally reverts the earlier "reduce the x/y-axis padding" requests — superseded by "same as homepage", asked twice.
+- Logo `style={{width:"90px"}}` -> `w-[80px] md:w-[90px]`, matching home's responsive sizing; desktop stays 90px.
+- CTA href `#contact` -> `/contact` (the old one pointed at an anchor that does not exist on these pages).
+
+Verified @375 on /about against a live /home capture: 10/10 identical — toggle 28, header pad `32px 28px 14px`, header 74, pill 76, logo 80x28, menu inner pad `4px 28px 20px`, row wrapper, link classes, CTA href. @1265: desktop nav `display: flex`, 7 links at x 40/365/485/595/695/776, height 114, logo 90px, mobile pill `display: none`. tsc clean, `Compiled successfully in 19.1s`, biome unchanged on src/components/page.
+
+All 15 non-home routes share `page/Header`, so this lands on every one of them at once.
+
+## CtaSection (mobile) — bg pattern nudged 3px left
+`src/components/brand-strategy/CtaSection.tsx`: added `max-md:[&_.grid]:-translate-x-[3px]` to the card.
+
+Done from the CALL SITE, not inside SpotlightGrid — that component has 9 callers and the descendant variant (specificity 0,2,0) already used there for `[&_.grid]:gap-2` overrides its plain utilities without touching the shared file. Used `translate` rather than adjusting the grid's `-ml-[5%]`: a margin change would alter layout width/position maths, while a translate only moves the paint, which is what a 3px optical nudge wants.
+
+Verified @375 by toggling the translate off and re-measuring the same element: grid left sits at -19.68px from the card edge with the shift and -16.68px without — a measured delta of exactly -3.00px. No horizontal overflow; cols still 5, gap still 8px. @1265: `translate: none` (the max-md gate holds), 10 cols, 12px gap, card 628px — desktop untouched, and SpotlightGrid itself has zero diff. tsc clean, `Compiled successfully in 14.9s`.
+
+## OurValuesSection (mobile) — pattern veil lightened + card y-padding raised
+`src/components/about/OurValuesSection.tsx`, mobile card:
+- mask edge alpha `rgba(0,0,0,0.04)` -> `rgba(0,0,0,0.12)` (3x), core left at 0.36
+- card `p-5 py-8` -> `p-5 py-10` (32 -> 40px vertical)
+
+Interpretation worth recording, because the card has no gradient element at all: the only gradient is the pattern's radial MASK. Its 0.04 edge means the pattern is 96% hidden across most of the card, which is what reads as "a black gradient on top of the pattern". Raising the edge lifts that veil. I deliberately did NOT touch the 0.36 core — that is the right-side blob the previous task asked to tone down, so lifting it would have undone that. Net effect: the pattern now reads more evenly across the card rather than only as a bright patch at 85% width.
+
+Verified @375: mask `rgba(0, 0, 0, 0.36) 0%, rgba(0, 0, 0, 0.12) 100%`; card padding `40px 20px`; height 338 -> 354; top and bottom insets both 40.8px so the card stays symmetric (the `flex items-center` quote centring from the earlier task still holds); pattern untouched at 36 cells / 6 cols. @1265: mobile block `display: none`, desktop panel still `40px` padding and `rgb(16, 15, 15)`, zero pattern layers — untouched. tsc clean, `Compiled successfully in 13.6s`.
+
+## OurValuesSection (mobile) — CTA button +2px tall
+`src/components/about/OurValuesSection.tsx`: mobile CTA `h-10` -> `h-[42px]` (40 -> 42px). Arbitrary value because the Tailwind scale jumps 40 -> 44 and the ask was 2px.
+
+Care needed picking the target: the file has a second `h-10` at line 222 as `max-md:h-10 max-md:w-10` on the DESKTOP card's icon square. Matched on the full mobile button class string and asserted the desktop one still present afterwards.
+
+Verified @375: button 42px (was 40), width unchanged at 167, icon square still 28, arrow still `url("#values-cta-grad")`, card 354 -> 356px, bottom inset 41px. @1265: mobile block `display: none`, desktop button still 56px with a 36px icon — untouched. tsc clean, `Compiled successfully in 12.1s`.
+
+## FaqSection (mobile) — title leading +3px
+`src/components/brand-strategy/FaqSection.tsx`: `max-md:leading-[1.11]` -> `max-md:leading-[1.185]`. Kept the house unitless-ratio form rather than a px value; at the 40px mobile size 1.185 resolves to exactly 47.4px, i.e. 44.4 + 3.0.
+
+Note this intentionally breaks the BlogSection match set two tasks ago — Blog's title is still 44.44px, so Faq now sits 2.96px looser. That was the explicit ask; flagging it because "match Blog's leading" was itself an explicit ask earlier.
+
+Verified @375: font 40px, line-height 47.40px, measured delta exactly +3.00 vs the previous 44.4, ratio 1.185, title still 2 lines at 94.8px. @1265: 60px / 63px at ratio 1.05 — desktop untouched. tsc clean, `Compiled successfully in 12.2s`.
+
+Blast radius: FaqSection is shared by /about, /brand-strategy and /work; the change is mobile-only on all three.
+
+## Investigation — does the hero canvas cause re-renders / slow the homepage?
+Question only, no code changed.
+
+**Re-renders: no.** `src/components/home/Herosection.tsx` drives the canvas from a single `useEffect(..., [])` that touches refs only — grep for `set[A-Z]`/`useState` inside the effect body returns nothing. Every frame is `ctx.drawImage` plus guarded `canvas.width/height` writes. React never re-renders because of it, on any breakpoint.
+
+**Slow: almost certainly not the main cause.** The loop is already well defended: `requestVideoFrameCallback` is present (`hasRvfc: true`) so it draws once per PRESENTED video frame (~24fps) rather than once per display refresh (60-120fps); `drawFrame` early-returns on `paused || ended`; `VideoViewportPause` pauses the video offscreen so the loop stops entirely past the hero; the hero asset `video9.mp4` is 0.3 MB.
+
+Also corrects an earlier note in this log: I had flagged "hero canvas attribute writes @width/@height" as per-frame churn. It is NOT — `sizeCanvas` is wrapped in `if (canvas.width !== width || canvas.height !== height)`, so it writes only on an actual size change.
+
+**One real, modest inefficiency.** `CSS_WIDTH = 220` is hardcoded in the effect, but the element is `w-20 h-12` on mobile and only reaches 220px at `xl`. Measured at 375: displayed 78x46 CSS, so 156x92 at DPR 2 is what is needed, while the code sizes the buffer 440x248 — 7.6x the pixels by area. Every frame scales a 1280x720 video frame into that oversized buffer and the GPU downscales again to paint. (Derived, not measured live: the video is paused in this pane so `sizeCanvas` never ran — the canvas sat at its 300x150 default.)
+
+Bigger suspects for a slow homepage, by weight: `video1.mp4` 9.8 MB, `video2.mp4` 4.4, `video5.mp4` 3.6 — 22 MB of video across the page dwarfs a 440px canvas blit.
+
+Offered but not applied: derive `CSS_WIDTH` from the canvas's own `clientWidth` instead of the constant, which makes the buffer correct at every breakpoint.
+
+## Investigation — why /home feels laggier than other pages
+Question only, no code changed. Measured /home against /about at 375.
+
+RULED OUT — payload. /about transfers 9.81 MB (9.78 of it `video1.mp4`) against /home's 1.28 MB (1.25 of it `video9.mp4`). /home is the LIGHTER page by 7.7x and still feels worse, so weight is not the cause.
+
+RULED OUT — the desktop scroll machinery. All three pinned+scrubbed ScrollTriggers in `src/app/home/page.tsx` sit inside `mm.add("(min-width: 768px)")`, and `SmoothScroll` (Lenis) early-returns on `(max-width: 767px)`. Neither runs on a phone. /home is also the only route that mounts SmoothScroll at all, which is why it would be the obvious suspect — but not on mobile.
+
+RULED OUT — LogoLoop's rAF. It sets `cssDriven` when `(max-width: 767px)` matches and the rAF effect bails at `if (cssDriven)` (line 151), handing the marquee to a CSS animation on mobile.
+
+WHAT IS ACTUALLY DIFFERENT, measured:
+- ContactSection is 559 of /home's 1842 nodes — 30% of the page in one section. It renders 6 `ChannelCard`s, each with `Array.from({length: 80})` grid cells x2 divs.
+- Those give /home THREE masked layers wrapping 161 nodes each. /about's two comparable layers wrap 73 each, and its third is 33. A `mask-image` forces the subtree into an offscreen composite pass, so this is the single biggest structural difference: 3 x 161-node masked subtrees vs 2 x 73.
+- `transition-property: all` on 1570 elements (vs 1257 on /about). Every one is a candidate for style recalculation on any class or state change.
+- /home is the only page with a canvas, running a `requestVideoFrameCallback` draw loop at video framerate into a buffer 7.6x larger than needed on mobile (previous entry).
+
+Honest limit: this is static/structural evidence. The Browser pane never fires rAF, so I could not profile frame time, record a scroll trace, or attribute jank to a specific layer. The ranking above is by measured node/layer counts and known compositing cost, not by a captured profile.
+
+Cheapest experiments if the user wants a fix, in order of expected return:
+1. Cut ChannelCard's 80 cells to what is actually visible on a phone (the ChannelCard grid overflows its card and most rows are clipped) — the same reduction already applied to OurValuesSection's copy, which uses 36.
+2. Drop the mask on mobile: on touch it never tracks a pointer, so it is a static vignette that could be a plain gradient overlay instead of a compositing mask.
+3. Size the hero canvas buffer from `clientWidth` rather than the hardcoded 220.
+4. Replace blanket `transition-all` with the specific properties on the highest-count components.
+
+## /home (mobile) — perf fixes 2 and 3 from the investigation
+Fix 2, `src/components/home/ChannelCard.tsx`. Below md the mask is switched off and replaced by an equivalent gradient overlay:
+- layer gains `max-md:[-webkit-mask-image:none]! max-md:[mask-image:none]!` — the `!` is required because framer writes the mask as an inline style
+- a new `aria-hidden` overlay, `md:hidden`, painting `radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.96) 100%)`
+
+Appearance is preserved by construction, not by eye: masking the grid to alpha `a` over a black card gives `grid x a`; painting black at alpha `1 - a` over the grid gives `grid x (1 - a')`. With the overlay alphas set to `1 - mask` (0.5 -> 0.5, 0.04 -> 0.96) the two composite identically. Valid because the card is effectively black (`bg-zinc-950/20` on a black section). The overlay is rendered unconditionally and hidden with CSS, so SSR and the first client render agree — no `useIsDesktop` markup gate.
+
+Fix 3, `src/components/home/Herosection.tsx`: `sizeCanvas` now reads `canvas.clientWidth || CSS_WIDTH` instead of the hardcoded 220. It already runs inside `drawFrame`, so a breakpoint change is picked up on the next frame with no resize listener; the constant remains the first-frame fallback before layout.
+
+Measured @375 after:
+- masked layers wrapping >100 nodes: 3 -> 0. Total masked layers on the page 8 -> 5. Per card, computed `mask-image: none` and `-webkit-mask-image: none` while the inline style is still written — proof the `!` override wins.
+- overlay present on all 3 cards, `display: block`, correct gradient.
+- canvas buffer 440x248 (109,120 px) -> 156x88 (13,728 px), an 87.4% pixel reduction, landing at 0.96x of what the display actually needs.
+
+Measured @1265: masks active on all 3 cards, overlays `display: none`, canvas element is 218 CSS wide so the buffer is 218 vs the old 220 — desktop unchanged within a pixel. tsc clean, `Compiled successfully in 20.6s`, biome unchanged at 3 pre-existing (verified by stashing).
+
+Caveat unchanged from the investigation: no frame profile was possible (rAF never fires in this pane), so these are verified as structural reductions — one fewer offscreen composite pass per card and 87% fewer canvas pixels per drawn frame — not as a measured FPS gain. Fix 1 (cutting ChannelCard's 80 cells) was not requested and is still available.
+
+## /home (mobile) — hero canvas dropped
+`src/components/home/Herosection.tsx`. Two parts, and the second is the one that matters:
+- wrapper `flex ...` -> `hidden md:flex`
+- the effect early-returns on `window.matchMedia("(max-width: 767px)")` before getting the 2D context
+
+Hiding alone would have made things WORSE, not better: a `display: none` canvas reports `clientWidth: 0`, so the `clientWidth || CSS_WIDTH` sizing added in the previous task falls back to the 220 constant, and the loop would have kept uploading 440x248 frames into an invisible element. The guard is what removes the work. Gated the same way SmoothScroll gates Lenis — no resize listener, so crossing the breakpoint needs a reload; same trade-off already accepted there.
+
+The hero background video is NOT touched. It is not a hidden canvas source — `video9.mp4` is the full-bleed blurred backdrop (`scale-[4.4]`, `blur-[6px]`), so it must keep playing. Dropping the canvas removes the per-frame `drawImage` and the extra element, not the video decode.
+
+Also fixed a comment that now said the opposite of the code ("Canvas is visible on all screens again").
+
+Verified @375: wrapper `display: none`, canvas rect 0x0, and the backing store still at its untouched 300x150 DEFAULT — direct proof `sizeCanvas` never ran, since it is only reachable from `drawFrame`. Background video still `display: block` at 386x857 with autoplay. Headline row closes to [Digital] [Businesses] with no orphan gap, no horizontal overflow. @1265: wrapper `display: flex` at 220x118, canvas 218x116 CSS, border intact, row reads [Digital] [(canvas)] [Businesses], `loopWillRun: true` — desktop unchanged. tsc clean, `Compiled successfully in 19.1s`, biome unchanged at 2 pre-existing.
+
+Note this supersedes fix 3 from the previous task on mobile (the buffer no longer exists there); that change still governs desktop, where it now resolves 218 instead of the hardcoded 220.
+
+## /home — ChannelCard cells 80 -> 30 (fix 1 from the investigation)
+`src/components/home/ChannelCard.tsx`: `Array.from({ length: 80 })` -> `{ length: 30 }`. One line; safe because the grid is `w-[110%] -left-[5%] -translate-y-6` inside an `overflow-hidden` card, so only the rows landing inside the card ever paint and the rest were pure DOM cost.
+
+Sized from measurement, not guesswork — rows actually needed, per width:
+
+| width | cols | card h | rows needed | cells needed |
+|---|---|---|---|---|
+| 320 | 6 | 174 | 4 | 24 |
+| 375 | 6 | 174 | 4 | 24 |
+| 700 (sm, var inactive) | 6 / 3 | 190 | 2 | 12 / 6 |
+| 1265 | 6 / 3 | 190 / 218 | 3 / 4 | 18 / 12 |
+
+Peak is 24, so 30 (5 rows at 6 columns) keeps one spare row on mobile and six at 3 columns.
+
+Verified coverage at every width — the grid must still reach past the card's bottom or a bare corner appears. Measured overhang past the card foot: 71px @320, 122px @375, 404/1016px @700, 181/536px @1265; `allCovered: true` in all four.
+
+Node counts: ContactSection 559 -> 262 (-53%), whole page 1842 -> 1545 @375 (-16%). Combined with the mask swap from the previous task, the three 161-node masked subtrees are now three 62-node unmasked ones on mobile.
+
+Also confirmed the previous two fixes still hold: masked layers 5 (down from 8), overlay present on every card at 375 and `display: none` at 1265, masks active on desktop, no horizontal overflow. tsc clean, `Compiled successfully in 19.3s`, biome unchanged at 1 pre-existing on this file.
+
+Minor inconsistency left alone: OurValuesSection's hand-built copy of this pattern uses 36 cells, derived separately for its own card height. Different card, different need; not worth forcing to one constant.

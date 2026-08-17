@@ -13,7 +13,12 @@ export type Channel = {
   colSpan: string;
 };
 
-const boxyCellIds = Array.from({ length: 80 }, (_, i) => `box-${i}`);
+// 30 = 5 rows at the mobile 6-column shape. The grid overflows its card and is
+// clipped, so only the rows that land inside it ever paint: measured need is 4
+// rows / 24 cells at 320-375, 2 rows at the sm range, and 4 rows / 12-18 cells
+// at desktop (3 or 6 columns depending on the card's span). 30 keeps a spare row
+// everywhere — six spare at 3 columns — while dropping 100 DOM nodes per card.
+const boxyCellIds = Array.from({ length: 30 }, (_, i) => `box-${i}`);
 
 export default function ChannelCard({
   label,
@@ -119,8 +124,16 @@ export default function ChannelCard({
       }
       className={`group relative overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/20 transition-transform duration-300 block ${colSpan}`}
     >
+      {/* Below md the mask is switched OFF and replaced by the overlay at the
+          end of this layer. `mask-image` forces the whole 161-node subtree into
+          an offscreen composite pass every paint; on touch the mask never
+          follows a pointer (parkMaskRight fixes it at 85%/50%), so it is a
+          static vignette buying nothing. Masking the grid to alpha `a` over a
+          black card and painting black at alpha `1 - a` over the grid are the
+          same result, which is why the overlay can reproduce it exactly.
+          `!` is needed because framer writes the mask as an inline style. */}
       <motion.div
-        className="absolute inset-0 z-0 overflow-hidden"
+        className="absolute inset-0 z-0 overflow-hidden max-md:[-webkit-mask-image:none]! max-md:[mask-image:none]!"
         style={{ WebkitMaskImage: mask, maskImage: mask }}
       >
         {/* `gridColumns` is derived from the card's DESKTOP span (sm:col-span-1
@@ -156,6 +169,15 @@ export default function ChannelCard({
             );
           })}
         </div>
+
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 md:hidden"
+          style={{
+            background:
+              "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.96) 100%)",
+          }}
+        />
       </motion.div>
 
       <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between gap-6 p-6 sm:p-8">

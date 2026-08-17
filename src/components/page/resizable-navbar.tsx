@@ -481,8 +481,8 @@ export const MobileNavHeader = ({
     return (
       <div
         className={cn(
-          "relative flex w-full shrink-0 flex-row items-center justify-between px-6 pb-2.5",
-          visible ? "pt-2.5" : "pt-6",
+          "relative flex w-full shrink-0 flex-row items-center justify-between px-7 pb-3.5",
+          visible ? "pt-3.5" : "pt-8",
           className,
         )}
       >
@@ -544,7 +544,7 @@ export const MobileNavMenu = ({
             className="w-full overflow-hidden"
           >
             <div
-              className={cn("flex w-full flex-col px-6 pt-1 pb-5", className)}
+              className={cn("flex w-full flex-col px-7 pt-1 pb-5", className)}
             >
               {children}
             </div>
@@ -600,7 +600,7 @@ export const MobileNavToggle = ({
       aria-expanded={isOpen}
       className="flex cursor-pointer items-center justify-center bg-transparent p-0"
     >
-      <Icon className={cn("transition-colors", color)} />
+      <Icon className={cn("h-7 w-7 transition-colors", color)} />
     </button>
   );
 };

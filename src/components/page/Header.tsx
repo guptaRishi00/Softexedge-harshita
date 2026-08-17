@@ -29,8 +29,8 @@ const CustomLogo = ({
       alt="Grovio Logo"
       width={85}
       height={30}
-      style={{ width: "90px", height: "auto" }}
-      className="object-contain transition-all duration-300"
+      style={{ height: "auto" }}
+      className="w-[80px] object-contain transition-all duration-300 md:w-[90px]"
     />
   </Link>
 );
@@ -129,7 +129,6 @@ export default function Header({
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesExpanded, setIsServicesExpanded] = useState(false);
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const pathname = usePathname();
 
   const toggleMobileMenu = useCallback(
@@ -144,7 +143,6 @@ export default function Header({
   const closeAllMenus = useCallback(() => {
     setIsMobileMenuOpen(false);
     setIsServicesExpanded(false);
-    setExpandedSection(null);
   }, []);
 
   if (pathname.startsWith("/leads")) return null;
@@ -194,128 +192,63 @@ export default function Header({
           >
             {navItems.map((item, idx) => {
               const hasDropdown =
-                (item.sections && item.sections.length > 0) ||
-                (item.dropdownItems && item.dropdownItems.length > 0);
+                item.dropdownItems && item.dropdownItems.length > 0;
               const isExpanded = item.name === "Services" && isServicesExpanded;
 
               return (
                 <div
                   key={`mobile-link-container-${idx}`}
-                  className="w-full text-center"
+                  className="w-full border-b border-white/[0.07] last:border-b-0"
                 >
                   {hasDropdown ? (
-                    <div className="flex flex-col items-center">
+                    <div className="flex w-full flex-col">
                       <button
+                        type="button"
                         onClick={toggleServicesExpanded}
-                        className={`flex items-center gap-2 text-neutral-300 hover:text-white py-2 text-lg`}
+                        className="flex w-full items-center justify-between py-3.5 text-left text-xl font-medium text-white/90"
                       >
                         <span>{item.name}</span>
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
+                          width="18"
+                          height="18"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                          className={`shrink-0 text-white/50 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
                         >
+                          <title>Toggle {item.name}</title>
                           <path d="m6 9 6 6 6-6" />
                         </svg>
                       </button>
 
-                      <AnimatePresence mode="wait">
+                      <AnimatePresence initial={false}>
                         {isExpanded && (
                           <motion.div
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden w-full flex flex-col items-center bg-white/5 rounded-2xl mt-2 py-2 gap-2"
+                            transition={{
+                              duration: 0.3,
+                              ease: [0.16, 1, 0.3, 1],
+                            }}
+                            className="w-full overflow-hidden"
                           >
-                            {item.dropdownItems ? (
-                              <div className="w-full flex flex-col items-center gap-1 pb-2 pt-2">
-                                {item.dropdownItems.map((sub, ssIdx) => (
-                                  <Link
-                                    key={`mob-drop-${ssIdx}`}
-                                    href={sub.link}
-                                    onClick={closeAllMenus}
-                                    className="text-neutral-400 hover:text-white py-2 text-sm"
-                                  >
-                                    {sub.name}
-                                  </Link>
-                                ))}
-                              </div>
-                            ) : (
-                              item.sections?.map((section, sIdx) => {
-                                const sectionLabel =
-                                  section.title ||
-                                  (sIdx === 0
-                                    ? "Marketing"
-                                    : "Software Development");
-                                const isSectionExpanded =
-                                  expandedSection === sectionLabel;
-
-                                return (
-                                  <div
-                                    key={`mob-sec-${sIdx}`}
-                                    className="w-full flex flex-col items-center"
-                                  >
-                                    <button
-                                      onClick={() =>
-                                        setExpandedSection(
-                                          isSectionExpanded
-                                            ? null
-                                            : sectionLabel,
-                                        )
-                                      }
-                                      className="w-full py-3 flex items-center justify-center gap-2 text-zinc-500 font-bold uppercase tracking-widest text-[11px]"
-                                    >
-                                      {sectionLabel}
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="14"
-                                        height="14"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className={`transition-transform duration-200 ${isSectionExpanded ? "rotate-180" : ""}`}
-                                      >
-                                        <path d="m6 9 6 6 6-6" />
-                                      </svg>
-                                    </button>
-                                    <AnimatePresence>
-                                      {isSectionExpanded && (
-                                        <motion.div
-                                          initial={{ height: 0, opacity: 0 }}
-                                          animate={{
-                                            height: "auto",
-                                            opacity: 1,
-                                          }}
-                                          exit={{ height: 0, opacity: 0 }}
-                                          className="overflow-hidden flex flex-col items-center gap-2 pb-4"
-                                        >
-                                          {section.items.map((sub, ssIdx) => (
-                                            <Link
-                                              key={`mob-sub-${ssIdx}`}
-                                              href={sub.link}
-                                              onClick={closeAllMenus}
-                                              className="text-neutral-400 hover:text-white py-1 text-sm"
-                                            >
-                                              {sub.name}
-                                            </Link>
-                                          ))}
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  </div>
-                                );
-                              })
-                            )}
+                            <div className="mb-3 flex w-full flex-col rounded-xl bg-white/[0.06] px-3 py-1">
+                              {item.dropdownItems?.map((sub, ssIdx) => (
+                                <Link
+                                  key={`mob-drop-${ssIdx}`}
+                                  href={sub.link}
+                                  onClick={closeAllMenus}
+                                  className="w-full py-2.5 text-left text-base text-white/60 transition-colors hover:text-white"
+                                >
+                                  {sub.name}
+                                </Link>
+                              ))}
+                            </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -324,28 +257,22 @@ export default function Header({
                     <Link
                       href={item.link}
                       onClick={closeMobileMenu}
-                      className={`relative text-neutral-300 hover:text-white block py-2 text-lg`}
+                      className="block w-full py-3.5 text-left text-xl font-medium text-white/90 transition-colors hover:text-white"
                     >
-                      <span className="block">{item.name}</span>
+                      {item.name}
                     </Link>
                   )}
                 </div>
               );
             })}
 
-            <div className="flex w-full flex-col gap-4 mt-4">
-              <Link
-                href="#contact"
-                onClick={closeMobileMenu}
-                className="relative px-5 py-3 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] text-white font-semibold rounded-2xl overflow-hidden transition-all duration-300 text-center"
-              >
-                <span
-                  className={`relative z-10 uppercase tracking-wide text-sm font-semibold transition-colors duration-200`}
-                >
-                  Get in Touch
-                </span>
-              </Link>
-            </div>
+            <Link
+              href="/contact"
+              onClick={closeMobileMenu}
+              className="mt-5 flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] py-3.5 text-base font-bold tracking-tight text-white"
+            >
+              Get in Touch
+            </Link>
           </MobileNavMenu>
         </MobileNav>
       </AceternityNavbar>

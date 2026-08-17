@@ -82,7 +82,7 @@ export default function BlogHeroSection() {
   return (
     <section className="relative w-full bg-white px-3 pt-24 font-sans selection:bg-[#2E5BFF]/20 md:pt-28">
       <div className="absolute left-0 top-0 z-50 w-full">
-        <Header />
+        <Header dropdown />
       </div>
 
       <div className="relative mx-auto flex min-h-[70vh] w-full flex-col justify-end overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-4 py-12 md:px-10 md:py-16 lg:py-20">

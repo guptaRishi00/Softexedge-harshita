@@ -20,7 +20,7 @@ type Props = {};
 export default function ContactPage({}: any) {
   return (
     <div className="bg-white">
-      <Header onDark />
+      <Header onDark dropdown />
 
       <div className="relative z-0 -mb-[100vh]">
         <div className="sticky -top-[56px] z-0 bg-black">
