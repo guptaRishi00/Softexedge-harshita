@@ -15405,3 +15405,46 @@ Two independent causes, both fixed in BOTH navbar variants.
   * left edge (311px out): still 0.96 / 0.9 — beyond the radius, provably unaffected
 - Inner-stop history: 0.5 -> 0.42 -> 0.34.
 - Desktop @1250 untouched; ChannelCard.tsx unchanged. `tsc` clean; build compiled.
+
+## WorkHeroSection — shorter dome cards + bigger title on mobile
+TITLE
+- A flat size could not go much bigger: "Our Creative" is `whitespace-nowrap` and needs 5.635px of
+  width per 1px of font, so at 320 with px-6 the ceiling is 48.3px — only +2px over the old 46.
+  Switched to the fluid idiom the homepage hero already uses:
+  `text-[2.875rem]` -> `text-[clamp(2.875rem,14.5vw,3.5rem)]`.
+  14.5vw is chosen so 320 lands at 46.4px (10.7px spare) while 386+ reaches the 3.5rem cap.
+- Measured: @390 56px with 29.1px spare on one line; @320 46.4px with 10.7px spare; no horizontal
+  overflow at either. Base size only — `sm:text-6xl` still takes over at 640.
+DOME
+- `HEIGHT_PATTERN` entries now take an extra `hf = compact ? 0.85 : 1`, applied to cardH only, so the
+  cards squat without losing width. Tallest @390: 281.3 -> 239.1px, aspect 1.34 -> 1.14.
+- The row cap had to move 12 -> 16: shorter rows need more of them, and columns were already hitting
+  12 (222 cards / 18 cols). `y < h` still decides when to stop, so this is a ceiling raise, not a count
+  change — desktop still renders 162 cards.
+- Coverage re-verified after: @390 and @320 both `coversVertically` and `coversHorizontally` true,
+  128px bottom overhang at 390.
+- Desktop @1250 fresh load: title 112px/112px (clamp is on the base size, `lg:text-[7rem]` wins),
+  162 cards, first card 300px, tallest/containerHeight = 0.340 exactly — the height factor is inactive.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## WorkHeroSection — another step: shorter cards, bigger title
+- Dome height factor `hf` 0.85 -> 0.75. Tallest @390: 239.1 -> 211px, aspect 1.14 -> 1.00.
+- Title `clamp(2.875rem,14.5vw,3.5rem)` -> `clamp(2.875rem,calc(17.2vw - 8px),3.75rem)`. A pure vw slope
+  is dictated by the narrowest phone (<=15.09vw for 320 to fit); subtracting the fixed 48px padding
+  inside calc() tracks the real available width instead, so every width keeps a similar margin.
+  @390 56 -> 59.08px (12.5px spare); @320 46.4 -> 47.04px (7.2px spare); no horizontal overflow.
+- CORRECTED MY OWN ERROR from the previous entry: I had raised the row cap 12 -> 16 believing columns
+  were hitting it, computed as cards/COLUMNS. That is wrong — the strip is DUPLICATED horizontally, so
+  real per-column depth is far lower. Measured max 9 rows per column at 390 and 8 at 320, against a cap
+  of 12. Reverted the cap to 12 and noted the reasoning in the file so it is not "fixed" again.
+- Coverage re-verified after the revert: @390 and @320 both cover vertically and horizontally, 197px
+  bottom overhang at 390.
+- Desktop @1250 fresh load: title 112px/112px, 162 cards, first card 300px, tallest/h = 0.340 exactly.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — overlay inner stop set to 0.20
+- Explicit value from the user: inner stop 0.34 -> 0.20. Outer stop stays 0.96.
+- Verified @390 at three points: bright spot alpha 0.20 / visible grey 14.5 -> 17.6; right edge (55px
+  out) alpha 0.462 -> 0.349, grey 11.8 -> 14.3; left edge (311px out) still 0.96 / 0.9, unaffected.
+- Inner-stop history: 0.5 -> 0.42 -> 0.34 -> 0.20.
+- Desktop @1250 untouched; ChannelCard.tsx unchanged. `tsc` clean; build compiled.

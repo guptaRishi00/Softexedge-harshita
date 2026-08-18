@@ -113,6 +113,13 @@ export default function DomeGallery({
     // `copies` and the row loop below both refill from these, so coverage of the
     // container holds automatically at any factor.
     const f = compact ? 0.7 : 1;
+    // Heights take an EXTRA factor below md. At `f` alone the cards keep
+    // their desktop aspect, and the tall entries in HEIGHT_PATTERN still read
+    // as long strips on a phone; this squats them without touching widths.
+    // The `r < 12` cap below is not reached even at this factor — measured
+    // max 9 rows per column at 390 — because the strip is duplicated
+    // horizontally, so per-column depth is far lower than cards/COLUMNS.
+    const hf = compact ? 0.75 : 1;
     const g = gap * f;
     let x = 0;
     for (let c = 0; c < COLUMNS; c++) {
@@ -121,7 +128,7 @@ export default function DomeGallery({
       let y = -OFFSET_PATTERN[(c * 5 + 2) % OFFSET_PATTERN.length] * h;
       let r = 0;
       while (y < h && r < 12) {
-        const cardH = HEIGHT_PATTERN[hIdx] * h * f;
+        const cardH = HEIGHT_PATTERN[hIdx] * h * f * hf;
         const img = pool[(r + 2 * c) % pool.length];
         built.push({ x, y, w: colW, h: cardH, src: img.src, alt: img.alt });
         y += cardH + g;
