@@ -82,7 +82,11 @@ export default function WorkProjectShowcase() {
               {activeCategory === category && (
                 <motion.div
                   layoutId="activeCategory"
-                  className="absolute inset-0 rounded-full border border-white/10 bg-[#100f0f]"
+                  // The chip is 56x40, so `rounded-full` resolves to 20px (half the
+                  // shorter side). rounded-lg is a fixed 10px here (it maps
+                  // straight to --radius, .625rem), which also keeps every
+                  // chip rounded identically regardless of label width.
+                  className="absolute inset-0 rounded-full border border-white/10 bg-[#100f0f] max-md:rounded-lg"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}

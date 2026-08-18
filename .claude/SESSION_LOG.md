@@ -15244,3 +15244,38 @@ Two independent causes, both fixed in BOTH navbar variants.
   [40, 40]), 3 children.
 - Desktop @1250 on a fresh load: flex-row, columnGap 40px — unchanged. Only the `max-md:` token moved.
 - `tsc --noEmit` clean; `next build` compiled.
+
+## WorkProjectShowcase — active category chip rounded-2xl on mobile
+- Added `max-md:rounded-2xl` to the `layoutId="activeCategory"` indicator. Scoped to mobile because the
+  standing rule this session is "don't change desktop"; the request carried no scope qualifier, and on
+  desktop the delta would be only 20px -> 18px on a 56x40 chip, i.e. invisible. One token to make it
+  site-wide if wanted.
+- rounded-2xl is 18px here (`--radius: .625rem` * 1.8), NOT the stock 16px.
+- Left the button element's own `rounded-full` alone — it paints nothing (no bg/border); only the
+  indicator is visible.
+- Verified @414: declared 18px, effective 18, `isRoundedFull: false`, chip 56x40, 19.8px straight edge,
+  rows 4+2 (matches the user's screenshot).
+- Desktop @1250 fresh load: declared 2.68e7px (rounded-full), effective 20, chip 56x40, 1 row — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## WorkProjectShowcase — active chip rounded-lg (was rounded-2xl)
+- `max-md:rounded-2xl` -> `max-md:rounded-lg` on the `layoutId="activeCategory"` indicator. Still mobile
+  only, same reasoning as the previous entry.
+- `rounded-lg` maps straight to `var(--radius)` = .625rem = 10px (vs rounded-2xl's 18px), so the chip is
+  now noticeably squarer: straight edge 35.8px horizontal / 20px vertical on the 56x40 chip.
+- Verified @414: declared and effective radius 10px. Desktop @1250 fresh load: still rounded-full
+  (2.68e7px declared, effective 20), chip 56x40, 1 row — unchanged.
+- Radius history for this chip: rounded-full (20) -> rounded-2xl (18) -> rounded-lg (10).
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — pattern darker again (4th step)
+- base #282828 -> #242424 (40 -> 36); WebKit #383838 -> #343434 (56 -> 52). Same -4 on both branches,
+  +16 WebKit offset preserved. Overlay untouched at 0.4/0.88.
+- Composite: base 24.0 -> 21.6 bright / 4.8 -> 4.3 edge; WebKit 33.6 -> 31.2 / 6.7 -> 6.2.
+- Verified @390 in Chromium: all 36 cells rgb(36,36,36) on both layers, overlay alphas [0.4, 0.88],
+  base branch applying (`-webkit-touch-callout` unsupported). Both rules emitted in the built CSS.
+- Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), 0 box cells.
+- Base colour history: #161616 -> #262626 -> #363636 -> #303030 -> #2c2c2c -> #282828 -> #242424.
+  It is now only 8 above ChannelCard's original #161616 — worth checking with the user before going
+  much further, since the pattern approaches invisibility again under the 0.88 edge overlay.
+- `tsc --noEmit` clean; `next build` compiled.
