@@ -35,7 +35,7 @@ const CustomLogo = ({
       // a preload hint.
       priority
       style={{ height: "auto" }}
-      className="w-[80px] object-contain transition-all duration-300 md:w-[90px]"
+      className="w-[88px] object-contain transition-all duration-300 md:w-[90px]"
     />
   </Link>
 );

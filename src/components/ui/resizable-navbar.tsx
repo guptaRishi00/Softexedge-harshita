@@ -62,6 +62,8 @@ interface MobileNavHeaderProps {
   className?: string;
   visible?: boolean;
   dropdown?: boolean;
+  /** Dropdown mode only: the menu is expanded. */
+  isOpen?: boolean;
 }
 
 interface MobileNavMenuProps {
@@ -452,8 +454,9 @@ export const MobileNav = ({
                   child as React.ReactElement<{
                     visible?: boolean;
                     dropdown?: boolean;
+                    isOpen?: boolean;
                   }>,
-                  { visible, dropdown: true },
+                  { visible, dropdown: true, isOpen },
                 )
             : child,
         )}
@@ -488,6 +491,7 @@ export const MobileNavHeader = ({
   className,
   visible,
   dropdown,
+  isOpen,
 }: MobileNavHeaderProps) => {
   // In dropdown mode the surrounding MobileNav owns the background, the blur
   // and the positioning, so this is just the row.
@@ -499,7 +503,8 @@ export const MobileNavHeader = ({
   const base = dropdown
     ? cn(
         "relative flex w-full shrink-0 flex-row items-center justify-between px-7",
-        visible ? "pt-3 pb-3" : "pt-8 pb-3.5",
+        // Compact padding belongs to the CLOSED pill only — see note above.
+        visible && !isOpen ? "pt-3 pb-3" : "pt-8 pb-3.5",
       )
     : null;
 

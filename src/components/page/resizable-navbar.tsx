@@ -65,6 +65,8 @@ interface MobileNavHeaderProps {
   dropdown?: boolean;
   /** Dropdown mode only: the bar is currently a dark pill. */
   floating?: boolean;
+  /** Dropdown mode only: the menu is expanded. */
+  isOpen?: boolean;
 }
 
 interface MobileNavMenuProps {
@@ -456,8 +458,9 @@ export const MobileNav = ({
                     visible?: boolean;
                     dropdown?: boolean;
                     floating?: boolean;
+                    isOpen?: boolean;
                   }>,
-                  { visible, dropdown: true, floating },
+                  { visible, dropdown: true, floating, isOpen },
                 )
             : child,
         )}
@@ -493,6 +496,7 @@ export const MobileNavHeader = ({
   visible,
   dropdown,
   floating,
+  isOpen,
 }: MobileNavHeaderProps) => {
   if (dropdown) {
     // In dropdown mode the surrounding MobileNav owns the background, blur and
@@ -506,7 +510,12 @@ export const MobileNavHeader = ({
           // row 2px high. 3+3 keeps the old 24px total, so only the centring
           // moves, not the height.
           "relative flex w-full shrink-0 flex-row items-center justify-between px-7",
-          visible ? "pt-3 pb-3" : "pt-8 pb-3.5",
+          // Compact padding belongs to the CLOSED pill only. Keyed on
+          // `visible` alone it also applied while the menu was OPEN, so a
+          // scrolled-then-opened card kept 12px of top room where the same
+          // card opened at the top of the page gets 32px — the bar visibly
+          // lost its upper spacing on open.
+          visible && !isOpen ? "pt-3 pb-3" : "pt-8 pb-3.5",
           className,
         )}
       >
@@ -624,7 +633,7 @@ export const MobileNavToggle = ({
       aria-expanded={isOpen}
       className="flex cursor-pointer items-center justify-center bg-transparent p-0"
     >
-      <Icon className={cn("h-7 w-7 transition-colors", color)} />
+      <Icon className={cn("h-8 w-8 transition-colors", color)} />
     </button>
   );
 };

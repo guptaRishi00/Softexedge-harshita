@@ -15279,3 +15279,120 @@ Two independent causes, both fixed in BOTH navbar variants.
   It is now only 8 above ChannelCard's original #161616 — worth checking with the user before going
   much further, since the pattern approaches invisibility again under the 0.88 edge overlay.
 - `tsc --noEmit` clean; `next build` compiled.
+
+## CtaSection — equal space above and below the CTA button (mobile)
+- Measured: space above (Trusted-by -> button) was 32px = the bottom block's `max-md:pt-8`; space below
+  (button -> email) was 48px = `max-md:gap-12`. A 16px mismatch, half of which came from raising the gap
+  40 -> 48 two tasks ago.
+- Raised the top padding instead of lowering the gap, so the extra breathing room the user asked for
+  earlier is preserved: `max-md:pt-8` -> `max-md:pt-12` (32 -> 48).
+- Verified @390 on /contact: spaceAbove 48 == spaceBelow 48, `equal: true` (was 32 / 48).
+- Desktop untouched, proven by token analysis of the diff: the only changed tokens are
+  `max-md:pt-8` -> `max-md:pt-12`, "NOT max-md scoped: NONE". @1250 fresh load reads flex-row, gap 40px,
+  py 64px — note that is `lg:py-16`, not `md:py-12`, at this width.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Mobile navbar — open menu lost its top spacing after scrolling
+- Cause: MobileNavHeader picked its padding from `visible` alone
+  (`visible ? "pt-3 pb-3" : "pt-8 pb-3.5"`). `visible` means SCROLLED, not "is a pill", so once the user
+  had scrolled, opening the menu kept the compact 12px top padding even though the bar had expanded into
+  a tall card — while opening at the top of the page gave 32px. Hence "the upper spacing reduces".
+- Fix: thread `isOpen` from MobileNav into MobileNavHeader (added to the props interface and to the
+  cloneElement payload in both variants) and gate the compact padding on `visible && !isOpen`. The
+  compact value now belongs to the CLOSED pill only.
+- VERIFICATION TECHNIQUE worth reusing: scroll events never fire in this pane (rAF frozen), but the
+  listener reads `window.scrollY` itself — so `window.scrollTo(0,500)` followed by
+  `window.dispatchEvent(new Event('scroll'))` drives the real listener and makes the scrolled state
+  reachable. All four states were then exercised by clicking the real toggle:
+    /about  top+closed 32px | top+open 32px | scrolled+closed 12px | scrolled+open 32px (was 12px)
+    /home   scrolled+closed 12px | scrolled+open 32px (was 12px)
+  Width classes tracked correctly throughout (w-full / w-[96%] / w-[69%]).
+- Desktop unaffected: every line touched is inside the `dropdown` branch of MobileNavHeader, which only
+  renders inside the `lg:hidden` MobileNav.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Navbar logo + menu icon bumped on mobile (every route EXCEPT home)
+- Home and the other routes use two separate copies of the same markup, so the identical class strings
+  had to be edited in the `page/` copies only:
+  * `page/Header.tsx`: logo `w-[80px]` -> `w-[88px]`. Base value only; `md:w-[90px]` still re-asserts at
+    >=768, so desktop is untouched by construction.
+  * `page/resizable-navbar.tsx`: MobileNavToggle icon `h-7 w-7` -> `h-8 w-8` (28 -> 32). That component
+    only renders inside the `lg:hidden` MobileNav.
+- Verified @390: /about and /work both read logo 88px, icon 32x32. /home still 80px / 28x28 — confirming
+  the homepage was not caught by the shared class names.
+- Desktop @1250 on /work, fresh load: mobile pill display:none, NavBody logo 90px — unchanged.
+- `tsc --noEmit` clean; `next build` compiled. Diff touches only the two `page/` files.
+
+## CtaSection — slightly more bottom padding on mobile
+- `max-md:pb-16` -> `max-md:pb-18` (64px -> 72px) on the bottom block. The card itself has
+  `padding-bottom: 0`, so this block is the sole source of the space under the phone number — measured
+  65px to the card edge before (64 + 1px border), 73px after.
+- pb-18 is not a stock Tailwind step; v4's dynamic spacing generated
+  `.pb-18{padding-bottom:calc(var(--spacing) * 18)}`, confirmed in the built CSS before trusting it.
+- pt left at 48px, so the equal above/below-the-button spacing from the previous task still holds.
+- Verified @390 on /contact: paddingBottom 72px. Desktop @1250 fresh load: py 64/64 (that is `lg:py-16`),
+  flex-row, gap 40px — unchanged, and the diff's only changed tokens are max-md-scoped.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — overlay darker on the left
+- The overlay is `radial-gradient(280px circle at 85% 50%, ...)`, so the bright spot is on the RIGHT and
+  everything on the left sits past the 280px radius, painted at the OUTER stop. That stop is therefore
+  the knob for "darker on the left": 0.88 -> 0.94, inner 0.4 deliberately untouched.
+- Confirmed the geometry rather than assuming it: the card's left edge measures 311px from the gradient
+  centre at 390 viewport, i.e. beyond the 280px radius (`leftEdgeIsBeyondRadius: true`).
+- Effect with the current #242424 cells: left edge visible grey 4.3 -> 2.2; bright spot unchanged at 21.6.
+  Caveat given to the user — the pattern is now close to invisible on the left, which is the direct
+  consequence of what was asked.
+- Note this darkens the far top/bottom corners too, not just the left: beyond the radius the gradient is
+  a single flat colour. Isolating the left alone would need a second, linear overlay layer.
+- Verified @390: alphas parse as [0.4, 0.94]. Desktop @1250 untouched: mobile block display:none,
+  desktop card flex, bg rgb(16,15,15), 0 box cells, no radial overlay at all.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — reverted my own drift, restored exact ChannelCard parity
+- User (rightly) called out that the original ask was "make the card's bg pattern and overlay just like
+  ChannelCard", and that I had since introduced values of my own. Everything invented has been removed:
+  * cells #242424 / WebKit-only #343434 via `supports-[-webkit-touch-callout:none]`  -> plain #161616
+  * overlay 0.4 / 0.94  -> 0.5 / 0.96
+  * cell count 36 ("card is taller")  -> 30, ChannelCard's number
+  The `supports-[]` browser branch was entirely my invention and is gone.
+- Proof, not assertion: captured 12 computed properties from the live ChannelCard on /home @390 and
+  diffed the values card against them — maskImage, webkitMaskImage, overlay background, grid columns/
+  gap/width%/translate, cell count, cell outer+inner bg, radius, padding. `identical: true`, zero diffs.
+- ONE consequence surfaced rather than silently patched: at 30 cells the grid ends 47px above the card
+  bottom on this taller card (`gridCoversCard: false`). Under the 0.96 outer stop that strip renders at
+  22*0.04 = 0.9/255, i.e. indistinguishable from the bare card, so parity is kept. Flagged to the user;
+  the fix if they want it is the cell count, which is coverage not style.
+- RULE FOR FUTURE SESSIONS: when the ask is "make X like Y", copy Y's values verbatim and change nothing
+  else. Do not re-derive values from this component's own dimensions.
+- Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), 0 box cells.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — pattern boxes slightly larger (requested deviation)
+- Box size is `(gridWidth - (cols-1)*gap) / cols`. Measured 60.1px before. Chose to widen the grid
+  rather than drop to 5 columns: 6->5 would have jumped +23%, too much for "slightly".
+- `w-[110%] -left-[5%]` -> `w-[120%] -left-[10%]`. The `-left` moves with it so the overhang stays
+  symmetric — verified 36.4px on each side, `stillCentred: true`.
+- Result: box 60.1 -> 66.1px, exactly +10%. Everything else stays at ChannelCard's values: gap 8,
+  6 columns, 30 cells, cell rgb(22,22,22), translate 0 -24px.
+- Side benefit: taller rows mean the grid now falls only 16px short of the card bottom, down from 47.
+- This is a DELIBERATE, user-requested deviation from ChannelCard parity — the only one. Noted in the
+  component comment so the next session does not "restore" it.
+- Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), 0 box cells.
+  ChannelCard.tsx itself has no changes.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — overlay lighter on the right (requested deviation #2)
+- The gradient's bright spot is at 85% width, so the RIGHT side is governed by the INNER stop.
+  0.5 -> 0.42; the 0.96 outer stop (which the user darkened earlier for the left) is untouched.
+- Verified @390 by evaluating the gradient at three points, not just reading the string:
+  * bright spot (85%): alpha 0.42, visible grey 11.0 -> 12.8
+  * right edge, 55px from the spot: alpha 0.59 -> 0.526, visible grey 10.4
+  * left edge, 311px from the spot: past the 280px radius, still pinned at 0.96 -> visible grey 0.9,
+    i.e. the left is provably unaffected by this change
+- Running list of deliberate deviations from ChannelCard parity, both user-requested: grid width 120%
+  (bigger boxes) and overlay inner stop 0.42. Cell colour #161616, gap 8, 6 cols, 30 cells and the
+  0.96 outer stop all still match. Recorded in the component comment.
+- Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), 0 box cells,
+  no radial overlay. ChannelCard.tsx unchanged.
+- `tsc --noEmit` clean; `next build` compiled.

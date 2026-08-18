@@ -44,19 +44,17 @@ const quoteVariants = {
   exit: (dir: number) => ({ opacity: 0, x: -32 * dir }),
 };
 
-// Six columns of square boxes under a parked black overlay — the same pattern
-// ChannelCard paints behind the contact cards. Its cells are pointer-reactive;
-// on touch the hover intensity is always 0, so every cell resolves to a flat
-// tone and the whole thing collapses to this static markup. These sit at
-// #242424 rather than ChannelCard's #161616: even with the overlay lightened to
-// 0.4/0.88, the darker grey had almost nothing left to show. WebKit gets a
-// lighter #343434 via `supports-[-webkit-touch-callout:none]` — the same value
-// reads noticeably darker on iOS Safari, to the point the pattern disappears.
-// That query is WebKit-only (Blink dropped the property), so it also covers
-// iOS Chrome, which is the same renderer and wants the same treatment. 36 cells
-// (6 rows) is what clears the card height; ChannelCard renders 30 because its
-// cards are shorter, and the surplus is clipped either way.
-const patternCellIds = Array.from({ length: 36 }, (_, i) => `values-box-${i}`);
+// A copy of the pattern ChannelCard paints behind the contact cards: same cell
+// colour, same gap, same cell count, same outer overlay stop. Two deliberate,
+// requested deviations: the grid is 120% wide instead of 110% (which enlarges
+// the boxes, since they are 6 fractional columns of it — `-left` stays at half
+// the overhang so it is still centred), and the overlay's INNER stop is 0.42
+// instead of 0.5, which lightens the bright spot on the right. Its
+// cells are pointer-reactive; on touch the hover intensity is always 0, so
+// every cell resolves to #161616 and the whole thing collapses to this static
+// markup. Keep these values in sync with ChannelCard rather than tuning them
+// here — the two are meant to look identical.
+const patternCellIds = Array.from({ length: 30 }, (_, i) => `values-box-${i}`);
 
 // Mobile moves the whole card rather than swapping its contents: the outgoing
 // card leaves the viewport entirely and the next one arrives from the far side.
@@ -345,13 +343,13 @@ export default function OurValuesSection() {
                       aria-hidden
                       className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
                     >
-                      <div className="relative -left-[5%] grid w-[110%] -translate-y-6 grid-cols-6 gap-2">
+                      <div className="relative -left-[10%] grid w-[120%] -translate-y-6 grid-cols-6 gap-2">
                         {patternCellIds.map((id) => (
                           <div
                             key={id}
-                            className="relative aspect-square w-full overflow-hidden rounded-md bg-[#242424] p-[0.8px] supports-[-webkit-touch-callout:none]:bg-[#343434]"
+                            className="relative aspect-square w-full overflow-hidden rounded-md bg-[#161616] p-[0.8px]"
                           >
-                            <div className="relative z-10 h-full w-full rounded-md bg-[#242424] supports-[-webkit-touch-callout:none]:bg-[#343434]" />
+                            <div className="relative z-10 h-full w-full rounded-md bg-[#161616]" />
                           </div>
                         ))}
                       </div>
@@ -361,7 +359,7 @@ export default function OurValuesSection() {
                         className="pointer-events-none absolute inset-0"
                         style={{
                           background:
-                            "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.88) 100%)",
+                            "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.96) 100%)",
                         }}
                       />
                     </div>
