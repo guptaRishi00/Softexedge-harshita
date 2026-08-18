@@ -15448,3 +15448,12 @@ DOME
   out) alpha 0.462 -> 0.349, grey 11.8 -> 14.3; left edge (311px out) still 0.96 / 0.9, unaffected.
 - Inner-stop history: 0.5 -> 0.42 -> 0.34 -> 0.20.
 - Desktop @1250 untouched; ChannelCard.tsx unchanged. `tsc` clean; build compiled.
+
+## OurValuesSection — overlay inner stop 0.20 -> 0.10
+- Outer stop stays 0.96, so the left is still unaffected.
+- Verified @390: bright spot alpha 0.10, visible grey 17.6 -> 19.8 (cells now show at 90% of their
+  #161616 value there); right edge (55px out) alpha 0.349 -> 0.269, grey 14.3 -> 16.1; left edge
+  (311px out) still 0.96 / 0.9.
+- Inner-stop history: 0.5 -> 0.42 -> 0.34 -> 0.20 -> 0.10. Only 0.10 of headroom left on this knob;
+  past that the spotlight is fully transparent and the falloff has to come from the radius instead.
+- Desktop @1250 untouched; ChannelCard.tsx unchanged. `tsc` clean; build compiled.

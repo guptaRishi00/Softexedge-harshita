@@ -48,7 +48,7 @@ const quoteVariants = {
 // colour, same gap, same cell count, same outer overlay stop. Two deliberate,
 // requested deviations: the grid is 120% wide instead of 110% (which enlarges
 // the boxes, since they are 6 fractional columns of it — `-left` stays at half
-// the overhang so it is still centred), and the overlay's INNER stop is 0.20
+// the overhang so it is still centred), and the overlay's INNER stop is 0.10
 // instead of 0.5, which lightens the bright spot on the right. Its
 // cells are pointer-reactive; on touch the hover intensity is always 0, so
 // every cell resolves to #161616 and the whole thing collapses to this static
@@ -359,7 +359,7 @@ export default function OurValuesSection() {
                         className="pointer-events-none absolute inset-0"
                         style={{
                           background:
-                            "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.96) 100%)",
+                            "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.96) 100%)",
                         }}
                       />
                     </div>
