@@ -106,7 +106,7 @@ export default function CtaSection() {
             </motion.div>
           </div>
 
-          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 max-md:gap-10 max-md:px-5 max-md:pt-8 max-md:pb-16 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
+          <div className="pointer-events-none relative z-10 flex w-full flex-col gap-10 px-4 py-8 max-md:gap-12 max-md:px-5 max-md:pt-8 max-md:pb-16 md:flex-row md:items-center md:justify-between md:px-10 md:py-12 lg:py-16">
             <motion.div
               data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}

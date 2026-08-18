@@ -15234,3 +15234,13 @@ Two independent causes, both fixed in BOTH navbar variants.
 - Minor: the built chunk still carries a dead `#3c3c3c` rule from the incremental build cache — src/ has
   no reference to it (grepped) and no element uses the class. A clean `.next` build drops it.
 - `tsc --noEmit` clean; `next build` compiled.
+
+## CtaSection — more breathing room between CTA / email / phone on mobile
+- Container's mobile token `max-md:gap-10` -> `max-md:gap-12` (40px -> 48px). The base `gap-10` is left
+  in place, so desktop (which switches to `md:flex-row`) keeps its 40px.
+- Note the old `max-md:gap-10` was redundant with the base value — it existed from an earlier round and
+  was doing nothing; now it actually carries the mobile override.
+- Verified @390 on /contact: rowGap 48px, measured gaps between the three children [48, 48] (was
+  [40, 40]), 3 children.
+- Desktop @1250 on a fresh load: flex-row, columnGap 40px — unchanged. Only the `max-md:` token moved.
+- `tsc --noEmit` clean; `next build` compiled.
