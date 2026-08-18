@@ -15396,3 +15396,12 @@ Two independent causes, both fixed in BOTH navbar variants.
 - Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), 0 box cells,
   no radial overlay. ChannelCard.tsx unchanged.
 - `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — overlay lighter on the right again
+- Inner stop 0.42 -> 0.34. Outer stop stays 0.96, so the left is untouched.
+- Verified @390 by evaluating the gradient at three points:
+  * bright spot: alpha 0.34, visible grey 12.8 -> 14.5
+  * right edge (55px out): alpha 0.526 -> 0.462, visible grey 10.4 -> 11.8
+  * left edge (311px out): still 0.96 / 0.9 — beyond the radius, provably unaffected
+- Inner-stop history: 0.5 -> 0.42 -> 0.34.
+- Desktop @1250 untouched; ChannelCard.tsx unchanged. `tsc` clean; build compiled.
