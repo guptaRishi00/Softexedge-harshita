@@ -15176,3 +15176,61 @@ Two independent causes, both fixed in BOTH navbar variants.
 - `tsc --noEmit` clean; `next build` compiled.
 - CAVEAT: no Safari available in this environment, so the WebKit value is an informed guess at how much
   lift is needed — it could not be measured. Needs a screenshot from the user to tune.
+
+## CTA buttons — symmetric horizontal padding on mobile
+- Two buttons shared the "more padding left than right" symptom, both by exactly 10px:
+  * OurValuesSection mobile card CTA (the one in the screenshot): `pl-4 pr-1.5` = 16/6 -> `px-3` = 12/12
+  * CtaSection button (rendered on 7 routes = the "every page" one): `max-md:pl-5 max-md:pr-2.5`
+    = 20/10 -> `max-md:px-4` = 16/16
+- Measured gaps after: values CTA edge->text 12 == chip->edge 12; CtaSection 16 == 16. Pill widths moved
+  by only +2px each, since the two paddings converged on their midpoint.
+- Left ExperimentalTestimonials' CTA alone: it is `pl-0 pr-3`, i.e. LESS on the left (asymmetry -12),
+  the opposite of the reported symptom, and its text is deliberately flush while the sweep is parked.
+- Note the design rationale that was overridden: the chip was inset near-uniformly (values CTA 6px right
+  vs 7px vertical), which is the usual "pill with trailing chip" idiom; the user reads the text-side gap
+  as the pill's padding, so symmetry wins.
+- Desktop verified on a FRESH load at 1250 (see caveat): CtaSection 0px/8px h-56, values desktop card
+  20px/8px h-56, values mobile CTA hidden.
+- CAVEAT worth remembering: `transition-all duration-300` on the CtaSection button means resizing the
+  viewport and re-measuring reports STALE padding/height — the transition cannot advance with rAF frozen,
+  so it stays at the pre-resize values. It read 16/16 h-48 at 1250 until I re-navigated. Always reload
+  after a resize when the element has transition-all.
+
+## CtaSection button matched to the OurValuesSection card button (mobile only)
+- Target (OurValuesSection mobile CTA): h-[42px], px-3, gap-2, rounded-lg, white bg, label
+  text-sm/font-bold/tracking-tight/black, chip 28x28 rounded-md black, single gradient arrow 14x14.
+- Added five `max-md:` overrides to CtaSection's button so it renders the same below md:
+  h-12 -> h-[42px]; px-2.5 -> px-3; + gap-2; + rounded-lg; text-base -> text-sm;
+  chip 9.5(38px)/rounded-xl -> h-7 w-7 rounded-md; both arrows h-4 w-4 -> h-3.5 w-3.5.
+  The white fill already came from the parked `before:` sweep, and the two-arrow swap already parks a
+  single gradient arrow in place on touch, so neither needed changing.
+- NOTE: the file had `max-md:px-2.5` on arrival, not the `max-md:px-4` set in the previous task — someone
+  edited it outside this session. Left that intent alone and moved to px-3 only because the target uses it.
+- Verified @390 on /about by diffing 12 computed properties of the two buttons: height, padding, gap,
+  radius, chip w/h/radius/bg, icon size all identical; the three font fields differed only because the
+  values button carries the type on the BUTTON while CtaSection carries it on the inner span — comparing
+  the actual label elements gives 14px / 700 / -0.35px / rgb(0,0,0) / Satoshi on both, zero differences.
+- Verified @390 on /contact: matchesValuesTarget true (h42, 12/12, gap 8, chip 28, label 14px).
+- Desktop proven untouched by token analysis of the diff rather than by eye: every added/removed class
+  is `max-md:`-scoped, "NOT max-md scoped: NONE". Fresh @1250 load reads h-56, 0px/8px, gap 16,
+  chip 36x36 white, label 16px white.
+- Beware: `rounded-xl` is 14px here, not 12 — the theme sets `--radius: .625rem` and rounded-xl is
+  `calc(var(--radius) * 1.4)`. An assumed 12px produced two false "differences" before I checked.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OurValuesSection — pattern nudged darker again (both branches)
+- There are TWO cell values now, so both moved by the same -4 to keep the WebKit compensation intact:
+  base #2c2c2c -> #282828 (44 -> 40), WebKit #3c3c3c -> #383838 (60 -> 56).
+  Darkening only the base would have been invisible to the user, who is testing on an iPhone and
+  therefore sees the WebKit branch.
+- Overlay untouched at 0.4/0.88.
+- Composite: base 26.4 -> 24.0 bright / 5.3 -> 4.8 edge; WebKit 36.0 -> 33.6 / 7.2 -> 6.7.
+- Verified @390 in Chromium: all 36 cells rgb(40,40,40) on both layers, overlay alphas still [0.4,0.88],
+  `-webkit-touch-callout` unsupported so the base branch is the one applying. Built CSS contains both
+  `.bg-\[\#282828\]{background-color:#282828}` and the @supports rule for #383838.
+- Desktop @1250 untouched: mobile block display:none, desktop card flex, bg rgb(16,15,15), 0 box cells.
+- Cell colour history: #161616 -> #262626 -> #363636 -> #303030 -> #2c2c2c -> #282828 (base);
+  WebKit branch #3c3c3c -> #383838.
+- Minor: the built chunk still carries a dead `#3c3c3c` rule from the incremental build cache — src/ has
+  no reference to it (grepped) and no element uses the class. A clean `.next` build drops it.
+- `tsc --noEmit` clean; `next build` compiled.

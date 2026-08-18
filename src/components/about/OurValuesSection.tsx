@@ -48,9 +48,9 @@ const quoteVariants = {
 // ChannelCard paints behind the contact cards. Its cells are pointer-reactive;
 // on touch the hover intensity is always 0, so every cell resolves to a flat
 // tone and the whole thing collapses to this static markup. These sit at
-// #2c2c2c rather than ChannelCard's #161616: even with the overlay lightened to
+// #282828 rather than ChannelCard's #161616: even with the overlay lightened to
 // 0.4/0.88, the darker grey had almost nothing left to show. WebKit gets a
-// lighter #3c3c3c via `supports-[-webkit-touch-callout:none]` — the same value
+// lighter #383838 via `supports-[-webkit-touch-callout:none]` — the same value
 // reads noticeably darker on iOS Safari, to the point the pattern disappears.
 // That query is WebKit-only (Blink dropped the property), so it also covers
 // iOS Chrome, which is the same renderer and wants the same treatment. 36 cells
@@ -349,9 +349,9 @@ export default function OurValuesSection() {
                         {patternCellIds.map((id) => (
                           <div
                             key={id}
-                            className="relative aspect-square w-full overflow-hidden rounded-md bg-[#2c2c2c] p-[0.8px] supports-[-webkit-touch-callout:none]:bg-[#3c3c3c]"
+                            className="relative aspect-square w-full overflow-hidden rounded-md bg-[#282828] p-[0.8px] supports-[-webkit-touch-callout:none]:bg-[#383838]"
                           >
-                            <div className="relative z-10 h-full w-full rounded-md bg-[#2c2c2c] supports-[-webkit-touch-callout:none]:bg-[#3c3c3c]" />
+                            <div className="relative z-10 h-full w-full rounded-md bg-[#282828] supports-[-webkit-touch-callout:none]:bg-[#383838]" />
                           </div>
                         ))}
                       </div>
@@ -405,7 +405,7 @@ export default function OurValuesSection() {
                     <Link href="/about" className="relative z-10 w-fit">
                       <button
                         type="button"
-                        className="flex h-[42px] w-fit cursor-pointer items-center gap-2 rounded-lg bg-white pl-4 pr-1.5 text-sm font-bold tracking-tight text-black"
+                        className="flex h-[42px] w-fit cursor-pointer items-center gap-2 rounded-lg bg-white px-3 text-sm font-bold tracking-tight text-black"
                       >
                         Connect With Me
                         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-black text-white">
