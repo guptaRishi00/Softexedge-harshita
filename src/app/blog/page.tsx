@@ -25,11 +25,11 @@ export default function BlogPage() {
             <BlogFeaturedSection />
           </ShrinkOnOverlap>
         </div>
-        <div id="blog-list" className="relative z-10 bg-[#0a0a0a]">
+        <div id="blog-list" className="relative z-10 bg-black">
           <BlogListSection />
         </div>
       </div>
-      <div className="px-3 [&>section]:pt-16 [&>section]:pb-8 max-md:[&>section]:pt-9 max-md:[&>section]:pb-9 md:[&>section]:pt-24 md:[&>section]:pb-8">
+      <div className="px-3 [&>section]:pt-22 [&>section]:pb-8 max-md:[&>section]:pt-18 max-md:[&>section]:pb-9 md:[&>section]:pt-24 md:[&>section]:pb-8">
         <CtaSection />
       </div>
       <div className="[&>section]:py-16 md:[&>section]:py-24"></div>

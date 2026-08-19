@@ -15808,3 +15808,218 @@ unlike ProjectCard/OpenPositions; that is a deliberate open item, not an oversig
   about/career/blog contain neither.
 - theme-color kept alongside — it correctly darkens the browser chrome; the two are complementary.
 - `tsc --noEmit` clean; `next build` compiled.
+
+## BlogHeroSection — shorter hero on mobile
+- Measured the composition first: the card sat at exactly its `min-h-[70vh]` (591px @390) while its
+  content needed only 259px (30.7vh) — 331px was pure slack, which is why it read as over-tall.
+- Added `max-md:min-h-[55svh]`. Used `svh` rather than `vh` for the same reason as CareerHeroSection:
+  vh on a phone measures the viewport WITHOUT browser chrome, so a vh-sized hero overshoots.
+- Verified @390: 591 -> 464px (-127px, 55.0% of viewport), slack 331 -> 205, content still fits,
+  h1 still 2 lines. Whole hero section 687 -> 560px. @375: 447px, slack 191, fits, no overflow.
+- Desktop @1250 fresh load: min-height still exactly 70vh (630px), section pt 112, card px 40 / py 80,
+  h1 112px — unchanged.
+- For reference if it should go shorter still: CtaSection uses `min-h-[45vh]` for the same
+  card-in-section idiom, which here would be ~380px.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## BlogHeroSection — hero height down another step
+- `max-md:min-h-[55svh]` -> `[45svh]`, matching CtaSection's value for the same card-in-section idiom.
+  Height history: 70vh -> 55svh -> 45svh.
+- Verified @390: 464 -> 380px (45.0% of viewport), slack 205 -> 120, content still fits (needs 259),
+  h1 still 2 lines, hero section total 560 -> 476px. @375: 365px, slack 110, fits, no overflow.
+- Desktop @1250 fresh load: min-height still 70vh (630px), section pt 112, card py 80 — unchanged.
+- Headroom note for any further step: content needs 259px @390 = 30.7svh, so ~35svh is the floor
+  before the min-height stops doing anything and the card is sized purely by its content.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## BlogFeaturedSection — hide read-time + park Read Article active (mobile)
+- `max-md:hidden` on the "15 mins read" span. Author and date deliberately kept — only the read-time
+  was asked for, and both verified still visible.
+- "Read Article" parked in its hover state below md, the same idiom as CtaSection/OpenPositions:
+  `max-md:before:scale-x-100` (sweep filled), `max-md:text-black` (label), `max-md:bg-black` (chip),
+  and both arrows parked so the GRADIENT one is the visible one
+  (`max-md:-translate-y-8 max-md:translate-x-8` / `max-md:translate-x-0 max-md:translate-y-0`).
+- Verified @390: read-time `display: none` / width 0 with author+date still shown; CTA label rgb(0,0,0),
+  chip rgb(0,0,0), visible arrow gradient-filled, ::before `scale: 1` over the full 147px.
+  Cross-checked the sweep against the CtaSection button parked on the SAME page -> `matchesReference: true`.
+- MEASUREMENT TRAP hit again: `before:scale-x-100` compiles to the standalone `scale` property in
+  Tailwind v4, so reading `transform` returns "none" and looks unfilled. Read `scale`.
+- Desktop @1250 fresh load: read-time `display: flex` and visible, sweep `scale: 0 1` (unfilled), label
+  and chip both white -> 5/5 properties unchanged, and every changed token is max-md-scoped.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## BlogFeaturedSection — card y-padding, equal-width pills, matching pill bg (mobile)
+- Card content `py-6` + `max-md:py-9` (24 -> 36px). md:py-10 / lg:py-14 hold desktop.
+- PILLS: measured first — they were ALREADY the same height (29.6 both, heightDelta 0) with identical
+  padding/font-size/border-width. The only difference was WIDTH, 95.3 vs 105.6, purely because
+  "Resources" is a longer word than "Featured". So "same size" = equal width.
+  Added `max-md:inline-flex max-md:min-w-[7rem] max-md:items-center max-md:justify-center` to BOTH.
+  inline-flex is REQUIRED: min-width does not apply to a non-replaced inline element. 7rem (112px)
+  clears the wider natural width, so a longer category grows instead of clipping.
+- Category pill bg `bg-white/5` -> `max-md:bg-black/40`, matching the Featured pill.
+- Verified @390: both pills 112 x 29.6, widthDelta 0, identical bg oklab(0 0 0 / 0.4), badge row still
+  one line, content padY 36/36, no horizontal overflow.
+- Desktop @1250 fresh load: pills back to 95.3 / 105.6 natural widths, minWidth auto, category bg still
+  white/0.05, padY 56/56 (lg:py-14). One apparent diff — `display: block` — was investigated and is NOT
+  from this change: the badge row is `display:flex`, so its children are blockified per spec. Proved it
+  by cloning a pill with all max-md classes stripped: still `block`, same 95.3px width.
+- Token audit: NOT max-md scoped -> NONE.
+- NOT changed, flagged: the two pills still have different BORDER colours (white/20 vs white/10). The
+  ask was the background only.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## BlogFeaturedSection — y-padding now grows on BOTH sides (mobile)
+- USER WAS RIGHT: my earlier `max-md:py-*` bumps on the content block only moved the BOTTOM.
+  Reason, measured: the card is `min-h-[560px]` with `justify-end`, so the content block is
+  bottom-anchored under ~118px of free space — its padding-TOP is real but visually swallowed.
+  The card's visible TOP inset is the absolutely-positioned badge row's `top-6`, a different element.
+- Fix: `max-md:top-12` on the badge row (24 -> 48px), matching the content block's 48px padding-bottom.
+- Before: top 25 / bottom 49, `symmetric: false`. After: top 49 / bottom 49, `symmetric: true`,
+  `bothIncreased: true` (both were 24 originally). Badges still inside the card, still one line,
+  no horizontal overflow.
+- Desktop @1250 fresh load: badge top 40 (md:top-10), badge left 40, content padding 56/56 (lg:py-14),
+  section 80/96 — 6/6 unchanged, and every changed token is max-md-scoped.
+- LESSON for this codebase: on a `min-h` + `justify-end` card, `py` is NOT the y-padding control. Only
+  padding-bottom is visible; the top inset belongs to whatever is absolutely positioned at the top.
+  Measure `cardTop -> firstVisibleThing` and `lastContent -> cardBottom` separately before claiming
+  symmetric padding.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## BlogFeaturedSection — card y-insets reduced (both edges)
+- 48 -> 36px on BOTH edges: content block `max-md:py-12` -> `py-9`, badge row `max-md:top-12` -> `top-9`.
+  Moving them together is mandatory here — see the previous entry: `py` alone only shifts the bottom
+  because the card is min-h + justify-end.
+- Verified @390: top 37 / bottom 37, `symmetric: true`, `bothReduced: true`, badges still inside the
+  card and on one line, no horizontal overflow.
+- Desktop @1250 fresh load: badge top 40 (md:top-10), content padding 56/56 (lg:py-14) — unchanged.
+- Inset history: 24 (original) -> 36 -> 48 -> 36.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## BlogFeaturedSection — Read Article matched to OurValuesSection's card button (mobile)
+- Four `max-md:` overrides: shell `h-[42px] gap-2 rounded-lg px-3`, chip `h-7 w-7 rounded-md`, both
+  arrows `h-3.5 w-3.5`. The white fill, black label, black chip and parked gradient arrow were already
+  in place from the earlier "active state" task; label was already text-sm/font-bold/tracking-tight.
+- Proof: re-captured the reference LIVE from /about @390 (not reused from memory) and diffed 15
+  computed properties — height, padding, gap, radius, background, label size/weight/colour/tracking,
+  chip w/h/radius/bg, icon w/h. `matches: true`, zero differences.
+  Note the background compare uses the ::before sweep, since this CTA has no bg of its own — it is the
+  parked sweep that paints white, and it reads rgb(255,255,255) with `scale: 1`.
+- Desktop @1250 fresh load: h 48, padding 20/8, gap 12, radius 14, chip 32x32 r10 white, label white,
+  sweep `scale: 0 1` (unfilled), icon 16 — 11/11 unchanged; token audit: NOT max-md scoped -> NONE.
+- Three CTAs now share the values-card geometry on mobile: CtaSection, OpenPositions "Apply Now",
+  BlogFeaturedSection "Read Article". BlogCard's own "Read Article" is still NOT matched — flagged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## BlogCard — card CTA matched to OurValuesSection's button (mobile)
+- Blast radius checked first: BlogCard is imported ONLY by BlogListSection, so nothing else moves.
+- Five `max-md:` overrides. Geometry: shell `h-[42px] gap-2 rounded-lg px-3`, chip `h-7 w-7 rounded-md`,
+  arrows `h-3.5 w-3.5`. Appearance: `before:scale-x-100` (parked sweep), `text-black`, chip `bg-black`,
+  and both arrows parked so the GRADIENT one shows. The parked state is part of "same as" here — the
+  values-card button is a SOLID white pill, and unlike BlogFeaturedSection this CTA had never been
+  parked, so geometry alone would not have matched.
+- Verified @390 across all 5 card CTAs: 15/15 computed properties equal to the values button
+  (`matches: true`), sweep `scale: 1`, gradient arrow visible, `allCardsUniform: true`, no overflow.
+- Desktop @1250 fresh load: h 48, padding 0/8 (pl-0 resting, hover:pl-5 expands), gap 12, radius 14,
+  chip 32x32 r10 white, white label, sweep `scale: 0 1`, icon 16 — 11/11 unchanged.
+  Token audit: NOT max-md scoped -> NONE.
+- All four CTAs on the site now share the values-card geometry on mobile: CtaSection, OpenPositions,
+  BlogFeaturedSection, BlogCard.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## BlogCard — more y-padding on the text block (mobile)
+- Text div `p-6` + `max-md:py-8` (24 -> 32px, y only; x stays 24).
+- Checked the featured-card trap FIRST: unlike BlogFeaturedSection, this div is `flex-1 flex-col
+  justify-between` inside an `h-auto` card on mobile, so BOTH edges are real. Measured 24/24
+  `symmetric: true` before, 32/32 `symmetric: true` after, `bothIncreased: true`.
+- Card height 549 -> 565 (+16 = the two 8px additions), all 5 cards uniform, card gaps still
+  [36,36,36,36], no horizontal overflow.
+- Desktop @1250 fresh load: padding 32 uniform from `md:p-8`, card height 600, 3 columns — unchanged.
+  Note the mobile value coincidentally equals desktop's 32, but `md:p-8` is what applies there.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Blog page — BlogHeroSection dropdown clipping (mobile only)
+- Bug: the filter panels are `absolute bottom-full right-0` inside a hero card
+  that is `overflow-hidden`. At 390 the 224px "By Category" panel spanned
+  -47..177 against a card at 12..378 — 59px past the card's left edge and off
+  the viewport entirely.
+- Right-anchoring is only correct when the trigger sits near the card's right
+  edge, which it does on desktop and never does on mobile.
+- Fix (all `max-md:`, three touches in `BlogHeroSection.tsx`):
+  - menus row `max-md:relative`, each trigger wrapper `max-md:static`, so both
+    panels resolve against the ROW rather than their own button — this survives
+    the triggers wrapping onto two lines at 320, which a per-button
+    left-anchor did not.
+  - both panels `max-md:left-0 max-md:right-auto`.
+  - option rows `max-md:py-2` (was 2.5). Row-anchoring raises the panel's
+    origin, so at 320 it overflowed the card TOP by 3.9px; 10->8px trims the
+    panel 214->194 and buys 20px of headroom. All 5 options still fit without
+    scrolling.
+- Verified (computed rects, dev server):
+  - 320: insets top +16.1 left +21 right +51 bottom +135, fullyInsideCard true,
+    noScroll true, viewportOverflow false.
+  - 390: insets top +45.7 left +21 right +121 bottom +81, fullyInsideCard true,
+    noScroll true, viewportOverflow false.
+  - 1265 desktop unchanged: wrapper `relative`, row `static`, panel right edge
+    still flush with the trigger (delta 0.0), option padding still 10px, panel
+    height still 214.
+- `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog page — BlogListSection card tag nudged down (mobile only)
+- `BlogCard.tsx` category tag was `absolute left-4 top-4 ... md:left-6 md:top-6`.
+  Base `top-4` is the mobile value and `md:top-6` re-asserts desktop, so
+  editing the base is mobile-only by construction — no `max-md:` needed.
+- `top-4` -> `top-5` (16 -> 20px). Left inset deliberately left at 16px; the
+  ask was vertical only.
+- Verified (computed, dev server): 390 -> top 20px / left 16px on all 5 cards;
+  1265 -> top 24px / left 24px, unchanged.
+- `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog page — BlogCard hover removed below md (mobile only)
+- Two halves to the card's hover treatment, and only one of them was still
+  firing on a phone:
+  - CSS (`group-hover:bg-zinc-900`, the CTA's hover rules): already inert.
+    Tailwind v4 compiles every `hover:`/`group-hover:` inside
+    `@media (hover: hover)` — 130 such blocks in the served sheet — so touch
+    devices never match them. Left untouched.
+  - framer-motion (card `scale: 1.01`, image `scale: 1.08`, sibling
+    `brightness(0.5) grayscale(80%)`, and the conditionally-rendered
+    `SpecularBorder`): driven by React state from `onMouseEnter`, which iOS
+    fires on a tap, so a tapped card lit up and stayed lit until the next tap
+    elsewhere. CSS cannot reach this — the values are inline styles and the
+    border is a conditional render — so it needs a JS gate.
+- Fix in `BlogCard.tsx`: `onMouseEnter` now calls `onHoverStart()` only when
+  `matchMedia("(min-width: 48rem)")` matches (48rem === md, same breakpoint as
+  every other change on this page). `onMouseLeave` left unconditional so the
+  state cannot stick if the viewport crosses md mid-hover. One gate kills all
+  four effects at the source; `isAnyHovered` also stays false, so no sibling
+  dimming.
+- Verified by dispatching the event React actually delegates (`mouseover` with
+  a null relatedTarget — a native `mouseenter` does NOT reach React 19's
+  synthetic onMouseEnter, which cost one false negative):
+  - 1265: specularBorders 1 — desktop hover still engages, unchanged.
+  - 390: specularBorders 0, cardTransform none, imageTransform none,
+    siblingFilters [none, none], hoverCapable false, mdMatches false.
+- `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog page — pill radii below md (mobile only)
+- BlogHeroSection filter triggers ("By Category" / "By Author"): + `max-md:rounded-2xl`.
+  `rounded-2xl` resolves to 18px here (--radius .625rem x 1.8), not 16.
+- BlogFeaturedSection "Featured" / "Resources" badges: + `max-md:rounded-md` to
+  match the BlogCard category tag, which is `rounded-md` = 8px.
+- Verified (computed borderRadius, dev server):
+  - 390: hero pills 18px both; featured pills 8px both; all 5 BlogCard tags 8px
+    -> featuredMatchesCardTag true, heroIsRounded2xl true.
+  - 1265: hero + featured pills all back to 3.35544e+07px (rounded-full),
+    unchanged; card tag still 8px.
+  - Note: a first pass measured with a bare `span` selector picked up
+    BlogListSection's "Resources" FILTER CHIP as a false negative; rerun scoped
+    to `span.max-md:min-w-[7rem]`.
+- `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog page — BlogHeroSection pill radius 2xl -> lg (mobile only)
+- Follow-up to the previous entry: `max-md:rounded-2xl` -> `max-md:rounded-lg`
+  on the two filter triggers. 18px -> 10px (`rounded-lg` maps straight to
+  --radius, .625rem).
+- Verified (computed borderRadius): 390 -> both pills 10px, BlogFeaturedSection
+  badges untouched at 8px; 1265 -> both back to 3.35544e+07px (rounded-full).
+- `bunx tsc --noEmit` clean; `bun run build` clean.

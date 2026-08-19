@@ -46,18 +46,23 @@ export default function BlogFeaturedSection() {
           className="absolute inset-0 z-20"
         />
 
-        <div className="pointer-events-none absolute left-4 top-6 z-10 flex flex-wrap items-center gap-3 md:left-10 md:top-10">
-          <span className="rounded-full border border-white/20 bg-black/40 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md">
+        {/* The card is min-h with `justify-end`, so the content block is
+            bottom-anchored and its padding-TOP is swallowed by ~118px of free
+            space. The card's visible TOP inset is therefore this badge offset —
+            it has to move in step with the content block's padding-bottom for
+            the card to read as symmetrically padded. */}
+        <div className="pointer-events-none absolute left-4 top-6 z-10 flex flex-wrap items-center gap-3 max-md:top-9 md:left-10 md:top-10">
+          <span className="rounded-full border border-white/20 bg-black/40 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest text-white/90 backdrop-blur-md max-md:inline-flex max-md:min-w-[7rem] max-md:items-center max-md:justify-center max-md:rounded-md">
             Featured
           </span>
-          <span className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest backdrop-blur-md">
+          <span className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[0.65rem] font-bold uppercase tracking-widest backdrop-blur-md max-md:inline-flex max-md:min-w-[7rem] max-md:items-center max-md:justify-center max-md:rounded-md max-md:bg-black/40">
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               {featured.category}
             </span>
           </span>
         </div>
 
-        <div className="pointer-events-none relative z-10 flex flex-col gap-6 px-4 py-6 md:px-10 md:py-10 lg:py-14">
+        <div className="pointer-events-none relative z-10 flex flex-col gap-6 px-4 py-6 max-md:py-9 md:px-10 md:py-10 lg:py-14">
           <h2 className="max-w-4xl text-3xl font-bold leading-[1.05] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl">
             {featured.title}
           </h2>
@@ -84,18 +89,18 @@ export default function BlogFeaturedSection() {
               <Calendar className="h-4 w-4" />
               {featured.date}
             </span>
-            <span className="flex items-center gap-2 text-sm font-medium text-white/60">
+            <span className="flex items-center gap-2 text-sm font-medium text-white/60 max-md:hidden">
               <Clock className="h-4 w-4" />
               {featured.readTime} read
             </span>
           </div>
 
-          <span className="relative mt-2 inline-flex h-12 w-fit items-center justify-between gap-3 overflow-hidden rounded-xl pl-5 pr-2 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out group-hover:before:scale-x-100">
-            <span className="relative z-10 text-sm font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
+          <span className="relative mt-2 inline-flex h-12 w-fit items-center justify-between gap-3 overflow-hidden rounded-xl pl-5 pr-2 max-md:h-[42px] max-md:gap-2 max-md:rounded-lg max-md:px-3 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out group-hover:before:scale-x-100 max-md:before:scale-x-100">
+            <span className="relative z-10 text-sm font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black max-md:text-black">
               Read Article
             </span>
 
-            <span className="relative z-10 flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white text-black transition-colors duration-300 group-hover:bg-black">
+            <span className="relative z-10 flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white text-black transition-colors duration-300 group-hover:bg-black max-md:h-7 max-md:w-7 max-md:rounded-md max-md:bg-black">
               <svg width="0" height="0" className="absolute">
                 <title>Read article arrow gradient</title>
                 <defs>
@@ -112,9 +117,9 @@ export default function BlogFeaturedSection() {
                 </defs>
               </svg>
 
-              <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+              <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8 max-md:h-3.5 max-md:w-3.5 max-md:-translate-y-8 max-md:translate-x-8" />
               <MdArrowOutward
-                className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0 max-md:h-3.5 max-md:w-3.5 max-md:translate-x-0 max-md:translate-y-0"
                 style={{ fill: "url(#cta-featured-icon-grad)" }}
               />
             </span>

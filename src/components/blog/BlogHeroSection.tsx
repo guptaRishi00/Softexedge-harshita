@@ -85,7 +85,7 @@ export default function BlogHeroSection() {
         <Header dropdown />
       </div>
 
-      <div className="relative mx-auto flex min-h-[70vh] w-full flex-col justify-end overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-4 py-12 max-md:px-5 max-md:[--spotlight-cols:5] max-md:[--spotlight-sweep-col-start:3] max-md:[&_.grid]:gap-2 md:px-10 md:py-16 lg:py-20">
+      <div className="relative mx-auto flex min-h-[70vh] w-full flex-col justify-end overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-4 py-12 max-md:min-h-[38svh] max-md:px-5 max-md:[--spotlight-cols:5] max-md:[--spotlight-sweep-col-start:3] max-md:[&_.grid]:gap-2 md:px-10 md:py-16 lg:py-20">
         <SpotlightGrid
           speed={0.15}
           sweep
@@ -131,9 +131,9 @@ export default function BlogHeroSection() {
             animate="visible"
             className="mt-10 flex md:mt-14 md:justify-end"
           >
-            <div ref={menusRef} className="flex flex-wrap items-center gap-3">
+            <div ref={menusRef} className="flex flex-wrap items-center gap-3 max-md:relative">
               {menus.map(({ key, label, options }) => (
-                <div key={key} className="relative">
+                <div key={key} className="relative max-md:static">
                   <button
                     type="button"
                     aria-haspopup="listbox"
@@ -141,7 +141,7 @@ export default function BlogHeroSection() {
                     onClick={() =>
                       setOpenMenu((cur) => (cur === key ? null : key))
                     }
-                    className="flex items-center gap-2 rounded-full border border-white/15 bg-[#222222] px-5 py-2.5 text-sm font-medium text-white/90 transition-colors duration-300 hover:border-white/40 "
+                    className="flex items-center gap-2 rounded-full border border-white/15 bg-[#222222] px-5 py-2.5 text-sm font-medium text-white/90 transition-colors duration-300 max-md:rounded-lg hover:border-white/40 "
                   >
                     {label}
                     <MdKeyboardArrowDown
@@ -156,14 +156,23 @@ export default function BlogHeroSection() {
                       initial={reduce ? false : { opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, ease: premiumEase }}
-                      className="absolute bottom-full right-0 z-30 mb-2 max-h-72 w-56 overflow-y-auto rounded-2xl border border-white/10 bg-[#100f0f] p-1.5 shadow-xl shadow-black/40"
+                      // `right-0` anchors this 224px panel to its trigger's RIGHT
+                      // edge, so it grows leftwards and runs outside the
+                      // overflow-hidden card on a phone. Anchoring per-trigger does
+                      // not fix it either: the two triggers WRAP to separate rows at
+                      // 320, so whichever is "on the right" changes with width.
+                      // Instead the row is the containing block below md (it is
+                      // `max-md:relative` and each trigger wrapper is `max-md:static`),
+                      // so both panels align to the row's left edge — 33..257, inside
+                      // the card at every mobile width, wrapped or not.
+                      className="absolute bottom-full right-0 z-30 mb-2 max-h-72 w-56 overflow-y-auto rounded-2xl border border-white/10 bg-[#100f0f] p-1.5 shadow-xl shadow-black/40 max-md:left-0 max-md:right-auto"
                     >
                       {options.map((option) => (
                         <li key={option}>
                           <button
                             type="button"
                             onClick={() => applyFilter(key, option)}
-                            className="w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium text-white/70 transition-colors duration-200 hover:bg-white/10 hover:text-white"
+                            className="w-full rounded-xl px-4 py-2.5 text-left text-sm font-medium text-white/70 transition-colors duration-200 hover:bg-white/10 hover:text-white max-md:py-2"
                           >
                             {option}
                           </button>
