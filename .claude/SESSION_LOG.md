@@ -16023,3 +16023,24 @@ unlike ProjectCard/OpenPositions; that is a deliberate open item, not an oversig
 - Verified (computed borderRadius): 390 -> both pills 10px, BlogFeaturedSection
   badges untouched at 8px; 1265 -> both back to 3.35544e+07px (rounded-full).
 - `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Homepage — hero copy block nudged down (mobile only)
+- `Herosection.tsx` copy wrapper ("Brand. Build. Grow." + the h1 stack) was
+  `-mt-20 md:mt-0` — pulled up 80px on mobile, neutral on desktop. Base value
+  is the mobile one and `md:mt-0` re-asserts desktop, so editing the base is
+  mobile-only by construction.
+- `-mt-20` -> `-mt-16` (-80px -> -64px): the block sits 16px lower.
+- Verified (computed, dev server): 390x844 -> marginTop -64px, eyebrow top
+  288, h1 top 332; 1265x900 -> marginTop 0px, h1 top 222.3, unchanged.
+- `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Homepage — hero copy block down one more step (mobile only)
+- `-mt-16` -> `-mt-12` (-64px -> -48px).
+- Worth knowing for the next nudge: the block is a centered item in a
+  `flex flex-col justify-center h-full` parent, so its margin counts toward the
+  centered content height — a 16px margin change moves it only ~8px on screen.
+  Measured eyebrow top 288 -> 296.
+- Verified (computed, dev server): 390x844 -> marginTop -48px, eyebrow top 296,
+  h1 top 340, block bottom 498.2 (fits viewport); 1265x900 -> marginTop 0px,
+  h1 top 222.3, unchanged.
+- `bunx tsc --noEmit` clean; `bun run build` clean.

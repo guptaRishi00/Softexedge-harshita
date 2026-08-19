@@ -135,7 +135,7 @@ export default function Herosection({}: any) {
       <Header />
 
       <div className="absolute z-20 p-5 w-full flex flex-col items-center justify-center gap-10 h-full">
-        <div className="w-full flex items-center justify-center text-center -mt-20 md:mt-0">
+        <div className="w-full flex items-center justify-center text-center -mt-12 md:mt-0">
           <div className="flex flex-col items-center justify-center gap-2 md:gap-4">
             {/* Mobile-only description (styled as a tag) */}
             <motion.div
