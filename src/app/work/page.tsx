@@ -42,7 +42,7 @@ export default function WorkPage() {
         </div>
         <div
           id="work-testimonials"
-          className="relative z-20 bg-white md:pb-[100vh] [&>section]:pt-13 [&>section]:pb-11 md:[&>section]:pt-26 md:[&>section]:pb-10"
+          className="relative z-20 bg-white md:pb-[100vh] [&>section]:pt-16 [&>section]:pb-11 md:[&>section]:pt-26 md:[&>section]:pb-10"
         >
           <ExperimentalTestimonials />
         </div>

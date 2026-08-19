@@ -359,7 +359,7 @@ export default function OurValuesSection() {
                         className="pointer-events-none absolute inset-0"
                         style={{
                           background:
-                            "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.96) 100%)",
+                            "radial-gradient(300px circle at 85% 50%, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.96) 100%)",
                         }}
                       />
                     </div>

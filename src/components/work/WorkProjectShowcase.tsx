@@ -20,7 +20,7 @@ export default function WorkProjectShowcase() {
       : projects.filter((p) => p.category === activeCategory);
 
   return (
-    <section className="relative overflow-hidden bg-black px-4 py-24 font-sans text-white max-md:px-3 max-md:py-16 md:px-10 md:py-32">
+    <section className="relative overflow-hidden bg-black px-4 py-24 font-sans text-white max-md:px-3 max-md:pt-16 max-md:pb-24 md:px-10 md:py-32">
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 
       <div className="relative mx-auto mb-16 w-full max-md:mb-8 md:mb-24">

@@ -15457,3 +15457,33 @@ DOME
 - Inner-stop history: 0.5 -> 0.42 -> 0.34 -> 0.20 -> 0.10. Only 0.10 of headroom left on this knob;
   past that the spotlight is fully transparent and the falloff has to come from the radius instead.
 - Desktop @1250 untouched; ChannelCard.tsx unchanged. `tsc` clean; build compiled.
+
+## Work page — more bottom padding on WorkProjectShowcase + bigger gap before testimonials
+- Both asks land on the same visual space, so measured its composition first: 96px total between the
+  project grid and the first testimonials content = 44px below the grid + 52px of testimonials pt.
+- WorkProjectShowcase `max-md:py-16` -> `max-md:pt-16 max-md:pb-24` (pb 64 -> 96). Split into pt/pb
+  explicitly rather than adding a `pb-*` next to `py-*`, so there is no shorthand/longhand order risk.
+  The component is used ONLY on /work (grepped), so no other route is affected.
+- Gap: work/page.tsx wrapper `[&>section]:pt-13` -> `pt-16` (52 -> 64). Set on the PAGE, so the shared
+  ExperimentalTestimonials component is untouched and other routes keep their own rhythm — confirmed
+  the component file has no changes.
+- Verified @390: showcase pb 96 (pt still 64), testimonials pt 64, space below grid 44 -> 76, space above
+  content 52 -> 64, total visual gap 96 -> 140.
+- Desktop @1250 fresh load: showcase 128/128 (md:py-32), testimonials 104/40 (md:[&>section]:pt-26/pb-10)
+  — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Packaged the project as a zip
+- Output: C:\Users\sanky\Desktop\softexedge-may-2026.zip — 80.9 MB, 252 entries, single
+  `softexedge-may-2026/` root folder.
+- Contents chosen as "what git tracks" (`git ls-files`), so .gitignore is respected automatically:
+  node_modules, .next, .git, .env*, *.tsbuildinfo and structure.txt are all excluded. Files were copied
+  from the WORKING TREE, not HEAD, so the four uncommitted files are included at their current content
+  (diffed each against the working tree to confirm).
+- Neither `zip` nor `7z` is installed here, so this used PowerShell. NOTE FOR FUTURE SESSIONS:
+  `Compress-Archive` on Windows PowerShell 5.1 writes BACKSLASH path separators, which violates the ZIP
+  spec — macOS/Linux extractors can produce one flat file with backslashes in the name. Verified this
+  happened, then rebuilt via System.IO.Compression.ZipArchive with explicit forward-slash entry names.
+  Re-verified: `backslash paths remaining: 0`.
+- Flagged to the user: `public/assets/video7.mp4.orig` is a tracked 20MB leftover backup — a quarter of
+  the archive. Left in because it is tracked; removing it is the user's call.
