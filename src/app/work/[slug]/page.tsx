@@ -73,7 +73,7 @@ export default async function ProjectPage(props: {
         </div>
       </div>
 
-      <div className="px-3 pt-11 pb-3 max-md:-mt-px max-md:pb-4 md:pt-24 bg-white">
+      <div className="px-3 pt-7 pb-3 max-md:-mt-px max-md:pb-4 md:pt-24 bg-white">
         <Footer />
       </div>
     </div>

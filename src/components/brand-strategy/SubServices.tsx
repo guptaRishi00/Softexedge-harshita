@@ -85,13 +85,13 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   return (
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
-        <div className="mx-auto w-full px-4 md:px-10 pt-30 pb-32">
+        <div className="mx-auto w-full px-4 max-md:px-3 md:px-10 pt-30 pb-32">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
             What We Offer
           </span>
 
           <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-            <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
+            <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-5xl lg:text-[4.5rem]">
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Services

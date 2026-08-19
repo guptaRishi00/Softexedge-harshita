@@ -76,12 +76,13 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-black px-4 pt-33 font-sans text-white md:px-10 md:pb-35">
+    <section className="relative overflow-hidden bg-black px-4 pt-33 max-md:px-3 max-md:pt-16 max-md:pb-20 font-sans text-white md:px-10 md:pb-35">
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
       <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">
         <div className="mb-34 w-full">
           <motion.span
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -93,11 +94,12 @@ export default function ProjectShowcase() {
 
           <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <motion.h2
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, ease: premiumEase, delay: 0.1 }}
-              className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[5rem]"
+              className="text-5xl font-bold leading-[0.9] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-7xl lg:text-[5rem]"
             >
               Our{" "}
               <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
@@ -106,6 +108,7 @@ export default function ProjectShowcase() {
             </motion.h2>
 
             <motion.p
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -237,6 +240,7 @@ function ProjectCard({
           <AnimatePresence>
             {isHovered && (
               <motion.div
+                data-no-mobile-entry
                 initial={{
                   opacity: 0,
                   y: 30,

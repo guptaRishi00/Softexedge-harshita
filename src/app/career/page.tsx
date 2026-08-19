@@ -79,7 +79,7 @@ export default function CareerPage() {
         <ApplicationJourney />
       </div>
 
-      <div className="px-3 pt-11 pb-3 max-md:pb-4 md:pt-24">
+      <div className="px-3 pt-7 pb-3 max-md:pb-4 md:pt-24">
         <Footer />
       </div>
     </main>

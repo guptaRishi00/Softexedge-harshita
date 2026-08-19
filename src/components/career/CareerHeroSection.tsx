@@ -72,7 +72,7 @@ export default function CareerHeroSection() {
             initial="hidden"
             animate="visible"
           >
-            <h1 className="text-[2.75rem] font-bold leading-[1.05] tracking-tight text-black sm:text-6xl md:text-7xl lg:text-[6rem] mb-2">
+            <h1 className="text-[2.5rem] font-bold leading-[1.05] tracking-tight text-black sm:text-6xl md:text-7xl lg:text-[6rem] mb-2">
               <motion.span variants={wordVariants} className="inline-block">
                 Think.
               </motion.span>{" "}
@@ -83,7 +83,7 @@ export default function CareerHeroSection() {
                 Do.
               </motion.span>
             </h1>
-            <h2 className="text-[2.75rem] font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-[6rem] mb-6">
+            <h2 className="text-[2.5rem] font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-[6rem] mb-6">
               <motion.span
                 variants={wordVariants}
                 className="inline-block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent pr-4"

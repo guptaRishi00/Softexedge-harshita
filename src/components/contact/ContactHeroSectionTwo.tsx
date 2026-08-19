@@ -47,6 +47,7 @@ export default function ContactHeroSectionTwo() {
       >
         <div className="relative z-10 flex w-full flex-col items-start text-left md:w-[70%]">
           <motion.h1
+            data-no-mobile-entry
             variants={headlineContainer}
             initial={reduce ? false : "hidden"}
             animate="visible"
@@ -55,6 +56,7 @@ export default function ContactHeroSectionTwo() {
             {headlineWords.map(({ word, id }) => (
               <motion.span
                 key={id}
+                data-no-mobile-entry
                 variants={line}
                 className="mr-[0.22em] inline-block"
               >

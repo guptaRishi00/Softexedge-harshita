@@ -71,7 +71,7 @@ export default function AboutPage({}: Props) {
       <div className="[&>section]:py-16 max-md:[&>section]:pt-10 max-md:[&>section]:pb-11 md:[&>section]:pb-14 md:[&>section]:pt-10">
         <BlogSection />
       </div>
-      <div className="px-3 pt-11 pb-3 max-md:pb-4 md:pt-24">
+      <div className="px-3 pt-7 pb-3 max-md:pb-4 md:pt-24">
         <Footer />
       </div>
     </div>

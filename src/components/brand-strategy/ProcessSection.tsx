@@ -44,7 +44,7 @@ export default function ProcessSection() {
       id="process"
       className="w-full bg-black font-sans pt-20 md:pt-20 md:pb-30"
     >
-      <div className="mx-auto w-full px-4 md:px-10">
+      <div className="mx-auto w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-16 md:mb-35">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
             How We Work
@@ -52,11 +52,12 @@ export default function ProcessSection() {
 
           <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <motion.h2
+              data-no-mobile-entry
               initial={{ opacity: 0, y: -10 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="text-4xl font-bold leading-none tracking-tighter text-white md:text-[5rem]"
+              className="text-4xl font-bold leading-none tracking-tighter text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-[5rem]"
             >
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
@@ -65,6 +66,7 @@ export default function ProcessSection() {
             </motion.h2>
 
             <motion.p
+              data-no-mobile-entry
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -82,6 +84,7 @@ export default function ProcessSection() {
           {processSteps.map((step, index) => (
             <motion.div
               key={step.id}
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{

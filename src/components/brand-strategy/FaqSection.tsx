@@ -43,7 +43,7 @@ export default function FaqSection() {
   return (
     <section
       id="faq"
-      className="relative overflow-hidden bg-white px-4 md:px-10 md:py-20"
+      className="relative overflow-hidden bg-white px-4 max-md:px-3 md:px-10 md:py-20"
     >
       <svg width="0" height="0" className="absolute pointer-events-none">
         <defs>

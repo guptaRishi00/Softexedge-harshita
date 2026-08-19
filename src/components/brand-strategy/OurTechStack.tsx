@@ -35,18 +35,19 @@ export default function OurTechStack() {
   return (
     <section className="relative w-full overflow-hidden bg-black pt-0 text-white">
       <div className="mx-auto w-full md:pb-25">
-        <div className="mx-auto mb-20 px-4 md:px-10">
+        <div className="mx-auto mb-20 px-4 max-md:px-3 md:px-10">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
             Our Toolkit
           </span>
 
           <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <motion.h2
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               viewport={{ once: true }}
-              className="text-4xl font-bold leading-none tracking-tight text-white md:text-5xl lg:text-[5rem]"
+              className="text-4xl font-bold leading-none tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-5xl lg:text-[5rem]"
             >
               Our Tech{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
@@ -55,6 +56,7 @@ export default function OurTechStack() {
             </motion.h2>
 
             <motion.p
+              data-no-mobile-entry
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}

@@ -30,7 +30,7 @@ export default function BrandStrategyPage({}: Props) {
       <div className="overflow-x-clip w-full">
         <Header dropdown />
         <div className="relative z-0">
-          <div className="sticky top-[min(0px,calc(100vh-992px))] z-0 bg-white">
+          <div className="z-0 bg-white md:sticky md:top-[min(0px,calc(100vh-992px))]">
             <ShrinkOnOverlap
               endSelector="#subservices-overlap"
               className="origin-[center_calc(100%-100vh)]"
@@ -40,7 +40,7 @@ export default function BrandStrategyPage({}: Props) {
           </div>
           <div
             id="subservices-overlap"
-            className="sticky z-10 bg-black"
+            className="z-10 bg-black md:sticky"
             style={{ top: SUBSERVICES_STICK_TOP }}
           >
             <ShrinkOnOverlap
@@ -60,14 +60,14 @@ export default function BrandStrategyPage({}: Props) {
         <ProjectShowcase />
         <ExperimentalTestimonials />
         <TechLogoCarousel />
-        <div className="p-3">
+        <div className="p-3 max-md:[&>section]:pt-9 max-md:[&>section]:pb-9">
           <CtaSection />
         </div>
         <div className="space-y-10">
           <FaqSection />
           <BlogSection />
         </div>
-        <div className="p-3">
+        <div className="px-3 pt-7 pb-3 max-md:pb-4 md:p-3">
           <Footer />
         </div>
       </div>

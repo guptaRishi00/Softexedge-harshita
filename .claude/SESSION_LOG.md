@@ -16403,3 +16403,377 @@ Verified (computed, dev server):
 - Desktop 1265 `desktopUnchanged: true` on BOTH pages: FAQ padX 40, mb 80, gap
   96, eyebrow 14, h2 60 / max-w none, h3 24; contact CTA 0/56, footer 32/12.
 - `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Career page — ApplicationJourney heading left-aligned + wider gap (mobile only)
+`ApplicationJourney.tsx` heading block was
+`mx-auto flex max-w-3xl flex-col items-center text-center mb-16 max-md:mb-8 md:mb-35`.
+Added `max-md:items-start max-md:text-left` (both `items-center` and
+`text-center` are unprefixed base values, so the max-md pair wins below md and
+desktop is untouched) and widened `max-md:mb-8` -> `max-md:mb-12`.
+`mx-auto max-w-3xl` left alone — at 366px the block is already narrower than
+3xl, so it is a no-op on mobile and still centres the column on desktop.
+
+Verified at 390: align-items flex-start, text-align left, margin-bottom 48px
+(was 32). All three children — eyebrow div, h2, description p — report left = 12,
+exactly the section's content edge, so `allFlushLeft: true`. Description-to-cards
+gap 48px.
+Desktop 1265 `desktopUnchanged: true`: align-items center, text-align center,
+margin-bottom 140px, h2 still optically centred, gap 120px.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Career page — ApplicationJourney gap widened again (mobile only)
+Follow-up to the previous entry: `max-md:mb-12` -> `max-md:mb-16` (48 -> 64px).
+Verified at 390: heading block margin-bottom 64px, description-to-cards gap
+64px, still left-aligned (`stillLeftAligned: true`), card gap unchanged at 36px.
+Desktop 1265 `desktopUnchanged: true` (margin-bottom 140px, centred, gap 120px).
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Career hero QuoteCard — smaller type + OurValuesSection-style overlay (mobile only)
+SCOPE ASSUMPTION: the request carried no "only in mobile view" line, but the
+screenshot is mobile and the change itself is inherently the touch variant —
+OurValuesSection's own comment says its overlay is parked at 85%/50% "because
+touch never moves it", whereas QuoteCard's mask FOLLOWS the pointer. So this is
+`max-md:`-scoped and desktop keeps its interactive mask. Say the word if it was
+meant for both.
+
+`QuoteCard.tsx`:
+- quote glyph `h-7 w-7` -> `h-6 w-6` (28 -> 24px) and text `text-sm` ->
+  `text-xs` (14 -> 12px). Both are base values that `md:h-12 md:w-12` /
+  `md:text-base` re-assert, so they are mobile-only by construction.
+- mask switched off below md with `max-md:[mask-image:none]!
+  max-md:[-webkit-mask-image:none]!` — it is set as an INLINE style, so only an
+  important arbitrary property can beat it.
+- overlay painted OVER the grid instead (`md:hidden`), same technique, park
+  position and stops (0.1 -> 0.96) as the OurValuesSection carousel card.
+
+RADIUS — the one judgement call, made by measuring the reference rather than
+guessing: that card is 366px wide, so its focal point at 85%/50% sits 311px
+from the far edge against a 300px radius, i.e. t = 1.0 and alpha 0.96 landing
+exactly AT the edge. Copying `300px` onto this 128px card would give
+t = 108.8/300 = 0.36, less than half as dark — same numbers, visibly different
+card. `circle farthest-side` resolves to the focal-to-far-edge distance at any
+size, reproducing the reference's mapping (t = 1, alpha 0.96 at the edge)
+rather than its literal number.
+
+Verified at 390: 12 quote cards visible, card 128x160, glyph 24px, text 12px,
+`maskDisabled: true` (both mask-image and -webkit-mask-image report none),
+overlay `radial-gradient(circle farthest-side at 85% 50%, rgba(0,0,0,0.1) 0%,
+rgba(0,0,0,0.96) 100%)`, text does not overflow and fits inside the card.
+Desktop 1265 `desktopUnchanged: true`: glyph 48px, text 16px, mask still active
+(`radial-gradient(220px at ...)` tracking the pointer), overlay display none.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Career hero QuoteCard — content centred on the y-axis (mobile only)
+Card root was `flex-col justify-start`, so the glyph + text sat at the top with
+all the slack at the bottom. Added `max-md:justify-center`; kept mobile-only to
+match the scope of the preceding QuoteCard changes.
+Verified at 390 on three cards: justify-content `center`, free space above the
+glyph 19px vs below the text 19px, `delta: 0`, `centred: true` on all three.
+Desktop 1265 `desktopUnchanged: true` — justify-content still flex-start, glyph
+flush at the padding top (offset 0), glyph 48px, text 16px.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Career page — CareerHeroSection title reduced (mobile only)
+Both halves of the title (h1 "Think. Create. Do." and h2 "Grow With Us") carried
+`text-[2.75rem]`; changed both to `text-[2.5rem]` (44 -> 40px), which is also the
+site's standard mobile display size. `sm:text-6xl` re-asserts from 640px up, so
+the base is the mobile value and desktop is untouched by construction.
+Verified: 390 -> both 40px (`bothSameSize: true`), 1 line each, both fit the
+viewport, no horizontal overflow. 320 -> both 40px, h1 wraps to 2 lines, h2 1
+line, still fits, no overflow. 1265 -> `desktopUnchanged: true`, both 96px.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Work slug page — ProjectDetailsContent info card formation + bigger CTA (mobile only)
+Measured the "formation" problem before changing anything, at 390:
+- 48px between every block but only 16px between each label and its value — a 3x
+  jump, so the four blocks read as stranded items rather than three labelled
+  groups.
+- the CTA wrapper's `pt-6` stacked ON TOP of that 48px gap, giving a 72px void
+  between the tech-stack chips and the button — the big empty band in the
+  screenshot.
+
+Changes (all `max-md:`):
+- card `max-md:gap-8` (48 -> 32), giving an exact 2:1 against the 16px
+  label->value gap.
+- CTA wrapper `max-md:pt-0`, so the button sits on the same 32px rhythm; the
+  white pill is distinct enough without extra air.
+- CTA one notch bigger: `h-[42px]` -> `h-12` (48), chip `h-7 w-7` -> `h-8 w-8`
+  (28 -> 32), arrows `h-3.5` -> `h-4` (14 -> 16), `gap-2` -> `gap-2.5`,
+  `px-3` -> `px-3.5`.
+
+Verified at 390: gaps [32, 32, 32] `uniformRhythm: true`,
+`ratioBlockToLabel: 2`, CTA wrapper padding-top 0, card height 498.8 -> 432.8
+(66px of dead space removed), CTA h 48 / w 150.5 / gap 10 / padX 14 / radius 10,
+chip 32 radius 8, arrows 16, exactly one arrow parked in, `ctaFitsCard: true`.
+Desktop 1265 `desktopUnchanged: true` across 9 properties: card gap 48, pad 40,
+CTA wrapper pt 24, CTA h 56 / radius 14 / gap 16 / padL 0, chip 36, arrow 16.
+
+MEASUREMENT TRAP (cost one wrong reading): after `resize_window` the CTA
+reported h 56 / radius 14 while its own chip correctly reported 28 / 8. The
+shell carries `transition-all duration-300` and this pane never advances
+transitions, so its computed values were stale; the chip only transitions
+colours so it updated. Re-navigating gives a fresh layout — resize alone does
+not, for any transitioned property.
+
+NOT CHANGED, flagged: NextProject's "View Case Study" CTA is the same component
+pattern and was deliberately matched to this one in an earlier task. It is still
+h-[42px] / chip 28 / arrows 14, so the two now differ. Only the button in the
+screenshot was in scope; say the word to match it.
+
+## Work slug page — ProjectOutcomes quote card matched to the testimonial card (mobile only)
+Reference is the ExperimentalTestimonials card (`ExperimentalTestimonials.tsx`
+~line 252). Ported its SHAPE below md and kept the dark palette, per "just keep
+it dark" — only the quote glyph's alpha differs (white/10 here vs the
+reference's black/10 on white).
+
+`ProjectOutcomes.tsx`:
+- figure `max-md:relative max-md:flex max-md:min-h-[360px] max-md:flex-col
+  max-md:justify-between max-md:px-5`. `max-md:relative` rather than plain
+  `relative` so desktop's stacking context is untouched — the glyph that needs
+  it is `md:hidden` anyway.
+- quote mark: the biggest visual difference was an inline gradient `&ldquo;` at
+  top-LEFT vs the testimonial's faint 48px glyph pinned top-RIGHT. Desktop keeps
+  the gradient mark (`max-md:hidden`); mobile gets the testimonial's exact SVG
+  (same path data, same right-6/top-6) at `text-white/10`, `md:hidden`.
+- blockquote `max-md:z-10 max-md:mt-14 max-md:text-lg`; avatar
+  `max-md:h-10 max-md:w-10` + `shrink-0`. Avatar COLOURS left dark
+  (`bg-white/5 text-white/70`) rather than adopting the reference's solid black
+  circle — geometry was the ask, palette was explicitly not.
+
+Verified by measuring BOTH cards at 390 with the same probe — 13/13 match:
+min-height 360, display flex, justify space-between, padding 20/32, radius 22,
+glyph svg 48px at inset 24.8/24.8, quote 18px with margin-top 56, avatar 40,
+name 16px, caption margin-top 32. Only glyph alpha differs, as intended.
+Desktop 1265 `desktopUnchanged: true` across 11 properties: display block,
+position static, min-height auto, padding 48/48, gradient mark visible, mobile
+glyph hidden, quote 30px / margin-top 16, avatar 48, caption margin-top 32.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog page — hero filters hidden + hero taller (mobile only)
+NOTE: the request's preamble said "work slug page", but the screenshot was
+unambiguously the BLOG hero (BlogHeroSection, "News, views and everything
+else"), so that is what was changed.
+
+`BlogHeroSection.tsx`:
+- `max-md:hidden` on the filter row's WRAPPER (`mt-10 flex md:mt-14
+  md:justify-end`), not on the inner `menusRef` row. First attempt hid the inner
+  row and measurement showed the wrapper surviving at height 0 while still
+  contributing its 40px margin-top — 88.8px of dead space under the title
+  instead of the 48px padding. Hiding the wrapper drops the row AND its margin.
+- `max-md:min-h-[38svh]` -> `max-md:min-h-[46svh]`.
+
+Verified 390x844: filters `filtersVisible: false`, wrapper display none, card
+388.2px = exactly 46svh (was 320.7 at 38svh), `contentBottomEqualsH1: true`,
+space below the h1 48.8px = just the py-12 padding, h1 2 lines.
+320x568: card 261.3 = 46svh, filters hidden, same clean bottom, h1 3 lines, no
+horizontal overflow.
+Desktop 1265: card min-height 630px (70vh), both filters visible, wrapper flex /
+margin-top 56 / justify flex-end.
+  - The desktop probe flagged `triggerRadius 2.68435e+07px` against a 3.35544e+07
+    figure recorded earlier. NOT a regression: an untouched `rounded-full`
+    control element on the same page reports the identical 2.68435e+07, so the
+    infinity clamp simply resolves differently per page load. Triggers still
+    carry `rounded-full` with no max-md radius applying, `fullyRounded: true`.
+- The dropdowns are gone below md, so blog filtering on mobile now happens only
+  via BlogListSection's category chips further down the page. Flagged, not
+  changed.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog page — BlogCard: equalised the two text gaps (mobile only)
+Measured first: title->description 16px (`mt-4` on the excerpt) vs
+description->CTA 32px (`mt-8` on the CTA row), and `slackFromJustify: 0`, so the
+difference was purely the two margins and not the card's `justify-between`
+stretching anything.
+Brought the CTA row down to the 16px already used above it rather than pushing
+the title away from its own description, which would have broken that pairing.
+`max-md:mt-4` — the CTA row has no `md:` variant, so editing the base would have
+carried to desktop.
+Verified at 390: all 5 cards report titleToDesc 16 / descToCta 16,
+`allEqual: true`. Desktop 1265 `desktopUnchanged: true` (excerpt 16, CTA 32).
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Contact page — "no animations" follow-up
+The layout half of this page was already done in the earlier contact pass; this
+run was specifically the "no animations" requirement. Audited it at RUNTIME
+rather than by grep, because framer writes its initial state as an INLINE style
+and the hero uses variants (`initial="hidden"`), which a `initial={{` grep
+misses entirely.
+
+Scan at 390 for elements whose inline style holds opacity<1 / a transform /
+a blur found exactly ONE real gap: `ContactHeroSectionTwo`'s headline — the
+`motion.h1` plus its 6 per-word `motion.span`s, all at computed opacity 0 and
+untagged. Fixed with `data-no-mobile-entry` on the h1 AND on each span
+(globals.css forces the final state on the tagged element itself, not on
+descendants, so the container alone would not have been enough).
+
+Three things the scan flagged that are deliberately NOT entry animations and
+were left alone — each checked rather than assumed:
+- ~60 `absolute inset-0 bg-gradient-to-r` divs at opacity 0: hover overlays on
+  the channel/logo cards.
+- `ContactFaqSection`'s third `initial={{ height: 0, opacity: 0 }}`: the
+  accordion expand. Tagging it would force every FAQ panel permanently open.
+- `ContactSection`'s `initial={{ x: "-100%" }}`: the rotating-word
+  AnimatePresence, already gated behind `isDesktop`.
+- ten `opacity-0 ... group-hover:opacity-100` letter spans spelling "Get in
+  Touch": they live in `fixed ... hidden lg:flex`, i.e. the DESKTOP navbar, and
+  duplicate an already-visible label.
+
+Verified 390: h1 opacity 1, transform identity, `allWordsVisible: true`, tagged
+count 33 -> 40. 320: `contentHiddenByAnimation: 0`, docScrollWidth 320,
+`overflowingOutsideClipped: []`, h1 44px, FAQ h2 40px, FAQ padX 12.
+Desktop 1265 `desktopUnchanged: true` — critically
+`mobileRuleApplies: false`, h1 still carries its inline opacity and all 6 word
+spans are still animated, so the desktop entrance is intact; h1 112px, FAQ h2
+60px / padX 40 / margin-b 80.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog page — BlogCard description optically centred (mobile only)
+Follow-up to the gap-equalising entry. The BOX gaps were already exactly 16/16
+from that change, so this was not a margin mistake — it was half-leading:
+the h3 runs `line-height: 28px` on a 20px font, leaving 4px of empty space under
+its last line that reads as part of the gap. Visible whitespace was therefore
+21.8px above the description vs 17.8px below, which is why it still looked
+pushed toward the button.
+`max-md:mt-3` on the description (16 -> 12px) cancels exactly that 4px.
+Optical maths: above = 12 + 4 (h3 half-leading) + 1.8 (p half-leading) = 17.8;
+below = 16 + 1.8 = 17.8.
+Verified at 390 on all 5 cards: box gaps 12/16, optical 17.8/17.8,
+`allOpticallyCentred: true`. Desktop 1265 `desktopUnchanged: true` (p margin-top
+16, CTA margin-top 32).
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## CtaSection -> Footer gap reduced (mobile only, 7 pages)
+The request named no page, so I checked before editing: the footer wrapper's
+mobile top padding is the SAME token — `px-3 pt-11 pb-3 max-md:pb-4` — on
+about, work, career, blog, contact, blog/[slug] and work/[slug]. One design
+decision written in seven places, so changing a single page would have left it
+inconsistent with the other six. Applied to all seven and flagged it.
+(The homepage is NOT among them — it wraps its footer in
+`relative z-10 w-full p-2 lg:p-3 bg-white`, no pt-11, so it was left alone.)
+
+`pt-11` -> `pt-7` (44 -> 28px). Every one of those files has an `md:pt-*`
+(8/12/24) that re-asserts desktop, so editing the base is mobile-only by
+construction.
+
+Verified at 390: /blog CTA card -> footer card 80px -> 64px (CTA section pb 36 +
+footer pt 28). /career 28px footer pt confirmed too; its card-to-card lands at
+72 rather than 64 because that page's CTA wrapper uses `pb-11` where blog uses
+`pb-9` — a pre-existing per-page difference, not introduced here. Both pages
+dropped by the same 16px.
+Desktop 1265 `desktopUnchanged: true` on both: /career footer pt 96px
+(md:pt-24), /blog 48px (md:pt-12).
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Contact page — scroll-over/overlap effect removed below md (mobile only)
+The effect is three parts working together: a `sticky -top-[56px]` hero, the
+outer wrapper's `-mb-[100vh]`, and `#contact-overlap`'s `pb-[100vh]` — the next
+section scrolls OVER the pinned hero. Contact was the only page with all three
+UNGATED; about and career already write them as `md:sticky md:top-[...]`,
+`md:-mb-[100vh]`, `md:pb-[100vh]`. Mirrored that pattern exactly rather than
+inventing a way to switch it off.
+`ShrinkOnOverlap` needed no change — it is already gated internally with
+`gsap.matchMedia()` on `(min-width: 768px)`, confirmed by the hero copy
+reporting transform `none` / scale `none` at 390.
+
+Verified at 390: `effectRemoved: true` — hero wrapper position `static`, outer
+margin-bottom 0px (was -844px), overlap padding-bottom 0px (was 844px).
+Behavioural proof rather than inference: sampled at scrollY 0/300/600/900 the
+hero wrapper's top reads 0/-300/-600/-900, i.e. tracks -scrollY exactly
+(`scrollsAwayFreely: true`) instead of clamping at -56 as a sticky element
+would, and `neverOverlaps: true` at every sample.
+Desktop 1265 `desktopUnchanged: true`: position sticky, top -56px, outer
+margin-bottom -900px, overlap padding-bottom 900px, and `pinsWhenScrolled: true`
+— at scrollY 600 and 1200 the hero holds at -56, so the scroll-over still works.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Brand-strategy page — mobile responsive pass (+ no animations)
+Starting state: six components with zero `max-md:` — StrategyHeroSection,
+SubServices, SubServiceCard, ProcessSection, OurTechStack, ProjectShowcase —
+plus the page's own ungated scroll-over.
+
+Measured at 390 BEFORE editing:
+- 32 elements sitting at opacity 0 from entry animations.
+- Section titles at FOUR different sizes on one page: 36 / 36 / 36 / 48, against
+  the 40px the already-covered sections (testimonials, CTA, FAQ, blog) use.
+- Gutters split: uncovered sections at px-4 (16px), covered at px-3 (12px).
+- Hero + SubServices both `sticky` with no md gate — the scroll-over ran on
+  mobile. about/career write theirs as `md:sticky`; this page did not.
+
+Changes:
+- Section h2s -> `max-md:text-[2.5rem] max-md:leading-[1.11]` in SubServices,
+  ProcessSection, OurTechStack, ProjectShowcase.
+- `max-md:px-3` on ProjectShowcase's section, SubServiceCard, and the three
+  inner containers that actually held the gutter (`mx-auto ... px-4 md:px-10` in
+  SubServices / ProcessSection / OurTechStack) — the sections themselves had
+  padX 0, so patching the section alone would have done nothing.
+- ProjectShowcase also `max-md:pt-16 max-md:pb-20` (was pt-33 = 132px).
+- Scroll-over gated: hero wrapper and `#subservices-overlap` -> `md:sticky`,
+  matching about/career.
+- Page wrappers: CTA `max-md:[&>section]:pt-9 max-md:[&>section]:pb-9`; footer
+  `p-3` -> `px-3 pt-7 pb-3 max-md:pb-4 md:p-3`, matching the other seven pages.
+- `data-no-mobile-entry` on every entry animation: 12 across the five
+  components, then a second pass for variant CHILDREN (6 `wordVariants` spans in
+  StrategyHeroSection, 3 `contentItem` in SubServiceCard) — a tagged parent does
+  NOT cover them, since globals.css targets the tagged element itself. Those
+  children sit INLINE on their `<motion.span>` tag rather than on their own
+  line, which a newline-anchored regex missed on the first attempt (assertion
+  caught it: "expected 6, found 0").
+- `AgencyStats` entry tagged too. SHARED with 7 other service-page heroes
+  (ai-marketing-automation, app-development, custom-software, digital-marketing,
+  ui-ux-design, video-production, web-development) — flagged; none of those has
+  had a mobile pass, so this is an improvement there rather than a regression.
+- `brand-strategy/FaqSection` got `max-md:px-3`. It is the /about twin and had
+  been left behind when its /contact sibling gained px-3, so /about's FAQ was
+  sitting at 16px while /contact's was at 12px. This aligns them.
+
+Verified 390: `contentHiddenByAnimation` 32 -> 0; every h2 40px
+(`allH2s40: true`) at left 12 (the lone 33 is CtaSection's heading, inset inside
+its card); no horizontal overflow; hero wrapper and overlap both `static` and
+`scrollsAwayFreely: true` (heroTop tracks -scrollY at 0/400/800).
+320: docScrollWidth 320, `overflowingOutsideClipped: []`, hidden 0, all h2s 40.
+Desktop 1265 `desktopUnchanged: true`: both wrappers still `sticky` and
+`stillPins: true` (heroTop -92 at scrollY 700, i.e. clamped not tracking),
+h2s back to 72/80/80/80, showcase padX 40, `mobileRuleApplies: false`.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## SITE-WIDE audit: remaining overlap/stacking effects on mobile
+Prompted by the user asking whether ANY section still overlaps on mobile. I had
+been fixing these one page at a time (contact, then brand-strategy) instead of
+auditing once — this is that audit.
+
+Grepped every `sticky` and every `100vh` overlap pair in src/ and classified:
+
+STILL STACKING ON MOBILE (fixed here) — `sticky` + inline `top`/`zIndex` card
+stacks with no md gate:
+- `brand-strategy/SubServiceCard.tsx:39` — ON THE PAGE I HAD JUST CALLED DONE.
+  The previous pass gated the two PAGE-level sticky wrappers but every
+  SubServiceCard is itself sticky, so the cards still stacked.
+- `*/SubServices.tsx:155` in 7 service pages: ai-marketing-automation,
+  app-development, custom-software, digital-marketing, ui-ux-design,
+  video-production, web-development.
+
+NOT overlaps, deliberately left alone (each checked, not assumed):
+- `lg:sticky lg:top-5` FAQ columns in 8 FaqSection variants — lg-gated.
+- `BlogArticle.tsx:169` TOC aside — its parent is `hidden lg:block`, never
+  rendered below lg.
+- `ProjectDetailsContent.tsx:30` info card — single-column below md, so its
+  containing block is its own parent and there is no sticky range.
+- No ungated `-mb-[100vh]` / `pb-[100vh]` pairs remain anywhere.
+
+Fixes differ because the two implementations differ:
+- service pages: `mb-[22vh]` is a CLASS and there is no transform, so plain
+  `max-md:static max-md:mb-0` suffices.
+- brand-strategy: `transform: translateY(i*STEP)` and `marginBottom` are INLINE,
+  which classes cannot beat — needed `max-md:static
+  max-md:[transform:none]! max-md:[margin-bottom:0px]!`. Position still comes
+  from a class, so `max-md:static` alone handles that part.
+
+Verified at 390 on /brand-strategy and /web-development: 4 cards each, all
+`position: static`, transform none, margin-bottom 0, and every card's top equals
+the previous card's bottom exactly -> `anyOverlap: false` on both.
+Desktop 1265 both pages `allSticky: true` and `stillPins: true` — card 0 holds
+at top 45 across scrollY 1600/2400 (web-dev) and 1800/2600 (brand-strategy)
+instead of tracking scroll, so the stack is intact; brand-strategy's inline
+transforms are restored (`transformsRestored: [true x4]`) and margins are back
+(198px / 8px respectively).
+`bunx tsc --noEmit` clean; `bun run build` clean.

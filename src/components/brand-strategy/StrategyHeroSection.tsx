@@ -55,6 +55,7 @@ export default function StrategyHeroSection() {
 
       <div className="relative z-10 flex flex-1 w-full max-w-7xl flex-col items-center justify-center text-center lg:mt-30 px-6 md:px-10">
         <motion.div
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -65,14 +66,15 @@ export default function StrategyHeroSection() {
 
         <motion.h1
           variants={containerVariants}
+          data-no-mobile-entry
           initial="hidden"
           animate="visible"
           onAnimationComplete={() => setIsExpanded(true)} 
           className="mb-6 flex flex-col items-center text-[2.75rem] font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-7xl lg:text-[7rem]"
         >
           <span className="flex items-center justify-center whitespace-nowrap">
-            <motion.span variants={wordVariants}>We</motion.span>
-            <motion.span variants={wordVariants} className="ml-3 md:ml-6">
+            <motion.span data-no-mobile-entry variants={wordVariants}>We</motion.span>
+            <motion.span data-no-mobile-entry variants={wordVariants} className="ml-3 md:ml-6">
               Build
             </motion.span>
 
@@ -100,13 +102,13 @@ export default function StrategyHeroSection() {
               ))}
             </span>
 
-            <motion.span variants={wordVariants}>Brands</motion.span>
+            <motion.span data-no-mobile-entry variants={wordVariants}>Brands</motion.span>
           </span>
 
           <span className="mt-2 flex space-x-3 md:mt-4 md:space-x-6">
-            <motion.span variants={wordVariants}>That</motion.span>
-            <motion.span variants={wordVariants}>People</motion.span>
-            <motion.span variants={wordVariants}>Trust</motion.span>
+            <motion.span data-no-mobile-entry variants={wordVariants}>That</motion.span>
+            <motion.span data-no-mobile-entry variants={wordVariants}>People</motion.span>
+            <motion.span data-no-mobile-entry variants={wordVariants}>Trust</motion.span>
           </span>
         </motion.h1>
       </div>

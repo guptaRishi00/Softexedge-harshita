@@ -152,7 +152,7 @@ function Card({
   return (
     <div
       ref={registerRef}
-      className="sticky w-full mb-[22vh]"
+      className="sticky w-full mb-[22vh] max-md:static max-md:mb-0"
       style={{
         top: `calc(5vh + ${(isLast ? 0 : i) * 190}px)`,
         zIndex: i,

@@ -76,10 +76,10 @@ export default function QuoteCard({ text }: { text: string }) {
         setHoveredIndex(null);
         parkMask();
       }}
-      className="relative flex h-full w-full flex-col justify-start gap-1 overflow-hidden bg-black p-3.5 md:gap-2 md:p-7"
+      className="relative flex h-full w-full flex-col justify-start gap-1 overflow-hidden bg-black p-3.5 max-md:justify-center md:gap-2 md:p-7"
     >
       <motion.div
-        className="absolute inset-0 z-0 overflow-hidden"
+        className="absolute inset-0 z-0 overflow-hidden max-md:[mask-image:none]! max-md:[-webkit-mask-image:none]!"
         style={{ WebkitMaskImage: mask, maskImage: mask }}
       >
         <div className="relative -left-[5%] grid w-[110%] -translate-y-6 grid-cols-4 gap-1">
@@ -106,6 +106,23 @@ export default function QuoteCard({ text }: { text: string }) {
             );
           })}
         </div>
+
+        {/* Below md the pointer never moves, so the mask above is switched off
+            and the darkening is painted OVER the grid instead — the same
+            technique, park position and stops as the OurValuesSection carousel
+            card. `farthest-side` rather than that card's literal 300px: from
+            the 85%/50% focal point it resolves to the distance to the far edge,
+            so the gradient lands on 0.96 exactly AT the edge — which is what
+            300px does there (focal-to-edge 311px, t=1). Copying the number
+            instead would only reach t=0.49 on a card this narrow. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 md:hidden"
+          style={{
+            background:
+              "radial-gradient(circle farthest-side at 85% 50%, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.96) 100%)",
+          }}
+        />
       </motion.div>
 
       <svg
@@ -115,14 +132,14 @@ export default function QuoteCard({ text }: { text: string }) {
         strokeWidth="1"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="relative z-10 h-7 w-7 shrink-0 text-[#464646] max-md:fill-black md:h-12 md:w-12"
+        className="relative z-10 h-6 w-6 shrink-0 text-[#464646] max-md:fill-black md:h-12 md:w-12"
       >
         <title>Quote</title>
         <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" />
         <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
       </svg>
 
-      <p className="relative z-10 text-sm font-regular leading-[1.25em] mt-3 max-md:mt-1.5 tracking-tight text-white md:text-base">
+      <p className="relative z-10 text-xs font-regular leading-[1.25em] mt-3 max-md:mt-1.5 tracking-tight text-white md:text-base">
         {text}
       </p>
     </div>

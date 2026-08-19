@@ -34,18 +34,35 @@ export default function ProjectOutcomes({ project }: { project: Project }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: premiumEase }}
-            className="lg:w-1/2 rounded-3xl border border-white/5 bg-[#100F0F] p-8 md:p-12"
+            className="lg:w-1/2 rounded-3xl border border-white/5 bg-[#100F0F] p-8 max-md:relative max-md:flex max-md:min-h-[360px] max-md:flex-col max-md:justify-between max-md:px-5 md:p-12"
           >
-            <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-5xl font-bold leading-none text-transparent">
+            <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-5xl font-bold leading-none text-transparent max-md:hidden">
               &ldquo;
             </span>
-            <blockquote className="mt-4 text-2xl font-medium leading-[1.3em] tracking-tight text-white md:text-3xl">
+
+            <div className="absolute right-6 top-6 text-white/10 md:hidden">
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <title>Quote</title>
+                <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" />
+                <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
+              </svg>
+            </div>
+            <blockquote className="mt-4 text-2xl font-medium leading-[1.3em] tracking-tight text-white max-md:z-10 max-md:mt-14 max-md:text-lg md:text-3xl">
               The team didn&rsquo;t just ship a product — they reframed how we
               think about our {project.category.toLowerCase()} experience. The
               result moved a metric we&rsquo;d been chasing for two quarters.
             </blockquote>
             <figcaption className="mt-8 flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 text-sm font-bold text-white/70">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/5 text-sm font-bold text-white/70 max-md:h-10 max-md:w-10">
                 {project.title.charAt(0)}
               </div>
               <div className="flex flex-col">

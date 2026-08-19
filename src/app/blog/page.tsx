@@ -33,7 +33,7 @@ export default function BlogPage() {
         <CtaSection />
       </div>
       <div className="[&>section]:py-16 md:[&>section]:py-24"></div>
-      <div className="px-3 pt-11 pb-3 max-md:pb-4 md:pt-12">
+      <div className="px-3 pt-7 pb-3 max-md:pb-4 md:pt-12">
         <Footer />
       </div>
     </div>

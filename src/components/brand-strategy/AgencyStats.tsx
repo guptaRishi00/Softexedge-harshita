@@ -66,6 +66,7 @@ function Counter({ value, suffix }: { value: number; suffix: string }) {
 export default function AgencyStats() {
   return (
     <motion.div
+      data-no-mobile-entry
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}

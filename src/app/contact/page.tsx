@@ -22,8 +22,8 @@ export default function ContactPage({}: any) {
     <div className="bg-white">
       <Header onDark dropdown />
 
-      <div className="relative z-0 -mb-[100vh]">
-        <div className="sticky -top-[56px] z-0 bg-black">
+      <div className="relative z-0 md:-mb-[100vh]">
+        <div className="z-0 bg-black md:sticky md:-top-[56px]">
           <ShrinkOnOverlap
             endSelector="#contact-overlap"
             targetSelector="#contact-hero-copy"
@@ -36,7 +36,7 @@ export default function ContactPage({}: any) {
         </div>
         <div
           id="contact-overlap"
-          className="relative z-10 bg-black pb-[100vh] [&>section]:py-16 md:[&>section]:py-30"
+          className="relative z-10 bg-black md:pb-[100vh] [&>section]:py-16 md:[&>section]:py-30"
         >
           <ContactSection />
         </div>
@@ -48,13 +48,13 @@ export default function ContactPage({}: any) {
       <div className="relative z-10 md:[&>section]:pb-20">
         <TechLogoCarousel />
       </div>
-      <div className="relative z-10 [&>section]:py-12 md:[&>section]:pb-5 md:[&>section]:pt-10">
+      <div className="relative z-10 [&>section]:py-0 md:[&>section]:pb-5 md:[&>section]:pt-10">
         <ContactFaqSection />
       </div>
       <div className="relative z-10 px-3 [&>section]:py-12 max-md:[&>section]:pt-9 max-md:[&>section]:pb-9 md:[&>section]:pb-14 md:[&>section]:pt-0">
         <CtaSection />
       </div>
-      <div className="relative z-10 px-3 pt-11 pb-3 max-md:pb-4 md:pt-8 ">
+      <div className="relative z-10 px-3 pt-7 pb-3 max-md:pb-4 md:pt-8 ">
         <Footer />
       </div>
     </div>

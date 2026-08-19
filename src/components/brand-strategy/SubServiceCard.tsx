@@ -36,7 +36,7 @@ export default function Card({
   return (
     <div
       ref={registerRef}
-      className="sticky w-full"
+      className="sticky w-full max-md:static max-md:[transform:none]! max-md:[margin-bottom:0px]!"
       style={{
         top: "5vh",
         transform: `translateY(${i * STEP}px)`,
@@ -45,16 +45,18 @@ export default function Card({
       }}
     >
       <div
-        className={`relative grid min-h-[50vh] md:h-[600px] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-4 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
+        className={`relative grid min-h-[50vh] md:h-[600px] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-4 max-md:px-3 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
       >
         <motion.div
           variants={contentContainer}
+          data-no-mobile-entry
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-120px" }}
           className="flex w-full flex-col gap-12 md:gap-16 pr-4"
         >
           <motion.a
+            data-no-mobile-entry
             variants={contentItem}
             href={link}
             className="group inline-block"
@@ -67,6 +69,7 @@ export default function Card({
           </motion.a>
 
           <motion.p
+            data-no-mobile-entry
             variants={contentItem}
             className="max-w-xl text-lg font-light leading-[1.4em] text-zinc-300 md:text-xl"
           >
@@ -75,6 +78,7 @@ export default function Card({
 
           {tags && tags.length > 0 && (
             <motion.div
+              data-no-mobile-entry
               variants={contentItem}
               className="flex flex-wrap items-center gap-3 pt-4"
             >
