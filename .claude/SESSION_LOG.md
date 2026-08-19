@@ -16357,3 +16357,49 @@ Dev-server note: the server on :3000 dropped mid-verification and a second
 `next dev` refuses to start ("Another next dev server is already running",
 PID 5480). It recovered on its own; no restart needed.
 `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Contact page — mobile responsive pass
+Analysed before editing. Most of this page is already covered by shared
+components that earlier passes had done: ContactSection 28 `max-md:`,
+ExperimentalTestimonials 19, CtaSection 20, Footer 17. The only uncovered
+pieces were ContactHeroSectionTwo (0) and ContactFaqSection (0).
+
+ContactHeroSectionTwo: LEFT UNCHANGED, deliberately. Checked its three mobile
+properties against the reference heroes instead of assuming:
+- h1 is already `text-[2.75rem]` — the same mobile size CareerHeroSection uses.
+- gutter `px-6`; hero gutters do NOT have a dominant convention (px-6 x2,
+  px-10, px-12, px-3 across the reference heroes), so px-6 is in-family.
+- `min-h-screen`; AboutHeroSection and WorkHeroSection use it too.
+Nothing here deviates from the references, so changing it would have been
+inventing. (Site-wide note, NOT acted on: `min-h-screen` is 100vh, which on a
+phone includes browser chrome and so overshoots the visible area. That is true
+of all three heroes equally — a site-wide call, not a contact-page fix.)
+
+ContactFaqSection: brought to parity with its byte-identical twin
+`brand-strategy/FaqSection` (the one /about renders) — `max-md:px-3`,
+`max-md:mb-8`, container `max-md:gap-8`, eyebrow `max-md:text-xs`, h2
+`max-md:text-[2.5rem] max-md:max-w-[12rem] max-md:leading-[1.185]`, h3
+`max-md:text-lg`, plus `data-no-mobile-entry` on both entry animations (the twin
+has 2, this had 0).
+
+REFACTOR: those same values were previously injected into the work slug page
+from its wrapper as 10 scoped arbitrary-variant selectors, because the component
+is shared and /contact was out of scope then. /contact being the target now made
+that unnecessary — the classes moved into the component and the work-slug
+wrapper collapsed from 10 selectors back to `bg-white pt-24 max-md:pt-16`.
+
+contact/page.tsx: CTA wrapper `max-md:[&>section]:pt-9 max-md:[&>section]:pb-9`
+(the value every other page uses above CtaSection); footer wrapper `pt-16` ->
+`pt-11` + `max-md:pb-4`, matching blog and work slug.
+
+Verified (computed, dev server):
+- /work/aura-skincare @390 `identicalToBeforeRefactor: true` — all 9 FAQ values
+  (gap 32, eyebrow 12/24, h2 40 / 47.4 / 192px, h3 18, padX 12, mb 32) are
+  exactly what the scoped selectors produced. The refactor is a no-op visually.
+- /contact @390 `faqMatchesAbout: true` across all 8 shared properties; padX 12,
+  mb 32, 5 questions, CTA 36/36, footer 44/16, 33 tagged entries, no h-overflow.
+- /contact @320: docScrollWidth 320, `overflowingOutsideClipped: []`, h1 44px,
+  FAQ h2 40px.
+- Desktop 1265 `desktopUnchanged: true` on BOTH pages: FAQ padX 40, mb 80, gap
+  96, eyebrow 14, h2 60 / max-w none, h3 24; contact CTA 0/56, footer 32/12.
+- `bunx tsc --noEmit` clean; `bun run build` clean.

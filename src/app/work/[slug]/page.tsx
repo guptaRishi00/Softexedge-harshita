@@ -66,7 +66,7 @@ export default async function ProjectPage(props: {
       <ProjectGallery project={project} images={galleryB} />
       <NextProject nextProject={nextProject} />
 
-      <div className="bg-white pt-24 max-md:pt-16 max-md:[&>section]:px-3 max-md:[&>section]:mb-8 max-md:[&>section>div]:gap-8 max-md:[&>section_p.uppercase]:text-xs max-md:[&>section_h2]:text-[2.5rem] max-md:[&>section_h2]:max-w-[12rem] max-md:[&>section_h2]:leading-[1.185] max-md:[&>section_h3]:text-lg">
+      <div className="bg-white pt-24 max-md:pt-16">
         <ContactFaqSection />
         <div className="px-3 max-md:[&>section]:pt-9 max-md:[&>section]:pb-9">
           <CtaSection />

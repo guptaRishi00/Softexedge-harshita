@@ -41,7 +41,7 @@ export default function ContactFaqSection() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white px-4 md:px-10 md:py-0 mb-20">
+    <section className="relative overflow-hidden bg-white px-4 mb-20 max-md:mb-8 max-md:px-3 md:px-10 md:py-0">
       <svg width="0" height="0" className="absolute pointer-events-none">
         <defs>
           <linearGradient
@@ -58,18 +58,19 @@ export default function ContactFaqSection() {
         </defs>
       </svg>
 
-      <div className="mx-auto flex w-full flex-col items-start gap-16 lg:flex-row lg:gap-24">
+      <div className="mx-auto flex w-full flex-col items-start gap-16 max-md:gap-8 lg:flex-row lg:gap-24">
         <div className="flex w-full flex-col items-start lg:sticky lg:top-5 lg:w-[40%]">
           <motion.div
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: premiumEase }}
           >
-            <p className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium">
+            <p className="mb-6 text-sm max-md:text-xs uppercase tracking-[0.3em] text-zinc-500 font-medium">
               FAQs
             </p>
-            <h2 className="text-5xl font-bold leading-[1.05] tracking-tight text-zinc-900 md:text-6xl lg:text-6xl">
+            <h2 className="text-5xl max-md:text-[2.5rem] max-md:max-w-[12rem] font-bold leading-[1.05] max-md:leading-[1.185] tracking-tight text-zinc-900 md:text-6xl lg:text-6xl">
               Let's{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Clear
@@ -86,6 +87,7 @@ export default function ContactFaqSection() {
             return (
               <motion.div
                 key={index}
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
@@ -100,7 +102,7 @@ export default function ContactFaqSection() {
                   onClick={() => toggleFaq(index)}
                   className="group flex w-full items-center justify-between gap-6 px-6 py-6 text-left md:px-10 md:py-8"
                 >
-                  <h3 className="text-xl font-semibold tracking-tight text-zinc-900 md:text-2xl">
+                  <h3 className="text-xl max-md:text-lg font-semibold tracking-tight text-zinc-900 md:text-2xl">
                     {faq.question}
                   </h3>
 

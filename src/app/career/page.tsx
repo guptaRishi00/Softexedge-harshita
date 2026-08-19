@@ -75,7 +75,7 @@ export default function CareerPage() {
         </div>
       </div>
 
-      <div className="[&>section]:pt-22 [&>section]:pb-11 md:[&>section]:pb-14 md:[&>section]:pt-10">
+      <div className="[&>section]:pt-14 [&>section]:pb-11 md:[&>section]:pb-14 md:[&>section]:pt-10">
         <ApplicationJourney />
       </div>
 
