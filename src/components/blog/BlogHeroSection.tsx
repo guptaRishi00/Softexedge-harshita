@@ -85,7 +85,7 @@ export default function BlogHeroSection() {
         <Header dropdown />
       </div>
 
-      <div className="relative mx-auto flex min-h-[70vh] w-full flex-col justify-end overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-4 py-12 md:px-10 md:py-16 lg:py-20">
+      <div className="relative mx-auto flex min-h-[70vh] w-full flex-col justify-end overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-4 py-12 max-md:px-5 max-md:[--spotlight-cols:5] max-md:[--spotlight-sweep-col-start:3] max-md:[&_.grid]:gap-2 md:px-10 md:py-16 lg:py-20">
         <SpotlightGrid
           speed={0.15}
           sweep
@@ -97,16 +97,22 @@ export default function BlogHeroSection() {
           sweepRowEnd={5}
         />
 
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-gradient-to-r from-black via-black/90 to-transparent max-md:from-black/90 max-md:from-50% max-md:via-black/10 max-md:via-85%" />
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-48 bg-gradient-to-t from-black via-black/95 to-transparent opacity-50 max-md:opacity-10" />
 
         <div className="relative z-10">
+          {/* Mobile size is fluid, same technique as WorkHeroSection: the second
+              line ("and everything else", incl. the inner pr-2) must stay on ONE
+              line or it orphans "else". Its natural width is 329.6px at 38.85px, so
+              the fit line is ~12.4vw - 8px; 11.5vw - 8px leaves ~12px of margin at
+              390 and the 2.125rem floor keeps 375 and 360 on two lines. The 2.5rem
+              cap is the About-hero / CtaSection size family. */}
           <motion.h1
             variants={containerVariants}
             initial={reduce ? false : "hidden"}
             animate="visible"
-            className="text-left text-6xl font-medium leading-[0.9] tracking-tight text-white sm:text-7xl md:text-8xl lg:text-[7rem]"
+            className="text-left text-6xl font-medium leading-[0.9] tracking-tight text-white max-md:text-[clamp(2.125rem,calc(11.5vw_-_8px),2.5rem)] max-md:leading-[1.05] sm:text-7xl md:text-8xl lg:text-[7rem]"
           >
             <span className="flex flex-wrap items-center gap-x-4 md:gap-x-6">
               <motion.span variants={wordVariants}>News,</motion.span>

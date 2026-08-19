@@ -43,28 +43,30 @@ export default function BlogListSection() {
   return (
     <section
       id="blog-list"
-      className="relative overflow-hidden bg-[#0a0a0a] py-24 font-sans text-white md:py-32"
+      className="relative overflow-hidden bg-[#0a0a0a] py-24 font-sans text-white max-md:pt-16 max-md:pb-20 md:py-32"
     >
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 
-      <div className="relative mx-auto mb-16 w-full px-4 md:mb-24 md:px-10">
+      <div className="relative mx-auto mb-16 w-full px-4 max-md:mb-8 max-md:px-3 md:mb-24 md:px-10">
         <motion.span
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: premiumEase }}
-          className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60"
+          className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:mb-6"
         >
           Insights & News
         </motion.span>
 
         <div className="flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <motion.h2
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-5xl font-bold leading-[0.9] tracking-tight text-white md:text-7xl lg:text-[4rem]"
+            className="text-5xl font-bold leading-[0.9] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-7xl lg:text-[4rem]"
           >
             Explore our{" "}
             <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
@@ -73,11 +75,12 @@ export default function BlogListSection() {
           </motion.h2>
 
           <motion.p
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
-            className="max-w-xl text-xl font-light leading-[1.25em] text-white md:text-left"
+            className="max-w-xl text-xl font-light leading-[1.25em] text-white max-md:text-lg md:text-left"
           >
             Dive deep into our latest thoughts on technology, design, and
             business strategy.
@@ -85,8 +88,9 @@ export default function BlogListSection() {
         </div>
       </div>
 
-      <div className="relative mx-auto mb-12 flex w-full px-4 md:mb-16 md:px-10">
+      <div className="relative mx-auto mb-12 flex w-full px-4 max-md:mb-8 max-md:px-3 md:mb-16 md:px-10">
         <motion.div
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -105,7 +109,7 @@ export default function BlogListSection() {
               {activeCategory === category && (
                 <motion.div
                   layoutId="blogCategory"
-                  className="absolute inset-0 rounded-full border border-white/10 bg-[#100f0f]"
+                  className="absolute inset-0 rounded-full border border-white/10 bg-[#100f0f] max-md:rounded-lg"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
@@ -123,7 +127,7 @@ export default function BlogListSection() {
         </motion.div>
       </div>
 
-      <div className="relative mx-auto w-full px-4 md:px-10">
+      <div className="relative mx-auto w-full px-4 max-md:px-3 md:px-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={`${activeCategory}-${activeAuthor}`}
@@ -131,7 +135,7 @@ export default function BlogListSection() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5, ease: premiumEase }}
-            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 md:gap-8"
+            className="grid grid-cols-1 gap-9 md:grid-cols-2 lg:grid-cols-3 md:gap-8"
           >
             {filteredPosts.length === 0 && (
               <p className="col-span-full py-16 text-center text-white/50">
@@ -141,6 +145,7 @@ export default function BlogListSection() {
             {filteredPosts.map((post, index) => (
               <motion.div
                 key={post.id}
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}

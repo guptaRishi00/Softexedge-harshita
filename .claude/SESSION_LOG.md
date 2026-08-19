@@ -15742,3 +15742,69 @@ Four changes, all measured before and after.
 - NOTE for later: /work/[slug] is a separate route and does NOT inherit this. If those detail pages also
   show a white notch, they need their own viewport export.
 - `tsc --noEmit` clean; `next build` compiled.
+
+## Blog page — full mobile-responsive pass, modelled on home/about/work/career
+Surveyed the reference pages first and extracted their settled mobile conventions, then applied them.
+Nothing was invented: every value below is copied from an existing page.
+
+WHAT WAS WRONG (measured @390 before touching anything)
+- Hero h1 ran 60px/0.9 in a 334px column -> FOUR lines.
+- The featured->list slide-over (`sticky top-[calc(100vh-856px)]`) was NOT md-gated, unlike work and
+  career. Its computed `top` resolved to -12px on a phone. ShrinkOnOverlap is md-gated internally, so
+  only this wrapper leaked to mobile.
+- BlogListSection had ZERO mobile overrides: py-24/px-4 everywhere, h2 48px, description 20px,
+  heading block mb-16, chips mb-12, card gap 24.
+- No `data-no-mobile-entry` anywhere in src/components/blog — every other page's non-hero sections use it.
+- CtaSection/Footer wrappers used blog-only spacing rather than the shared rhythm.
+
+CHANGES (20 edits across 4 files)
+- page.tsx: `sticky top-[...]` -> `md:sticky md:top-[...]`; CTA wrapper + max-md:pt-9/pb-9 (about/work
+  value); footer wrapper pt-8 -> pt-11 + max-md:pb-4 (about/work/career value).
+- BlogHeroSection: card gets CtaSection's mobile SpotlightGrid treatment
+  (`--spotlight-cols:5`, `--spotlight-sweep-col-start:3`, `[&_.grid]:gap-2`) + max-md:px-5; both scrims
+  get CtaSection's mobile stops; h1 -> `max-md:text-[clamp(2.125rem,calc(11.5vw-8px),2.5rem)]`.
+- BlogFeaturedSection: max-md:pt-16, + data-no-mobile-entry on the card.
+- BlogListSection: mirrors WorkProjectShowcase token for token — section max-md:pt-16/pb-20, inner
+  px-3, heading mb-8, label mb-6, h2 2.5rem/1.11, p text-lg, chips mb-8 + max-md:rounded-lg on the
+  indicator, grid gap-6 -> gap-9, and data-no-mobile-entry on label/h2/p/chips/cards.
+
+TITLE SIZING — the one place a reference value did NOT transplant cleanly
+- Career's flat 2.75rem still gave 3 rows: "and everything else" needs 329.6px on one line but the
+  column is 324.8px. Measured the natural single-line width with a nowrap clone rather than guessing,
+  which put the fit line at ~12.4vw - 8px. Used `clamp(2.125rem, calc(11.5vw - 8px), 2.5rem)` for ~12px
+  of margin. Verified TWO clean lines ("News, views" / "and everything else") at 375 / 390 / 414.
+- The list h2 kept the flat 2.5rem/1.11 — that IS WorkProjectShowcase's value and it fits.
+
+VERIFICATION
+- BlogListSection vs WorkProjectShowcase @390: diffed 19 computed properties (section pt/pb/px, label
+  size+mb, h2 size/lh/weight/tracking, p size/weight/lh, heading mb, chips mb, chip radius+padX+gap,
+  grid row-gap, content left edge) -> `identical: true`, zero diffs. Card gaps [36,36,36,36].
+- Desktop @1265 fresh load: 24 properties checked incl. the sticky slide-over still active and its
+  `top` still resolving to calc(100vh - 856px) -> `desktopUnchanged: true`, zero diffs.
+- No horizontal overflow at 375 / 390 / 414.
+- `tsc --noEmit` clean; `next build` compiled.
+
+NOT DONE, flagged to the user: BlogCard itself (image h-60, body p-6, h3 text-xl) was left alone — it
+already has sane mobile values and the ask was page-level. Its CTA is also not parked active on mobile,
+unlike ProjectCard/OpenPositions; that is a deliberate open item, not an oversight.
+
+## Work page — white notch on iOS Safari: theme-color was the WRONG fix
+- My previous fix (`viewport.themeColor = "#000000"`) was insufficient and the user confirmed the notch
+  was still white in Safari. theme-color only tints the browser CHROME.
+- Real cause, traced through globals.css: `@layer base { body { @apply bg-background } }` with
+  `--background: oklch(1 0 0)` — white — and `html` has NO background. A transparent html means the
+  BODY background propagates to the CANVAS, and the canvas is what iOS paints behind the notch /
+  safe-area and in the overscroll gutters. No page-level wrapper reaches that region.
+- Fix: a route-scoped `<style>` in work/page.tsx —
+  `@media (max-width:767px){html{background-color:#000}}`. html and body are owned by the ROOT layout,
+  so a style tag on the page is the way to darken the canvas for one route only. Put in page.tsx rather
+  than a work/layout.tsx deliberately: a layout would also cover /work/[slug].
+- Verified @390 on /work: htmlBg rgb(0,0,0), effectiveCanvas rgb(0,0,0), `canvasIsDark: true`.
+- Verified it does NOT leak: clicked an in-page link to /about (client-side nav, not a reload) — htmlBg
+  back to rgba(0,0,0,0), canvas back to white, style tag gone, theme-color gone.
+- Desktop @1250 fresh load: htmlBg still rgba(0,0,0,0) — the max-width guard holds, so the rubber-band
+  overscroll colour is untouched.
+- Prerendered HTML: work.html contains both `html{background-color:#000}` and the theme-color meta;
+  about/career/blog contain neither.
+- theme-color kept alongside — it correctly darkens the browser chrome; the two are complementary.
+- `tsc --noEmit` clean; `next build` compiled.

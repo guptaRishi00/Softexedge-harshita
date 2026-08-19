@@ -26,6 +26,18 @@ export const viewport: Viewport = {
 export default function WorkPage() {
   return (
     <div className="bg-white">
+      {/* iOS paints the notch / safe-area (and the overscroll gutters) from the
+          CANVAS, whose colour propagates from <html> — or from <body> when html
+          is transparent, which is the case here: globals.css does
+          `body { @apply bg-background }` and --background is oklch(1 0 0), white.
+          The `theme-color` above only tints the browser chrome, so on its own it
+          left the notch white. Both html and body live in the root layout, so a
+          route-scoped style tag is what darkens the canvas for /work alone; it
+          unmounts on client navigation away. max-width guard keeps desktop —
+          where the canvas is only ever visible in rubber-band overscroll —
+          exactly as it was. */}
+      <style>{`@media (max-width:767px){html{background-color:#000}}`}</style>
+
       <Header onDark dropdown />
 
       <div className="relative z-0 md:-mb-[100vh]">

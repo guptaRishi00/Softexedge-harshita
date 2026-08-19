@@ -16,8 +16,9 @@ export default function BlogFeaturedSection() {
   const featured = blogPosts.find((p) => p.featured) ?? blogPosts[0];
 
   return (
-    <section className="relative w-full bg-[#FAFAFA] px-3 pt-20 pb-16 font-sans selection:bg-[#2E5BFF]/20 md:pb-24">
+    <section className="relative w-full bg-[#FAFAFA] px-3 pt-20 pb-16 font-sans selection:bg-[#2E5BFF]/20 max-md:pt-16 md:pb-24">
       <motion.div
+        data-no-mobile-entry
         initial={reduce ? false : { opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
