@@ -15487,3 +15487,258 @@ DOME
   Re-verified: `backslash paths remaining: 0`.
 - Flagged to the user: `public/assets/video7.mp4.orig` is a tracked 20MB leftover backup — a quarter of
   the archive. Left in because it is tracked; removing it is the user's call.
+
+## WorkProjectShowcase — bigger gap between project cards on mobile
+- Project grid `gap-6` -> `gap-9` (24px -> 36px). Base value only; `md:gap-8` re-asserts at >=768, so
+  this is mobile-only by construction.
+- Verified @390: all 8 gaps between the 9 cards measure exactly 36 (were 24), still 1 column, no
+  horizontal overflow.
+- Desktop @1250 fresh load: 32px/32px, 2 columns from `md:gap-8 md:grid-cols-2` — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+- NOTE: the zip on the Desktop was built BEFORE this change, so it is now one commit-worth stale.
+
+## WorkProjectShowcase — mobile bottom padding trimmed back
+- `max-md:pb-24` -> `max-md:pb-20` (96px -> 80px), one step back from the increase two entries ago.
+- Verified @390: pb 80, pt still 64, testimonials pt still 64, card gap still 36. Space below the grid
+  76 -> 60; total visual gap to the testimonials 140 -> 124 (it was 96 before this whole sequence).
+- Desktop @1250 fresh load: py 128/128, grid gap 32, 2 columns — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## CareerHeroSection / QuoteCard — smaller filled commas + overflow fixed (mobile)
+- Diagnosed first: the card is 128x160 (`CarouselCard` cell is `h-[160px] aspect-[4/5]`, SHARED with the
+  image cards so its height must not change) with p-5, but content needed 184px — overflowing by 24 and
+  clipping the last text line 4px past the bottom (`overflow: hidden`).
+- Budget was 40 padding + 40 comma + 4 gap + 12 mt + 88 text. Three mobile-only trims, total -30:
+  * comma `h-10 w-10` -> `h-7 w-7` (40 -> 28)   [base value; `md:h-12 md:w-12` holds desktop]
+  * card `p-5` -> `p-3.5` (20 -> 14)            [base value; `md:p-7` holds desktop]
+  * text `mt-3` + `max-md:mt-1.5` (12 -> 6)     [mt-3 has NO md: override, so it had to be scoped
+                                                 explicitly rather than edited in place]
+- Black fill: `max-md:fill-black` on the svg. CSS beats the `fill="none"` presentation attribute, and
+  the variant keeps desktop on `none`. Stroke left untouched at rgb(70,70,70) / width 1.
+- Verified @390 across three cards: overflowBy 0, `clipped: false`, text bottom now 20px INSIDE the card,
+  comma 28x28, computed fill rgb(0,0,0), stroke unchanged.
+- Desktop @1250 fresh load: card 260, padding 28, comma 48x48, fill none, mt 12, text 16px — unchanged.
+- NOT CHANGED, reported to user: nothing was centred to begin with — measured `text-align: start` and
+  `justify-content: flex-start`. Also flagged that at 28px the 1px stroke renders proportionally thinner
+  (viewBox scales), offering `stroke-width` compensation if they want the border weight identical.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## CareerHeroSection — full-screen height on mobile
+- Section had no height of its own (content-sized, 829px against an 844px viewport at 390 — 15px short).
+  Added `max-md:min-h-svh`.
+- Used `svh`, not `vh`: 100vh on a phone measures the viewport WITHOUT browser chrome, so a vh-sized
+  hero gets its bottom hidden behind the URL bar. `svh` is the smallest-viewport unit and always fits.
+  Confirmed Tailwind emitted `.max-md\:min-h-svh{min-height:100svh}`.
+- Verified @390: section 844 == viewport 844, `fillsScreen: true`, no horizontal overflow.
+  @320x700: min-height 700 but the section is 898 because the CONTENT is taller — min-h is a floor, so
+  it grows instead of clipping. Correct, and worth knowing if a hard cap was wanted instead.
+- Desktop @1250 fresh load: min-height 0px (max-md inactive), padding 96/128, height still purely
+  content-driven at 1200 — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## CareerHeroSection — content vertically centred on mobile
+- `max-md:justify-center` on the flex-col section. On its own that left the content 16px ABOVE true
+  centre (103.3 above / 135.3 below): flex centres within the CONTENT BOX, and that box was off-centre
+  because the section's padding is asymmetric (pt-24 = 96 vs pb-32 = 128).
+- So `max-md:pb-24` was also required — not a cosmetic extra. pt-24/pb-32 have no md: override, so the
+  mobile value had to be scoped rather than edited in place.
+- Verified @390: justify center, padding 96/96 symmetric, space above == space below == 119.3,
+  `offsetFromTrueCentre: 0`, still fills the screen, no horizontal overflow.
+- SIDE EFFECT reported to the user: the hero's bottom padding on mobile drops 128 -> 96, so the gap to
+  the next section shrinks by 32px. Unavoidable if the centring is to be true.
+- Desktop @1250 fresh load: minHeight 0, justify normal, padding 96/128, height 1200 — all three
+  max-md classes inactive.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## WhyJoinUs — typography matched to AboutTraditional, card gap matched to WorkProjectShowcase (mobile)
+- Title `max-md:text-[2.5rem]` -> `max-md:text-[2.6rem]` (40 -> 41.6px). Leading already matched at
+  1.11, and the DESCRIPTION already matched exactly (text-lg / 1.25em / font-light) — no change needed
+  there, verified rather than assumed.
+- Card grid `gap-4` -> `gap-9` (16 -> 36px), the value WorkProjectShowcase uses on mobile. Base value
+  only; `md:gap-6` holds desktop.
+- Proof: captured 6 computed properties from AboutTraditional on /about @390 and diffed WhyJoinUs
+  against them — title size/leading/weight and description size/leading/weight: zero differences,
+  `typographyMatches: true`. Card gaps measured [36, 36, 36] across the 4 cards.
+- NOT CHANGED, flagged to the user: letter-spacing still differs — WhyJoinUs is `tracking-tighter`
+  (-2.08px) vs AboutTraditional's `max-md:tracking-tight` (-1.04px). That is tracking, not size, and the
+  ask was explicitly about size.
+- Desktop @1250 fresh load: title 104px, desc 20px, grid gap 24/24, 5 columns — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## WhyJoinUs BentoCard — removed the hairline at the WhyJoinUs/OpenPositions seam (mobile)
+- Investigated before changing anything: there is NO divider element at that boundary. Confirmed the two
+  sections are flush (both bottom/top = 2808.47, `seamExists: false`), neither has a border, and the only
+  1px hairlines in range are the job-row rules INSIDE OpenPositions at y 3107/3199 — well below the heading.
+- Actual cause: the last bento card ends at 2756.5 and its overlay is `bg-linear-to-t from-black/90`, so
+  along the card's bottom edge 10% of the PHOTO still shows. Sitting directly against the section's pure
+  #000, that reads as a lighter hairline — exactly where the screenshot shows it.
+- Fix: `max-md:from-black` on the overlay. Verified the computed first stop is now `rgb(0, 0, 0) 0%` on
+  all 4 cards, matching the section's rgb(0,0,0) so the edge has nothing to contrast against.
+- Desktop @1250 fresh load: first stop still `oklab(0 0 0 / 0.9)` — the max-md variant is inactive.
+- CAVEAT told to the user: screenshots are unavailable in this environment, so this is diagnosed from
+  geometry and computed styles, not confirmed visually. If a line remains, it is something else.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Career page — smaller gap between WhyJoinUs and OpenPositions (mobile)
+- Measured the composition first: 104px from the last bento card to the "OPEN POSITIONS" label =
+  52 (WhyJoinUs `[&>section]:pb-13`) + 52 (OpenPositions `[&>section]:py-13` top).
+- Trimmed the OpenPositions side only, since that is where the user scoped it. `py-13` had to be SPLIT
+  into `pt-10 pb-13` so the section's bottom padding stays at 52 — a bare `pt-*` next to `py-*` would
+  have depended on utility ordering.
+- Verified @390: open pt 52 -> 40, open pb still 52, WhyJoinUs pb still 52, total gap 104 -> 92.
+- Desktop @1250 fresh load: open 96/96, why pb 96 (all from the md: variants) — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Career page — the WhyJoinUs/OpenPositions line was a fractional-pixel seam
+- My previous diagnosis (the bento card's `from-black/90` edge) was WRONG. The user's second screenshot
+  showed the line spanning the FULL viewport width, wider than the card, which ruled that out.
+- Real cause, measured: the two black blocks abut at y = 2808.46875 — a FRACTIONAL pixel — with `gap: 0`,
+  and the first opaque ancestor behind them is `main` at rgb(255,255,255). Each black edge is antialiased
+  at that boundary, so the residual uncovered fraction shows white as a full-width 1px rule. Nothing was
+  missing from the layout and no element was drawing a border; walking the ancestor chain for background
+  colour is what identified it.
+- Fix: `max-md:-mt-px` on the OpenPositions wrapper so its black section overlaps the row and covers it.
+  Verified overlap = 1px exactly (why bottom 2808.469 vs open top 2807.469), `seamCovered: true`,
+  `blackPaintsAcrossSeam: true`. The gap the user tuned last task is preserved (92 -> 91, the 1px shift).
+- Desktop @1250 fresh load: marginTop 0px (max-md inactive), padding 96/96 — unchanged.
+- GENERAL LESSON: a hairline between two same-coloured blocks over a contrasting ancestor is usually a
+  fractional-pixel seam, not a border. Check `rect.bottom % 1` and the nearest opaque ancestor background
+  before hunting for an element to delete.
+- Note: the earlier `max-md:from-black` on the BentoCard overlay is still in place. It was aimed at the
+  wrong thing but is harmless; left alone rather than churning the file again.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OpenPositions — arrow circles matched to ServiceSection + Apply Now parked active (mobile)
+- Arrow circle: added `max-md:h-9 max-md:w-9 max-md:border-[#2a2a2a] max-md:bg-[#080808]`, icons to
+  `max-md:h-4 max-md:w-4`, and parked the GRADIENT arrow in view on touch
+  (`max-md:-translate-y-8 max-md:translate-x-8` on the plain one, `max-md:translate-x-0
+  max-md:translate-y-0` on the gradient one) — ServiceSection shows a gradient arrow, and without this
+  the untouched hover-swap left the plain white arrow visible.
+- Proof: captured 7 computed properties from the live ServiceSection arrow on /home @390 and diffed —
+  box 36x36, border 1px rgb(42,42,42), background rgb(8,8,8), icon 16x16: `matches: true`, zero diffs,
+  and `visibleArrowIsGradient: true`.
+- Apply Now parked in its hover state below md (same idiom as CtaSection): `max-md:border-white
+  max-md:bg-white` on the anchor, `max-md:text-black` on the label, `max-md:bg-black` on the icon box,
+  and the same two-arrow parking. Verified after clicking a row open @390: button rgb(255,255,255),
+  label rgb(0,0,0), icon box rgb(0,0,0), gradient arrow visible — `isActiveState: true`.
+- Desktop @1250 fresh load: circle 56x56 with transparent bg and white/20 border; Apply Now in its
+  RESTING state (black button, white label, white icon box). Token analysis of the diff confirms every
+  added/removed class is max-md-scoped.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Career page — same seam + gap fix at the OpenPositions/OurValuesSection boundary
+- Same fractional-pixel seam as the boundary above: measured y = 3307.859 (frac .859), both sections
+  black, first opaque ancestor `main` = rgb(255,255,255). Fixed the same way: `max-md:-mt-px` on the
+  OurValuesSection wrapper, overlap verified at exactly 1px, `blackPaintsAcrossSeam: true`.
+- Gap matched to the WhyJoinUs -> OpenPositions boundary: `[&>section]:py-13` split to `pt-10 pb-13`,
+  so the composition mirrors it exactly (52 from the upper section's pb + 40 from the lower's pt).
+  104 -> 92, and `nowEqual: true` against the upper gap of 92.
+- Splitting py-13 also keeps OurValues' own pb at 52 (verified), so the gap to PerksSection below is
+  untouched.
+- Desktop @1250 fresh load: wrapper margin 0, values py 96/96, open pb 96 — unchanged.
+- Both seams still covered after the change (upper one re-checked).
+- `tsc --noEmit` clean; `next build` compiled.
+
+## OpenPositions — Apply Now matched to OurValuesSection's "Connect With Me" (mobile)
+- Five `max-md:` overrides: shell `h-[42px] gap-2 rounded-lg px-3`, label `text-sm`, chip `h-7 w-7
+  rounded-md`, both arrows `h-3.5 w-3.5`. The white background, black label, black chip and the parked
+  gradient arrow were already there from the previous task.
+- Proof: captured 15 computed properties from the live "Connect With Me" button on /about @390 and
+  diffed Apply Now against them after clicking a position open — height, padding, gap, radius,
+  background, label size/weight/colour/letter-spacing, chip w/h/radius/bg, icon w/h.
+  `matches: true`, zero differences, `visibleArrowIsGradient: true`.
+- Desktop @1250 fresh load: h 56, padding 20/8, gap 16, radius 14, black bg, label 16px white,
+  chip 36x36 radius 14 white — its resting state, unchanged.
+- Measuring this needed TWO tool calls: clicking the row and reading in the same JS call returns
+  "not rendered" because React has not re-rendered yet.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## PerksSection — seam, gap, card padding, pattern size (mobile)
+Four changes, all measured before and after.
+1. SEAM: third instance of the fractional-pixel hairline — boundary at y 4698.141, white `main` behind
+   two black sections. `max-md:-mt-px` on the Perks block; overlap verified at 1px, `covered: true`.
+2. GAP: ShrinkOnOverlap `[&>section]:py-13` split to `pt-10 pb-13`, so OurValues -> Perks is 52 + 40 =
+   92, `nowEqual: true` against the WhyJoinUs -> OpenPositions reference. Splitting keeps Perks' own
+   pb at 52 for the boundary below.
+3. CARD Y-PADDING: `p-6` + `max-md:py-9` -> top/bottom 24 -> 36px, left/right still 24 (y only).
+4. PATTERN SIZE: Perks was 4 columns at w-110% -> box 94.1px; OurValues is 6 at w-120% -> 66.1px.
+   Added `max-md:w-[120%] max-md:-left-[10%]` plus
+   `max-md:[grid-template-columns:repeat(6,minmax(0,1fr))]!`. The `!` is REQUIRED: gridTemplateColumns
+   is set through the inline `style` attribute, which outranks any class without it.
+   Result: Perks box 66.1 == OurValues box 66.1, `matchesValues: true`.
+   Coverage re-checked on 3 cards: covers vertically and horizontally (80 cells over 6 cols = 13 rows).
+- Desktop @1250 fresh load: block margin 0, perks pt 96 / pb 140, card padding 32 (sm:p-8), 4 columns,
+  grid 110%, box 97 — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## PerksSection — card gap matched to WhyJoinUs (mobile)
+- Card grid `gap-4` -> `gap-9` (16 -> 36px). Base value only; `md:gap-5` re-asserts at >=768.
+- Verified @390 by measuring BOTH grids on the same page: WhyJoinUs rowGap 36 with gaps [36,36,36],
+  Perks rowGap 36 with gaps [36,36,36,36,36] — `gapsMatch: true`. No horizontal overflow.
+- Desktop @1250 fresh load: 20px/20px across 3 columns from `md:gap-5 md:grid-cols-3` — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## PerksSection — more bottom padding on mobile
+- ShrinkOnOverlap `[&>section]:pb-13` -> `pb-16` (52 -> 64px). `md:[&>section]:pb-35` holds desktop.
+- Verified @390: pb 64, pt still 40, space below the card grid 52 -> 64. The gap DOWN to OurTeamSection
+  goes 120 -> 132; the gap ABOVE (OurValues -> Perks) is untouched at 92, re-checked.
+- Desktop @1250 fresh load: pt 96, pb 140 — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## PerksSection — bottom padding up another step
+- `[&>section]:pb-16` -> `pb-20` (64 -> 80px). pb history on this section: 52 -> 64 -> 80.
+- Verified @390: pb 80, pt still 40, space below the grid 64 -> 80, card gap still 36. Gap down to
+  OurTeamSection 132 -> 148; gap above (OurValues -> Perks) still 92. No horizontal overflow.
+- Desktop @1250 fresh load: pt 96, pb 140 — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## PerksSection — card y-padding up another step
+- `max-md:py-9` -> `max-md:py-11` (36 -> 44px). Card y-padding history: 24 -> 36 -> 44.
+- Verified @390: top/bottom 44, left/right still 24 (`yOnly: true`). Card gap still 36, pattern box
+  still 66.1 and still covering, no horizontal overflow.
+- Card heights read [335,335,335,358,335,358] — NOT uniform, but that is pre-existing content-driven
+  variation, not a regression: the padding delta is a uniform +16 per card and the previous measurement
+  was 319 for the same three cards (319+16 = 335), so the two taller cards were already taller.
+- Desktop @1250 fresh load: padding 32px all round from `sm:p-8` — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## ApplicationJourney — card gap matched to WhyJoinUs + more card y-padding (mobile)
+- Grid `gap-3` + `max-md:gap-9` (12 -> 36px). NOTE: gap-3 has NO md: override, so it applies on desktop
+  too — this one HAD to be max-md-scoped rather than edited in place, unlike the other grids this session.
+- Card content `p-8` + `max-md:py-11` (32 -> 44px, y only). p-8 is the mobile value since `md:p-10`
+  re-asserts desktop, and 44 matches the value PerksSection's cards were just tuned to.
+- Verified @390 by measuring both grids on the page: WhyJoinUs rowGap 36, ApplicationJourney rowGap 36
+  with gaps [36,36,36] — `gapsMatchWhyJoinUs: true`. Card padding top/bottom 44, left/right still 32
+  (`yOnly: true`). Card height still 450 (fixed h), no horizontal overflow.
+- Desktop @1250 fresh load: gap 12/12, 4 columns, card padding 40px — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Career page — bigger gap between OurTeamSection and ApplicationJourney (mobile)
+- Measured composition first: 76px = 36 (OurTeam `[&>section]:pb-9`) + 40 (ApplicationJourney
+  `[&>section]:pt-10`). Raised the lower section's top padding: `pt-10` -> `pt-13` (40 -> 52), gap 76 -> 88.
+- The wrapper already carries `md:[&>section]:pt-10`, so the base value is mobile-only by construction —
+  desktop still resolves to 40. Verified rather than assumed.
+- No seam concern at this boundary: both sections are rgb(255,255,255) on the white `main`, so the
+  fractional boundary (y 7911.969) has nothing to show through.
+- Verified @390: aj pt 52, aj pb still 44, team pb still 36, gap 88, card gap still 36, no overflow.
+- Desktop @1250 fresh load: aj pt 40, aj pb 56, team pb 96 — unchanged.
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Career page — OurTeam/ApplicationJourney gap up another step
+- `[&>section]:pt-13` -> `pt-16` (52 -> 64px). Gap history at this boundary: 76 -> 88 -> 100.
+- Verified @390: aj pt 64, aj pb still 44, team pb still 36, gap 100, card gap still 36, no overflow.
+- Desktop @1250 fresh load: aj 40/56, team pb 96 — unchanged (`md:[&>section]:pt-10` holds it).
+- `tsc --noEmit` clean; `next build` compiled.
+
+## Work page — dark notch / status bar on iOS
+- Cause: no `theme-color` existed anywhere in the app (grepped), so iOS samples the page background for
+  the notch area — and /work's root wrapper is `bg-white`, even though the hero beneath it is black.
+- Fix: a route-scoped `export const viewport: Viewport = { themeColor: "#000000" }` in
+  src/app/work/page.tsx. In Next 15/16 themeColor lives on the `viewport` export, not `metadata`.
+- Verified: /work renders exactly one `<meta name="theme-color" content="#000000">`; /about renders ZERO,
+  so it is genuinely route-scoped and no other page changed. Also confirmed in the prerendered HTML,
+  not just the client DOM.
+- Desktop is unaffected by construction — browsers ignore theme-color for page chrome; no CSS changed.
+- NOTE for later: /work/[slug] is a separate route and does NOT inherit this. If those detail pages also
+  show a white notch, they need their own viewport export.
+- `tsc --noEmit` clean; `next build` compiled.

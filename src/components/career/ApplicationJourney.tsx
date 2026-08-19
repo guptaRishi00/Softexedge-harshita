@@ -90,7 +90,7 @@ export default function ApplicationJourney() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 max-md:gap-9">
           {steps.map((step, index) => (
             <motion.div
               key={step.number}
@@ -116,7 +116,7 @@ export default function ApplicationJourney() {
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500" />
 
-              <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-10">
+              <div className="absolute inset-0 flex flex-col justify-end p-8 max-md:py-11 md:p-10">
                 <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 backdrop-blur-md">
                   <span className="text-sm font-bold text-white">
                     {step.number}

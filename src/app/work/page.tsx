@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import FaqSection from "@/components/brand-strategy/FaqSection";
 import BlogSection from "@/components/home/BlogSection";
@@ -13,6 +13,14 @@ import WorkProjectShowcase from "@/components/work/WorkProjectShowcase";
 export const metadata: Metadata = {
   title: "Our Work",
   description: "Our creative portfolio, showcasing work from Softexedge.",
+};
+
+// Route-scoped, so only /work gets it. Without a theme-color iOS samples the
+// page background for the status-bar/notch area, and this page's root wrapper
+// is `bg-white` — the hero underneath it is black, so the notch read white
+// against a black hero. Desktop browsers ignore theme-color entirely.
+export const viewport: Viewport = {
+  themeColor: "#000000",
 };
 
 export default function WorkPage() {

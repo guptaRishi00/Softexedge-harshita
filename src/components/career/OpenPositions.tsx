@@ -193,7 +193,7 @@ export default function OpenPositions() {
                     </h3>
                   </div>
 
-                  <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 text-white transition-colors duration-300 group-hover:border-transparent group-hover:bg-[#1a1a1a] md:h-14 md:w-14">
+                  <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 text-white transition-colors duration-300 group-hover:border-transparent group-hover:bg-[#1a1a1a] max-md:h-9 max-md:w-9 max-md:border-[#2a2a2a] max-md:bg-[#080808] md:h-14 md:w-14">
                     <svg width="0" height="0" className="absolute">
                       <title>Arrow gradient</title>
                       <defs>
@@ -212,13 +212,13 @@ export default function OpenPositions() {
 
                     <MdArrowOutward
                       className={cn(
-                        "absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8 md:h-6 md:w-6",
+                        "absolute z-10 h-5 w-5 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8 max-md:h-4 max-md:w-4 max-md:-translate-y-8 max-md:translate-x-8 md:h-6 md:w-6",
                         open ? "rotate-90" : "",
                       )}
                     />
                     <MdArrowOutward
                       className={cn(
-                        "absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0 md:h-6 md:w-6",
+                        "absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0 max-md:h-4 max-md:w-4 max-md:translate-x-0 max-md:translate-y-0 md:h-6 md:w-6",
                         open ? "rotate-90" : "",
                       )}
                       style={{ fill: `url(#arrow-grad-${job.id})` }}
@@ -299,13 +299,13 @@ export default function OpenPositions() {
                         <div className="pt-2">
                           <a
                             href={`mailto:careers@softexedge.com?subject=Application for ${job.title}`}
-                            className="group/btn relative z-10 flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-black pl-5 pr-2 transition-all duration-300 hover:border-white hover:bg-white"
+                            className="group/btn relative z-10 flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-black pl-5 pr-2 transition-all duration-300 hover:border-white hover:bg-white max-md:h-[42px] max-md:gap-2 max-md:rounded-lg max-md:px-3 max-md:border-white max-md:bg-white"
                           >
-                            <span className="text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover/btn:text-black">
+                            <span className="text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover/btn:text-black max-md:text-sm max-md:text-black">
                               Apply Now
                             </span>
 
-                            <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover/btn:bg-black">
+                            <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover/btn:bg-black max-md:h-7 max-md:w-7 max-md:rounded-md max-md:bg-black">
                               <svg width="0" height="0" className="absolute">
                                 <title>Apply arrow gradient</title>
                                 <defs>
@@ -322,9 +322,9 @@ export default function OpenPositions() {
                                 </defs>
                               </svg>
 
-                              <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover/btn:-translate-y-8 group-hover/btn:translate-x-8" />
+                              <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover/btn:-translate-y-8 group-hover/btn:translate-x-8 max-md:h-3.5 max-md:w-3.5 max-md:-translate-y-8 max-md:translate-x-8" />
                               <MdArrowOutward
-                                className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover/btn:translate-x-0 group-hover/btn:translate-y-0"
+                                className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover/btn:translate-x-0 group-hover/btn:translate-y-0 max-md:h-3.5 max-md:w-3.5 max-md:translate-x-0 max-md:translate-y-0"
                                 style={{ fill: `url(#apply-grad-${job.id})` }}
                               />
                             </div>

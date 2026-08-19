@@ -48,7 +48,11 @@ function BentoCard({
           sizes="(max-width: 768px) 100vw, 60vw"
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
+        {/* The card sits on a pure-black section, so a 90% stop left 10% of the
+            photo showing along the bottom edge — against #000 that reads as a
+            hairline rule between this section and OpenPositions. Full black
+            below md makes the edge disappear. */}
+        <div className="absolute inset-0 bg-linear-to-t from-black/90 max-md:from-black via-black/20 to-transparent" />
       </div>
 
       <div className="pointer-events-none relative z-10 flex w-full flex-col items-start gap-4 md:gap-5">
@@ -130,7 +134,7 @@ export default function WhyJoinUs() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
-            className="text-4xl font-bold leading-[1.05em] tracking-tighter text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-5xl lg:text-[6.5rem]"
+            className="text-4xl font-bold leading-[1.05em] tracking-tighter text-white max-md:text-[2.6rem] max-md:leading-[1.11] md:text-5xl lg:text-[6.5rem]"
           >
             Why{" "}
             <span className="inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pb-[0.2em] pr-[0.08em] text-transparent">
@@ -152,7 +156,7 @@ export default function WhyJoinUs() {
         </div>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6 w-full"
+          className="grid grid-cols-1 md:grid-cols-5 gap-9 md:gap-6 w-full"
           variants={{
             hidden: {},
             show: {

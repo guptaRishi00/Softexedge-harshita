@@ -141,7 +141,7 @@ function PerkCard({ icon: Icon, title, description }: Perk) {
         style={{ WebkitMaskImage: mask, maskImage: mask }}
       >
         <div
-          className="grid gap-2 relative w-[110%] -left-[5%] -translate-y-6"
+          className="grid gap-2 relative w-[110%] -left-[5%] -translate-y-6 max-md:w-[120%] max-md:-left-[10%] max-md:[grid-template-columns:repeat(6,minmax(0,1fr))]!"
           style={{
             gridTemplateColumns: `repeat(${GRID_COLUMNS}, minmax(0, 1fr))`,
           }}
@@ -170,7 +170,7 @@ function PerkCard({ icon: Icon, title, description }: Perk) {
         </div>
       </motion.div>
 
-      <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between gap-6 p-6 sm:p-8">
+      <div className="pointer-events-none relative z-10 flex h-full flex-col justify-between gap-6 p-6 max-md:py-11 sm:p-8">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-800/80 to-zinc-900/80 text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-300 group-hover:text-white">
           <Icon className="h-5 w-5" strokeWidth={1.5} />
         </span>
@@ -220,7 +220,7 @@ export default function PerksSection() {
           </motion.h2>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 md:gap-5">
+        <div className="grid grid-cols-1 gap-9 sm:grid-cols-2 md:grid-cols-3 md:gap-5">
           {perks.map((perk, idx) => (
             <motion.div
               key={perk.title}

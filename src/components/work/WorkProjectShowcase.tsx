@@ -20,7 +20,7 @@ export default function WorkProjectShowcase() {
       : projects.filter((p) => p.category === activeCategory);
 
   return (
-    <section className="relative overflow-hidden bg-black px-4 py-24 font-sans text-white max-md:px-3 max-md:pt-16 max-md:pb-24 md:px-10 md:py-32">
+    <section className="relative overflow-hidden bg-black px-4 py-24 font-sans text-white max-md:px-3 max-md:pt-16 max-md:pb-20 md:px-10 md:py-32">
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" />
 
       <div className="relative mx-auto mb-16 w-full max-md:mb-8 md:mb-24">
@@ -112,7 +112,7 @@ export default function WorkProjectShowcase() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5, ease: premiumEase }}
-            className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8"
+            className="grid grid-cols-1 gap-9 md:grid-cols-2 md:gap-8"
           >
             {filteredProjects.map((project, index) => (
               <motion.div

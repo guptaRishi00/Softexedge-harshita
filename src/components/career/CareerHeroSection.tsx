@@ -61,7 +61,7 @@ const col2Items: CarouselItem[] = [
 
 export default function CareerHeroSection() {
   return (
-    <section className="relative flex w-full flex-col overflow-hidden bg-white pt-24 pb-32 text-zinc-900 font-sans selection:bg-[#2E5BFF]/20">
+    <section className="relative flex w-full flex-col overflow-hidden bg-white pt-24 pb-32 text-zinc-900 font-sans selection:bg-[#2E5BFF]/20 max-md:min-h-svh max-md:justify-center max-md:pb-24">
       <div className="relative z-10 flex w-full flex-col pt-16 md:pt-24">
         <div
           id="career-hero-copy"
