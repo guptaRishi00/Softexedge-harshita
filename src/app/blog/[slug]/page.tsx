@@ -47,10 +47,10 @@ export default async function BlogArticlePage({
     <div className="bg-white">
       <BlogArticle post={post} related={related} />
 
-      <div className="px-3 [&>section]:pt-12 [&>section]:pb-8 md:[&>section]:pt-16 md:[&>section]:pb-12">
+      <div className="px-3 [&>section]:pt-12 [&>section]:pb-8 max-md:[&>section]:pt-9 max-md:[&>section]:pb-9 md:[&>section]:pt-16 md:[&>section]:pb-12">
         <CtaSection />
       </div>
-      <div className="px-3 pt-8 pb-3 md:pt-12">
+      <div className="px-3 pt-11 pb-3 max-md:pb-4 md:pt-12">
         <Footer />
       </div>
     </div>

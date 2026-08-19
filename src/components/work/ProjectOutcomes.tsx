@@ -25,10 +25,11 @@ export default function ProjectOutcomes({ project }: { project: Project }) {
   ];
 
   return (
-    <section className="bg-[#0a0a0a] px-4 py-24 md:px-10 md:pb-32 md:pt-20">
+    <section className="bg-[#0a0a0a] px-4 py-24 max-md:px-3 max-md:pt-16 max-md:pb-20 md:px-10 md:pb-32 md:pt-20">
       <div className="mx-auto max-w-[1400px]">
         <div className="flex flex-col gap-16 lg:flex-row lg:items-start lg:gap-24">
           <motion.figure
+            data-no-mobile-entry
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -51,20 +52,18 @@ export default function ProjectOutcomes({ project }: { project: Project }) {
                 <span className="text-base font-bold text-white">
                   {project.title} Stakeholder
                 </span>
-                <span className="text-sm font-medium text-white/50">
-                  Illustrative testimonial — replace with a real quote.
-                </span>
               </div>
             </figcaption>
           </motion.figure>
 
           <div className="lg:w-1/2">
             <motion.h2
+              data-no-mobile-entry
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: premiumEase }}
-              className="mb-12 text-3xl font-bold tracking-tight text-white leading-[1.2em] md:text-4xl"
+              className="mb-12 text-3xl font-bold tracking-tight text-white leading-[1.2em] max-md:text-[2.5rem] max-md:leading-[1.11] md:text-4xl"
             >
               How the engagement ran
             </motion.h2>
@@ -73,6 +72,7 @@ export default function ProjectOutcomes({ project }: { project: Project }) {
               {phases.map((phase, i) => (
                 <motion.li
                   key={phase.step}
+                  data-no-mobile-entry
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}

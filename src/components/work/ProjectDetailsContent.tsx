@@ -23,12 +23,13 @@ export default function ProjectDetailsContent({
   ];
 
   return (
-    <section className="bg-[#0a0a0a] px-4 py-24 md:px-10 md:py-32">
+    <section className="bg-[#0a0a0a] px-4 py-24 max-md:px-3 max-md:pt-16 max-md:pb-20 md:px-10 md:py-32">
       <div className="w-full">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-24">
           <div className="lg:col-span-4">
             <div className="sticky top-32 flex flex-col gap-12 rounded-2xl border border-white/5 bg-[#100F0F] p-8 md:p-10">
               <motion.div
+                data-no-mobile-entry
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -43,6 +44,7 @@ export default function ProjectDetailsContent({
               </motion.div>
 
               <motion.div
+                data-no-mobile-entry
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -57,6 +59,7 @@ export default function ProjectDetailsContent({
               </motion.div>
 
               <motion.div
+                data-no-mobile-entry
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -78,6 +81,7 @@ export default function ProjectDetailsContent({
               </motion.div>
 
               <motion.div
+                data-no-mobile-entry
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -88,13 +92,13 @@ export default function ProjectDetailsContent({
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100"
+                  className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out max-md:h-[42px] max-md:gap-2 max-md:rounded-lg max-md:px-3 max-md:before:scale-x-100 hover:before:scale-x-100"
                 >
-                  <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black">
+                  <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 max-md:text-sm max-md:text-black group-hover:text-black">
                     Visit Live Site
                   </span>
 
-                  <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover:bg-black">
+                  <div className="relative z-10 flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 max-md:h-7 max-md:w-7 max-md:rounded-md max-md:bg-black group-hover:bg-black">
                     <svg width="0" height="0" className="absolute">
                       <title>Visit live site arrow gradient</title>
                       <defs>
@@ -111,9 +115,9 @@ export default function ProjectDetailsContent({
                       </defs>
                     </svg>
 
-                    <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8" />
+                    <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 max-md:h-3.5 max-md:w-3.5 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
                     <MdArrowOutward
-                      className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0"
+                      className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:h-3.5 max-md:w-3.5 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
                       style={{ fill: `url(#live-site-grad-${project.id})` }}
                     />
                   </div>
@@ -123,7 +127,7 @@ export default function ProjectDetailsContent({
           </div>
 
           <div className="lg:col-span-8">
-            <div className="flex max-w-3xl flex-col gap-24">
+            <div className="flex max-w-3xl flex-col gap-24 max-md:gap-16">
               <Section heading="Overview">
                 <p className="text-lg font-light leading-[1.2em] text-white/70 md:text-xl">
                   {project.description} This project challenged us to rethink
@@ -168,9 +172,6 @@ export default function ProjectDetailsContent({
                     </div>
                   ))}
                 </div>
-                <p className="mt-4 text-xs font-light text-white/30">
-                  Illustrative metrics — replace with verified figures.
-                </p>
               </Section>
 
               <Section heading="What We Delivered">

@@ -55,7 +55,7 @@ export default function ProjectHero({ project }: { project: Project }) {
         className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent"
       />
 
-      <div className="relative z-10 w-full px-4 pb-24 md:px-10 md:pb-32">
+      <div className="relative z-10 w-full px-4 pb-24 max-md:px-3 max-md:pb-16 md:px-10 md:pb-32">
         <div className="flex flex-col gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -75,7 +75,7 @@ export default function ProjectHero({ project }: { project: Project }) {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3, ease: premiumEase }}
-            className="max-w-5xl text-5xl font-bold leading-[1.2em] tracking-tight text-white md:text-7xl lg:text-[6rem]"
+            className="max-w-5xl text-5xl font-bold leading-[1.2em] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-7xl lg:text-[6rem]"
           >
             {project.title}
           </motion.h1>

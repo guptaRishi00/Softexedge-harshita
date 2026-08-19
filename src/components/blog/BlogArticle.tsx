@@ -56,7 +56,7 @@ export default function BlogArticle({
         <Header dropdown />
       </div>
 
-      <section className="relative w-full overflow-hidden bg-[#FAFAFA] px-6 pb-16 pt-36 md:px-10 md:pb-20 md:pt-44">
+      <section className="relative w-full overflow-hidden bg-[#FAFAFA] px-6 pb-16 pt-36 max-md:px-3 max-md:pt-28 md:px-10 md:pb-20 md:pt-44">
         <div className="w-full ">
           <motion.div
             initial="hidden"
@@ -93,7 +93,7 @@ export default function BlogArticle({
             animate="visible"
             custom={2}
             variants={fadeUp}
-            className="mt-6 max-w-5xl text-4xl font-bold leading-[1.08] tracking-tight text-zinc-900 md:text-5xl lg:text-6xl"
+            className="mt-6 max-w-5xl text-4xl font-bold leading-[1.08] tracking-tight text-zinc-900 max-md:text-[2.5rem] max-md:leading-[1.11] md:text-5xl lg:text-6xl"
           >
             {post.title}
           </motion.h1>
@@ -163,7 +163,7 @@ export default function BlogArticle({
         </motion.figure>
       </div>
 
-      <section className="w-full bg-white px-6 py-16 md:px-10 md:pt-24 md:pb-14">
+      <section className="w-full bg-white px-6 py-16 max-md:px-3 md:px-10 md:pt-24 md:pb-14">
         <div className="grid w-full  grid-cols-1 gap-12 lg:grid-cols-[380px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
             <div className="sticky top-32 flex flex-col gap-6">

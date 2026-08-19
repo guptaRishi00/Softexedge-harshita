@@ -54,7 +54,7 @@ export default async function ProjectPage(props: {
   const galleryB = gallery.slice(galleryMid);
 
   return (
-    <div className="relative bg-[#0a0a0a]">
+    <div className="relative bg-black">
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header onDark dropdown />
       </div>
@@ -66,14 +66,14 @@ export default async function ProjectPage(props: {
       <ProjectGallery project={project} images={galleryB} />
       <NextProject nextProject={nextProject} />
 
-      <div className="bg-white pt-24">
+      <div className="bg-white pt-24 max-md:pt-16 max-md:[&>section]:px-3 max-md:[&>section]:mb-8 max-md:[&>section>div]:gap-8 max-md:[&>section_p.uppercase]:text-xs max-md:[&>section_h2]:text-[2.5rem] max-md:[&>section_h2]:max-w-[12rem] max-md:[&>section_h2]:leading-[1.185] max-md:[&>section_h3]:text-lg">
         <ContactFaqSection />
-        <div className="px-3">
+        <div className="px-3 max-md:[&>section]:pt-9 max-md:[&>section]:pb-9">
           <CtaSection />
         </div>
       </div>
 
-      <div className="px-3 pt-16 pb-3 md:pt-24 bg-white">
+      <div className="px-3 pt-11 pb-3 max-md:-mt-px max-md:pb-4 md:pt-24 bg-white">
         <Footer />
       </div>
     </div>

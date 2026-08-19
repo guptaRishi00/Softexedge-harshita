@@ -20,6 +20,7 @@ export default function Block({ block }: { block: ContentBlock }) {
       return (
         <motion.h2
           id={slugify(block.text)}
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
@@ -32,6 +33,7 @@ export default function Block({ block }: { block: ContentBlock }) {
     case "paragraph":
       return (
         <motion.p
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
@@ -44,6 +46,7 @@ export default function Block({ block }: { block: ContentBlock }) {
     case "quote":
       return (
         <motion.blockquote
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
@@ -63,6 +66,7 @@ export default function Block({ block }: { block: ContentBlock }) {
     case "list":
       return (
         <motion.ul
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
@@ -82,6 +86,7 @@ export default function Block({ block }: { block: ContentBlock }) {
     case "callout":
       return (
         <motion.div
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
@@ -104,6 +109,7 @@ export default function Block({ block }: { block: ContentBlock }) {
     case "image":
       return (
         <motion.figure
+          data-no-mobile-entry
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}

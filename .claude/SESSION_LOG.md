@@ -16044,3 +16044,285 @@ unlike ProjectCard/OpenPositions; that is a deliberate open item, not an oversig
   h1 top 340, block bottom 498.2 (fits viewport); 1265x900 -> marginTop 0px,
   h1 top 222.3, unchanged.
 - `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog slug page (/blog/[slug]) — mobile responsive pass
+Tokens taken from home/about/work/career rather than invented. Frequency count
+across those components: `max-md:px-3` 24 uses (vs px-4 1, px-5 1),
+`max-md:text-[2.5rem]` 11 uses, `max-md:leading-[1.11]` 8 uses. Those are the
+values used below.
+
+Defects found by measuring at 390 BEFORE editing:
+- RelatedArticles cards ran 0..390.4 in a 390 viewport — flush to both edges,
+  no gutter, and clipped by the section's own `overflow: hidden`.
+- Hero and body sections were `px-6` (24px) while this page's own `<figure>`
+  was already `px-3` (12px), so the article image edge did not line up with the
+  title or body text.
+- Article h1 and the "Continue reading" h2 were both 36px, not the site's 40px.
+- Stacked related cards had a 16px gap; card grids elsewhere use `gap-9` (36px).
+- Hero cleared the 81.6px mobile navbar by 90px (`pt-36`).
+- CTA/Footer wrappers used values the blog LIST page had already moved past.
+
+Changes (all mobile-only; several are base-value edits that are mobile-only by
+construction because an `md:` rule re-asserts the desktop value):
+- `BlogArticle.tsx`: hero `max-md:px-3 max-md:pt-28`; h1
+  `max-md:text-[2.5rem] max-md:leading-[1.11]`; body section `max-md:px-3`.
+- `RelatedArticles.tsx`: track wrapper `max-md:px-3` (put on the OUTER wrapper
+  so the desktop x-transform and the loopWidth measurement are untouched);
+  CardTrack `gap-4` -> `gap-9`; section `pb-16` -> `pb-20`; heading block
+  `max-md:mb-8 max-md:px-3`; h2 `max-md:text-[2.5rem] max-md:leading-[1.11]`;
+  `data-no-mobile-entry` on eyebrow + h2.
+- `ArticleBlock.tsx`: `data-no-mobile-entry` on all 6 block types — globals.css
+  declares "No entrance animation anywhere below md" site-wide and this page
+  was the only one not honouring it.
+- `app/blog/[slug]/page.tsx`: CTA wrapper `max-md:[&>section]:pt-9
+  max-md:[&>section]:pb-9`; footer wrapper `pt-11 pb-3 max-md:pb-4 md:pt-12` —
+  both now identical to `app/blog/page.tsx`.
+
+Verified (computed rects/styles, dev server):
+- 390: no horizontal overflow; hero padX 12 / padT 112; h1 40px / 44.4 lead;
+  body padX 12; related cards 12..378.4 (were 0..390.4) `cardsInsideViewport
+  true`; stack gap 36; related h2 40px / 44.4; head margin-b 32; section pb 80.
+  h1, body paragraph, figure and related h2 all report left = 12 ->
+  `leftEdgesAligned: true`.
+- 390: all 35 `data-no-mobile-entry` nodes (13 in the article) report opacity 1
+  and transform none -> `allForcedToFinalState: true`.
+- 320: `docScrollWidth` 320, `overflowingElements: []`, cards inside viewport.
+- Second article (`/blog/designing-accessibility`, which exercises blockquote,
+  figure, ul and callout blocks): no overflow, `overflowingElements: []`.
+- 1265 desktop UNCHANGED across 14 properties: hero padX 40 / padT 176 / padB
+  80, h1 60px, body padX 40 / padT 96 / padB 56, related padT+padB 128, head
+  padX 40 / margin-b 80, h2 60px, track padX 0, CardTrack gap 12px and
+  flex-direction `row` (marquee intact), aside visible.
+- `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog slug page — RelatedArticles ported to homepage BlogSection (mobile only)
+Not a class tweak: BlogSection is a NATIVE scroll-snap carousel with pagination
+dots below md, while RelatedArticles was a vertical stack of bordered cards.
+Ported the mechanics, not just the look.
+
+Kept RelatedArticles' DESKTOP structure — its eyebrow lives inside the title
+column, where BlogSection's sits on its own row above. Restructuring to match
+BlogSection literally would have moved the desktop layout, so the dots were
+added as a third child of the EXISTING header flex row (which is already
+`flex-col` below md), giving eyebrow -> h2 -> dots stacked at gap-8, the same
+mobile result, with desktop untouched.
+
+Changes in `RelatedArticles.tsx`:
+- `useInfiniteCarousel(scrollerRef, related.length, 3, !isDesktop)` + a
+  `CarouselDots ... className="md:hidden"`; CTA wrapper gets `max-md:hidden`.
+- Scroller: `no-scrollbar max-md:snap-x max-md:snap-mandatory
+  max-md:overflow-x-auto max-md:overscroll-x-contain max-md:scroll-pl-3
+  max-md:pt-6 max-md:-mb-4 max-md:px-3 max-md:pb-4`.
+- Track/CardTrack `max-md:gap-0`; slides carry `data-slide` +
+  `max-md:mr-4 max-md:w-[80vw] max-md:snap-start` (gap-0 + per-card margin, or
+  N cards would have only N-1 gaps and each loop would drift by one gap).
+- Four CardTrack copies (2 on desktop, 3 on mobile) replacing the old
+  isDesktop ternary, matching BlogSection.
+- Card chrome `max-md:p-2.5 max-md:pb-6` (was p-5), image `max-md:rounded-2xl`,
+  meta `max-md:mb-2 max-md:text-xs`, section `pb-20` -> `pb-16`, eyebrow
+  `max-md:mb-6 max-md:text-xs`, h2 drops the `max-md:leading-[1.11]` I added
+  last task since BlogSection sets size only.
+- `useAnimationFrame` lifted into a desktop-only `DesktopAutoScroll` child, as
+  BlogSection does — called unconditionally it kept framer's frame loop alive
+  at refresh rate on mobile for a callback that only early-returned. Guard body
+  is the old one minus the `!isDesktop` term and it mounts only when isDesktop,
+  so desktop behaviour is byte-identical. Deliberately did NOT port
+  BlogSection's `trackInView` gate: that would pause the desktop marquee
+  off-screen, i.e. a desktop change.
+
+Verified by measuring BOTH components at 390 with the same probe — every shared
+property matches: section pb 64; header padX 12 / mb 32 / column / gap 32;
+eyebrow 12px + mb 24; h2 40px; CTA wrapper display none; scroller overflow-x
+auto, snap `x mandatory`, padX 12, padT 24, padB 16, mb -16, scroll-padding-left
+12; track gap 0 + row; slide 312.3px, mr 16, snap-align start; card padding
+`10px 10px 24px`, radius 18px; active dot 24x6. Counts differ only with the data
+(4 posts/12 slides vs 3/9). `scrollLeft` 984.8 = 3 x 328.3 confirms the carousel
+starts in the second run.
+Desktop 1265 unchanged across 19 properties: section py 128, header padX 40 /
+mb 80 / row, eyebrow 14px + mb 12, h2 60px, CTA visible, dots hidden, scroller
+overflow-x clip + snap none + padX/padT 0, track gap 12 + row, 6 visible slides,
+slide 316.4px, mr 0, card padding/border 0, track transform bound.
+LIMIT: could not observe the desktop marquee ADVANCE — the Browser pane freezes
+rAF (a control rAF loop logged 0 frames elapsed). The transform binding is live
+and DesktopAutoScroll mounts off the same `isDesktop` that produced it.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Work slug page (/work/[slug]) — mobile responsive pass
+Starting state: zero `max-md:` in all five slug components (ProjectHero,
+ProjectDetailsContent, ProjectGallery, ProjectOutcomes, NextProject) — the page
+had never had a mobile pass.
+
+SCOPE NOTE: `ContactFaqSection` is SHARED with /contact, which has had no mobile
+pass either (0 `max-md:`). Editing it in place would have silently changed
+/contact, so its gutter and h2 size are scoped from THIS page's wrapper instead:
+`max-md:[&>section]:px-3 max-md:[&>section_h2]:text-[2.5rem]
+max-md:[&>section_h2]:leading-[1.11]`. `[&>section]` hits only
+ContactFaqSection — CtaSection is nested one div deeper. Verified /contact is
+untouched afterwards (h2 still 48px, section padX still 16px).
+
+Defects found by measuring at 390 BEFORE editing:
+- Every slug section at `px-4` (16px); site convention is `px-3` (12px), 24 uses.
+- ProjectHero h1 and NextProject h2 at 48px, ProjectOutcomes h2 at 30px, FAQ h2
+  at 48px — four different "section title" sizes on one page vs the site's 40px.
+- ProjectDetailsContent and ProjectOutcomes at `py-24` (96/96); the work list
+  page's own WorkProjectShowcase uses 64/80.
+- Gallery grid gap 24px vs the 36px (`gap-9`) used for stacked cards on
+  WorkProjectShowcase / BlogListSection.
+- Body block stack at `gap-24` (96px) — 3x the site's mobile block rhythm.
+- NextProject card `rounded-[40px]` on a 366px-wide card.
+- No `data-no-mobile-entry` anywhere, against the site-wide globals.css rule.
+
+Changes (all mobile-only; the gallery gap and page.tsx footer pt are base-value
+edits that are mobile-only by construction because an `md:` rule re-asserts
+desktop):
+- ProjectHero: `max-md:px-3 max-md:pb-16`; h1 `max-md:text-[2.5rem]
+  max-md:leading-[1.11]`. Entry animations LEFT ON — no hero in this codebase
+  carries data-no-mobile-entry (BlogHero/CareerHero/WorkHero all 0), so
+  disabling it here would have been the inconsistent choice.
+- ProjectDetailsContent: `max-md:px-3 max-md:pt-16 max-md:pb-20`; body stack
+  `max-md:gap-16`; 4 entries tagged.
+- ProjectGallery: `max-md:px-3`; `gap-6` -> `gap-9`; 1 entry tagged.
+- ProjectOutcomes: `max-md:px-3 max-md:pt-16 max-md:pb-20`; h2
+  `max-md:text-[2.5rem] max-md:leading-[1.11]`; 3 entries tagged.
+- NextProject: `max-md:px-3 max-md:pb-20`; card `max-md:rounded-[20px]`; h2
+  `max-md:text-[2.5rem] max-md:leading-[1.11]`. Its motion.div is parallax-only
+  (`style={{y,scale}}`, no `initial`), so nothing to tag.
+- page.tsx: `max-md:pt-16` on the white wrapper; CTA wrapper
+  `max-md:[&>section]:pt-9 max-md:[&>section]:pb-9`; footer `pt-16` -> `pt-11`
+  + `max-md:pb-4` (desktop `md:pt-24` kept).
+
+LEFT AS-IS deliberately: the five `Section` body sub-headings render at 30px.
+They are subordinate to the 40px section titles — the same hierarchy
+ArticleBlock uses for in-body headings — so sizing them up would flatten it.
+
+Verified (computed rects/styles, dev server):
+- 390: no horizontal overflow; all 7 content sections padX 12 (incl. the FAQ,
+  via the wrapper); rhythm 64/80 on both big sections, 48 pb on the galleries,
+  36/36 on CtaSection; h1 40px/44.4 left 12; gallery gap 36; next card radius
+  20; every h1/h2 that is a section title reports 40px (was 48/40/30/48); 35
+  `data-no-mobile-entry` nodes all at opacity 1.
+- 320 on a second project (/work/lumina-festival): docScrollWidth 320, h1 40px
+  at left 12, and zero elements overflowing once CtaSection's deliberate
+  `w-[120%]` spotlight bleed (inside its own overflow-hidden) is excluded.
+- /contact unmodified: FAQ h2 48px, section padX 16px.
+- 1265 desktop unchanged: h1 96px, outcomes h2 36px, next h2 96px, FAQ h2 60px,
+  next card radius 40px, gallery gap 32, body stack 96, all gutters 40, section
+  rhythm 128/128, 80/128, 64/128, galleries pb 64.
+- `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Work slug page — both CTAs matched to the OurValuesSection card button (mobile only)
+Targets: "Visit Live Site" (ProjectDetailsContent sticky card) and "View Case
+Study" (NextProject). Reference is the MOBILE button in the values carousel card
+(OurValuesSection.tsx:405) — NOT the one at :213, whose Link carries
+`max-md:hidden`, so its own `max-md:` classes are dead code.
+
+Reference computed at 390: h 42, gap 8, radius 10, bg white, px 12, label 14px/
+700/black, chip 28x28 radius 8 bg black, arrow 14x14 gradient fill.
+
+Both targets carry the sweep `before` pseudo, so the same 5-part override set
+used for BlogCard/BlogFeaturedSection applies — parking the sweep at
+scale-x-100 IS the white background:
+- shell `max-md:h-[42px] max-md:gap-2 max-md:rounded-lg max-md:px-3
+  max-md:before:scale-x-100`
+- label `max-md:text-sm max-md:text-black` (these two were `text-base`, unlike
+  the blog ones which were already text-sm)
+- chip `max-md:h-7 max-md:w-7 max-md:rounded-md max-md:bg-black`
+- arrow 1 `max-md:h-3.5 max-md:w-3.5 max-md:-translate-y-8 max-md:translate-x-8`
+- arrow 2 `max-md:h-3.5 max-md:w-3.5 max-md:translate-x-0 max-md:translate-y-0`
+
+Verified at 390 against the reference values above — all 13 properties match on
+both buttons; label black, sweep scale 1, exactly one arrow parked in at
+translate `0px` carrying the gradient fill, the other out at `32px -32px`.
+
+Two measurement traps hit and resolved (both first showed as false negatives on
+the KNOWN-GOOD CtaSection button in the same page, which is what exposed them):
+- `arrowH: 0` — the selector was picking up the `<svg width="0" height="0">`
+  gradient-defs element. Filter on `.z-10`, which only the arrows carry.
+- both arrows reading transform `none` — Tailwind v4 emits translates on the
+  standalone `translate` property, so `getComputedStyle().transform` is blank.
+  Read `.translate`. (Same trap as the earlier `before:scale-x-100` check.)
+- NOT a defect: "View Case Study" renders 37.8px tall (42 x 0.9) because
+  NextProject's card carries a parallax `matrix(0.9,0,0,0.9,0,100)`. Its
+  `cssHeight` is 42px, same as the other two; the scale is the card's existing
+  scroll effect.
+
+Desktop 1265 unchanged on all three buttons (incl. the untouched CtaSection
+control): h 56, gap 16, radius 14, padL 0 / padR 8, label 16px white, chip 36px
+radius 14 bg white, arrow 16px, sweep scale `0 1` (retracted, hover-driven).
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Work slug page — FAQ matched to the About page's (mobile only)
+The About page uses `brand-strategy/FaqSection`; the work slug page uses
+`contact/ContactFaqSection`. They are byte-identical twins — same markup, same
+classes, same five questions, same "Let's Clear Things Up" heading — except the
+About one has had a mobile pass and this one never did. The whole delta is four
+mobile-only classes:
+  container `max-md:gap-8`, eyebrow `max-md:text-xs`,
+  h2 `max-md:text-[2.5rem] max-md:max-w-[12rem] max-md:leading-[1.185]`,
+  question h3 `max-md:text-lg`.
+
+ContactFaqSection is SHARED with /contact, so those four are applied from this
+page's wrapper rather than in the component, continuing the pattern from the
+previous task. Replaced the earlier `leading-[1.11]` with About's
+`leading-[1.185]` so the two agree exactly.
+
+Selector safety checked rather than assumed — each scoped selector matches only
+its intended target: `:scope > section p.uppercase` -> 1 element ("FAQs", NOT
+the answer paragraphs, which have no `uppercase`), `:scope > section > div` -> 1
+(the section's only direct-child div; the other child is the gradient-defs svg),
+`:scope > section h3` -> 5 (the questions). Opened an accordion to confirm the
+answer copy is still 16px, same as About.
+
+DELIBERATE DIFFERENCE: About's FAQ section sits at `px-4` (16px); this one stays
+at `px-3` (12px) from the previous task so the FAQ keeps lining up with the work
+slug page's other 12px columns. Changing it back to 16 would misalign it against
+its own page.
+
+Verified at 390 against /about measured with the same probe — all 9 properties
+match (`matchesAboutPage: true`): container gap 32, eyebrow 12px + mb 24, h2
+40px / lead 47.4 / max-w 192px (rendered 192), 5 questions at 18px, panel radius
+16.
+/contact still shows the UNTUNED original (`stillOriginal: true`): gap 64,
+eyebrow 14px, h2 48px, max-w none, h3 20px, padX 16.
+Desktop 1265 unchanged (`desktopUnchanged: true`): gap 96, eyebrow 14px, h2 60px
+/ lead 63 / max-w none, h3 24px, padX 40, padY 0/0, margin-b 80.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+OPEN: /contact's FAQ is still the untuned version, and that page has had no
+mobile pass at all (0 `max-md:`). Offered, not done.
+
+## Work slug page — removed the "Illustrative metrics" disclaimer
+Deleted the `<p className="mt-4 text-xs font-light text-white/30">Illustrative
+metrics — replace with verified figures.</p>` under the Key Results stats in
+`ProjectDetailsContent.tsx`. Removed at both breakpoints, not gated to mobile —
+the ask was to remove the line, not hide it on small screens.
+Verified: 0 occurrences left in the source; page text no longer contains the
+string; the stats grid is now the last child of the Key Results block with its
+3 stat cards intact. `bunx tsc --noEmit` clean; `bun run build` clean.
+
+NOTE: the three figures it captioned are still placeholder values from
+`ProjectDetailsContent`'s local `results` array, identical on every project —
+the caveat is gone but the numbers are not yet real.
+
+## Work slug page — reduced the FAQ -> CtaSection gap (mobile only)
+The 116px trough was two stacked contributions: ContactFaqSection carries
+`mb-20` (80px) with NO bottom padding, and the CTA wrapper adds
+`max-md:[&>section]:pt-9` (36px).
+Trimmed the margin rather than the CTA's padding, since pt-9 is the value every
+other page uses above CtaSection and should stay consistent.
+`max-md:[&>section]:mb-8` added to the page wrapper — the margin lives on the
+SHARED ContactFaqSection, so it is overridden from here; /contact keeps 80px.
+
+Verified at 390: faq margin-bottom 32px, CTA padding-top 36px, section-to-
+section gap 32, FAQ bottom -> CTA card top 68 (was 116). FAQ internals
+untouched (padX 12, h2 40px).
+/contact `stillOriginal: true` (margin-b 80, padX 16).
+Desktop 1265 `desktopUnchanged: true` (margin-b 80, CTA pt 0, gap 80).
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+UNVERIFIED (not acted on): while measuring, the last FAQ panel read 30px below
+the section box, which is `overflow: hidden`. It does NOT reproduce on the
+/about twin (last panel sits 40px ABOVE its section bottom) and the section's
+own container measured flush (`containerBottomVsSection: 0`), so this is most
+likely a stale-layout artifact of the Browser pane's frozen rAF rather than real
+clipping. Worth a glance on a real device; deliberately not "fixed" blind.

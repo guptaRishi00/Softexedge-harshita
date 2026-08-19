@@ -17,9 +17,9 @@ export default function ProjectGallery({
   if (gallery.length === 0) return null;
 
   return (
-    <section className="bg-[#0a0a0a] px-4 pb-12 md:px-10 md:pb-16">
+    <section className="bg-[#0a0a0a] px-4 pb-12 max-md:px-3 md:px-10 md:pb-16">
       <div className="mx-auto max-w-[1400px]">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-9 md:gap-8">
           {gallery.map((image, index) => {
             const wide = index % 2 === 0;
             const lonelyLast = index === gallery.length - 1 && wide;
@@ -32,6 +32,7 @@ export default function ProjectGallery({
             return (
               <motion.div
                 key={image}
+                data-no-mobile-entry
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
