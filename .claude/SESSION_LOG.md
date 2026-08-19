@@ -16326,3 +16326,34 @@ the section box, which is `overflow: hidden`. It does NOT reproduce on the
 own container measured flush (`containerBottomVsSection: 0`), so this is most
 likely a stale-layout artifact of the Browser pane's frozen rAF rather than real
 clipping. Worth a glance on a real device; deliberately not "fixed" blind.
+
+## Work slug page — removed the hairline between CtaSection and the Footer (mobile only)
+Same class of bug as the three Career page seams: a FRACTIONAL-PIXEL SEAM, not a
+border. Nothing in that band had a border or was <=2px tall (`suspects: []` on
+the first scan). The cause:
+  `bg-white pt-24 ...` wrapper  bottom 8366.22
+  `px-3 pt-11 ... bg-white`     top    8366.22
+Two WHITE blocks abutting at a fractional y (.22) directly over the page root,
+which computes to rgb(0,0,0). Antialiasing at the fractional boundary lets the
+black root bleed through as a 1px rule across the full viewport width — and
+8366 falls exactly in the white gap between the CTA card (8330) and the footer
+card (8410), matching the screenshot.
+
+Fix: `max-md:-mt-px` on the footer wrapper in `app/work/[slug]/page.tsx`, so the
+two white blocks overlap by 1px and nothing can show through.
+
+Verified: 390 -> margin-top -1px, wrapper bottom 8366.22 vs footer top 8365.22,
+`overlapPx: 1`, `seamClosed: true`. 320 -> same, `seamClosed: true`. 1265 ->
+`desktopUnchanged: true` (margin-top 0px, padding-top 96px, gap 0).
+A full re-scan for same-colour fractional boundaries over a contrasting ancestor
+shows the white/white seam GONE.
+
+NOT FIXED, deliberately: five #0a0a0a-on-#000 boundaries remain (y 675.19,
+2986.06, 3929.56, 5144.77, 6088.27). Those are a ~4% luminance difference —
+imperceptible — so they were left rather than churn five components for a line
+nobody can see.
+
+Dev-server note: the server on :3000 dropped mid-verification and a second
+`next dev` refuses to start ("Another next dev server is already running",
+PID 5480). It recovered on its own; no restart needed.
+`bunx tsc --noEmit` clean; `bun run build` clean.
