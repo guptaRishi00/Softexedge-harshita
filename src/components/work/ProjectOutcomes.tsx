@@ -56,7 +56,7 @@ export default function ProjectOutcomes({ project }: { project: Project }) {
                 <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
               </svg>
             </div>
-            <blockquote className="mt-4 text-2xl font-medium leading-[1.3em] tracking-tight text-white max-md:z-10 max-md:mt-14 max-md:text-lg md:text-3xl">
+            <blockquote className="mt-4 text-2xl font-medium leading-[1.3em] tracking-tight text-white max-md:z-10 max-md:mt-14 max-md:text-xl md:text-3xl">
               The team didn&rsquo;t just ship a product — they reframed how we
               think about our {project.category.toLowerCase()} experience. The
               result moved a metric we&rsquo;d been chasing for two quarters.

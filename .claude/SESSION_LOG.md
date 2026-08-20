@@ -16777,3 +16777,421 @@ instead of tracking scroll, so the stack is intact; brand-strategy's inline
 transforms are restored (`transformsRestored: [true x4]`) and margins are back
 (198px / 8px respectively).
 `bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog page — hero spotlight boxes nudged 5px left (mobile only)
+`max-md:[&_.grid]:-translate-x-[5px]` added to BlogHeroSection's card. Scoped
+from the hero rather than edited in `SpotlightGrid`, which is shared by several
+pages; the hero already reaches the grid through `[&_.grid]` for its gap
+override. The grid carries no other transform, so translate is free.
+Verified at 390: grid left -5.44 -> -10.44, i.e. `shiftedLeftBy: 5` exactly,
+`translate: -5px`; card unmoved at left 12 and gap still 8px.
+Desktop 1265 `desktopUnchanged: true` — translate `none`, gap 12px.
+
+TOOLING NOTE (cost two confusing runs): `bunx tsc --noEmit` and `bun run build`
+both failed with ~15 syntax errors in `.next/dev/types/routes.d.ts`, none of
+them in source. The file was genuinely corrupt on disk — it contained
+`= await props.params` spliced in right after a closing brace — because the
+running dev server and `bun run build` were both writing `.next/`. Fix is
+`rm -rf .next/dev/types` then rebuild; `.next/` is gitignored so nothing is
+lost. Worth remembering: type errors pointing only at `.next/dev/types` are
+process contention, not a code regression.
+
+## Blog page — hero spotlight boxes shifted 3px further left (mobile only)
+`max-md:[&_.grid]:-translate-x-[5px]` -> `-translate-x-[8px]`.
+Verified at 390: translate `-8px`, grid left -10.44 -> -13.44 =
+`movedThisStep: 3`, `totalShiftFromOriginal: 8` from the pre-nudge -5.44.
+Card still at left 12, gap still 8px.
+Desktop 1265 `desktopUnchanged: true` — translate `none`, gap 12px, grid offset
+-60.44.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Career page — WhyJoinUs / OpenPositions / PerksSection headings left-aligned (mobile only)
+Same treatment as the ApplicationJourney entry: `max-md:items-start
+max-md:text-left` on each heading block. `items-center` (and `text-center` where
+present) are unprefixed base values, so the max-md pair wins below md and
+desktop keeps centring.
+OpenPositions differs from the other two: its block has NO `text-center` and no
+description paragraph — only an eyebrow and the h2 — so `items-start` is what
+actually does the work there. Added `text-left` alongside anyway for symmetry;
+harmless, since `text-align` was already `start`.
+Verified at 390: all three report align-items `flex-start`, text-align `left`,
+and every child flush at left = 12 (the section content edge) ->
+`allFlushLeft: true` on WhyJoinUs (eyebrow/h2/p) and OpenPositions
+(eyebrow/h2); Perks block (Benefits span + h2) both at 12.
+NOTE: PerksSection's h2 is "A snippet of our perks", not "Perks" — my first
+probe searched for the component name and returned "h2 not found"; re-queried by
+the edited block's class signature.
+Desktop 1265 `desktopUnchanged: true` — all three align-items `center` with the
+h2 still optically centred in its block.
+`bunx tsc --noEmit` clean; `bun run build` clean.
+
+## Blog page — BlogCard: bigger gap before the CTA + wider button (mobile only)
+- description -> CTA gap `max-md:mt-4` -> `max-md:mt-6` (16 -> 24px).
+- CTA `max-md:px-3` -> `max-md:px-4` (12 -> 16px a side), width 135.1 -> 143.1.
+Verified at 390 across all 5 cards: `gapIncreasedBy: 8`, `ctaWiderBy: 8`,
+`allCardsConsistent: true`, `allCtasFitCard: true` (button still inside the
+card's text column at the new width).
+Desktop 1265 `desktopUnchanged: true` — CTA row margin-top 32, CTA padding 0/8,
+excerpt margin-top 16.
+
+SIDE EFFECT, flagged to the user rather than silently absorbed: the previous two
+entries had equalised these gaps and then optically centred the description
+(12 box above / 16 below -> 17.8 / 17.8 visible). Raising the lower gap to 24
+makes it 17.8 above / 25.8 below, so the description now sits nearer the title
+than the button. That is what "increase the gap between the title description
+and the cta button" literally asks for; rebalancing would need the top gap
+raised to match.
+
+## Blog page — BlogCard: gap + button width, one more step (mobile only)
+`max-md:mt-6` -> `max-md:mt-8` (24 -> 32px) and `max-md:px-4` -> `max-md:px-5`
+(16 -> 20px a side, width 143.1 -> 151.1).
+Verified at 390 on all 5 cards: `gapIncreasedBy: 8`, `ctaWiderBy: 8`,
+`allConsistent: true`, `allCtasFitCard: true` — button right edge 187.9 against
+a text column ending at 353.6, so there is still 165px of room before it would
+crowd the card.
+Desktop 1265 `desktopUnchanged: true` (CTA row margin-top 32, padding 0/8,
+excerpt margin-top 16).
+
+## Blog page — BlogCard CTA: label and icon now actually space-between (mobile only)
+The shell already carried `justify-between`, but it was INERT: the button is
+`w-fit`, so the box shrank to exactly its content (20 + 75.1 label + 8 gap + 28
+chip + 20 = 151.1) and there was no free space to distribute. Space-between only
+does anything once the box is wider than its content, so the fix is a width, not
+an alignment class — `max-md:w-full`.
+Verified at 390 on all 5 cards: justify-content `space-between`, width 316.8
+(`matchesColumnWidth: true`), label pinned at the 20px left padding, chip at the
+20px right padding, and 173.7px between them -> `reallySpaceBetween: true`,
+`labelAtLeftPadding` / `chipAtRightPadding` true.
+Desktop 1265 `desktopUnchanged: true` — still `w-fit` at 127.1 inside a 302.7
+column (`stillShrinkToFit: true`), padding 0/8, height 48.
+
+## Blog page — REVERTED the BlogCard CTA space-between change
+Removed `max-md:w-full` from the CTA shell, undoing only the previous entry.
+The button is `w-fit` again, so `justify-between` goes back to being inert and
+the label/chip sit at their natural gap-2 spacing.
+Deliberately NOT reverted: `max-md:mt-8` (description -> CTA gap) and
+`max-md:px-5` (button padding) from the two "increase / a little more" tasks
+before it, and `max-md:mt-3` on the description. Confirmed still present in
+source.
+Verified at 390 on all 5 cards: `backToPreviousState: true` — width 151.1,
+padding-left 20px, gap below description 32px, exactly the values measured
+before the space-between step; `shrinkToFitAgain: true` (151.1 inside a 316
+column), `allConsistent: true`.
+Desktop 1265 `desktopUnchanged: true` (width 127.1, padding 0/8, height 48).
+
+## Blog page — BlogCard CTA: less padding, slightly wider (mobile only)
+The request arrived prefixed "revert this task", but NO prior task had reduced
+this button's x-padding — it had only gone px-3 -> px-4 -> px-5 across the two
+"make it wider" steps. Asked rather than guessed; user confirmed it was a fresh
+instruction with the prefix carried over.
+`max-md:px-5` -> `max-md:px-3` plus `max-md:min-w-[10rem]`. Padding and width
+pull in opposite directions, so the width has to come from a min-width rather
+than padding — and because the shell already carries `justify-between`, the
+surplus lands as space between the label and the chip instead of padding the
+ends.
+Verified at 390 on all 5 cards: padding 20 -> 12px (`paddingReducedBy: 8`),
+width 151.1 -> 160 (`widerBy: 8.9`), label inset 12 and chip inset 12
+(`labelAtPadding` / `chipAtPadding` true) with 32.9px between them,
+`allConsistent: true`, `notFullWidth: true` (unlike the reverted w-full attempt).
+Desktop 1265 `desktopUnchanged: true` — width 127.1, min-width `auto`,
+padding 0/8, height 48.
+
+## Blog page — BlogCard CTA label bigger (mobile only)
+`max-md:text-base` on the label (14 -> 16px). Arrived with the same "revert this
+task" prefix over an instruction never run; the user confirmed on the previous
+one that the prefix is a carry-over, so this was treated as a new change without
+asking again.
+Verified at 390 on all 5 cards: label 16px, `labelSingleLine: true`, button held
+at its 160px min-width (`stillWithinMinWidth: true`) — the wider label absorbed
+10.7px of the internal gap (32.9 -> 22.2) rather than growing the button — and
+`paddingsHeld: true` (label inset 12, chip inset 12).
+Desktop 1265 `desktopUnchanged: true` — label 14px, width 127.1, min-width
+`auto`, height 48.
+
+## Blog page — BlogCard description re-centred at a wider gap (mobile only)
+Description `max-md:mt-3` -> `max-md:mt-5` (12 -> 20px) and CTA row
+`max-md:mt-8` -> `max-md:mt-6` (32 -> 24px).
+Centring is optical, not box: the h3's line-height leaves 4px of half-leading
+under its last line and the description carries 1.8px of its own, so the visible
+gaps are `boxAbove + 4 + 1.8` and `boxBelow + 1.8`. Solving both to 25.8 gives
+box margins of 20 and 24 — deliberately UNEQUAL numbers that render as equal
+space.
+Starting point was 17.8 above / 33.8 below, so centring necessarily brings the
+two together: the top gap grows 8 and the bottom shrinks 8. 25.8 was chosen so
+the result is also 8px larger than the last centred state (17.8), satisfying
+"slightly increase" — centring at the current bottom value instead would have
+meant a 16px jump on top, which is not slight.
+Verified at 390 on all 5 cards: optical 25.8 / 25.8, `allCentred: true`,
+`allConsistent: true`, `increasedBy: 8`.
+Desktop 1265 `desktopUnchanged: true` (description margin-top 16, CTA row 32).
+
+## Blog page — BlogCard CTA label bigger again (mobile only)
+`max-md:text-base` -> `max-md:text-lg` (16 -> 18px).
+Verified at 390 on all 5 cards: label 18px / width 96.6, button still 160
+(min-width absorbs it), `paddingsHeld: true` (insets 12/12), `allFitColumn:
+true`, `allConsistent: true`. The internal space-between is down to 11.4px
+(22.2 before) — the label is eating the slack, so one more size step would push
+the button past its 160px min-width.
+MEASUREMENT NOTE: the first probe reported `allSingleLine: false`. False alarm —
+it tested `height < 28`, and `text-lg` has a 28px line-height, so exactly one
+line box trips it. Re-checked with `getClientRects().length` and
+height/line-height: `allOneLine: true`, 1 rect.
+Desktop 1265 `desktopUnchanged: true` — label 14px, width 127.1, min-width
+`auto`, height 48.
+
+## Blog page — BlogCard CTA slightly wider (mobile only)
+`max-md:min-w-[10rem]` -> `max-md:min-w-[11rem]` (160 -> 176px).
+Verified at 390 on all 5 cards: width 176 (`widerBy: 16`), `allConsistent`,
+`allFitColumn` and `allOneLine` true, insets held at 12/12. The internal
+space-between recovers from 11.4 to 27.4px, undoing the squeeze the text-lg step
+had caused. Button is 176 inside a 316px column, so there is still ~140px spare.
+Desktop 1265 `desktopUnchanged: true` — width 127.1, min-width `auto`, label
+14px, height 48.
+
+## Blog page — REVERTED the CTA widening (mobile only)
+Undid `max-md:min-w-[11rem]` back to `max-md:min-w-[10rem]`, and also backed out
+the 176 -> 192 step that had been started before the user stopped it. CTA width
+back to 160px on all 5 cards (`backTo160: true`, `allCardsSame: true`).
+
+PROCESS CORRECTION: I had been treating the "revert this task :" prefix as a
+carry-over and executing the described text as a NEW change. That was wrong.
+The prefix means what it says. It was only ever confirmed as a carry-over ONCE,
+for the one case where the described task had no counterpart in history; I
+generalised from that single answer and misapplied it to the following four
+requests. Going forward: "revert this task : X" = undo X.
+
+Still-applied mobile values on the BlogCard CTA that came from those
+misread requests, left in place pending the user's call:
+  - label `max-md:text-lg` (18px) — from two "make the text bigger" requests
+  - `max-md:min-w-[10rem]` + `max-md:px-3` — from the "reduce padding / wider"
+    request (that one WAS confirmed as a new change)
+  - description/CTA gaps `max-md:mt-5` / `max-md:mt-6` — optical 25.8/25.8
+
+## Blog page — BlogCard CTA scaled up a notch (mobile only)
+"Bigger", not just wider, so every dimension moved together rather than only the
+min-width: `max-md:h-[42px]` -> `max-md:h-12` (42 -> 48), `min-w-[10rem]` ->
+`min-w-[11rem]` (160 -> 176), chip `h-7 w-7` -> `h-8 w-8` (28 -> 32), both
+arrows `h-3.5 w-3.5` -> `h-4 w-4` (14 -> 16). Same one-notch step used earlier on
+the work-slug ProjectDetailsContent CTA. Label left at text-lg and padding at
+px-3 — the label is already 18px and bumping it would crowd the chip.
+Verified at 390 on all 5 cards: h 48 / w 176 / chip 32 / arrow 16 / label 18px,
+`allConsistent`, `allFitColumn`, `allOneLine`, `paddingsHeld` (insets 12/12) and
+`oneArrowParked: true` (the sweep still parks exactly one arrow in view).
+Internal space-between 23.4px.
+Desktop 1265 `desktopUnchanged: true` across 7 properties — h 48, w 127.1,
+min-width `auto`, chip 32, arrow 16, label 14px, padding-left 0.
+
+## Every page — CtaSection button matched to the BlogCard CTA (mobile only)
+Target (BlogCard CTA at 390): h 48, min-w 176, radius 10, px 12, gap 8, label
+18px black, chip 32 radius 8 black, arrows 16, sweep parked.
+
+There is NOT one CtaSection — there are EIGHT. Checked before editing:
+- `brand-strategy/CtaSection` is imported by about, blog, blog/[slug],
+  brand-strategy, contact, work, work/[slug] (7 pages).
+- the 7 service pages each import their OWN copy
+  (ai-marketing-automation, app-development, custom-software,
+  digital-marketing, ui-ux-design, video-production, web-development).
+Patching only the first would have left the service pages behind, so all 8 were
+done — 5 parts each: shell (`max-md:h-12 max-md:min-w-[11rem] max-md:gap-2
+max-md:rounded-lg max-md:px-3 max-md:before:scale-x-100`), label
+(`max-md:text-lg max-md:text-black`), chip (`max-md:h-8 max-md:w-8
+max-md:rounded-md max-md:bg-black`) and both arrows (`max-md:h-4 max-md:w-4`
+plus the parked translates).
+
+NOTE: the career page and the homepage do NOT render CtaSection at all
+(`hasCtaSectionHeading: false` on /career), so "every page" is really these 14.
+
+Verified at 390 by probing BlogCard's CTA and the CtaSection button on the SAME
+page (/blog) with one function: `identical: true` across all 14 compared
+properties. /about and /web-development both report
+`matchesBlogCard: true` with `exactlyOneArrowParked: true` and `fitsSection:
+true` (rendered 199.8 — wider than the 176 floor because "Connect With Us" is a
+longer label than "Read Article"; min-width is a floor, not a fixed width).
+Desktop 1265 `desktopUnchanged: true` on /about and /web-development across 11
+properties (h 56, radius 14, padding 0/8, gap 16, label 16px white, chip 36
+radius 14 white, arrow 16), `mobileRuleApplies: false`.
+  - One flagged diff on /about, `minW: 0px` vs an expected `auto`, was MY
+    expectation being wrong, not a regression: the element is a `<button>`, its
+    only min-width class is max-md-scoped, and an untouched `<button>` on the
+    same page also computes 0px.
+
+CAVEAT, flagged not absorbed: the 7 service CtaSections had ZERO `max-md:`
+classes before this — the whole section is otherwise untreated for mobile. Their
+button now matches, but the rest of those sections has had no mobile pass.
+
+## Blog page — BlogFeaturedSection CTA matched to the BlogCard CTA (mobile only)
+Five-part delta, same set as the CtaSection match: shell `max-md:h-[42px]` ->
+`max-md:h-12` + `max-md:min-w-[11rem]`; label + `max-md:text-lg`; chip
+`max-md:h-7 max-md:w-7` -> `max-md:h-8 max-md:w-8`; both arrows
+`max-md:h-3.5 max-md:w-3.5` -> `max-md:h-4 max-md:w-4`.
+Verified at 390 by probing BOTH buttons on the same page with one function:
+`identical: true` across all 13 compared properties (h 48, min-w 176, radius 10,
+padding 12/12, gap 8, label 18px black, chip 32 radius 8 black, arrow 16, one
+arrow parked). Both render at exactly 176 since they share the "Read Article"
+label — unlike CtaSection's longer "Connect With Us", which overflows the floor
+to 199.8.
+Desktop 1265 `desktopUnchanged: true` across 11 properties — the featured CTA
+keeps its own distinct desktop styling (h 48, radius 14, padding 20/8, gap 12,
+label 14px white, chip 32 radius 10 white), which differs from BlogCard's and
+was deliberately not touched. `mobileRuleApplies: false`.
+
+## Blog slug page — date + read-time onto their own line (mobile only)
+Measured before assuming: the meta row is `flex-wrap`, and at 390 it wrapped
+raggedly — the DATE rode up beside the author block (author 12..205.5, date
+229.5..345.4) and the read-time was orphaned alone on line 2. Everything was
+already below the description, so the ask was read as "date and time together on
+their own line beneath the author".
+`max-md:w-full` on the author block. Because the row is flex-wrap, giving the
+author the full width forces both remaining items onto the next line together.
+Verified at 390: `authorFullWidth: true`, `dateBelowAuthor: true`,
+`dateAndTimeSameLine: true`, `allBelowDescription: true`, 2 lines — author
+12..378, then "April 28, 2026" at 12 and "8 mins read" at 151.8, both on the
+same line and both starting from the content edge.
+Desktop 1265 `desktopUnchanged: true` — `allOnOneVisualRow: true` (author,
+divider, date, read-time at lefts 40 / 257.5 / 282.5 / 422.4) and the author
+still 193.5 inside a 1170 row, i.e. not full width.
+  - MEASUREMENT NOTE: a first desktop probe reported `lineCount: 3` and failed.
+    That was the metric, not the layout — the row is `items-center`, so items of
+    differing heights have differing `top` values while sharing one visual row.
+    Re-checked by vertical-range overlap plus strictly increasing lefts.
+
+## Blog slug page — date + time moved directly under the LEAD (mobile only)
+Correction to the previous entry. I had read "below the description" as "below
+the author block"; the user meant the main description, i.e. the lead paragraph
+— date and time should sit immediately under it, with the author below THEM.
+The meta row lists the author first in the DOM, so date/time could never land
+directly under the lead no matter how it wrapped. Added `max-md:order-last` to
+the author block (keeping the `max-md:w-full` from the previous step, which is
+what puts it on its own line).
+Verified at 390: visual order is now
+["April 28, 2026", "8 mins read", "Ray Saddiq…"] —
+`dateDirectlyUnderLead: true`, `dateAndTimeFirstLine: true`, `authorLast: true`,
+`allBelowLead: true`; date/read at top 659.8, author at 695.8.
+Desktop 1265 `desktopUnchanged: true` — author `order: 0`, still leftmost at 40,
+all four items on one visual row (lefts 40 / 257.5 / 282.5 / 422.4), author not
+full width.
+
+## Blog slug page — date + time placed ABOVE the rule (mobile only)
+Third attempt; the first two missed because I kept reordering INSIDE the meta
+row. That row is the element carrying `border-t`, so anything inside it renders
+BELOW the line by definition — no amount of `order` could put the date above it.
+Fix: a separate `md:hidden` block between the lead and the bordered row, with
+the in-row copies given `max-md:hidden`. Duplicated markup rather than moved, so
+the desktop row keeps its original single-line order untouched. Also removed the
+`max-md:order-last max-md:w-full` author hacks left over from the two misreads.
+
+Verified at 390 using LAYOUT coordinates (offsetTop), not rects: lead 469..559,
+date/time block 583 (gapLeadToBlock 24 = mt-6), border 643, author 675 —
+`blockBelowLead: true`, `blockAboveBorder: true`, exactly one visible copy of
+each of date and read-time.
+  - Rect-based measuring gave a false `dateBelowLead: false` here: the lead is a
+    hero entry animation that never runs in this pane, so it keeps
+    `transform: matrix(1,0,0,1,0,28)` and its VISUAL box sits 28px below its
+    layout box while the new un-animated block does not. offsetTop ignores
+    transforms and showed the true stacking.
+Desktop 1265 `desktopUnchanged: true` — mobile block `display: none`, date and
+read-time still present in the bordered row, author first and leftmost with
+`order: 0`, all four items on one visual row (lefts 40 / 257.5 / 282.5 / 422.4).
+
+## Work page — scrim behind the hero title (mobile only)
+`WorkHeroSection` had NOTHING between the DomeGallery (`z-0`) and the copy
+(`z-10`), so the title sat straight on the rotating imagery. Added a
+`md:hidden` radial scrim at `z-[5]`:
+`radial-gradient(ellipse 70% 30% at 50% 52%, rgba(0,0,0,0.62), rgba(0,0,0,0.4)
+55%, transparent)`.
+The ellipse is sized from MEASUREMENT, not guessed: the h1 renders centred at
+52.4% down the hero, 16.3% tall and 84.5% wide, so 70%x30% at 50%/52% keeps the
+darkest part on the text and fades out before the hero edges.
+Chose an overlay over a text-shadow because the codebase already uses gradient
+scrims for this (BlogHeroSection) and an overlay degrades more gracefully behind
+a moving image than a hard shadow.
+Verified at 390: `layeredBetween: true` (dome 0 < scrim 5 < copy 10),
+`coversTitle: true`, `fillsHero: true`, `doesNotBlockPointer: true`
+(pointer-events none, so dome drag/tap is unaffected).
+Desktop 1265 `desktopUnchanged: true` — scrim `display: none`, dome z 0, copy
+z 10, h1 112px.
+
+## Work slug page — "Visit Live Site" CTA matched to the BlogCard CTA (mobile only)
+It was already part-way there from the earlier "make the cta a little bigger"
+task (h-12, chip 32, arrows 16), so only three deltas remained:
+`max-md:gap-2.5` -> `max-md:gap-2` (10 -> 8), `max-md:px-3.5` -> `max-md:px-3`
+(14 -> 12), added `max-md:min-w-[11rem]`, and label `max-md:text-sm` ->
+`max-md:text-lg` (14 -> 18).
+Verified at 390 against the BlogCard reference values: `matchesBlogCard: true`
+across all 13 properties (h 48, min-w 176, radius 10, padding 12/12, gap 8,
+label 18px black, chip 32 radius 8 black, arrow 16, one arrow parked).
+Renders at exactly 176 inside a 302px card content width, `fitsCard: true`.
+Desktop 1265 `desktopUnchanged: true` across 11 properties (h 56, min-w 0,
+radius 14, padding 0/8, gap 16, label 16px white, chip 36 white, arrow 16),
+width 152, `mobileRuleApplies: false`.
+
+STILL DIVERGENT, flagged again: NextProject's "View Case Study" on the same page
+is the same button pattern and was deliberately matched to this one earlier, but
+only this one was in scope today — it is still h-12 / gap-2.5 / px-3.5 / chip 32
+/ label text-sm, i.e. no min-width and a 14px label.
+
+## Work slug page — ProjectOutcomes quote text bigger (mobile only)
+`max-md:text-lg` -> `max-md:text-xl` (18 -> 20px) on the blockquote.
+Verified at 390: quote 20px / line-height 26, now 5 lines, and the card still
+holds at its 360px min-height (`cardGrewPastMin: false`,
+`contentInsideCard: true`) with the quote clearing the top-right glyph and
+sitting above the caption.
+Desktop 1265 `desktopUnchanged: true` — quote 30px, margin-top 16, figure
+`display: block`, min-height `auto`, padding 48.
+NOTE: this nudges the card off exact parity with the ExperimentalTestimonials
+card it was matched to earlier, whose mobile quote is text-lg. Everything else
+about the two still matches.
+
+## Career page — OpenPositions "Apply Now" CTA matched to the BlogCard CTA (mobile only)
+Four deltas: shell `max-md:h-[42px]` -> `max-md:h-12` plus `max-md:min-w-[11rem]`;
+label `max-md:text-sm` -> `max-md:text-lg`; chip `max-md:h-7 max-md:w-7` ->
+`max-md:h-8 max-md:w-8`; both arrows `max-md:h-3.5 max-md:w-3.5` ->
+`max-md:h-4 max-md:w-4`. The button's mobile white background / black chip were
+already in place from the earlier values-button match.
+The button only renders inside an EXPANDED accordion row, so verification had to
+click a position open first (`visibleApplyBeforeClick: 0`) — clicking and
+reading in separate calls, since the React re-render is async.
+Verified at 390: `matchesBlogCard: true` across all 13 properties (h 48,
+min-w 176, radius 10, padding 12/12, gap 8, label 18px black, chip 32 radius 8
+black, arrow 16, one arrow parked), rendered 176, `fitsSection: true`.
+Desktop 1265 `desktopUnchanged: true` across 12 properties (h 56, min-w 0,
+radius 14, padding 20/8, gap 16, label 16px white, chip 36 white, black shell,
+arrow 16), width 160, `mobileRuleApplies: false`.
+
+## Contact page — testimonials -> logo-carousel gap matched to the homepage (mobile only)
+Measured both pages before editing. The homepage renders
+ExperimentalTestimonials and TechLogoCarousel as PLAIN SIBLINGS with no wrapper
+override, so the gap is just the testimonial section's own `max-md:pb-14`
+(56px), with the carousel at padding-top 0 and the two sections abutting
+(visualGap 0). Contact wraps them and its wrapper forced
+`[&>section]:pb-6` — 24px. That 32px was the entire difference; carousel
+padding-top and the section abutment were already identical.
+Added `max-md:[&>section]:pb-14` to the contact testimonials wrapper.
+`md:[&>section]:pb-8` still owns desktop.
+Verified at 390: `matchesHomepage: true` — padding-bottom 56px, next section
+padding-top 0, visualGap 0, all three equal to the homepage; `increasedBy: 32`.
+Desktop 1265 `desktopUnchanged: true` — padding 112 / 32, `mobileRuleApplies:
+false`.
+NOTE, not changed: the same wrapper also forces `[&>section]:pt-12` (48px) where
+the homepage's own value is `max-md:pt-17` (68px), so the gap ABOVE the
+testimonials still differs by 20px. Only the gap in the screenshot was in scope.
+
+## About page — OurValuesSection carousel-card CTA scaled up (mobile only)
+This is the button every other CTA on the site was matched against, and it was
+the last one still at the old 42px spec.
+Its classes carry NO `max-md:` prefix and none was added: the whole carousel
+block is `md:hidden` (OurValuesSection.tsx:276), so these base classes are
+mobile-only BY CONSTRUCTION — desktop renders a different button entirely
+(the one at :211, whose Link is `max-md:hidden`).
+`h-[42px]` -> `h-12`, `text-sm` -> `text-lg`, chip `h-7 w-7` -> `h-8 w-8`,
+arrow `h-3.5 w-3.5` -> `h-4 w-4`. Deliberately did NOT add `min-w-[11rem]` like
+the others: measured natural width is 204.4 at the new label size, well past the
+176 floor, so the class would be inert.
+Verified at 390: `matchesBlogCardSpec: true` across all 10 shared properties
+(h 48, padding 12/12, gap 8, radius 10, label 18px, chip 32 radius 8 black,
+arrow 16); rendered 204.4 inside 326px of card content with `fitsCard: true`,
+`singleLine: true`, and `arrowGradientIntact: true` (the chip arrow still
+resolves `url(#values-cta-grad)` at the larger size).
+Desktop 1265 `desktopUnchanged: true` — 4 "Connect With Me" buttons exist, only
+1 renders, and it is the DESKTOP one (h 56, padding 20/8, gap 16, radius 14,
+label 16px, chip 36); the edited button is among the 3 not rendered.

@@ -95,12 +95,12 @@ export default function BlogFeaturedSection() {
             </span>
           </div>
 
-          <span className="relative mt-2 inline-flex h-12 w-fit items-center justify-between gap-3 overflow-hidden rounded-xl pl-5 pr-2 max-md:h-[42px] max-md:gap-2 max-md:rounded-lg max-md:px-3 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out group-hover:before:scale-x-100 max-md:before:scale-x-100">
-            <span className="relative z-10 text-sm font-bold tracking-tight text-white transition-colors duration-300 group-hover:text-black max-md:text-black">
+          <span className="relative mt-2 inline-flex h-12 w-fit items-center justify-between gap-3 overflow-hidden rounded-xl pl-5 pr-2 max-md:h-12 max-md:min-w-[11rem] max-md:gap-2 max-md:rounded-lg max-md:px-3 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out group-hover:before:scale-x-100 max-md:before:scale-x-100">
+            <span className="relative z-10 text-sm font-bold tracking-tight text-white transition-colors duration-300 max-md:text-lg max-md:text-black group-hover:text-black">
               Read Article
             </span>
 
-            <span className="relative z-10 flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white text-black transition-colors duration-300 group-hover:bg-black max-md:h-7 max-md:w-7 max-md:rounded-md max-md:bg-black">
+            <span className="relative z-10 flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white text-black transition-colors duration-300 group-hover:bg-black max-md:h-8 max-md:w-8 max-md:rounded-md max-md:bg-black">
               <svg width="0" height="0" className="absolute">
                 <title>Read article arrow gradient</title>
                 <defs>
@@ -117,9 +117,9 @@ export default function BlogFeaturedSection() {
                 </defs>
               </svg>
 
-              <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8 max-md:h-3.5 max-md:w-3.5 max-md:-translate-y-8 max-md:translate-x-8" />
+              <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover:-translate-y-8 group-hover:translate-x-8 max-md:h-4 max-md:w-4 max-md:-translate-y-8 max-md:translate-x-8" />
               <MdArrowOutward
-                className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0 max-md:h-3.5 max-md:w-3.5 max-md:translate-x-0 max-md:translate-y-0"
+                className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover:translate-x-0 group-hover:translate-y-0 max-md:h-4 max-md:w-4 max-md:translate-x-0 max-md:translate-y-0"
                 style={{ fill: "url(#cta-featured-icon-grad)" }}
               />
             </span>

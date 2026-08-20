@@ -193,7 +193,7 @@ export default function PerksSection() {
   return (
     <section className="w-full bg-black px-4 max-md:px-3 md:px-10 py-24 font-sans selection:bg-[#2E5BFF]/20 md:pt-20">
       <div className="mx-auto w-full">
-        <div className="mb-14 flex flex-col items-center text-center md:mb-30">
+        <div className="mb-14 flex flex-col items-center text-center max-md:items-start max-md:text-left md:mb-30">
           <motion.span
             data-no-mobile-entry
             initial={reduce ? false : { opacity: 0, y: 16 }}

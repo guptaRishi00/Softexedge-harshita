@@ -69,6 +69,11 @@ export default function WorkHeroSection() {
       </div>
 
       <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[5] md:hidden bg-[radial-gradient(ellipse_70%_30%_at_50%_52%,rgba(0,0,0,0.62)_0%,rgba(0,0,0,0.4)_55%,rgba(0,0,0,0)_100%)]"
+      />
+
+      <div
         id="work-hero-copy"
         className="relative z-10 flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 text-center md:px-10 pointer-events-none origin-top"
       >

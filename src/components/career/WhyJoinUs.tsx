@@ -116,7 +116,7 @@ export default function WhyJoinUs() {
   return (
     <section className="relative w-full overflow-hidden bg-black px-4 pt-24 pb-16 max-md:px-3 md:px-10 md:pt-32 md:pb-20 text-white">
       <div className="w-full">
-        <div className="flex flex-col items-center text-center mb-16 md:mb-30">
+        <div className="flex flex-col items-center text-center mb-16 max-md:items-start max-md:text-left md:mb-30">
           <motion.div
             data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}

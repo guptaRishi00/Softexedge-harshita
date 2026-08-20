@@ -85,7 +85,7 @@ export default function BlogHeroSection() {
         <Header dropdown />
       </div>
 
-      <div className="relative mx-auto flex min-h-[70vh] w-full flex-col justify-end overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-4 py-12 max-md:min-h-[46svh] max-md:px-5 max-md:[--spotlight-cols:5] max-md:[--spotlight-sweep-col-start:3] max-md:[&_.grid]:gap-2 md:px-10 md:py-16 lg:py-20">
+      <div className="relative mx-auto flex min-h-[70vh] w-full flex-col justify-end overflow-hidden rounded-[20px] border border-zinc-800/50 bg-black px-4 py-12 max-md:min-h-[46svh] max-md:px-5 max-md:[--spotlight-cols:5] max-md:[--spotlight-sweep-col-start:3] max-md:[&_.grid]:-translate-x-[8px] max-md:[&_.grid]:gap-2 md:px-10 md:py-16 lg:py-20">
         <SpotlightGrid
           speed={0.15}
           sweep

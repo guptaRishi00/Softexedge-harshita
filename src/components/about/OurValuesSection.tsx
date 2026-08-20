@@ -403,12 +403,12 @@ export default function OurValuesSection() {
                     <Link href="/about" className="relative z-10 w-fit">
                       <button
                         type="button"
-                        className="flex h-[42px] w-fit cursor-pointer items-center gap-2 rounded-lg bg-white px-3 text-sm font-bold tracking-tight text-black"
+                        className="flex h-12 w-fit cursor-pointer items-center gap-2 rounded-lg bg-white px-3 text-lg font-bold tracking-tight text-black"
                       >
                         Connect With Me
-                        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-black text-white">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-black text-white">
                           <MdArrowOutward
-                            className="h-3.5 w-3.5"
+                            className="h-4 w-4"
                             style={{ fill: "url(#values-cta-grad)" }}
                           />
                         </span>

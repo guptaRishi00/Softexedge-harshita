@@ -119,7 +119,7 @@ export default function OpenPositions() {
   return (
     <section className="w-full bg-black px-4 max-md:px-3 md:px-10 pt-16 pb-24 md:pt-20 md:pb-32 font-sans selection:bg-[#2E5BFF]/20">
       <div className="mx-auto w-full">
-        <div className="flex flex-col items-center mb-16 md:mb-24">
+        <div className="flex flex-col items-center mb-16 max-md:items-start max-md:text-left md:mb-24">
           <motion.div
             data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
@@ -299,13 +299,13 @@ export default function OpenPositions() {
                         <div className="pt-2">
                           <a
                             href={`mailto:careers@softexedge.com?subject=Application for ${job.title}`}
-                            className="group/btn relative z-10 flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-black pl-5 pr-2 transition-all duration-300 hover:border-white hover:bg-white max-md:h-[42px] max-md:gap-2 max-md:rounded-lg max-md:px-3 max-md:border-white max-md:bg-white"
+                            className="group/btn relative z-10 flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-black pl-5 pr-2 transition-all duration-300 hover:border-white hover:bg-white max-md:h-12 max-md:min-w-[11rem] max-md:gap-2 max-md:rounded-lg max-md:px-3 max-md:border-white max-md:bg-white"
                           >
-                            <span className="text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover/btn:text-black max-md:text-sm max-md:text-black">
+                            <span className="text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover/btn:text-black max-md:text-lg max-md:text-black">
                               Apply Now
                             </span>
 
-                            <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover/btn:bg-black max-md:h-7 max-md:w-7 max-md:rounded-md max-md:bg-black">
+                            <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white text-black transition-colors duration-300 group-hover/btn:bg-black max-md:h-8 max-md:w-8 max-md:rounded-md max-md:bg-black">
                               <svg width="0" height="0" className="absolute">
                                 <title>Apply arrow gradient</title>
                                 <defs>
@@ -322,9 +322,9 @@ export default function OpenPositions() {
                                 </defs>
                               </svg>
 
-                              <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover/btn:-translate-y-8 group-hover/btn:translate-x-8 max-md:h-3.5 max-md:w-3.5 max-md:-translate-y-8 max-md:translate-x-8" />
+                              <MdArrowOutward className="absolute z-10 h-4 w-4 transition-transform duration-300 group-hover/btn:-translate-y-8 group-hover/btn:translate-x-8 max-md:h-4 max-md:w-4 max-md:-translate-y-8 max-md:translate-x-8" />
                               <MdArrowOutward
-                                className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover/btn:translate-x-0 group-hover/btn:translate-y-0 max-md:h-3.5 max-md:w-3.5 max-md:translate-x-0 max-md:translate-y-0"
+                                className="absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover/btn:translate-x-0 group-hover/btn:translate-y-0 max-md:h-4 max-md:w-4 max-md:translate-x-0 max-md:translate-y-0"
                                 style={{ fill: `url(#apply-grad-${job.id})` }}
                               />
                             </div>

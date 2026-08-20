@@ -108,6 +108,22 @@ export default function BlogArticle({
             {post.lead}
           </motion.p>
 
+          {/* Below md the date/read-time sit ABOVE the rule, directly under the
+              lead. The row beneath carries `border-t`, so anything inside it
+              necessarily renders under the line — hence a separate block rather
+              than reordering. The in-row copies are hidden at this breakpoint,
+              leaving the desktop row exactly as it was. */}
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 md:hidden">
+            <div className="flex items-center gap-2 text-sm font-medium text-zinc-500">
+              <Calendar className="h-4 w-4" />
+              {post.date}
+            </div>
+            <div className="flex items-center gap-2 text-sm font-medium text-zinc-500">
+              <Clock className="h-4 w-4" />
+              {post.readTime} read
+            </div>
+          </div>
+
           <motion.div
             initial="hidden"
             animate="visible"
@@ -133,11 +149,11 @@ export default function BlogArticle({
               </div>
             </div>
             <span className="hidden h-8 w-px bg-zinc-200 sm:block" />
-            <div className="flex items-center gap-2 text-sm font-medium text-zinc-500">
+            <div className="flex items-center gap-2 text-sm font-medium text-zinc-500 max-md:hidden">
               <Calendar className="h-4 w-4" />
               {post.date}
             </div>
-            <div className="flex items-center gap-2 text-sm font-medium text-zinc-500">
+            <div className="flex items-center gap-2 text-sm font-medium text-zinc-500 max-md:hidden">
               <Clock className="h-4 w-4" />
               {post.readTime} read
             </div>

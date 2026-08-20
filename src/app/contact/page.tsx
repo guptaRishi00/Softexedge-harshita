@@ -42,7 +42,7 @@ export default function ContactPage({}: any) {
         </div>
       </div>
 
-      <div className="relative z-10 [&>section]:pt-12 [&>section]:pb-6 md:[&>section]:pt-28 md:[&>section]:pb-8">
+      <div className="relative z-10 [&>section]:pt-12 [&>section]:pb-6 max-md:[&>section]:pb-14 md:[&>section]:pt-28 md:[&>section]:pb-8">
         <ExperimentalTestimonials />
       </div>
       <div className="relative z-10 md:[&>section]:pb-20">
