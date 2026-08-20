@@ -17195,3 +17195,20 @@ resolves `url(#values-cta-grad)` at the larger size).
 Desktop 1265 `desktopUnchanged: true` — 4 "Connect With Me" buttons exist, only
 1 renders, and it is the DESKTOP one (h 56, padding 20/8, gap 16, radius 14,
 label 16px, chip 36); the edited button is among the 3 not rendered.
+
+## Career page — OpenPositions "Apply Now": removed the min-width gap (mobile only)
+Regression from the previous entry. The shell declares `gap-2` (8px) but was
+RENDERING a 30.7px label/chip gap: `max-md:min-w-[11rem]` (176) sat above the
+button's natural content width of 151.7 — "Apply Now" is a short label — and
+`justify-between` distributed the 24.3px surplus straight into the gap.
+Removed `max-md:min-w-[11rem]`. The other CTAs keep theirs because their labels
+("Read Article", "Connect With Us", "Visit Live Site") already exceed 176 on
+their own, so the floor is inert there and no gap appears — this was the only
+button short enough to expose it.
+Verified at 390: gap 30.7 -> 8, `gapNowMatchesDeclared: true`,
+`gapReducedBy: 22.7`, width 176 -> 153.3, min-width 0. Everything else held —
+`otherPropsHeld: true` (h 48, padding 12/12, label 18px, chip 32).
+Desktop 1265 unchanged across all 8 style properties (h 56, radius 14, padding
+20/8, gap 16, label 16px, chip 36, min-width 0 — the removed class was
+`max-md:`-scoped and never applied there). A width readback of 159.6 vs a 160
+noted earlier is my own rounding, not a change.
