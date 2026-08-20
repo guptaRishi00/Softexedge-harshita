@@ -17212,3 +17212,449 @@ Desktop 1265 unchanged across all 8 style properties (h 56, radius 14, padding
 20/8, gap 16, label 16px, chip 36, min-width 0 — the removed class was
 `max-md:`-scoped and never applied there). A width readback of 159.6 vs a 160
 noted earlier is my own rounding, not a change.
+
+## Blog page — hero title now three lines (mobile only)
+The h1 is built as two explicit blocks ("News, views" / "and everything else"),
+so it could only ever render 2 lines regardless of width — a max-width or font
+change would not have added one. Stacking the first pair is what adds the third:
+`max-md:flex-col max-md:items-start` on the word-pair span.
+Result at 390: "News," / "views" / "and everything else",
+`lineCount: 3`, `allLinesInsideCard: true`, longest line clears the card's inner
+edge by 20.2px (line rights 129.3 / 119.5 / 338.2 against a content edge of
+358.4). Title still fits the card, which holds at its 388.2px min-height.
+Desktop 1265 `desktopUnchanged: true` — pair still `flex-direction: row` with a
+24px column gap, 2 lines ("News, views" / "and everything else"), h1 112px.
+MEASUREMENT NOTE: a span-based line probe reported line 3 as "everything else",
+dropping the leading "and" — that word is a bare TEXT NODE, not a span. Re-ran
+with a TreeWalker + Range.getClientRects to band actual line boxes.
+
+## Blog page — hero title: 3 lines via SIZE, not layout (mobile only)
+Replaces the previous entry's approach. Reverted the
+`max-md:flex-col max-md:items-start` stacking and instead grew the type so the
+line breaks on its own, dropping the last word.
+Sizing came from measurement: "and everything else" occupied 306.2px of a
+326.4px content box at 36.9px, so it breaks above ~38.4px. Clamp
+`11.5vw-8px / 2.5rem cap` -> `13vw-8px / 2.75rem cap`, giving 42.75px at 390.
+Verified with a CHARACTER-level line extractor (assign each char to the line box
+it renders on) at three widths — a node-level probe was wrong here, reporting
+line 2 as "and everything else" and line 3 as "everything else", because the
+text node straddles two line boxes and whole-node text was being appended to
+both:
+  390 -> 42.75px: "News, views" / "and everything" / "else", lastWordDropped
+    true, rights 261 / 304.9 / 104 against a 358.4 edge.
+  320 -> 34px (floor): same 3-line split, rights 217.6 / 249.2 / 89.5 vs 288,
+    no document overflow.
+  430 -> 44px (cap applied): same split, rights 267.2 / 312.8 / 106.1 vs 398.4.
+All three `allInsideCard: true` and `titleFitsCard: true`.
+Desktop 1265 `desktopUnchanged: true` — 112px, 2 lines, pair still row with a
+24px gap.
+
+## Brand-strategy page — stats become the About marquee + hero title matched (mobile only)
+SCOPE CHECK FIRST: `AgencyStats` is NOT shared — every service folder holds its
+own copy and `brand-strategy/AgencyStats.tsx` is imported only by
+`brand-strategy/StrategyHeroSection.tsx`. This also CORRECTS an earlier entry in
+this log which claimed AgencyStats was "SHARED with 7 other service-page heroes"
+when its entry animation was tagged; that was wrong — that change, and this one,
+touch brand-strategy alone.
+
+- `AgencyStats.tsx`: grid gets `max-md:hidden`; added the AboutHeroSection
+  mobile marquee below it (`md:hidden`) — `.marquee` / `.marquee-track` with two
+  identical stat runs, `animationDuration 31s` + `animationDirection reverse`
+  set inline, the same mask-image edge fade, `w-[52vw]` items, value
+  `text-[3.25rem] mb-3`, label `text-sm font-medium tracking-[0.2em]`. Note the
+  label is `font-medium` to match About, where this component's own grid uses
+  `font-bold`.
+  Values render STATICALLY in the marquee rather than through <Counter>: that
+  component counts up on its own first intersection, so eight drifting copies
+  would each start at a different moment and show the same stat with different
+  numbers side by side. Desktop keeps the Counter.
+- `StrategyHeroSection.tsx`: h1 `text-[2.75rem]` -> `text-[2.5rem]`,
+  AboutHeroSection's mobile size.
+
+Verified by running ONE probe against both pages at 390:
+`identicalToBrandStrategy: true` across all 10 compared properties — item width
+52.1vw, value 52px / margin-bottom 12, label 14px / weight 500 / tracking 2.8px,
+animation 31s reverse, 8 items, h1 40px. Second run carries
+`aria-hidden` (`ariaHiddenOnSecondRun: true`) and the desktop grid is
+`display: none` below md.
+Desktop 1265 `desktopUnchanged: true` across 11 properties — 4-col grid, padding
+48/80, value 80px / margin-bottom 20, label 16px weight 700, Counter still
+present, marquee `display: none`, h1 112px.
+NOTE: line-height still differs from About (brand-strategy `leading-[1em]` = 40px
+vs About `leading-[1.05]` = 42px). Only the SIZE was asked for; say the word to
+match leading too.
+
+## Brand-strategy page — StrategyHeroSection title bigger (mobile only)
+`text-[2.5rem]` -> `text-[clamp(2.5rem,11.3vw,2.75rem)]`.
+
+A flat 2.75rem was tried first and FAILED at 320: the two title lines are
+explicit nowrap spans, so they never reflow — the widest line measures 339.9 at
+44px regardless of viewport, which overruns a 320px content box. It did not show
+as `docOverflow` because the hero section is `overflow-hidden`, so the text was
+simply being CLIPPED. Caught by checking 320 rather than trusting the 390 pass.
+The clamp gives 44px from ~390 up and eases back to the 40px floor at 320.
+
+Verified at four widths, all `noOverflow: true`, 2 lines, no document overflow:
+  320 -> 40px,    widest 311.2 / content 320,   headroom 8.8
+  360 -> 40.68px, widest 316.1 / content 360,   headroom 43.9
+  390 -> 44px,    widest 339.9 / content 390.4, headroom 50.5
+  430 -> 44px (cap), widest 339.9 / content 430.4, headroom 90.5
+Desktop 1265 `desktopUnchanged: true` — 112px (`lg:text-[7rem]`), and the clamp's
+media range does not apply there (`clampAppliesHere: false`).
+Headroom note for any further increase: at 390 the ceiling before the second
+line clips is ~50px.
+
+## Brand-strategy page — StrategyHeroSection title bigger again (mobile only)
+`clamp(2.5rem,11.3vw,2.75rem)` -> `clamp(2.5rem,12.3vw,3rem)`: 48px from ~390 up,
+still floored at 40px for 320.
+Sized against the ceiling measured last task (~50.5px at 390 before the second
+nowrap line clips), leaving ~21.7px of headroom rather than running to the edge.
+Verified at four widths, all `noOverflow: true`, 2 lines, no document overflow:
+  320 -> 40px (floor), widest 311.2 / 320,   headroom 8.8
+  360 -> 44.28px,      widest 342   / 360,   headroom 18
+  390 -> 48px,         widest 368.7 / 390.4, headroom 21.7
+  430 -> 48px (cap),   widest 368.7 / 430.4, headroom 61.7
+Desktop 1265 `desktopUnchanged: true` — 112px / line-height 112px.
+CEILING: 320 is now the binding case at only 8.8px of slack and is already
+pinned to the floor, so it cannot grow further. Any further increase raises the
+390+ size only and widens the gap between the two.
+
+## Brand-strategy hero — the overflow the user photographed, diagnosed and fixed
+CORRECTION to the last two entries: their `noOverflow: true` claims were WRONG
+on device. The title's first line is a `whitespace-nowrap` flex containing an
+inline ROTATING IMAGE that starts `w-0 opacity-0` and expands to
+`w-[1.5em] mx-3` when `onAnimationComplete` fires. This pane freezes
+animations, so that callback never fires here — every probe measured the image
+at 0 wide (and the char-level probe read text nodes only, on top of that). On
+device the image expands and the line cannot wrap.
+
+Measured with the image force-expanded at 390: 40px -> 367.7 (fits),
+44px (the ORIGINAL flat size) -> 400.8 (overflows 10.8 — this bug predates the
+session), 48px (last entry) -> 434, overflowing by 44 = the screenshot.
+
+Fix, two halves, both required because big type and a 1.5em image cannot
+coexist on a 390 nowrap line:
+- expanded image below md: `max-md:w-[1em] max-md:mx-2` added to the expanded
+  branch (1em + 8px margins instead of 1.5em + 12px). Desktop branch untouched.
+- font `clamp(2.5rem,12.3vw,3rem)` -> `clamp(2.25rem,11vw,2.75rem)`.
+
+Verified by reproducing the expanded state through the REAL class tokens
+(classList add of the exact expanded-branch classes), which also proved
+`max-md:w-[1em]` beats the base `w-[1.5em]` in the cascade:
+  320 -> font 36,   img 36,   line 308.5/320,  slack 11.5
+  360 -> font 39.6, img 39.6, line 336.5/360,  slack 23.5
+  390 -> font 42.9, img 42.9, line 362.3/390,  slack 27.8
+  430 -> font 44,   img 44,   line 370.8/430,  slack 59.2
+Desktop 1265 `desktopUnchanged: true` — font 112, image 168 (=1.5em), margin
+20px (md:mx-5).
+
+MEASUREMENT TRAPS hit inside this one task:
+- first force-expand attempt read width 0 with the classes verifiably present
+  and the rules verifiably in the stylesheet: the span carries `transition-all
+  duration-[1200ms]`, and this pane never advances transitions, so computed
+  values stay at the OLD value. Fix: `style.transition='none'` + forced reflow
+  before reading. (Same trap as the resize-stale readings earlier in the
+  session — now seen from the class-mutation side.)
+- net title size vs the "bigger, more" requests: 42.9px at 390 — bigger than
+  the 40px baseline but smaller than the 48 that overflowed. Physical ceiling
+  with the image visible is ~45px at 390. Hiding the image below md would allow
+  ~52px; offered, not done.
+
+## Brand-strategy hero — 3-line mobile title with the split in the middle pair
+Mobile-only restructure of the h1. The six words regroup below md as
+"We Build" / "Brands [image] That" / "People Trust", with the expanding
+split-image between the middle pair; desktop keeps the original
+"We Build [image] Brands" / "That People Trust".
+
+Implementation:
+- The rotating-image span is extracted to a `splitImage` const and rendered in
+  BOTH layouts — state (isExpanded, currentImageIndex) lives in the parent, so
+  the two copies expand and rotate in sync, and only one is visible per
+  breakpoint (2 copies in DOM, next/image dedupes the loads).
+- Existing two rows -> `max-md:hidden`; three new `md:hidden` rows added. The
+  mobile rows are PLAIN spans (no wordVariants) — entry animation is disabled
+  below md site-wide, so a word stagger would never be seen there anyway.
+- Anchor gotcha: `"  return ("` matched `return () => clearInterval` too;
+  anchored on `return (\n    <section` instead.
+- The regroup frees the width that forced the last walk-back, so the clamp goes
+  back UP to `clamp(2.5rem,12.3vw,3rem)` — the 48px the user had asked for
+  twice. Widest mobile line (middle, WITH expanded image) is 306.4 at 48px
+  against 390.
+
+Verified with the force-expanded-classes probe (transition neutralised):
+  320 -> 40px floor: rows 157.7 / 258.2 / 218.6, all fit 320
+  390 -> 48px: rows 189.2 / 306.4 / 262.1, all fit 390, docOverflow false
+  430 -> 48px cap: rows 189.3 / 306.6 / 262.3, all fit
+  All three: visibleRowCount 3, image expands to 1em of font (40/48/48).
+Desktop 1265 `desktopUnchanged: true` — 2 visible rows ("WeBuildBrands" /
+"ThatPeopleTrust"), the 3 mobile rows display:none, font 112, expanded image
+168px (1.5em) with md:mx-5 (20px), 2 image copies in DOM.
+
+## Brand-strategy hero — split-image widened back to full size (mobile only)
+Removed the `max-md:w-[1em] max-md:mx-2` overrides from the expanded branch, so
+mobile now gets the same `w-[1.5em] mx-3` as the base. Those overrides existed
+solely to fit the old 2-line nowrap layout; the 3-line regroup freed the width.
+Image at 390: 48 -> 72px (1.5em of the 48px font), margins 8 -> 12px.
+Verified (force-expanded classes, transition neutralised):
+  320 -> img 60 (1.5em of 40), middle row 286.2/320, all 3 rows fit
+  390 -> img 72, middle row 338.4/390 (51.6 slack), all fit, no doc overflow
+  430 -> img 72, middle row 338.6/430, all fit
+Desktop 1265 `desktopUnchanged: true` — 2 rows, font 112, image 168 (1.5em),
+md:mx-5 (20px).
+
+## Brand-strategy hero — split-image widened one more step (mobile only)
+`max-md:w-[1.8em]` added to the expanded branch (base stays 1.5em for desktop).
+Verified (force-expanded classes): 390 -> image 86.3 (1.8em of 48, was 72),
+middle row 352.8/390, all 3 rows fit, no doc overflow; 320 floor -> image 72
+(1.8em of 40), middle row 298.2/320, fits with 21.8 slack.
+Desktop 1265 `desktopUnchanged: true` — image still 168 (1.5em of 112), the
+max-md override does not reach it.
+Remaining headroom at 390: ~37px, i.e. up to roughly 2.5em before the middle
+line gets tight; 320 is the binding case at 21.8.
+
+## Brand-strategy hero — split-image taller (mobile only)
+`max-md:h-[1.3em]` added beside the base `h-[1em]` on the image span. Height has
+no width constraint to fight: the row is a flex, so the taller image simply
+deepens the middle line (rows 48/62.4/48 at 390; 40/52/40 at 320) — verified
+`rowsDontOverlap: true` both widths, widths unchanged (middle 352.8/390,
+298.2/320), no doc overflow.
+Image now 86.3x62.4 at 390 (1.8em x 1.3em), 72x52 at the 320 floor.
+Desktop 1265 `desktopUnchanged: true` — image 168x112 (1.5em x 1em of 112).
+
+## Brand-strategy page — SubServices top padding reduced (mobile only)
+`max-md:pt-16` on the inner container (the padding lives there, not on the
+section): 120px -> 64px below md, the site's standard mobile section top.
+Verified at 390: padding-top 64px (`reducedBy: 56`), pb 128 and padX 12
+untouched. Desktop 1265 `desktopUnchanged: true` — 120px / padX 40.
+
+## Brand-strategy page — SubServices top padding up a step (mobile only)
+`max-md:pt-16` -> `max-md:pt-20` (64 -> 80px).
+Verified at 390: padding-top 80px (`increasedBy: 16`). Desktop 1265
+`desktopUnchanged: true` (120px).
+
+## Brand-strategy page — header -> first card gap reduced (mobile only)
+The 177px trough between the "Our Services" description and the first
+SubServiceCard title was container `pb-32` (128) + the card's own `pt-12` (48).
+Added `max-md:pb-12` to the header container: 128 -> 48.
+Verified at 390: visual gap 177 -> 97 (`reducedBy: 80`), card padding untouched.
+Desktop 1265 `desktopUnchanged: true` (pb 128).
+
+## Brand-strategy SubServices — image fade removed + inset separators (mobile only)
+Two changes in `SubServiceCard.tsx`:
+- Image "disappearing" fix: the fade is the desktop STACK effect — `imageHidden`
+  fades a card's image out as the next card slides over it. Mobile cards are
+  static since the unstack, so the fade only ever read as images vanishing.
+  Appended `max-md:scale-100 max-md:opacity-100` OUTSIDE the ternary, so below
+  md they beat both branches; the desktop mechanism is untouched.
+- Separator: `max-md:border-t-0` plus a `max-md:before:` hairline
+  (absolute, top-0, inset-x-3, h-px, bg-white/10) — the rule now spans 366px at
+  390 instead of edge-to-edge, aligned to the 12px content gutter.
+
+Verified at 390:
+- fade: forced the hidden-branch classes onto the image; computed opacity stayed
+  1 and scale 1 -> `fadeNeutralised: true`.
+- separator: border-top-width 0; ::before content "" / absolute / top 0 /
+  left 12 / right 12 / 1px / white 10% -> `hairlineCorrect: true`.
+Desktop 1265 `desktopUnchanged: true`: border-top 1px, ::before content none,
+and the fade still WORKS (forced opacity-0 computes 0 once the image's own
+`transition-all duration-700` is neutralised for the read — the frozen-pane
+transition trap, hit twice in this task).
+PROBE BUG worth remembering: `const cs = e => getComputedStyle(e)` silently
+drops a second argument, so `cs(card, '::before')` reads the CARD, not the
+pseudo — the first separator read returned height 933px and looked broken when
+it wasn't. Pseudo reads need a direct `getComputedStyle(el, '::before')`.
+
+## Brand-strategy SubServices — inter-service gap reduced (mobile only)
+`max-md:pb-16` on the card inner: the 144px gap between one service's image and
+the next service's title (pb-24 96 + pt-12 48) drops to 112.
+Verified at 390: gaps [112, 112, 112] across all three boundaries,
+`reducedBy: 32`, `allConsistent: true`. Desktop 1265 `desktopUnchanged: true`
+(pb 96).
+
+## Brand-strategy page — 970px dead gap between SubServices and ProcessSection (mobile only)
+Measured the 1086px visual gap and decomposed it: 970px sat INSIDE the
+SubServices section after the last card — two `aria-hidden pointer-events-none`
+spacer divs with inline calc heights (318.2 + 651.8 at 390): the STACK RUNWAY
+that gives the desktop sticky cards their scroll travel. The mobile unstack
+(earlier audit) made the cards static but left the runway, hence "huge gap for
+some reason".
+Fix: `max-md:hidden` on both spacers — display:none beats their inline heights.
+Verified at 390: `spacersHidden: true`, section overhang 970 -> 0 (section now
+ends exactly at the last card), visual gap 1086 -> 116 (`reducedBy: 970`); the
+remaining 116 is ProcessSection's own pt-20 (80) + heading offset, the normal
+rhythm.
+Desktop 1265 `desktopUnchanged: true` — both spacers visible (heights 273 /
+697), all card wrappers still sticky, and `stillPins: true` (card 0 holds at
+top 45 across scrollY 2000/2800), so the stack still has its runway.
+
+## Brand-strategy page — hairline between SubServices and ProcessSection (mobile only)
+The fractional-pixel seam class again, in its dark-over-white form. Diagnosis by
+exhaustive paint-scan of the band (borders, backgrounds, shadows, AND pseudos —
+nothing painted there except black), then the ancestry check that closed it:
+`#subservices-overlap` (black) ends and `#process-overlap` (black) begins at
+doc y 4680.66 — fractional — and every ancestor between them and the WHITE body
+is transparent, so antialiasing shows the body through the boundary as a grey
+line. `max-md:-mt-px` on `#process-overlap`.
+Verified at 390: margin-top -1px, overlap exactly 1px, `seamClosed: true`.
+Desktop 1265 `desktopUnchanged: true` (margin-top 0 — there the sticky
+scroll-over covers the boundary anyway).
+
+## Brand-strategy SubServices — image above content (mobile only)
+`max-md:order-first` on the image container in `SubServiceCard.tsx`. The card is
+a 1-col grid below md, so order flips the stacking; the 2-col desktop grid is
+untouched.
+Verified at 390: all four cards report `imageFirst: true` (image bottom above
+title top, order -9999). Desktop 1265 `desktopUnchanged: true` — order 0,
+content in the left column (40) with the image right (657), same row.
+
+## Brand-strategy ProcessSection — bigger card type + wider gaps (mobile only)
+Three `max-md:` additions: grid `gap-8` -> `max-md:gap-12` (32 -> 48), card h3
+`text-xl` -> `max-md:text-2xl` (20 -> 24), description `text-[15px]` ->
+`max-md:text-base` (15 -> 16).
+Verified at 390: grid gap 48 with actual card gaps [48, 48, 48], h3 24px,
+p 16px, `allChanged: true`. Desktop 1265 `desktopUnchanged: true` — gap 32,
+h3 20, p 15, 4 columns.
+
+## Brand-strategy page — divider between ProcessSection and OurTechStack removed (mobile only)
+This one was a REAL rule, not a seam: ProcessSection ends with an explicit
+divider div (`mt-16 w-full border-b border-white/10 ...`, ProcessSection.tsx:120).
+Added `max-md:hidden`.
+Verified at 390: divider `display: none`, and a band re-scan between the last
+process card and "OUR TOOLKIT" finds no remaining painted lines. Desktop 1265
+`desktopUnchanged: true` — display block, border-bottom 1px.
+
+## Brand-strategy — the SURVIVING line at Process/TechStack + missing gap (mobile only)
+The previous fix removed the border-b divider, but the user's line was the OTHER
+one: a fractional-pixel seam at the section boundary itself — `#process-overlap`
+(black) and OurTechStack's section (black) abutting at doc y 7363.05 over the
+white body. Also: ProcessSection had NO mobile bottom padding (`md:pb-30` only),
+so the last card sat 24px from "OUR TOOLKIT".
+- `max-md:pb-16` on ProcessSection's section -> gap 24 -> 87.
+- `max-md:-mt-px` on OurTechStack's section -> 1px overlap, `seamClosed: true`.
+Desktop 1265 `desktopUnchanged: true` — pb 120 (md:pb-30), margin-top 0.
+This is the third dark-over-white fractional seam on this page family; the
+page's white body behind stacked black sections makes every fractional section
+boundary a candidate.
+
+## Brand-strategy — Process -> TechStack gap widened again (mobile only)
+`max-md:pb-16` -> `max-md:pb-24` on ProcessSection (64 -> 96px).
+Verified at 390: last text -> "OUR TOOLKIT" gap 87 -> 119 (`increasedBy: 32`),
+and the -mt-px seam fix still holds (`seamStillClosed: true`). Desktop 1265
+`desktopUnchanged: true` (pb 120).
+
+## Brand-strategy OurTechStack — tighter gap + TechLogoCarousel-size cards (mobile only)
+- Gap description -> first card was 144px: heading `mb-20` (80) + carousel
+  wrapper `py-16` (64). Cut both: `max-md:mb-8` + `max-md:py-6` -> 56px total.
+  Wrapper row gap also `max-md:gap-4`.
+- Cards `h-36 w-52 rounded-3xl` (144x208) -> `max-md:h-16 max-md:w-40
+  max-md:rounded-2xl`, matching TechLogoCarousel's mobile card.
+Verified at 390: gap 56 (was 144); stack cards 160x64 r18 — and the actual
+TechLogoCarousel pills on the same page measure 160x64 r18 (they are <a>
+elements; a div-only selector missed them first). Identical on all three
+measures.
+Desktop 1265: headMb 80, wrapper py 64 gap 20, card 208x144 r22. A `changed`
+flag on radius (expected 24) was MY error — this theme's rounded-3xl is
+--radius x 2.2 = 22px, so 22 is the untouched desktop value.
+
+## Brand-strategy OurTechStack — card size reverted (mobile only)
+Removed the `max-md:h-16 max-md:w-40 max-md:rounded-2xl` overrides added last
+task; cards are back to 208x144 r22 on mobile ("like it was before"). The gap
+reductions from the same task were NOT named and stay: description -> first
+card still 56px.
+Verified at 390: card 208x144 r22 (`backToOriginal: true`), gap 56. Desktop
+1265 `desktopUnchanged: true` (identical values — the base classes serve both).
+
+## Brand-strategy OurTechStack — cards reduced a little, logo scaled with them (mobile only)
+`max-md:h-28 max-md:w-44` on the card (208x144 -> 176x112 — a moderate step, not
+the 160x64 jump the user reverted) and `max-md:h-7` on the logo (36 -> 28,
+width auto-tracks to 91.8).
+Verified at 390: card 176x112 r22, logo 28px, `logoScaledWithCard: true`,
+`logoFits: true`. Desktop 1265 `desktopUnchanged: true` (208x144, logo 36).
+
+## Brand-strategy — white line above "SELECTED WORK" removed (mobile only)
+Two-part fix, learning from the last "line is still there" round-trip:
+- The visible line: OurTechStack's explicit end divider
+  (`w-full border-b border-white/10`, OurTechStack.tsx:112) -> `max-md:hidden`.
+- Pre-emptively: the probe showed the OurTechStack -> ProjectShowcase boundary
+  lands on a fractional y (.44), black-on-black over the white body — the exact
+  seam class from the two boundaries above it. `max-md:-mt-px` on
+  ProjectShowcase's section before it gets reported.
+Verified at 390: divider display none, boundary overlap 1px
+(`seamClosed: true`). Band re-scan shows only the carousel cards' own borders.
+Desktop 1265 `desktopUnchanged: true` — divider visible 1px, projects margin 0.
+
+## Brand-strategy — TechStack -> ProjectShowcase gap widened (mobile only)
+`max-md:pb-8` on OurTechStack's section (mobile pb was 0): last carousel card ->
+"SELECTED WORK" gap 87 -> 119, now matching the Process -> TechStack gap above.
+`seamStillClosed: true` (the -mt-px overlap holds through the padding change).
+Desktop 1265 `desktopUnchanged: true` (pb 0).
+
+## Brand-strategy ProjectShowcase — invisible cards fixed + card animations off (mobile only)
+ROOT CAUSE of "cards not visible": the two card rows carry
+`animate={{ height: getRowHeight(...) }}`, which framer writes as an INLINE
+height of "48%"/"52%" at EVERY breakpoint. On mobile the rows' parent is
+`h-auto`, so a percentage height resolves to ~0 and both rows collapsed — the
+h-[400px]/h-[500px] classes never won against the inline style. The per-card
+`animate={{ flex, scale }}` compounded it.
+Fix: `useIsDesktop()` gates in `ProjectShowcase.tsx` —
+- both row `animate`s -> `isDesktop ? {...} : undefined`
+- ProjectCard: `onMouseEnter` gated (iOS taps fire mouseenter), and all four
+  animates (card flex/scale, image scale/filter, gradient opacity, title-row
+  opacity/y) -> desktop-only. The AnimatePresence "Featured Case" overlay is
+  reachable only via the gated hover, so it is inert on mobile too.
+Verified at 390: 5 cards all visible at 366x300 with images rendering, rows at
+their class heights [400, 500] with NO inline height, `noInlineAnimStyles: true`;
+after a simulated tap (`mouseover`), still no inline flex/transform and no
+Featured Case overlay -> `hoverInert: true`.
+Desktop 1265: rows side-by-side, and the desktop path is PROVEN live by a
+non-rAF signal — dispatching mouseover mounts the "Featured Case" overlay in
+the DOM (`featuredCaseInDom: true`), which requires the isDesktop gate to have
+passed. Inline style values themselves cannot be read in this pane (framer
+writes them through rAF, which is frozen) — that limit predates this change.
+
+## Brand-strategy ProjectShowcase — cards uncluttered + desc gap reduced (mobile only)
+The "clustered" cards were a real defect my previous verification missed: the
+rows keep h-[400px]/h-[500px] as their MOBILE heights, but row 1 stacks THREE
+min-h-[300px] cards — 900px forced into 400, so cards overlapped each other. I
+had checked per-card visibility but never pairwise overlap.
+- rows: base `h-[400px]`/`h-[500px]` -> `h-auto` (mobile-only by construction —
+  `md:h-auto` already re-asserts, and desktop height comes from the framer
+  inline animate).
+- gap: TWO stacked sources — outer flex `gap-20` (80) AND a header `mb-34`
+  (136) found by measuring the layer chain; total 176 to the first card.
+  `max-md:gap-10` + `max-md:mb-0` -> 40.
+Verified at 390: 5 cards all 300 tall in ONE column (allInColumn), inter-card
+gaps [16,16,16,16], `noOverlap: true` pairwise; desc -> first card 176 -> 40.
+Desktop 1265 `desktopUnchanged: true` — header mb 136, outer gap 20, row
+flex-direction `row`, cards side by side.
+
+## Brand-strategy ProjectShowcase — cards invisible after h-auto rows (mobile)
+Regression from my own previous fix, and a verification gap: I measured CARD
+boxes (300 via min-h) but never the content. With the row `h-auto`, the card's
+`h-full` resolves to auto and `min-h-[300px]` sizes the box WITHOUT making the
+height definite — so the inner `h-full` wrapper computed to 0, and every layer
+in it (image, gradients, title) is `absolute inset-0` of a 0-height box. Five
+300px empty black boxes on black = "disappeared". Probe confirmed:
+allInnerHeights [0,0,0,0,0].
+- ProjectCard wrapper: appended `max-md:h-[300px]` — definite mobile height, so
+  percentage heights inside resolve. One-class diff.
+Verified 390: per-card {cardH 300, innerH 300, imgH 300, imgVisible,
+titleVisible} for all 5; still one column, noOverlap, gaps [16,16,16,16], desc
+gap 40. Desktop 1266: rows flex-direction `row`, cards side-by-side, inner and
+img fill card. Build: Compiled successfully.
+Lesson: after changing a parent to h-auto, re-measure CONTENT heights, not just
+the boxes — min-height keeps the box while percentage children collapse to 0.
+
+## Brand-strategy — section gaps ET/TLC/Cta/Faq/Blog matched to homepage (mobile)
+Homepage has no FaqSection and ContactSection sits in the CTA slot, so the
+match is against the homepage's PERCEIVED whitespace rhythm at 390 (measured):
+56 between ET->TLC, 80 of white between the logos and the dark block, 64 from
+the dark block to the next section's content. Brand-strategy measured 56 /
+128 / 48 / 40. page.tsx wrapper edits, all max-md-only:
+- CTA wrapper: `max-md:pt-0` + forced `[&>section]:pt-9 -> pt-0` (white above
+  dark card 128 -> 80) and `pb-9 -> pb-13` (52+12 wrapper = 64 below card).
+- Faq/Blog wrapper: `space-y-10` + `max-md:space-y-16` (40 -> 64).
+Verified 390: ET_TLC 56, whiteAboveCard 80 (first probe read 160 — my
+expression double-counted TLC's pb; corrected probe 80), whiteBelowCard 64,
+Faq_Blog 64. Desktop 1265 desktopUnchanged: wrapper padding 12, section forced
+pads 0, faqBlogGap 40. Build: Compiled successfully.

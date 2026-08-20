@@ -85,7 +85,7 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   return (
     <ReactLenis root>
       <section className="relative w-full bg-black text-white">
-        <div className="mx-auto w-full px-4 max-md:px-3 md:px-10 pt-30 pb-32">
+        <div className="mx-auto w-full px-4 max-md:px-3 max-md:pt-20 max-md:pb-12 md:px-10 pt-30 pb-32">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
             What We Offer
           </span>
@@ -123,14 +123,14 @@ export default function SubServices({ children }: { children?: ReactNode }) {
 
           <div
             aria-hidden
-            className="pointer-events-none w-full"
+            className="pointer-events-none w-full max-md:hidden"
             style={{ height: STACK_HOLD }}
           />
         </div>
 
         <div
           aria-hidden
-          className="pointer-events-none w-full"
+          className="pointer-events-none w-full max-md:hidden"
           style={{
             height: `calc(${(services.length - 1) * STEP + EXTRA_TAIL}px - ${STACK_HOLD})`,
           }}

@@ -45,7 +45,7 @@ export default function Card({
       }}
     >
       <div
-        className={`relative grid min-h-[50vh] md:h-[600px] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 ${color} px-4 max-md:px-3 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
+        className={`relative grid min-h-[50vh] md:h-[600px] w-full origin-top grid-cols-1 gap-12 overflow-hidden border-t border-white/10 max-md:border-t-0 max-md:before:content-[''] max-md:before:absolute max-md:before:top-0 max-md:before:inset-x-3 max-md:before:h-px max-md:before:bg-white/10 ${color} px-4 max-md:px-3 max-md:pb-16 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16`}
       >
         <motion.div
           variants={contentContainer}
@@ -94,7 +94,7 @@ export default function Card({
           )}
         </motion.div>
 
-        <div className="relative w-full h-[350px] md:h-[450px] overflow-hidden rounded-2xl">
+        <div className="relative w-full h-[350px] max-md:order-first md:h-[450px] overflow-hidden rounded-2xl">
           {image && (
             <Image
               src={image}
@@ -103,7 +103,7 @@ export default function Card({
               sizes="(max-width: 768px) 100vw, 50vw"
               className={`h-full w-full object-cover transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 imageHidden ? "scale-105 opacity-0" : "scale-100 opacity-100"
-              }`}
+              } max-md:scale-100 max-md:opacity-100`}
             />
           )}
         </div>

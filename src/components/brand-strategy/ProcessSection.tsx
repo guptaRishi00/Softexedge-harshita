@@ -42,7 +42,7 @@ export default function ProcessSection() {
   return (
     <section
       id="process"
-      className="w-full bg-black font-sans pt-20 md:pt-20 md:pb-30"
+      className="w-full bg-black font-sans pt-20 max-md:pb-24 md:pt-20 md:pb-30"
     >
       <div className="mx-auto w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-16 md:mb-35">
@@ -80,7 +80,7 @@ export default function ProcessSection() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 max-md:gap-12 sm:grid-cols-2 lg:grid-cols-4">
           {processSteps.map((step, index) => (
             <motion.div
               key={step.id}
@@ -105,11 +105,11 @@ export default function ProcessSection() {
               </div>
 
               <div className="flex flex-grow flex-col">
-                <h3 className="mb-2 text-xl font-extrabold tracking-tight text-white">
+                <h3 className="mb-2 text-xl max-md:text-2xl font-extrabold tracking-tight text-white">
                   {step.title}
                 </h3>
 
-                <p className="mb-6 text-[15px] font-regular leading-[1.5em] text-zinc-400">
+                <p className="mb-6 text-[15px] max-md:text-base font-regular leading-[1.5em] text-zinc-400">
                   {step.description}
                 </p>
               </div>
@@ -117,7 +117,7 @@ export default function ProcessSection() {
           ))}
         </div>
 
-        <div className="mt-16 w-full border-b border-white/10 md:-mx-6 md:mt-30 md:w-[calc(100%_+_3rem)]" />
+        <div className="mt-16 w-full border-b border-white/10 max-md:hidden md:-mx-6 md:mt-30 md:w-[calc(100%_+_3rem)]" />
       </div>
     </section>
   );

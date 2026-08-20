@@ -47,6 +47,36 @@ export default function StrategyHeroSection() {
     return () => clearInterval(interval);
   }, []);
 
+  // The expanding split-image, defined once and rendered in BOTH layouts —
+  // desktop between "Build"/"Brands", mobile between "Brands"/"That". State
+  // (isExpanded, currentImageIndex) lives in the parent, so the two copies
+  // expand and rotate in sync; only one is visible per breakpoint.
+  const splitImage = (
+    <span
+      className={`relative mx-1.5 inline-block h-[1em] max-md:h-[1.3em] shrink-0 overflow-hidden rounded-2xl align-middle shadow-sm transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] md:mx-2.5 ${
+        isExpanded
+          ? "w-[1.5em] mx-3 opacity-100 max-md:w-[1.8em] md:mx-5"
+          : "w-0 opacity-0"
+      }`}
+    >
+      {ROTATING_IMAGES.map((img, index) => (
+        <Image
+          key={img}
+          src={img}
+          alt="Brand visual"
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority={index === 0}
+          className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-in-out ${
+            index === currentImageIndex
+              ? "translate-x-0 opacity-100 blur-0"
+              : "-translate-x-4 opacity-0 blur-sm"
+          }`}
+        />
+      ))}
+    </span>
+  );
+
   return (
     <section className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden bg-white pt-24 pb-12 text-zinc-900">
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-60">
@@ -70,45 +100,39 @@ export default function StrategyHeroSection() {
           initial="hidden"
           animate="visible"
           onAnimationComplete={() => setIsExpanded(true)} 
-          className="mb-6 flex flex-col items-center text-[2.75rem] font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-7xl lg:text-[7rem]"
+          className="mb-6 flex flex-col items-center text-[clamp(2.5rem,12.3vw,3rem)] font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-7xl lg:text-[7rem]"
         >
-          <span className="flex items-center justify-center whitespace-nowrap">
+          <span className="flex items-center justify-center whitespace-nowrap max-md:hidden">
             <motion.span data-no-mobile-entry variants={wordVariants}>We</motion.span>
             <motion.span data-no-mobile-entry variants={wordVariants} className="ml-3 md:ml-6">
               Build
             </motion.span>
 
-            <span
-              className={`relative mx-1.5 inline-block h-[1em] shrink-0 overflow-hidden rounded-2xl align-middle shadow-sm transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] md:mx-2.5 ${
-                isExpanded
-                  ? "w-[1.5em] mx-3 opacity-100 md:mx-5"
-                  : "w-0 opacity-0"
-              }`}
-            >
-              {ROTATING_IMAGES.map((img, index) => (
-                <Image
-                  key={img}
-                  src={img}
-                  alt="Brand visual"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority={index === 0}
-                  className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-in-out ${
-                    index === currentImageIndex
-                      ? "translate-x-0 opacity-100 blur-0"
-                      : "-translate-x-4 opacity-0 blur-sm"
-                  }`}
-                />
-              ))}
-            </span>
+            {splitImage}
 
             <motion.span data-no-mobile-entry variants={wordVariants}>Brands</motion.span>
           </span>
 
-          <span className="mt-2 flex space-x-3 md:mt-4 md:space-x-6">
+          <span className="mt-2 flex space-x-3 max-md:hidden md:mt-4 md:space-x-6">
             <motion.span data-no-mobile-entry variants={wordVariants}>That</motion.span>
             <motion.span data-no-mobile-entry variants={wordVariants}>People</motion.span>
             <motion.span data-no-mobile-entry variants={wordVariants}>Trust</motion.span>
+          </span>
+
+          {/* Mobile: same six words regrouped onto three lines, with the split
+              animation between the middle pair. Plain spans — entry animation
+              is disabled below md site-wide, so a word stagger would never be
+              seen here anyway. */}
+          <span className="flex items-center justify-center whitespace-nowrap md:hidden">
+            We&nbsp;Build
+          </span>
+          <span className="mt-2 flex items-center justify-center whitespace-nowrap md:hidden">
+            Brands
+            {splitImage}
+            That
+          </span>
+          <span className="mt-2 flex items-center justify-center whitespace-nowrap md:hidden">
+            People&nbsp;Trust
           </span>
         </motion.h1>
       </div>

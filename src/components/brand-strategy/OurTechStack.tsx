@@ -18,14 +18,14 @@ export default function OurTechStack() {
       {techStack.map((tech) => (
         <div
           key={tech.id}
-          className="flex h-36 w-52 shrink-0 items-center justify-center rounded-3xl border border-zinc-800 bg-[#100f0f] transition-colors"
+          className="flex h-36 w-52 shrink-0 items-center justify-center rounded-3xl border border-zinc-800 bg-[#100f0f] transition-colors max-md:h-28 max-md:w-44"
         >
           <Image
             src={tech.image}
             alt={`${tech.name} logo`}
             width={118}
             height={36}
-            className="h-9 w-auto object-contain"
+            className="h-9 max-md:h-7 w-auto object-contain"
           />
         </div>
       ))}
@@ -33,9 +33,9 @@ export default function OurTechStack() {
   );
 
   return (
-    <section className="relative w-full overflow-hidden bg-black pt-0 text-white">
+    <section className="relative w-full overflow-hidden bg-black pt-0 text-white max-md:-mt-px max-md:pb-8">
       <div className="mx-auto w-full md:pb-25">
-        <div className="mx-auto mb-20 px-4 max-md:px-3 md:px-10">
+        <div className="mx-auto mb-20 px-4 max-md:mb-8 max-md:px-3 md:px-10">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
             Our Toolkit
           </span>
@@ -69,7 +69,7 @@ export default function OurTechStack() {
           </div>
         </div>
 
-        <div className="relative flex w-full flex-col gap-5 overflow-hidden rounded-3xl py-16">
+        <div className="relative flex w-full flex-col gap-5 overflow-hidden rounded-3xl py-16 max-md:gap-4 max-md:py-6">
           <motion.div
             className="flex w-max flex-nowrap"
             animate={{ x: ["0%", "-50%"] }}
@@ -109,7 +109,7 @@ export default function OurTechStack() {
       </div>
 
       <div className="mx-auto w-full px-4">
-        <div className="w-full border-b border-white/10" />
+        <div className="w-full border-b border-white/10 max-md:hidden" />
       </div>
     </section>
   );

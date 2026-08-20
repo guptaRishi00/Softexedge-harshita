@@ -52,7 +52,7 @@ export default function BrandStrategyPage({}: Props) {
               <SubServices />
             </ShrinkOnOverlap>
           </div>
-          <div id="process-overlap" className="relative z-20 bg-black">
+          <div id="process-overlap" className="relative z-20 bg-black max-md:-mt-px">
             <ProcessSection />
           </div>
         </div>
@@ -60,10 +60,10 @@ export default function BrandStrategyPage({}: Props) {
         <ProjectShowcase />
         <ExperimentalTestimonials />
         <TechLogoCarousel />
-        <div className="p-3 max-md:[&>section]:pt-9 max-md:[&>section]:pb-9">
+        <div className="p-3 max-md:pt-0 max-md:[&>section]:pt-0 max-md:[&>section]:pb-13">
           <CtaSection />
         </div>
-        <div className="space-y-10">
+        <div className="space-y-10 max-md:space-y-16">
           <FaqSection />
           <BlogSection />
         </div>

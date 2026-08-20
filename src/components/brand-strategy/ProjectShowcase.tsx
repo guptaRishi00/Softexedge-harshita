@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import React, { useState } from "react";
 import SpecularBorder from "../ui/SpecularBorder";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const MotionImage = motion.create(Image);
 
@@ -65,6 +66,8 @@ export default function ProjectShowcase() {
   const row1 = projects.slice(0, 3);
   const row2 = projects.slice(3, 7);
 
+  const isDesktop = useIsDesktop();
+
   const getRowHeight = (isRow1: boolean) => {
     if (hoveredId === null) return isRow1 ? "48%" : "52%";
 
@@ -76,11 +79,11 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-black px-4 pt-33 max-md:px-3 max-md:pt-16 max-md:pb-20 font-sans text-white md:px-10 md:pb-35">
+    <section className="relative overflow-hidden bg-black px-4 pt-33 max-md:-mt-px max-md:px-3 max-md:pt-16 max-md:pb-20 font-sans text-white md:px-10 md:pb-35">
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
-      <div className="relative mx-auto flex w-full flex-col gap-20 md:gap-5">
-        <div className="mb-34 w-full">
+      <div className="relative mx-auto flex w-full flex-col gap-20 max-md:gap-10 md:gap-5">
+        <div className="mb-34 w-full max-md:mb-0">
           <motion.span
             data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}
@@ -124,11 +127,9 @@ export default function ProjectShowcase() {
 
         <div className="flex h-auto w-full flex-col gap-4 md:h-[100vh] md:gap-6">
           <motion.div
-            animate={{
-              height: getRowHeight(true),
-            }}
+            animate={isDesktop ? { height: getRowHeight(true) } : undefined}
             transition={smoothSpring}
-            className="flex h-[400px] w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
+            className="flex h-auto w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
           >
             {row1.map((project) => (
               <ProjectCard
@@ -141,11 +142,9 @@ export default function ProjectShowcase() {
           </motion.div>
 
           <motion.div
-            animate={{
-              height: getRowHeight(false),
-            }}
+            animate={isDesktop ? { height: getRowHeight(false) } : undefined}
             transition={smoothSpring}
-            className="flex h-[500px] w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
+            className="flex h-auto w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
           >
             {row2.map((project) => (
               <ProjectCard
@@ -179,17 +178,27 @@ function ProjectCard({
 }) {
   const isHovered = hoveredId === project.id;
   const isAnyHovered = hoveredId !== null;
+  // All card animation is desktop-only: iOS fires mouseenter on tap, and the
+  // flex/scale/filter animates write inline styles that fight the static
+  // mobile column layout.
+  const isDesktop = useIsDesktop();
 
   return (
     <motion.div
-      onMouseEnter={() => setHoveredId(project.id)}
-      onMouseLeave={() => setHoveredId(null)}
-      animate={{
-        flex: isHovered ? 4 : isAnyHovered ? 1.15 : project.baseFlex,
-        scale: isHovered ? 1.01 : 1,
+      onMouseEnter={() => {
+        if (isDesktop) setHoveredId(project.id);
       }}
+      onMouseLeave={() => setHoveredId(null)}
+      animate={
+        isDesktop
+          ? {
+              flex: isHovered ? 4 : isAnyHovered ? 1.15 : project.baseFlex,
+              scale: isHovered ? 1.01 : 1,
+            }
+          : undefined
+      }
       transition={smoothSpring}
-      className="group relative h-full min-h-[300px] w-full cursor-pointer"
+      className="group relative h-full min-h-[300px] w-full cursor-pointer max-md:h-[300px]"
     >
       <div className="relative h-full w-full overflow-hidden rounded-[20px]">
         <MotionImage
@@ -198,21 +207,23 @@ function ProjectCard({
           loading="lazy"
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
-          animate={{
-            scale: isHovered ? 1.06 : 1.02,
-            filter:
-              isAnyHovered && !isHovered
-                ? "brightness(0.3) grayscale(80%)"
-                : "brightness(0.85)",
-          }}
+          animate={
+            isDesktop
+              ? {
+                  scale: isHovered ? 1.06 : 1.02,
+                  filter:
+                    isAnyHovered && !isHovered
+                      ? "brightness(0.3) grayscale(80%)"
+                      : "brightness(0.85)",
+                }
+              : undefined
+          }
           transition={smoothSpring}
           className="absolute inset-0 h-full w-full object-cover"
         />
 
         <motion.div
-          animate={{
-            opacity: isHovered ? 1 : 0.6,
-          }}
+          animate={isDesktop ? { opacity: isHovered ? 1 : 0.6 } : undefined}
           transition={{ duration: 0.5 }}
           className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent"
         />
@@ -223,10 +234,11 @@ function ProjectCard({
 
         <div className="absolute inset-0 z-20 flex flex-col justify-between p-8 md:p-10">
           <motion.div
-            animate={{
-              opacity: isHovered ? 0 : 1,
-              y: isHovered ? -10 : 0,
-            }}
+            animate={
+              isDesktop
+                ? { opacity: isHovered ? 0 : 1, y: isHovered ? -10 : 0 }
+                : undefined
+            }
             transition={smoothSpring}
             className="flex items-start justify-between"
           >

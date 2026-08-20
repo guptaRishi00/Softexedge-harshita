@@ -112,7 +112,7 @@ export default function BlogHeroSection() {
             variants={containerVariants}
             initial={reduce ? false : "hidden"}
             animate="visible"
-            className="text-left text-6xl font-medium leading-[0.9] tracking-tight text-white max-md:text-[clamp(2.125rem,calc(11.5vw_-_8px),2.5rem)] max-md:leading-[1.05] sm:text-7xl md:text-8xl lg:text-[7rem]"
+            className="text-left text-6xl font-medium leading-[0.9] tracking-tight text-white max-md:text-[clamp(2.125rem,calc(13vw_-_8px),2.75rem)] max-md:leading-[1.05] sm:text-7xl md:text-8xl lg:text-[7rem]"
           >
             <span className="flex flex-wrap items-center gap-x-4 md:gap-x-6">
               <motion.span variants={wordVariants}>News,</motion.span>
