@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useRef } from "react";
+import CarouselDots from "@/components/ui/CarouselDots";
 
 const processSteps = [
   {
@@ -39,6 +41,13 @@ const processSteps = [
 ];
 
 export default function ProcessSection() {
+  // Below md the grid becomes a native scroll-snap carousel, same mechanics as
+  // home/BlogSection: native scrolling runs on the compositor thread, so a
+  // swipe never touches React. Only the dots re-render, and they own their own
+  // listener. No infinite-loop copies here — BlogSection repeats its track to
+  // loop, which would mean loading each of these four images three times.
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
   return (
     <section
       id="process"
@@ -78,43 +87,59 @@ export default function ProcessSection() {
               initial concept to global scale.
             </motion.p>
           </div>
+
+          <CarouselDots
+            scrollerRef={scrollerRef}
+            count={processSteps.length}
+            className="mt-8 md:hidden"
+          />
         </div>
 
-        <div className="grid grid-cols-1 gap-8 max-md:gap-12 sm:grid-cols-2 lg:grid-cols-4">
-          {processSteps.map((step, index) => (
-            <motion.div
-              key={step.id}
-              data-no-mobile-entry
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.5,
-                delay: index * 0.1,
-              }}
-              viewport={{ once: true }}
-              className="group flex cursor-pointer flex-col"
-            >
-              <div className="relative mb-6 flex aspect-[4/4.5] w-full items-center justify-center overflow-hidden rounded-[20px] bg-zinc-900">
-                <Image
-                  src={step.image}
-                  alt={step.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                  className="absolute inset-0 h-full w-full object-cover opacity-80 transition-all duration-700 ease-in-out group-hover:scale-110 group-hover:opacity-100"
-                />
-              </div>
+        {/* -mx-3/px-3 below md: the container above is padded, so without this
+            the track would be inset and the next card's peek would stop 12px
+            short of the screen edge. Full-bleed scroller, cards still aligned
+            to the same 12px gutter as the heading. */}
+        <div
+          ref={scrollerRef}
+          className="no-scrollbar relative w-full max-md:-mx-3 max-md:w-auto max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain max-md:scroll-pl-3 max-md:px-3"
+        >
+          <div className="grid grid-cols-1 gap-8 max-md:flex max-md:w-max max-md:flex-nowrap max-md:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {processSteps.map((step, index) => (
+              <motion.div
+                key={step.id}
+                data-slide
+                data-no-mobile-entry
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.5,
+                  delay: index * 0.1,
+                }}
+                viewport={{ once: true }}
+                className="group flex cursor-pointer flex-col max-md:w-[80vw] max-md:shrink-0 max-md:snap-start"
+              >
+                <div className="relative mb-6 flex aspect-[4/4.5] w-full items-center justify-center overflow-hidden rounded-[20px] bg-zinc-900">
+                  <Image
+                    src={step.image}
+                    alt={step.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    className="absolute inset-0 h-full w-full object-cover opacity-80 transition-all duration-700 ease-in-out group-hover:scale-110 group-hover:opacity-100"
+                  />
+                </div>
 
-              <div className="flex flex-grow flex-col">
-                <h3 className="mb-2 text-xl max-md:text-2xl font-extrabold tracking-tight text-white">
-                  {step.title}
-                </h3>
+                <div className="flex flex-grow flex-col">
+                  <h3 className="mb-2 text-xl max-md:text-2xl font-extrabold tracking-tight text-white">
+                    {step.title}
+                  </h3>
 
-                <p className="mb-6 text-[15px] max-md:text-base font-regular leading-[1.5em] text-zinc-400">
-                  {step.description}
-                </p>
-              </div>
-            </motion.div>
-          ))}
+                  <p className="mb-6 text-[15px] max-md:text-base font-regular leading-[1.5em] text-zinc-400">
+                    {step.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         <div className="mt-16 w-full border-b border-white/10 max-md:hidden md:-mx-6 md:mt-30 md:w-[calc(100%_+_3rem)]" />

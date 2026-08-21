@@ -17685,3 +17685,433 @@ animationName none x2, framer path intact, spotlight 80 cells,
 desktopUnchanged true. Build: Compiled successfully. IO-pause/frame-cap are
 code-verified only (pane freezes rAF). Note: the dev server itself adds
 constant overhead — judge feel on `bun run build && bun start`.
+
+## Brand-strategy SubServices — tags rounded-lg (mobile only)
+SubServiceCard.tsx:88 tag span: appended `max-md:rounded-lg` to the existing
+`rounded-full` (base pill stays; the max-md variant wins below md).
+Verified 390: all 16 tags borderRadius 10px (project scale: --radius .625rem ->
+rounded-lg = 10px), uniqueRadii ["10px"]; padding 6/16 and font 14px unchanged.
+Desktop 1265: uniqueRadii ["3.35544e+07px"] = rounded-full intact, same
+padding/font. Build: Compiled successfully.
+
+## Brand-strategy StrategyHeroSection — svh height + tighter tag gap (mobile only)
+Section already had `min-h-screen`, but that is `100vh` = the LARGE viewport on
+phones (URL bar hidden), so the hero renders taller than the visible screen on
+device. Two max-md-only classes:
+- section: `+max-md:min-h-svh` — true one-screen height below md. Checked first
+  that content fits: natural height (copy 258 + stats 158 + mt 64 + pad 144) =
+  624 << a typical ~745 svh, so no overflow. CareerHeroSection already uses this
+  exact class, so it is the established pattern here.
+- tag span: `mb-15` `+max-md:mb-10` (60 -> 40).
+Verified 390: minHeight 844px, sectionH 844 (fitsOneScreen), tagMb 40px,
+gapTagToTitle 40 (was 60), h1 still 174px = 3 lines intact.
+Desktop 1266: desktopUnchanged — minHeight 800px (=100vh, svh inert), tagMb
+60px, padding 96/48.
+Two measurement traps hit and resolved, both worth remembering:
+1. Scanning document.styleSheets for a utility returned 0 hits even for a
+   CONTROL class that obviously exists — the in-page scan is unreliable here.
+   Grep the built CSS chunk instead (.next/static/chunks/*.css). Note the chunk
+   is NOT under .next/static/css/. First grep also failed on backslash escaping
+   (`"max-md\\:x"` in double quotes); `grep -cF 'max-md\:x'` is correct and
+   confirmed both `max-md\:min-h-svh{min-height:100svh}` and `max-md\:mb-10`.
+2. Desktop rect gap read 40 against a 60px margin: the tag is frozen at
+   `translateY(20px); opacity:0` because desktop entry animations need rAF and
+   the pane never runs it. Rect math is invalid for entry-animated elements on
+   desktop — assert on computed margin/min-height instead.
+Build: Compiled successfully.
+
+## Brand-strategy StrategyHeroSection — taller hero (mobile only)
+Follow-up to the svh change: `max-md:min-h-svh` -> `max-md:min-h-[110svh]`.
+Kept the svh basis so the height stays device-correct (100vh on a phone is the
+LARGE viewport); 110% of it is a clear increase without leaving the same
+reference frame.
+Verified 390: minHeight 928.4px, sectionH 928 (was 844) = +84; previous task's
+values all held — tagMb 40, gapTagToTitle 40, h1 174 (3 lines), stats still 48
+above the section's bottom edge, no horizontal overflow.
+Desktop 1266: minHeight 800px (=100vh, the max-md rule inert), tagMb 60px,
+padding 96/48. sectionH reads 992, NOT 800 — desktop content exceeds the
+min-height. Pre-existing, not from this change: page.tsx:33 pins the hero with
+`md:top-[min(0px,calc(100vh-992px))]`, a hardcoded 992 written against exactly
+this height. (My assertion wrongly assumed height == min-height.)
+CSS chunk confirms `max-md\:min-h-\[110svh\]{min-height:110svh}` emitted.
+Build: Compiled successfully.
+
+## Brand-strategy StrategyHeroSection — hero taller again (mobile only)
+`max-md:min-h-[110svh]` -> `max-md:min-h-[120svh]`, same svh basis.
+Verified 390: minHeight 1012.8px, sectionH 1013 (was 928) = +85. Everything
+else held: tagMb 40, gapTagToTitle 40, h1 174 (3 lines), stats inset 48 from
+the section bottom, no horizontal overflow.
+Desktop 1265: desktopUnchanged — minHeight 800px, sectionH 992 (the known
+pre-existing content height matching page.tsx's calc(100vh-992px)), tagMb 60,
+padding 96/48. CSS chunk: min-h-\[120svh\]{min-height:120svh}.
+Build: Compiled successfully.
+
+## Brand-strategy SubServices — mobile accordion like career/OpenPositions
+Below md each service is now a collapsible row: title + circular gradient arrow
+is the header, image/description/tags collapse. Single-open, all closed at
+first (same as OpenPositions). Files: SubServiceCard.tsx + SubServices.tsx
+(openIndex state passed as `open`/`onToggle`). Card is imported only by
+brand-strategy/SubServices, so blast radius is this page.
+Mechanism — deliberately CSS, not framer: framer `animate={{height}}` writes
+inline styles at EVERY breakpoint (documented earlier this session), and an
+inline height would follow onto desktop. Instead:
+- left column gets `max-md:contents` so its children become direct grid items
+  below md; then `max-md:order-1/2/3` puts title -> image -> text (keeps the
+  earlier "image first, then content" request inside the expanded region).
+- desc+tags wrapped in two `contents` wrappers (no box from md up, so the
+  desktop flex column sees the same direct children, same gap-16, same stagger
+  order) that become a grid-rows 0fr/1fr transition below md.
+- image cell collapses via `max-md:h-0`; title becomes the toggle through an
+  onClick that early-returns on `isDesktopViewport()` (the BlogCard helper).
+Verified 390 (transitions killed before every read): collapsed cards
+96/144/144/96 with rows 0px, image 0, padding 0, and paragraphs clipped exactly
+at the card's bottom edge. Tapping card 2 -> 779 tall, image 350, order
+title/image/description correct, arrow `rotate: 90deg`, and NO navigation
+(preventDefault held). Opening card 4 closed card 2 (single-open), toggling it
+again returned all four to collapsed.
+Desktop 1266: 2 cols, gap 64, padding 48/96, left col flex gap 64, BOTH
+wrappers `display: contents`, arrow span `display: none`, image 450, card 600,
+and a dispatched click was NOT prevented — the title still navigates.
+Three measurement traps this task, all previously logged and all hit again:
+1. Frozen CSS transitions: image read 450px and rows 48px until I injected
+   `transition:none!important` + reflow. ALWAYS kill transitions before reading
+   an animated property in this pane.
+2. React state is async: clicking and measuring in ONE javascript_exec shows
+   the pre-click DOM. Click in one call, measure in the next.
+3. Tailwind v4 `rotate-90` sets the standalone `rotate` property — `transform`
+   reads "none". Also `querySelector('svg')` grabbed the <defs> holder, not the
+   icon.
+One correction to my own assertion: desktop anchor computes `display: block`,
+not `inline-block` — flex items are blockified by spec, so that was already
+true before this change.
+Build: Compiled successfully.
+
+## Brand-strategy SubServices — more gap between services (mobile only)
+Accordion rows sit flush, so the spacing between services IS the header's
+vertical padding: title anchor `max-md:py-6` -> `max-md:py-9` (24 -> 36 a side).
+Verified 390: gap between consecutive titles 48 -> 72 on all three boundaries,
+row padding 36/36, collapsed cards 120/168/168/120 (were 96/144/144/96), all
+still collapsed. Desktop 1265: desktopUnchanged — anchor padding 0/0 (the
+max-md rule is inert), card 600, 2 cols, left-col gap 64, card padding 48/96.
+Build: Compiled successfully.
+
+## Brand-strategy SubServices — smaller title + image/description gap (mobile)
+- h3: `+max-md:text-4xl` (48 -> 36). All four titles now fit ONE line (widest
+  243px in a 366px row), so every collapsed row is a uniform 112px (was
+  120/168/168/120 with two- and three-line wraps).
+- image -> description gap: put on the IMAGE as `max-md:mb-8` inside the
+  existing open/closed ternary, NOT as padding/margin on the collapsible grid
+  item — same reason as last task: a grid track cannot shrink below its item's
+  own padding, and a margin there would survive the 0fr collapse too. Because
+  the class is only emitted when `open`, the closed state keeps image height 0
+  AND margin 0px (verified), so the row still collapses completely.
+Verified 390 (transitions killed): open card title 36px/1 line, image->desc gap
+32px, image marginBottom 32px, open card 779; closed cards 112 with image h 0
+and mb 0.
+Desktop 1266: desktopUnchanged — title 72px, image mb 0, image 450, card 600,
+2 cols, gap 64, anchor padding 0.
+Assertion correction: I first expected the desktop title to be 60px (md:text-6xl)
+but 1266 >= lg (1024), so `lg:text-7xl` = 72px governs. Pick the expected value
+for the breakpoint actually being measured.
+Build: Compiled successfully.
+
+## Brand-strategy ProcessSection — mobile card carousel like BlogSection (dark)
+Below md the 4-up grid is now a native scroll-snap carousel with dots, same
+mechanics as home/BlogSection (native scroll = compositor thread, so a swipe
+never touches React; only CarouselDots re-renders, and it owns its listener).
+Dark palette untouched — section stays bg-black, cards keep zinc-900/white.
+- new wrapper div holds the scroller classes; on desktop it is layout-inert
+  (overflow visible, snap none, margin/padding 0, width == container content).
+- existing grid div doubles as the track: `max-md:flex max-md:w-max
+  max-md:flex-nowrap max-md:gap-4` (replacing max-md:gap-12).
+- cards: `max-md:w-[80vw] max-md:shrink-0 max-md:snap-start` + data-slide.
+- CarouselDots (count 4) appended inside the header block, `md:hidden`.
+DELIBERATE deviation from BlogSection: no infinite-loop copies. BlogSection
+repeats its track 2-3x to loop seamlessly; here that would load each of the
+four images three times, which undoes part of the perf pass earlier today.
+Verified 390: scroller overflow-x auto, snap `x mandatory`, scrollWidth 1321 >
+client 390, 4 slides of 312 (80vw) each `snap-start`, 4 dots, section bg
+rgb(0,0,0), card title white. Full-bleed 0..390 with cards aligned to the
+heading's 12px gutter, 50px peek of the next card.
+  Fix along the way: `w-full` pinned the scroller to 366px so `-mx-3` only
+  SHIFTED it (span 0..366, 24px short on the right). Added `max-md:w-auto` so
+  the negative margins actually widen it.
+Desktop 1266: desktopUnchanged — wrapper inert, track still grid/4 cols/gap 32,
+slide width 269 matches the grid formula (1170 - 3*32)/4 exactly, slides on one
+row, dots display none, bg black.
+Two traps, both already in this log and both hit again:
+1. rAF is frozen in the pane, so the dots never advanced on a programmatic
+   scroll. Proved it with a direct `requestAnimationFrame` probe
+   (`rafFiredSinceLastCall: false`) and then computed CarouselDots' own non-loop
+   formula by hand: scrollLeft 657 / unit 310 -> active index 2, matching the
+   visible card. Component is unmodified and already proven on BlogSection.
+2. My desktop "expected" numbers (1185/288) were invented and flagged a false
+   regression; the real content width is 1170 because innerWidth includes the
+   ~16px scrollbar. Derive expectations from the live box model, never guess.
+Build: Compiled successfully.
+
+## Brand-strategy ProjectShowcase — self-running infinite marquee (mobile, dark)
+"Self moving infinite" rules out BlogSection's swipe/snap carousel, so this is
+the CSS marquee the codebase already uses for TechLogoCarousel/OurTechStack:
+`animate-[scroll_40s_linear_infinite]` against the existing `scroll` keyframes
+(0 -> -50%), compositor-driven, no rAF and no framer. Dark palette untouched —
+ProjectCard is reused verbatim, so the cards are byte-identical to desktop's.
+- desktop two-row block: `+max-md:hidden` (unchanged otherwise).
+- new `md:hidden -mx-3 overflow-hidden` full-bleed marquee: two identical runs
+  of all 5 projects, each card `mr-4 w-[80vw]` — per-card margin, NOT a flex
+  gap on the track, because with a gap the -50% lands half a gap short and the
+  loop drifts a little every lap (RelatedArticles documents the same trap).
+  Second run `aria-hidden`.
+Verified 390: animation `scroll 40s infinite`, track 3280 with both runs
+exactly 1640 so `seamlessLoop: true` (trackW/2 === runW), 10 cards of 312x300,
+all five titles per run, wrapper full-bleed 0..390, section bg rgb(0,0,0),
+desktop rows `display: none`.
+Desktop 1266: desktopUnchanged — marquee `display: none`, rows flex, 2 rows of
+3+2 cards side by side, row gap 24, wrap height 800, bg black.
+Trap (new one, worth remembering): the marquee's images reported
+`complete/naturalWidth === 0` and I nearly called it the old 0-height card bug.
+It is a pane artifact — a page-wide probe showed `anyLazyLoadedAnywhere: false`
+across all 105 images, with only the 2 eager logos loaded. This pane never runs
+the lazy-load intersection pass, so `naturalWidth` proves nothing here; assert
+on layout boxes instead. Same probe usefully confirmed the hidden branch fetches
+nothing at either breakpoint (both branches are loading="lazy").
+Build: Compiled successfully.
+
+## Brand-strategy ProjectShowcase — dots added; marquee -> autoplay carousel
+I had skipped dots because a CSS marquee has no scroll position for
+CarouselDots to read, and dots against a continuously drifting transform would
+flicker between cards instead of marking one. So the mobile block became the
+BlogSection pattern plus PortfolioSection's autoplay: native scroll-snap +
+useInfiniteCarousel(3 copies) + CarouselDots(loop) + a setInterval that tweens
+one stride every 4s (tweenScrollLeft), pausing while a finger is down and for
+2.5s after. Still self-moving, still infinite, now swipeable AND dotted.
+Dark palette and desktop untouched; ProjectCard reused as before.
+Verified 390: scroller overflow-x auto, snap `x mandatory`, 15 slides (3 runs
+x 5) of 312, stride 328, parked at scrollLeft 1640 = exactly one run (so there
+is runway both ways), full-bleed 0..390, 5 dots (not 15) with the first active,
+bg rgb(0,0,0), old `animate-[scroll...]` gone. Dot mapping checked by hand
+against CarouselDots' loop formula: at scrollLeft 2296, index 2, and the
+visible card is "Lumina Vision" = projects[2].
+Autoplay proven by signature, not by motion: tweenScrollLeft sets inline
+`scroll-snap-type: none` synchronously and the frozen rAF never restores it, so
+that inline value appearing = a tick executed. Cleared it, and it came back
+6.3s later (4s interval).
+Desktop 1266: desktopUnchanged — mobile block display none, rows flex 3+2 side
+by side, gap 24, height 800, bg black, scroller untouched (scrollLeft 0, no
+tween signature) so the autoplay effect really is desktop-inert.
+REAL BUG found by the pane, not just a trap: `onScreen` started false and the
+first run showed no autoplay at all after 18s. A direct probe showed
+`setInterval` ticks fine here (10 ticks) but **IntersectionObserver NEVER fires
+in this pane** (`ioFired: false` for an element at top 272 of an 844 viewport).
+Fixed by defaulting `onScreen = true` — fail OPEN, so a missing/late IO callback
+can never leave the carousel frozen forever. Worth remembering twice over: IO
+callbacks are unobservable here (SpotlightGrid's IO pause from this morning is
+equally unverifiable in-pane), and any IO gate should fail open.
+Build: Compiled successfully.
+
+## Brand-strategy ProjectShowcase — dots moved above the cards (mobile)
+Mine sat under the carousel; BlogSection keeps its dots in the HEADER block.
+Moved the single CarouselDots instance out of the md:hidden carousel wrapper
+and into the header, directly after the description, `mt-8 md:hidden`. Position
+is independent of what it drives — the component only needs scrollerRef.
+Verified 390: dotsBelowDescription true, dotsAboveCards true (desc bottom 3558
+-> dots 3590 -> cards 3636), 32px under the description and 40px above the
+cards, left-aligned to the 12px gutter, 5 dots with the first active. Only one
+CarouselDots in the file (grep).
+Desktop 1265: desktopUnchanged — dots display none, header mb 136, outer gap 20,
+rows flex 3 cards side by side, height 800, bg black.
+Build: Compiled successfully.
+
+## OurValuesSection — card CTA vs career Apply Now (mobile): already matched
+Both components render on /career, so I compared them in ONE probe at 390 (the
+one-probe-both-elements pattern) instead of guessing across pages. Result: the
+mobile card CTA already equalled the Apply Now CTA on every property —
+h 48, radius 10, padding 12/12, gap 8, bg white, label 18px/700/black/-0.45px,
+chip 32x32 r8 black, arrow 16x16 gradient-filled, exactly one visible arrow.
+The ONLY difference was `justify-content` (normal vs space-between), which has
+no visual effect because both are `w-fit` (content-sized, no free space to
+distribute). Added `justify-between` to the mobile button anyway so the two
+specs agree literally -> re-probe `identical: true` across all 19 properties.
+Both already descend from the same BlogCard CTA spec matched earlier this
+session, which is why they had converged. If the user still sees a difference
+it is something computed styles do not capture — ask for a screenshot (per the
+project's visual-verification note, design deltas here are confirmed by
+user-supplied screenshots).
+Desktop 1265: desktopUnchanged — desktop card button still 56 tall, radius 14,
+gap 16, justify space-between, visible; every mobile copy display:none.
+Trap re-hit: the "visible" arrow must be found via the STANDALONE `translate`
+property; `transform` reads "none" for parked icons in Tailwind v4, and my first
+career probe consequently measured the parked arrow and reported its fill as
+black. Also `mobileBtnCount` is 3, not 1 — AnimatePresence keeps several quote
+cards mounted; that predates this change.
+Build: Compiled successfully.
+
+## OurValuesSection — mobile card CTA scaled down a step
+The button sits inside the `md:hidden` quote card, so plain classes are
+mobile-only by construction (no max-md: needed). Scaled the whole control one
+notch so it stays proportionate rather than just shrinking the shell:
+h-12 -> h-11 (48 -> 44), text-lg -> text-base (18 -> 16), chip h-8 w-8 -> h-7
+w-7 (32 -> 28), arrow h-4 w-4 -> h-3.5 w-3.5 (16 -> 14). Radius 10, padding 12,
+gap 8, white/black colours and the gradient arrow all unchanged.
+Verified 390: h 44, label 16px, chip 28x28 r8 black, arrow 14 gradient, overall
+width 204 -> 185. Desktop 1266: desktopUnchanged — desktop card button still 56
+tall, radius 14, gap 16, chip 36, space-between, visible; every edited mobile
+copy display:none.
+NOTE this diverges from the Apply Now CTA I had just matched it to (that one is
+still h 48 / 18px / chip 32). Intentional per this request; say the word if the
+two should stay locked together.
+Build: Compiled successfully.
+
+## CtaSection (all 8) — CTA vs career Apply Now: already matched; min-w removed
+Second "already matches" in a row, same cause: earlier this session I matched
+BOTH the CtaSection CTAs and Apply Now to the BlogCard spec, so they had
+converged. Measured at 390 before touching anything: h 48, radius 10, padding
+12/12, gap 8, label 18px/700/black/-0.45px, chip 32x32 r8 black, one visible
+16px gradient arrow, justify space-between, white ::before pill — all identical
+to the Apply Now values captured earlier.
+The only remaining delta was in the CODE, not the render: the CtaSections still
+carried `max-md:min-w-[11rem]` (176), which Apply Now had removed earlier when
+it was pushing that button's label and chip apart. Here it is INERT — every one
+of the 8 uses the label "Connect With Us", natural width 200 > 176 — so I
+removed it from all 8 as a zero-visual-change cleanup that makes the spec
+literally identical and stops them diverging if a label ever shortens. Applied
+to all 8 because the earlier instruction was explicitly "every page".
+Verified 390 after: `matchesApplyNow: true` across 21 properties, minWidth now
+0px, width still exactly 200 (unchanged, as predicted), labelToChipGap 8.
+Desktop 1266: desktopUnchanged — h 56, w 181, radius 14, padding 0/8, gap 16,
+label 16px white, chip 36 r14 white, ::before still `scale: 0 1` (collapsed
+until hover) with a white background.
+Trap hit TWICE in one task, both already in this log:
+1. `cs = e => getComputedStyle(e)` silently drops the `'::before'` argument, so
+   the pill read as transparent and I nearly reported the label as invisible.
+   Pass the pseudo to getComputedStyle DIRECTLY.
+2. Tailwind v4 `scale-x-0` sets the standalone `scale` property; `transform`
+   reads "none". Read `.scale` (got "0 1"), same family as the `translate` trap.
+Build: Compiled successfully.
+
+## Blog page — BlogCard + BlogFeaturedSection CTAs matched to Apply Now (mobile)
+Unlike the last two "already matched" cases, here there WAS a visible
+difference, and it was the same `max-md:min-w-[11rem]` (176px) I removed from
+Apply Now earlier — except on the blog CTAs it is ACTIVE, not inert. Label is
+"Read Article": natural width 161 < 176, so the min-width padded the button out
+to 176 and `justify-between` dumped the 15px surplus into the label/chip gap ->
+**23px instead of Apply Now's 8px**. That gap is what made them look different.
+Removed the class from BlogCard.tsx and BlogFeaturedSection.tsx (BlogCard is
+imported only by BlogListSection, so the blast radius is exactly the two
+components named).
+Verified 390 across all 6 CTAs on the page: labelToChipGap 23 -> 8, width 176 ->
+161 (== natural content width, so nothing constrains it now), and every other
+property equal to the Apply Now spec — h 48, radius 10, padding 12/12, gap 8,
+label 18px/700/black/-0.45px, chip 32x32 r8 black, one visible 16px gradient
+arrow, white ::before pill.
+One residual "diff" is a comparison artifact, not a real one: computed
+`min-width` reads `auto` here vs `0px` on Apply Now. Proved it inert — the
+button's width equals its natural content width exactly (161), so no
+min-width is constraining anything; adding `min-w-0` would be noise.
+Desktop 1266: desktopUnchanged across all 6 — h 48, radius 14, gap 12, label
+14px white, chip 32 r10, ::before still `scale: 0 1`. The two padding variants
+(20px featured / 0px card) and widths (147/127) are pre-existing source
+differences, not from this change; the removed class was max-md-scoped and
+cannot apply at 1266.
+Assertion correction: I guessed chipH 36 for desktop and briefly flagged a false
+regression — it is 32. Derive expectations from the live box model.
+Build: Compiled successfully.
+
+## Blog page — BlogCard + BlogFeaturedSection CTAs scaled down a step (mobile)
+Same one-notch reduction already applied to the OurValuesSection CTA, so the
+two stay in step: max-md:h-12 -> h-11 (48 -> 44), max-md:text-lg -> text-base
+(18 -> 16), chip max-md:h-8 w-8 -> h-7 w-7 (32 -> 28), both arrows
+max-md:h-4 w-4 -> h-3.5 w-3.5 (16 -> 14). Only the max-md values were touched;
+the desktop base classes (h-12, text-sm, h-8 w-8, h-4 w-4) are untouched.
+Verified 390 across all 6 CTAs on the page (uniform, widths all 146): h 44,
+label 16px, chip 28x28 r8 black, arrow 14, gap still 8, radius 10, padding 12,
+white ::before pill. Width 161 -> 146.
+Desktop 1266: desktopUnchanged across all 6 — h 48, radius 14, gap 12, label
+14px white, chip 32 r10, arrow 16, ::before `scale: 0 1`; the 20px/0px padding
+and 147/127 width variants are the pre-existing featured-vs-card difference.
+NOTE these blog CTAs are now a step smaller than career's Apply Now (still
+h 48 / 18px / chip 32), which they were matched to one task ago. Same
+divergence as OurValuesSection; both reduced CTAs are consistent with each
+other. Say the word if Apply Now should follow.
+Build: Compiled successfully.
+
+## Work page — WorkProjectShowcase cards: hover removed below md
+Same defect and same fix as brand-strategy/ProjectShowcase: iOS fires
+`mouseenter` on a tap and holds it until the next tap elsewhere, so a tapped
+card sat stuck in its hovered pose (scaled, title swapped for the description
+panel, siblings dimmed). work/ProjectCard is imported only by
+WorkProjectShowcase, so the blast radius is this section.
+Gated at the SOURCE rather than at each of the ~8 use sites: the props are
+aliased (`isHovered: isHoveredProp`) and re-derived as
+`const isHovered = isHoveredProp && isDesktop`, so every animate,
+AnimatePresence branch, the ctaActive timer and SpecularBorder resolve to their
+resting values on touch with the render body untouched — a 3-line diff instead
+of eight edits. `onMouseEnter` is also gated so a tap does not churn parent
+state. CSS `group-hover:` rules need no change (Tailwind v4 already wraps them
+in `@media (hover: hover)`).
+Verified by paired test at both breakpoints, invoking the component's REAL
+React handler (`__reactProps$…onMouseEnter()`): at 1266 the hover panel mounts
+("Aura Skincare / Redefining digital beauty retail…"); at 390 the identical
+call mounts nothing, title opacity stays 1, no specular border, siblings
+undimmed. Desktop hover therefore still works and mobile is inert.
+Verification dead ends worth recording (two wasted attempts before switching):
+1. `dispatchEvent(new MouseEvent('mouseenter'))` does NOT reach React —
+   React synthesises enter/leave from DELEGATED mouseover/mouseout at the root.
+   My first "mobile is inert" reading was vacuous because the desktop CONTROL
+   also showed nothing; only the control exposed the bad test.
+2. `mouseover` with bubbles + relatedTarget did not work either, and real
+   `computer{hover}` needs a screenshot, which fails here ("Browser pane is not
+   displayed"). Calling the handler off `__reactProps$` is the reliable route.
+3. Framer-driven values (sibling dim opacity, image scale) read as unchanged /
+   "none" regardless, because rAF is frozen — assert on DOM MOUNTS, not on
+   animated styles.
+Build: Compiled successfully.
+
+## Blog page — BlogHeroSection title enlarged (mobile only)
+h1 clamp `clamp(2.125rem, 13vw - 8px, 2.75rem)` -> `clamp(2.375rem, 14.4vw -
+8px, 3rem)`: 42.7 -> 48px at 390 (+12%), floor 34 -> 38, cap 44 -> 48.
+Sized against measured headroom rather than guessed: before the change the
+widest line ended 53px short of the content edge, so ~51px was the overflow
+point; 48 leaves 19px of margin.
+Verified at 320 / 390 / 430 — 3 lines at every width with identical wrapping
+("News, views" / "and everything" / "else"), noOverflow true, no page overflow;
+38.08 / 48 / 48 (cap holds at 430). The earlier 3-line requirement survives.
+Desktop 1265: desktopUnchanged — 112px (lg:text-[7rem]), weight 500, white,
+left; the edited class is max-md-scoped.
+BIG GOTCHA — the dev server stopped recompiling Tailwind mid-session. After the
+edit the h1 measured 60px in 4 lines, which I nearly reported as a bad result.
+It was `text-6xl`, the BASE class: the renamed arbitrary class matched no rule
+because the served CSS still had only the OLD class name. Chased it down:
+- the value itself is valid (`clamp(2.375rem, calc(14.4vw - 8px), 3rem)` set
+  inline computes to 48px; Tailwind emits it with the calc() stripped, which is
+  still legal inside clamp);
+- the PRODUCTION build does contain the rule (grepped the chunk);
+- but a cache-busted `fetch` of the CSS the page loads shows the SERVER itself
+  still lacks it, while it does have `max-md:h-11` from the previous task — so
+  the dev server's Tailwind pass wedged somewhere between the two tasks.
+  `touch src/app/globals.css` did not revive it.
+Verified the layout without restarting the user's dev server by applying the
+exact clamp inline to the real h1 and measuring before/after in one probe.
+Live dev-server verification of this class needs a dev-server restart; the
+production build is correct.
+Lesson: when a fresh class "does nothing", check whether the SERVED css has it
+(cache-busted fetch) before touching the markup — and note the dev chunk URL is
+content-independent, so it can also be browser-cached.
+Build: Compiled successfully.
+
+## Blog page — BlogHeroSection title reduced slightly (mobile only)
+h1 clamp `clamp(2.375rem, 14.4vw - 8px, 3rem)` -> `clamp(2.25rem, 13.6vw -
+8px, 2.875rem)`: 48 -> 45.04px at 390, floor 38 -> 36, cap 48 -> 46. Sits
+between the previous two sizes (42.7 before that task, 48 after).
+Verified LIVE this time at 320 / 390 / 430: 36 / 45.04 / 46 (cap holds at 430),
+3 lines at every width with the same wrapping ("News, views" / "and everything"
+/ "else"), noOverflow true, no page overflow, headroom 25 / 37 / 71.
+Desktop 1265: desktopUnchanged — 112px, line-height 100.8, h1 210 tall, weight
+500, white, left.
+The dev server RECOVERED on its own: before editing I re-fetched the served CSS
+and it now contained last task's `14.4vw`, and after one page request it picked
+up this task's `13.6vw` too — so it was lagging, not wedged, and no restart was
+needed. Confirmed the class was actually live (`classApplied: true`, i.e. NOT
+the 60px text-6xl fallback) before trusting any measurement — that check is now
+the cheap guard against repeating the last task's confusion.
+Build: Compiled successfully.

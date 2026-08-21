@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import type { Project } from "@/data/projects";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 import { cn } from "@/lib/utils";
 import SpecularBorder from "../ui/SpecularBorder";
 
@@ -22,8 +23,8 @@ const smoothSpring = {
 
 export default function ProjectCard({
   project,
-  isHovered,
-  isAnyHovered,
+  isHovered: isHoveredProp,
+  isAnyHovered: isAnyHoveredProp,
   onHoverStart,
   onHoverEnd,
 }: {
@@ -33,6 +34,15 @@ export default function ProjectCard({
   onHoverStart: () => void;
   onHoverEnd: () => void;
 }) {
+  // Hover is desktop-only. iOS fires `mouseenter` on a tap and then holds that
+  // state until the next tap elsewhere, so a tapped card would sit stuck in its
+  // hovered pose. Gating the two flags here rather than at each use means every
+  // animate/AnimatePresence below resolves to its resting value on touch, and
+  // the desktop branch is untouched.
+  const isDesktop = useIsDesktop();
+  const isHovered = isHoveredProp && isDesktop;
+  const isAnyHovered = isAnyHoveredProp && isDesktop;
+
   const [ctaActive, setCtaActive] = useState(false);
 
   useEffect(() => {
@@ -47,7 +57,9 @@ export default function ProjectCard({
   return (
     <Link href={project.href}>
       <motion.div
-        onMouseEnter={onHoverStart}
+        onMouseEnter={() => {
+          if (isDesktop) onHoverStart();
+        }}
         onMouseLeave={onHoverEnd}
         animate={{
           scale: isHovered ? 1.01 : 1,

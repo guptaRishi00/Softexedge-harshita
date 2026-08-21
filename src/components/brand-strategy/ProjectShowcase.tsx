@@ -2,9 +2,12 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import React, { useState } from "react";
-import SpecularBorder from "../ui/SpecularBorder";
+import React, { useEffect, useRef, useState } from "react";
+import CarouselDots from "@/components/ui/CarouselDots";
+import { tweenScrollLeft } from "@/lib/tweenScrollLeft";
+import { slideStride, useInfiniteCarousel } from "@/lib/useInfiniteCarousel";
 import { useIsDesktop } from "@/lib/useIsDesktop";
+import SpecularBorder from "../ui/SpecularBorder";
 
 const MotionImage = motion.create(Image);
 
@@ -16,6 +19,11 @@ const smoothSpring = {
 } as const;
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
+
+// Autoplay cadence for the mobile carousel. RESUME is the quiet period after a
+// swipe: advancing on top of the reader is worse than not advancing at all.
+const AUTOPLAY_MS = 4000;
+const AUTOPLAY_RESUME_MS = 2500;
 
 const projects = [
   {
@@ -67,6 +75,66 @@ export default function ProjectShowcase() {
   const row2 = projects.slice(3, 7);
 
   const isDesktop = useIsDesktop();
+
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  useInfiniteCarousel(scrollerRef, projects.length, 3, !isDesktop);
+
+  // Self-advancing half of the mobile carousel. Deliberately an interval over a
+  // scroll position rather than a frame loop: it wakes 4x a minute instead of
+  // 60x a second, and it reads scrollLeft at tick time so a swipe or a dot tap
+  // can never leave it pointing at a stale index.
+  useEffect(() => {
+    if (isDesktop) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    let pointerDown = false;
+    let lastInteraction = 0;
+    // Starts true, i.e. fails OPEN: if the observer below never reports (no
+    // IntersectionObserver, or a first callback that never arrives) the
+    // carousel still advances. Gating on a false default means one missing
+    // callback leaves it frozen forever, which is the worse failure.
+    let onScreen = true;
+
+    const hold = () => {
+      pointerDown = true;
+      lastInteraction = performance.now();
+    };
+    const release = () => {
+      pointerDown = false;
+      lastInteraction = performance.now();
+    };
+
+    el.addEventListener("pointerdown", hold, { passive: true });
+    el.addEventListener("pointerup", release, { passive: true });
+    el.addEventListener("pointercancel", release, { passive: true });
+
+    // Offscreen ticks would silently skip cards the reader never saw, and cost
+    // a tween for nothing.
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting;
+      },
+      { threshold: 0.2 },
+    );
+    io.observe(el);
+
+    const tick = setInterval(() => {
+      if (pointerDown || !onScreen) return;
+      if (performance.now() - lastInteraction < AUTOPLAY_RESUME_MS) return;
+      const stride = slideStride(el);
+      if (stride <= 0) return;
+      tweenScrollLeft(el, el.scrollLeft + stride);
+    }, AUTOPLAY_MS);
+
+    return () => {
+      clearInterval(tick);
+      io.disconnect();
+      el.removeEventListener("pointerdown", hold);
+      el.removeEventListener("pointerup", release);
+      el.removeEventListener("pointercancel", release);
+    };
+  }, [isDesktop]);
 
   const getRowHeight = (isRow1: boolean) => {
     if (hoveredId === null) return isRow1 ? "48%" : "52%";
@@ -123,9 +191,23 @@ export default function ProjectShowcase() {
               solutions that elevate brands and drive revenue.
             </motion.p>
           </div>
+
+          {/* In the header, under the description — where BlogSection keeps
+              its dots. Position is independent of the scroller they drive;
+              CarouselDots only needs the ref. */}
+          <CarouselDots
+            scrollerRef={scrollerRef}
+            count={projects.length}
+            loop
+            className="mt-8 md:hidden"
+          />
         </div>
 
-        <div className="flex h-auto w-full flex-col gap-4 md:h-[100vh] md:gap-6">
+        {/* Below md the two stacked rows are replaced by the carousel in the
+            md:hidden block underneath. Both branches use the same ProjectCard,
+            and every image is `loading="lazy"`, so the hidden branch fetches
+            nothing at either breakpoint. */}
+        <div className="flex h-auto w-full flex-col gap-4 max-md:hidden md:h-[100vh] md:gap-6">
           <motion.div
             animate={isDesktop ? { height: getRowHeight(true) } : undefined}
             transition={smoothSpring}
@@ -155,6 +237,49 @@ export default function ProjectShowcase() {
               />
             ))}
           </motion.div>
+        </div>
+
+        {/* Mobile: an endless native scroll-snap carousel that also advances
+            itself — same mechanics as home/BlogSection, plus PortfolioSection's
+            autoplay. It replaced a pure CSS marquee because pagination dots
+            need a real scroll position to read: a continuously drifting
+            transform has none, and dots against it would flicker between cards
+            rather than mark one. Native scrolling still runs on the compositor,
+            so a swipe never touches React.
+
+            Three runs, because useInfiniteCarousel parks in the second one so
+            there is a full run of runway in both directions. Per-card `mr-4`
+            rather than a flex gap on the track keeps every run pixel-identical,
+            which is what makes the wrap invisible. */}
+        <div className="md:hidden">
+          <div
+            ref={scrollerRef}
+            className="no-scrollbar relative -mx-3 snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-pl-3 px-3"
+          >
+            <div className="flex w-max flex-nowrap">
+              {[0, 1, 2].map((run) => (
+                <div
+                  key={run}
+                  className="flex shrink-0"
+                  aria-hidden={run !== 0}
+                >
+                  {projects.map((project) => (
+                    <div
+                      key={`${run}-${project.id}`}
+                      data-slide
+                      className="mr-4 w-[80vw] shrink-0 snap-start"
+                    >
+                      <ProjectCard
+                        project={project}
+                        hoveredId={hoveredId}
+                        setHoveredId={setHoveredId}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

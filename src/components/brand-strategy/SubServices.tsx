@@ -65,6 +65,9 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   const container = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  // Mobile-only accordion state (the card ignores it from md up). Single-open,
+  // all closed initially — same behaviour as career/OpenPositions.
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const { scrollYProgress } = useScroll({
     target: container,
@@ -113,6 +116,10 @@ export default function SubServices({ children }: { children?: ReactNode }) {
               registerRef={(el: HTMLDivElement | null) => {
                 cardRefs.current[i] = el;
               }}
+              open={openIndex === i}
+              onToggle={() =>
+                setOpenIndex((prev) => (prev === i ? null : i))
+              }
               {...service}
             />
           ))}
