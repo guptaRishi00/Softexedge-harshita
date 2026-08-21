@@ -17658,3 +17658,30 @@ Verified 390: ET_TLC 56, whiteAboveCard 80 (first probe read 160 — my
 expression double-counted TLC's pb; corrected probe 80), whiteBelowCard 64,
 Faq_Blog 64. Desktop 1265 desktopUnchanged: wrapper padding 12, section forced
 pads 0, faqBlogGap 40. Build: Compiled successfully.
+
+## Site-wide mobile jank + slow taps — killed the always-running animators
+IosClickRescue's own header documents the mechanism: iOS withholds native
+clicks when the page mutates during the tap's hover pass, and "this site's
+always-running animations" trip that constantly, so ~2/3 of taps only landed
+via the 120ms rescue timer = "buttons take time to respond". Audit of every
+rAF/interval/useScroll surface found most already gated (SmoothScroll, canvas
+hero painter, LogoLoop, DomeGallery, navbar, ShrinkOnOverlap, cyclers are
+slow-interval). Two escaped the earlier hunt:
+1. ui/SpotlightGrid (EVERY page's CtaSection + blog hero): permanent rAF doing
+   setState per frame -> 80-cell React re-render at 60fps from mount to
+   unmount, even offscreen. Fix: IntersectionObserver starts/stops the loop
+   (offscreen frames are invisible, zero UI change) + commits capped at ~30fps
+   below md (drift is slow; visually identical).
+2. */OurTechStack (brand-strategy + 7 service pages): framer x-tween marquee
+   wrote inline transforms every frame for 2 tracks on mobile. Fix: gate
+   animate to useIsDesktop(); below md the same motion runs as CSS
+   `max-md:animate-[scroll_50s_linear_infinite(_reverse)]` against the
+   existing `scroll` keyframes (0 -> -50%, identical geometry) — the pattern
+   TechLogoCarousel already uses. Desktop keeps framer untouched.
+Applied via asserting codemod (9 files). Verified 390: both tracks
+animation `scroll 50s` (row 2 `reverse`), NO inline framer transform;
+spotlight 80 cells render as before (sweep mode). Desktop 1266: track
+animationName none x2, framer path intact, spotlight 80 cells,
+desktopUnchanged true. Build: Compiled successfully. IO-pause/frame-cap are
+code-verified only (pane freezes rAF). Note: the dev server itself adds
+constant overhead — judge feel on `bun run build && bun start`.

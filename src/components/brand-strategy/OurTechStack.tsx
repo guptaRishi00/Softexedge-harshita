@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 import Image from "next/image";
 
 const techStack = [
@@ -13,6 +14,12 @@ const techStack = [
 ];
 
 export default function OurTechStack() {
+  // Below md the marquee is CSS-driven (same 50s linear loop, second row
+  // reversed): framer's x tween wrote an inline transform from the main
+  // thread on every frame for both tracks, on every page, forever -- the
+  // homepage's TechLogoCarousel already runs as a CSS marquee for the same
+  // reason. Desktop keeps the framer tween untouched.
+  const isDesktop = useIsDesktop();
   const LogoTrack = () => (
     <div className="flex shrink-0 gap-5 pr-5">
       {techStack.map((tech) => (
@@ -71,8 +78,8 @@ export default function OurTechStack() {
 
         <div className="relative flex w-full flex-col gap-5 overflow-hidden rounded-3xl py-16 max-md:gap-4 max-md:py-6">
           <motion.div
-            className="flex w-max flex-nowrap"
-            animate={{ x: ["0%", "-50%"] }}
+            className="flex w-max flex-nowrap max-md:animate-[scroll_50s_linear_infinite]"
+            animate={isDesktop ? { x: ["0%", "-50%"] } : undefined}
             transition={{
               x: {
                 repeat: Infinity,
@@ -89,8 +96,8 @@ export default function OurTechStack() {
           </motion.div>
 
           <motion.div
-            className="flex w-max flex-nowrap"
-            animate={{ x: ["-50%", "0%"] }}
+            className="flex w-max flex-nowrap max-md:animate-[scroll_50s_linear_infinite_reverse]"
+            animate={isDesktop ? { x: ["-50%", "0%"] } : undefined}
             transition={{
               x: {
                 repeat: Infinity,

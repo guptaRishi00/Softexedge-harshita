@@ -207,8 +207,22 @@ export default function SpotlightGrid({
 
     let raf = 0;
     let start = 0;
+    // Below md the main thread is the scarce resource: a 60fps setState loop
+    // re-rendering the whole grid was each page's single largest constant
+    // cost (and its per-frame mutations kept iOS withholding native clicks --
+    // see IosClickRescue). ~30fps commits of a drift this slow are visually
+    // identical there.
+    const minFrameMs = window.matchMedia("(max-width: 767px)").matches
+      ? 33
+      : 0;
+    let lastCommit = -Infinity;
     const tick = (now: number) => {
       if (!start) start = now;
+      if (now - lastCommit < minFrameMs) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      lastCommit = now;
       const t = ((now - start) / 1000) * speed;
 
       if (sweep) {
@@ -245,10 +259,24 @@ export default function SpotlightGrid({
 
       raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
+
+    // Run only while on screen. The loop used to run from mount to unmount,
+    // so every page paid for its CTA's spotlight for the whole visit even
+    // with the section a full viewport away. Offscreen frames are invisible
+    // by definition, so pausing cannot change what anyone sees.
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (!raf) raf = requestAnimationFrame(tick);
+      } else {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    });
+    io.observe(el);
 
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       ro.disconnect();
     };
   }, [
