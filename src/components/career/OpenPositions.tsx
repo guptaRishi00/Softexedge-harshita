@@ -119,7 +119,7 @@ export default function OpenPositions() {
   return (
     <section className="w-full bg-black px-4 max-md:px-3 md:px-10 pt-16 pb-24 md:pt-20 md:pb-32 font-sans selection:bg-[#2E5BFF]/20">
       <div className="mx-auto w-full">
-        <div className="flex flex-col items-center mb-16 max-md:items-start max-md:text-left md:mb-24">
+        <div className="flex flex-col items-center mb-16 max-md:mb-4 max-md:items-start max-md:text-left md:mb-24">
           <motion.div
             data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}

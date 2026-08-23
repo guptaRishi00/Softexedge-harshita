@@ -116,24 +116,30 @@ export default function ProcessSection() {
                   delay: index * 0.1,
                 }}
                 viewport={{ once: true }}
-                className="group flex cursor-pointer flex-col max-md:w-[80vw] max-md:shrink-0 max-md:snap-start"
+                className="group flex cursor-pointer flex-col max-md:relative max-md:h-[450px] max-md:w-[80vw] max-md:shrink-0 max-md:snap-start max-md:overflow-hidden max-md:rounded-[2.5rem]"
               >
-                <div className="relative mb-6 flex aspect-[4/4.5] w-full items-center justify-center overflow-hidden rounded-[20px] bg-zinc-900">
+                {/* Below md this becomes career/ApplicationJourney's card: the
+                    image fills the whole card, a scrim darkens the bottom, and
+                    the copy is overlaid on it. Desktop keeps the stacked
+                    image-above-text layout, so every override is max-md. */}
+                <div className="relative mb-6 flex aspect-[4/4.5] w-full items-center justify-center overflow-hidden rounded-[20px] bg-zinc-900 max-md:absolute max-md:inset-0 max-md:mb-0 max-md:aspect-auto max-md:rounded-none">
                   <Image
                     src={step.image}
                     alt={step.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                    className="absolute inset-0 h-full w-full object-cover opacity-80 transition-all duration-700 ease-in-out group-hover:scale-110 group-hover:opacity-100"
+                    className="absolute inset-0 h-full w-full object-cover opacity-80 transition-all duration-700 ease-in-out group-hover:scale-110 group-hover:opacity-100 max-md:opacity-100"
                   />
+
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent md:hidden" />
                 </div>
 
-                <div className="flex flex-grow flex-col">
-                  <h3 className="mb-2 text-xl max-md:text-2xl font-extrabold tracking-tight text-white">
+                <div className="flex flex-grow flex-col max-md:absolute max-md:inset-0 max-md:z-10 max-md:justify-end max-md:p-8 max-md:py-11">
+                  <h3 className="mb-2 text-xl max-md:mb-3 max-md:text-2xl font-extrabold max-md:font-medium tracking-tight text-white">
                     {step.title}
                   </h3>
 
-                  <p className="mb-6 text-[15px] max-md:text-base font-regular leading-[1.5em] text-zinc-400">
+                  <p className="mb-6 text-[15px] max-md:mb-0 max-md:text-base font-regular leading-[1.5em] max-md:leading-[1.25em] text-zinc-400 max-md:text-white/80">
                     {step.description}
                   </p>
                 </div>

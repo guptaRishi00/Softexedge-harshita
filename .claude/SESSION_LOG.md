@@ -18115,3 +18115,167 @@ needed. Confirmed the class was actually live (`classApplied: true`, i.e. NOT
 the 60px text-6xl fallback) before trusting any measurement — that check is now
 the cheap guard against repeating the last task's confusion.
 Build: Compiled successfully.
+
+## Career OpenPositions — gap under the heading reduced (mobile only)
+From the screenshot: the dead space between "Open Positions" and the first job
+row. Measured it as two stacked sources — the heading block's `mb-16` (64) plus
+the first row's own `py-6` (24) — for a 91px visual gap from the h2 to the first
+job title. Added `max-md:mb-8` (64 -> 32) to the heading block only; left the
+row padding alone since it also sets the spacing BETWEEN rows.
+Verified 390: visual gap 91 -> 59, header margin 32. Rows untouched — pitch 84,
+row padding 24, all three titles present.
+Desktop 1266: desktopUnchanged — header margin 96 (md:mb-24 still wins,
+max-md rule inert), block-bottom-to-list exactly 96, items-center, row padding
+48, 3 rows.
+Assertion correction: I first expected the desktop h2-bottom-to-list distance to
+equal the 96px margin and flagged a false regression at 66. The h2's gradient
+span carries `pb-[0.2em]`, so its box extends past the block's content bottom —
+measure from the BLOCK's bottom (96, exact) when the margin is what you mean.
+Build: Compiled successfully.
+
+## Career OpenPositions — heading gap reduced again (mobile only)
+`max-md:mb-8` -> `max-md:mb-4` (32 -> 16). Visual gap h2 -> first job title
+59 -> 43 (was 91 before this pair of tasks).
+Verified 390: header margin 16, block-bottom-to-list 16, no overlap; rows still
+untouched — pitch 84, row padding 24, all three titles.
+Desktop 1266: desktopUnchanged — margin 96, block-bottom-to-list 96,
+items-center, row padding 48, 3 rows; max-md rule inert.
+The remaining 43px is now mostly the first row's own `py-6` (24), which is
+shared with the between-row spacing the user asked to INCREASE earlier, so it
+is deliberately untouched. Cutting further means either decoupling the first
+row's top padding or reducing the eyebrow/heading block's internal spacing.
+Build: Compiled successfully.
+
+## Work slug — "Visit Live Site" matched to career Apply Now (mobile only)
+Third instance of the same `max-md:min-w-[11rem]` defect. Here it was ACTIVE:
+natural width 168 < 176, so the min-width padded the button out and
+`justify-between` pushed the 8px surplus into the label/chip gap -> 16px vs
+Apply Now's 8px. Every other property already matched (h 48, radius 10, padding
+12/12, gap 8, label 18px/700/black/-0.45px, chip 32x32 r8 black, one visible
+16px gradient arrow, white ::before pill).
+Removed the class from work/ProjectDetailsContent.tsx; no other work component
+carries it (grep).
+Verified 390 on /work/aura-skincare: `matchesApplyNow: true` across 21
+properties, width 176 -> 168 (== natural), labelToChipGap 16 -> 8.
+Desktop 1265: desktopUnchanged — h 56, radius 14, padding 0/8, gap 16, label
+16px white, chip 36 r14 white, ::before `scale: 0 1`, width 152.
+Running tally of the min-w-[11rem] cleanup: career Apply Now (earliest), 8x
+CtaSection, BlogCard, BlogFeaturedSection, and now this one — the class is gone
+from every CTA that used it.
+Build: Compiled successfully.
+
+## Brand-strategy SubServices — bigger row gap, closing rule, bigger header gap
+Three mobile-only changes (last one from a mid-turn follow-up):
+1. Row gap: title anchor `max-md:py-9` -> `max-md:py-10` (36 -> 40 a side), so
+   the gap between service titles is 72 -> 80.
+2. Closing divider under E-Commerce: each row drew only its OWN top rule, so the
+   list ended open. Added a matching bottom rule via `max-md:after:*` on the
+   last card, driven by a new `isLast` prop from SubServices. A `:last-child`
+   selector would NOT work here — the cards are followed by the optional
+   `children` slot and the runway spacer, so the last DOM child is not the last
+   card.
+3. Header -> first divider gap: header container `max-md:pb-12` -> `pb-16`
+   (48 -> 64).
+Verified 390: gapBetweenTitles [80,80,80], row padding 40; last card
+`::after` content '""' at 1px white/10 while the other three have content
+'none' and all four keep their top rule; gapDescToDivider 48 -> 64. Expanded
+the last row (763 tall, image 350) and the closing rule survives at the bottom
+edge of the expanded card.
+Desktop 1265: desktopUnchanged — header padding 120/128, anchor padding 0, card
+600, 2 cols, real 1px top border, and BOTH pseudo rules `content: none` (they
+are max-md-scoped).
+Trap: the first `.click()` after a navigate did nothing — React had not
+hydrated yet, so no onClick was attached (and the raw anchor did not navigate
+either). Confirmed hydration by checking for `__reactProps$` with an onClick
+before retrying; the retry toggled correctly. Check hydration before trusting a
+click right after navigation.
+Build: Compiled successfully.
+
+## Brand-strategy SubServiceCard — title/image gap + tags hidden (mobile only)
+1. Gap title -> image: the open-state image class gained `max-md:mt-6`, so the
+   40px from the title row's own padding becomes 64.
+2. Tags hidden below md: `max-md:hidden` on the tag row. Kept it in the DOM and
+   hid it with CSS rather than conditionally rendering — desktop keeps the exact
+   same element, and `display: none` also collapses the 32px flex gap above it,
+   so no stray space is left behind.
+Verified 390 with E-Commerce expanded: gapTitleToImage 40 -> 64 (image
+margin-top 24), tag row `display: none` / height 0 / no visible tags, paragraph
+still visible, card 763 -> 675 (+24 gap, -112 tags and their gap).
+Desktop 1265: desktopUnchanged — tag row `flex` with all 4 tags visible and
+pt-16, image margins 0/0 and 450 tall, card 600, 2 cols, left-col gap 64. (The
+card's React `open` state is still true at this width, which is exactly the case
+worth checking: the max-md classes stay inert.)
+Build: Compiled successfully.
+
+## Brand-strategy ProcessSection — cards restyled like ApplicationJourney (mobile)
+Below md the carousel cards are now career/ApplicationJourney's card: image
+fills the whole card, a bottom scrim darkens it, copy overlaid at the bottom,
+450 tall, rounded-[2.5rem]. Index badge deliberately omitted per the request.
+Desktop keeps the stacked image-above-text layout, so every override is max-md
+(plus one `md:hidden` scrim div):
+- outer: `max-md:relative h-[450px] overflow-hidden rounded-[2.5rem]`
+- image cell: `max-md:absolute inset-0 mb-0 aspect-auto rounded-none`, image
+  `max-md:opacity-100` (the scrim does the darkening, as in AJ)
+- copy: `max-md:absolute inset-0 z-10 justify-end p-8 py-11` — `inset-0 +
+  justify-end` rather than `bottom-0`, to match AJ's box exactly
+- h3 `max-md:mb-3 text-2xl font-medium`; p `max-md:mb-0 text-base
+  leading-[1.25em] text-white/80`
+Verified by measuring an ACTUAL ApplicationJourney card at 390 first, then
+diffing all 4 process cards against it: `allMatchApplicationJourney: true`
+across 19 properties (450 tall, radius 40, overflow hidden, image fills at
+opacity 1 object-cover, scrim present, copy absolute/flex-end/44-32 padding,
+h3 24px/500/white/mb12, p 16px/leading20/mb0/white-80) and `noIndexBadge: true`.
+Carousel intact: snap `x mandatory`, 4 slides of 312 at snap-start, scrollable,
+4 dots, cards aligned to the 12px gutter.
+Desktop 1265: card static/no radius/overflow visible, image cell relative with
+20px radius + mb 24 + aspect 4/4.5 + opacity .8, scrim `display: none`, copy
+static, h3 20px/800, p 15px/mb24/leading22.5, image above text.
+Assertion correction: the desktop p colour flagged as changed only because I
+guessed its serialization — `lab(65.6464 1.53494 -5.42429)` IS text-zinc-400
+here. Proved it with a control element carrying the same class, and confirmed
+`max-md:text-white/80` is inert at that width.
+Build: Compiled successfully.
+
+## Brand-strategy — PortfolioSection replaces ProjectShowcase below md
+New client wrapper `brand-strategy/ProjectsSlot.tsx` renders
+home/PortfolioSection below md and ProjectShowcase from md up; page.tsx now
+renders `<ProjectsSlot />` in place of `<ProjectShowcase />`.
+Conditional MOUNT, not a CSS `max-md:hidden`/`md:hidden` pair, and the reason
+matters: PortfolioSection's heavy half (pinned horizontal scroll, follow
+cursor, auto-advance) lives inside `gsap.matchMedia("(min-width: 768px)")`.
+Rendered-but-hidden on desktop it would still register those ScrollTriggers
+against a display:none section and add its pin distance to the page — precisely
+the kind of thing that would disturb this page's sticky/ShrinkOnOverlap stack.
+The state default is INVERTED vs `useIsDesktop`: it starts false = "not
+mobile", so the server and the first client render both emit ProjectShowcase.
+Desktop paints the correct section immediately and never mounts
+PortfolioSection; mobile pays one swap after hydration. Starting `true` would
+have put the mobile section in the SSR output and flashed it on every desktop
+load.
+Verified 390: `#portfolio` mounted and visible (591 tall, bg #0a0a0a), 5 project
+slides, headings "Our Projects"/"Traul"/…, ProjectShowcase NOT mounted, correct
+position between Our Tech Stack and Testimonials, no page overflow.
+Desktop 1265: desktopUnchanged — PortfolioSection NOT mounted at all,
+ProjectShowcase intact (2 rows of 3+2 cards side by side, wrap 800 tall, black).
+SSR proof: the served HTML contains "Selected Work" once and `id="portfolio"`
+ZERO times, so desktop never even receives the mobile section.
+Build: Compiled successfully.
+
+## Brand-strategy — bigger gap OurTechStack -> ProjectsSlot (mobile only)
+Lever chosen deliberately: PortfolioSection (what ProjectsSlot renders below md)
+is SHARED with the homepage, so touching its own spacing would move the
+homepage too. brand-strategy/OurTechStack.tsx is a per-page copy (its md5
+differs from the 7 service-page copies), so the padding lives there safely:
+`max-md:pb-8` -> `max-md:pb-16` (32 -> 64).
+Measured first: the two sections abut at 0 and PortfolioSection has NO lead-in —
+its panel starts with a full-bleed image at offset 0, with the "Portfolio / Our
+Projects" copy overlaid 228px inside it. So the entire visible gap was just the
+tech section's own bottom padding.
+Verified 390: padding-bottom 32 -> 64, distance from the last tech content to
+the portfolio panel image 56 -> 88 (+32), sections still flush, portfolio 591
+tall, no page overflow.
+Desktop 1265: desktopUnchanged — tech padding 0/0, margin-top 0, gap to
+ProjectShowcase 0, PortfolioSection still not mounted. The other pages'
+OurTechStack copies do not contain `max-md:pb-16` (grep = 0), so no service page
+moved.
+Build: Compiled successfully.
