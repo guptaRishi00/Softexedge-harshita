@@ -102,6 +102,68 @@ export default function HomePage() {
     };
   }, []);
 
+  // Shrink fallback for browsers WITHOUT scroll-driven animations — notably
+  // iOS Safari before 26. Where `animation-timeline` is supported the CSS in
+  // globals.css owns the shrink and not a line of this runs.
+  //
+  // This is deliberately not a return to the GSAP scrub: that drove pinning,
+  // position:fixed and layout every frame. This is one passive, rAF-coalesced
+  // listener writing a transform on three elements — no reads of anything but
+  // the cover's own rect, and no layout forced beyond it.
+  useEffect(() => {
+    if (
+      typeof CSS !== "undefined" &&
+      CSS.supports("animation-timeline: view()")
+    ) {
+      return;
+    }
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+
+    const pairs: Array<
+      [
+        React.RefObject<HTMLDivElement | null>,
+        React.RefObject<HTMLDivElement | null>,
+      ]
+    > = [
+      [aboutInnerRef, portfolioRef],
+      [statsInnerRef, serviceContainerRef],
+      [testimonialsInnerRef, contactContainerRef],
+    ];
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      for (const [innerRef, coverRef] of pairs) {
+        const inner = innerRef.current;
+        const cover = coverRef.current;
+        if (!inner || !cover) continue;
+        // 0 while the cover is still below the fold, 1 once it has fully
+        // arrived — the same mapping as the CSS `entry 0% -> entry 100%`.
+        const top = cover.getBoundingClientRect().top;
+        const p = Math.min(1, Math.max(0, 1 - top / window.innerHeight));
+        inner.style.transform = p
+          ? `scale(${1 - 0.15 * p}) translateY(${40 * p}px)`
+          : "";
+      }
+    };
+    // Cancel-and-rearm rather than a pending flag: a flag cleared only inside
+    // the callback latches forever if that callback never runs.
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+      for (const [innerRef] of pairs) {
+        if (innerRef.current) innerRef.current.style.transform = "";
+      }
+    };
+  }, []);
+
   useGSAP(() => {
     const mm = gsap.matchMedia();
 
@@ -220,7 +282,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <div className="relative">
+        <div className="relative overlap-scope">
           {/* Below md the three overlaps are CSS `position: sticky` instead of
               GSAP pins. Same effect — the held section stays put while the next
               one slides over it — but the browser does it on the compositor,
@@ -242,7 +304,7 @@ export default function HomePage() {
           >
             <div
               ref={aboutInnerRef}
-              className="origin-top md:will-change-transform bg-white pb-0 md:pb-[25vh] lg:pb-[30vh]"
+              className="overlap-held-about origin-top md:will-change-transform bg-white pb-0 md:pb-[25vh] lg:pb-[30vh]"
             >
               <AboutSection />
             </div>
@@ -250,7 +312,7 @@ export default function HomePage() {
 
           <div
             ref={portfolioRef}
-            className="relative z-10 bg-[#0a0a0a] lg:shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]"
+            className="overlap-cover-portfolio relative z-10 bg-[#0a0a0a] lg:shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]"
           >
             <PortfolioSection />
           </div>
@@ -260,14 +322,14 @@ export default function HomePage() {
               ref={statsContainerRef}
               className="relative z-0 bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)] max-md:sticky"
             >
-              <div ref={statsInnerRef} className="bg-white">
+              <div ref={statsInnerRef} className="overlap-held-stats bg-white">
                 <StatsSection />
               </div>
             </div>
 
             <div
               ref={serviceContainerRef}
-              className="relative z-10 w-full shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)] max-md:shadow-none"
+              className="overlap-cover-service relative z-10 w-full shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)] max-md:shadow-none"
             >
               <ServiceSection />
             </div>
@@ -278,7 +340,7 @@ export default function HomePage() {
             >
               <div
                 ref={testimonialsInnerRef}
-                className="origin-top md:will-change-transform"
+                className="overlap-held-testimonials origin-top md:will-change-transform"
               >
                 <ExperimentalTestimonials />
                 <TechLogoCarousel />
@@ -287,14 +349,20 @@ export default function HomePage() {
 
             <div
               ref={contactContainerRef}
-              className="relative z-30 lg:shadow-[0_-12px_24px_-2px_rgb(0_0_0_/_0.24),0_-6px_12px_-4px_rgb(0_0_0_/_0.2)]"
+              className="overlap-cover-contact relative z-30 lg:shadow-[0_-12px_24px_-2px_rgb(0_0_0_/_0.24),0_-6px_12px_-4px_rgb(0_0_0_/_0.2)]"
             >
               <ContactSection />
 
               {/* hello? */}
             </div>
 
-            <div className="[&>section]:pt-16 md:[&>section]:pt-30">
+            {/* z-40 below md: the Testimonials holder above is sticky and its
+                containing block runs to the end of THIS wrapper, so it is still
+                stuck (invisible behind Contact) once Blog arrives. Blog was
+                `static`/`z-auto`, i.e. under the holder's z-10, so the held
+                section painted back over it. Blog's own section is already
+                opaque, so a stacking rank above the holder is all it needs. */}
+            <div className="[&>section]:pt-16 max-md:relative max-md:z-40 md:[&>section]:pt-30">
               <BlogSection />
             </div>
           </div>

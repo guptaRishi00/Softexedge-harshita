@@ -18758,3 +18758,45 @@ TRADE-OFF stated: the desktop scale-0.85/y-40 scrub is NOT reproduced on mobile.
 It is the expensive half (continuous re-raster of a full-width section) and
 reinstating it would reintroduce the lag. Mobile gets the overlap itself.
 tsc clean; build Compiled successfully.
+
+## Home mobile overlaps — Testimonials reappearing + missing shrink
+Two separate bugs from the sticky rebuild.
+1. TESTIMONIALS REAPPEARED OVER BLOG. A sticky element holds until its
+   CONTAINING BLOCK ends; the Testimonials holder's block is the z-20 wrapper,
+   which runs past Contact through BlogSection — so it was still stuck (fine,
+   hidden behind Contact z-30) when Blog arrived. Blog's wrapper was
+   `position: static; z-index: auto`, i.e. BELOW the holder's z-10, so the held
+   section painted back over it. Fix: `max-md:relative max-md:z-40` on the Blog
+   wrapper (BlogSection's own section is already bg-white, so rank was all it
+   needed). Verified by HIT-TESTING 12 points across the screen where Blog sits:
+   `anyTestimonialsSurfaced: false`, 9 points land inside Blog.
+2. NO SHRINK. It was omitted last task as the expensive half. Restored as a CSS
+   scroll-driven animation (globals.css): `timeline-scope` on the shared
+   ancestor, `view-timeline-name` on each COVER, and the held inner consumes it
+   over `entry 0% -> entry 100%` to scale(0.85)/translateY(40px) — matching the
+   desktop scrub's end state. The timeline subject MUST be the cover, not the
+   held section: a stuck element's position relative to the scrollport stops
+   changing, so a `view()` timeline on itself freezes at null.
+   Plus a JS fallback gated on `@supports not (animation-timeline: view())` —
+   one passive rAF-coalesced listener writing a transform on three elements —
+   because iOS Safari before 26 has no scroll timelines and the user is likely
+   on iPhone. Where the CSS works, zero JS runs.
+Verified 390: wiring live — scope `--cover-portfolio, --cover-service,
+--cover-contact`, cover `view-timeline-name: --cover-contact`, held
+`animation-name: overlap-shrink`, `animation-timeline: --cover-contact`.
+  LIMIT: the shrink cannot be observed in this pane. Scale stayed 1.000 and
+  `getAnimations()[0].timeline.currentTime` is null. Proved this is the PANE,
+  not my CSS, by building a minimal textbook scroll-driven animation inline —
+  its ViewTimeline is ALSO inactive (currentTime null) despite
+  `CSS.supports('animation-timeline: view()') === true`. Same family as the
+  frozen rAF. Needs an on-device check.
+Desktop 1265: desktopUnchanged — blog wrapper still static/z-auto (max-md rules
+inert), holders `relative`, held `animation-name: none`, `timeline-scope: none`,
+4 pin-spacers incl. portfolio's, stats wrapper -800px.
+  Assertion correction (twice now): asserting "no inline transform" on desktop
+  flags a false regression, because GSAP legitimately writes
+  `translate: none; rotate: none; scale: none; transform: translate(0px, 0px)`
+  there. The right test is that MY fallback's distinctive
+  `scale(n) translateY(npx)` format is absent — it is, and the fallback returns
+  early on any browser with scroll-timeline support anyway.
+tsc clean; build Compiled successfully.

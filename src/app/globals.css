@@ -306,3 +306,70 @@ body {
     filter: none !important;
   }
 }
+
+/* Mobile overlap shrink — the desktop counterpart is a GSAP scrub, but that is
+   per-frame main-thread JS and it measurably janked on a phone, which is why the
+   mobile overlaps are CSS sticky. This gives back the shrink without giving back
+   the jank: a scroll-driven animation, so the compositor runs it and nothing
+   listens to scroll.
+
+   The timeline subject is the COVERING section, never the held one. A held
+   section is `position: sticky`, and once stuck its position relative to the
+   scrollport stops changing — a `view()` timeline on itself would simply freeze.
+   Watching the cover ENTER the viewport gives exactly the desktop mapping:
+   fully-covered == fully-shrunk.
+
+   Progressive enhancement by design. Where `animation-timeline` is unsupported
+   (notably iOS Safari before 26) the whole block is skipped and the overlap
+   still works — it just holds at full size rather than shrinking. */
+@supports (animation-timeline: view()) {
+  @media (max-width: 767px) {
+    .overlap-scope {
+      timeline-scope: --cover-portfolio, --cover-service, --cover-contact;
+    }
+
+    .overlap-cover-portfolio {
+      view-timeline-name: --cover-portfolio;
+      view-timeline-axis: block;
+    }
+    .overlap-cover-service {
+      view-timeline-name: --cover-service;
+      view-timeline-axis: block;
+    }
+    .overlap-cover-contact {
+      view-timeline-name: --cover-contact;
+      view-timeline-axis: block;
+    }
+
+    /* `both` so the end state holds while the cover sits over it, rather than
+       snapping back to full size the moment the range is exceeded. */
+    .overlap-held-about,
+    .overlap-held-stats,
+    .overlap-held-testimonials {
+      animation: overlap-shrink linear both;
+      animation-range: entry 0% entry 100%;
+      will-change: transform;
+    }
+
+    .overlap-held-about {
+      animation-timeline: --cover-portfolio;
+    }
+    .overlap-held-stats {
+      animation-timeline: --cover-service;
+    }
+    .overlap-held-testimonials {
+      animation-timeline: --cover-contact;
+    }
+  }
+}
+
+/* Matches the desktop scrub's end state (scale 0.85, y 40). The held elements
+   carry `origin-top`, so it shrinks away from the arriving section. */
+@keyframes overlap-shrink {
+  from {
+    transform: scale(1) translateY(0);
+  }
+  to {
+    transform: scale(0.85) translateY(40px);
+  }
+}
