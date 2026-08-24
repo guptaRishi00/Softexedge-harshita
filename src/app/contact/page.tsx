@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import React from "react";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import ContactFaqSection from "@/components/contact/ContactFaqSection";
@@ -15,11 +15,31 @@ export const metadata: Metadata = {
   description: "Let's build something worth talking about with Softexedge.",
 };
 
+// Same treatment as /work, and for the same reason: this page's root wrapper is
+// `bg-white` while the hero under it is black, so the chrome read white against
+// a black hero. Route-scoped, so only /contact gets it. Desktop browsers ignore
+// theme-color entirely.
+export const viewport: Viewport = {
+  themeColor: "#000000",
+};
+
 type Props = {};
 
 export default function ContactPage({}: any) {
   return (
     <div className="bg-white">
+      {/* theme-color above only tints the browser CHROME; the notch/safe-area
+          and the overscroll gutters are painted from the CANVAS, which
+          propagates from <html> — or from <body> when html is transparent, as
+          here (globals.css does `body { @apply bg-background }`, and
+          --background is white). Both elements live in the root layout, so a
+          route-scoped style tag is what darkens the canvas for /contact alone;
+          it unmounts on client navigation away. The max-width guard leaves
+          desktop — where the canvas shows only in rubber-band overscroll —
+          exactly as it was. Copied deliberately from work/page.tsx: without it
+          the notch stays white even with theme-color set. */}
+      <style>{`@media (max-width:767px){html{background-color:#000}}`}</style>
+
       <Header onDark dropdown />
 
       <div className="relative z-0 md:-mb-[100vh]">

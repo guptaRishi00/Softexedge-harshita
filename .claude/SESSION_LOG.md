@@ -18800,3 +18800,33 @@ inert), holders `relative`, held `animation-name: none`, `timeline-scope: none`,
   `scale(n) translateY(npx)` format is absent — it is, and the fallback returns
   early on any browser with scroll-timeline support anyway.
 tsc clean; build Compiled successfully.
+
+## Black notch on /contact and /work (mobile only)
+/work ALREADY had this from earlier work, so the change is /contact only —
+patched with the exact pattern work/page.tsx proved, which is two parts, not
+one:
+1. `export const viewport: Viewport = { themeColor: "#000000" }` — tints the
+   browser CHROME.
+2. a route-scoped `<style>{'@media (max-width:767px){html{background-color:#000}}'}</style>`
+   — the notch/safe-area and overscroll gutters are painted from the CANVAS,
+   which propagates from <html> (or <body> when html is transparent, which is
+   the case here: globals.css does `body { @apply bg-background }` with
+   --background white). theme-color alone leaves the notch WHITE; this is the
+   half the plan doc the user shared omitted entirely.
+Contact needed it for the same reason /work did: its root wrapper is `bg-white`
+while the hero beneath is black, so the chrome read white against a black hero.
+Both pages are server components, so the `viewport` export is legal.
+Verified in the SSR HTML (curl) for BOTH routes: `<meta name="theme-color"
+content="#000000">` and the canvas media rule both present; control route
+/about has neither (grep count 0), confirming route scoping.
+Verified at 390 on both: theme-color meta "#000000", html background
+rgb(0,0,0) (`canvasIsBlack`), body still white so the page itself is unchanged.
+Desktop 1265: desktopUnchanged — html background rgba(0,0,0,0), i.e. the
+max-width guard makes the canvas rule inert; hero still black; root wrapper
+still white; page renders. The meta tag ships on desktop too but browsers
+ignore it.
+  Assertion correction: expected the root wrapper to be `lab(100 0 0)` and
+  flagged a false diff — `bg-white` serializes to `rgb(255,255,255)` while
+  `--background` (on body) serializes to `lab(100 0 0)`. Same white, two
+  syntaxes; confirmed with a control element carrying `bg-white`.
+tsc clean; build Compiled successfully.
