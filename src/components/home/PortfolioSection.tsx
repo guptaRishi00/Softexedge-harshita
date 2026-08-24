@@ -102,6 +102,32 @@ export default function PortfolioSection() {
   const panelsRef = useRef<HTMLDivElement>(null);
   const isDesktop = useIsDesktop();
 
+  // Pause the panel videos while the section is offscreen. An autoplaying,
+  // looping <video> keeps decoding frames for as long as the page lives, and
+  // this section sits mid-page — so on a phone the decoder competed with
+  // scrolling long after the panel scrolled away. Fail-OPEN by design: videos
+  // autoplay by default and only an explicit "not intersecting" pauses them,
+  // so a missed IO delivery can never leave a panel stuck black (the same
+  // fail-open rule the brand-strategy carousel autoplay follows).
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof IntersectionObserver === "undefined") return;
+    const videos = Array.from(container.querySelectorAll("video"));
+    if (videos.length === 0) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const v = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting) v.play().catch(() => {});
+          else v.pause();
+        }
+      },
+      { rootMargin: "100px" },
+    );
+    for (const v of videos) io.observe(v);
+    return () => io.disconnect();
+  }, []);
+
   // Mobile autoplay. Dragging is NOT implemented in JS: below `md` the track is
   // a native scroll-snap container, so the browser owns the drag, the momentum
   // and the snapping — nothing runs per frame while the user is in control.

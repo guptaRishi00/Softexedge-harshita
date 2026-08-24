@@ -18279,3 +18279,203 @@ ProjectShowcase 0, PortfolioSection still not mounted. The other pages'
 OurTechStack copies do not contain `max-md:pb-16` (grep = 0), so no service page
 moved.
 Build: Compiled successfully.
+
+## AboutTraditional — left-aligned on mobile
+Task text said both "about page" and "blog page" (contradiction from a
+copy-paste). AboutTraditional only exists on /about (about/page.tsx), so
+worked there and flagged the mismatch rather than guessing at a nonexistent
+blog component.
+Two classes: outer flex column `items-center` -> `+max-md:items-start`; the
+motion.div wrapping eyebrow/h2/p `items-center text-center` ->
+`+max-md:items-start max-md:text-left`. The video-caption block below was
+already left-anchored (`absolute bottom-0 left-0`), so no change needed there.
+Verified 390: eyebrow/h2/p all left edge 12px (allAlignedToLeftEdge true),
+matching the video caption's left edge (12px too). Visible mobile heading
+confirmed via child-node display check: "Built by digital innovators." (the
+"A collective of" span is max-md:hidden, display none — its text still shows
+up in .textContent, which tripped an early read).
+Desktop 1265: desktopUnchanged — outer/inner alignItems center, textAlign
+center, h2 and p centered within the content box. First assertion pass flagged
+a false regression twice, both self-inflicted: h2Text comparison hit the same
+hidden-span-text trap, and the centering check compared against raw
+`innerWidth` (1266) instead of the content box center (which is offset ~8px by
+the scrollbar). Rewrote both checks to read visible text via child-node display
+filtering and to compare box-center-to-box-center instead of to viewport width.
+Build: Compiled successfully.
+
+## Homepage ServiceSection — header-to-list gap reduced (mobile only)
+Screenshot: home page (deployed vercel.app URL), "What We Offer / Our
+Services" (ServiceSection.tsx), gap between the description and the first
+service row ("Digital Marketing & Growth").
+Root cause: `mb-10 w-full pb-10` on the header wrapper — margin-bottom and
+padding-bottom BOTH unconditional (no md: prefix), stacking to 80px on the
+SAME box. Added `max-md:mb-5 max-md:pb-5` (20+20=40, half).
+Verified 390: headerMb/headerPb 40->20 each, visual gap description->first row
+80->40.
+Desktop 1265: headerMb/headerPb computed values unchanged at 40/40 (the
+max-md rule is inert) -- but the rect gap read 40 instead of the expected 80.
+Frozen-pane trap, not a regression: the description `<p>` is stuck at
+`opacity:0; transform:translateY(20px)` because its whileInView entry
+animation never settles here (rAF/IO frozen), and that 20px translate plus the
+still-hidden collapsed state accounts for the missing 40px. Computed
+margin/padding -- the actual source of the spacing -- are untouched, which is
+the reliable signal; rect-gap math is invalid for entry-animated elements on
+desktop in this pane (same trap hit on StrategyHeroSection and OpenPositions
+earlier this session).
+Build: Compiled successfully.
+
+## Mobile lag, round 2 — scroll-path work (home + brand-strategy flagged)
+Round 1 (earlier today) removed the always-running rAF/setState loops. The lag
+report persisting pointed at the next tier: work ON THE SCROLL PATH. Found and
+fixed three, all mobile-gated with desktop bit-identical:
+1. SubServices x8 (brand-strategy + 7 service pages): the
+   `useMotionValueEvent(scrollYProgress)` callback did 4x getBoundingClientRect
+   (forced layout) + setState on EVERY scroll frame — and below md its output
+   (imageHidden) is overridden by max-md classes, so it was pure per-frame
+   layout thrash. Now `if (isMobile) return;` at the top.
+2. SubServices x8: `<ReactLenis root>` ran a 60fps rAF loop from mount to
+   unmount at every viewport (home's SmoothScroll gates Lenis off mobile; this
+   one never did). Now `autoRaf={!isMobile}` — checked lenis-react source:
+   autoRaf is in the library effect's deps, and with root truthy it renders NO
+   wrapper element, so the prop gate changes neither DOM nor tree shape (no
+   remount, no hydration risk). useIsMobile is correct on the first client
+   render, so desktop constructs with autoRaf=true exactly as before.
+3. Offscreen looping videos kept the decoder busy for the whole visit:
+   PortfolioSection panel videos (home AND brand-strategy mobile via
+   ProjectsSlot) + the home hero video now pause via IntersectionObserver.
+   FAIL-OPEN per this session's IO rule: autoplay is the default and only an
+   explicit not-intersecting pauses, so a missed IO delivery can never freeze a
+   video. Applied at all breakpoints — pausing an invisible ambient loop has no
+   visible effect, and on desktop the hero pause also idles the rVFC canvas
+   painter for free.
+Verified 390 (brand-strategy): page intact, accordion opens (700/120/120/120
+after a hydration-checked toggle), html class `lenis` present (instance
+constructed, loop prop-gated — the rAF state itself is code-verified; this pane
+freezes rAF). Desktop 1265: desktopUnchanged — lenis active, 4 sticky cards at
+600, showcase mounted. tsc clean; build Compiled successfully.
+THE BIGGER FINDING: the user's screenshot is the vercel.app DEPLOYMENT, and
+git log/status show every fix from this whole session — including perf round 1
+— is UNCOMMITTED local work. "Reported earlier but isn't fixed till date" is
+true for the deployed site because nothing was ever deployed. Told the user
+explicitly: commit + deploy, then judge on the production build.
+
+## Mobile lag, round 3 — offscreen periodic cyclers
+Same report re-sent; deploy reality re-stated (all fixes still uncommitted
+locally — the live vercel site has none of them). Round 3 target: setInterval
+cyclers that keep re-rendering + animating sections that are far offscreen.
+Audit result: most home cyclers were ALREADY gated (TestimonialsRotatingWord,
+AboutSection, BlogSection rotator: desktop-only ticks; AboutImageStack:
+synchronous on-screen check at tick time; ExperimentalTestimonials: fully
+gated; Footer clock: leaf text updates, must tick). Two stragglers fixed:
+1. StrategyHeroSection x8 (brand-strategy + 7 service pages): 2.5s rotation
+   interval ran forever — each tick re-rendered the hero, swapped the split
+   image and re-laid-out the headline even five screens up. Now skips ticks
+   while the section is offscreen using AboutImageStack's exact idiom: a
+   synchronous getBoundingClientRect at tick time (one layout read / 2.5s),
+   NOT an IO flag — async flags latch when a callback never arrives (that is
+   how the old portfolio autoplay died, and this pane proved IO never fires).
+   Fail-open: no ref -> tick runs.
+2. home/ContactSection: 6s interval re-rendered the section on mobile to swap
+   a value only the desktop AnimatePresence branch reads (mobile renders the
+   static word). Gated `if (!isDesktop) return;` — the same shape BlogSection
+   already uses.
+BEHAVIORAL verification (setInterval works in this pane even though rAF is
+frozen, so tick-gating is genuinely observable): at 390, h1 innerHTML hash
+CHANGED within ~15s while the hero was visible (rotation runs), then stayed
+byte-identical for 17.5s = 7 tick periods with the hero at bottom -7193
+(ticks skipped). Desktop 1265: hero visible, hash changed again within ~15s —
+desktop rotation untouched, min-height 800 intact.
+tsc clean; build Compiled successfully.
+
+## ContactSection dep-array error — Fast Refresh artifact, no code change
+User pasted: "Previous: [] Incoming: [false]" at ContactSection — React's
+"dependency array changed size between renders". Cause: the round-3 edit
+changed the interval effect's deps from `[]` to `[isDesktop]`, and HOT RELOAD
+swapped the new effect into the ALREADY-MOUNTED component instance (stack shows
+S.scheduleRefresh, i.e. Fast Refresh via React DevTools hook). The mounted
+instance's previous render had 0 deps, the hot-updated render has 1 — hence the
+one-time complaint.
+Verified the source is sound: exactly one dep array in the file, statically
+`[isDesktop]` (grep), so the length cannot vary at runtime — and the pattern is
+identical to BlogSection/TestimonialsRotatingWord's existing rotator gates.
+Verified a FRESH load is clean: navigated /home and read the console — no
+dep-array error present (onlyErrors log shows only /noise.png 404s). The error
+cannot occur in production (no Fast Refresh there). Resolution for the user: a
+one-time dev-only artifact of hot-patching that file; hard reload clears it.
+Side finding, spawned as a separate task chip: /noise.png is referenced by
+`bg-[url('/noise.png')]` in several components but does not exist in public/ —
+~11 failed requests per page load, and the texture has never rendered.
+
+## Footer clock carousel — AutoScroll gated to visibility (all pages)
+The mobile clock marquee is embla + AutoScroll: a per-frame JS transform write
+from the main thread. It ran from mount to unmount — and a footer is offscreen
+for nearly the entire visit, so on EVERY page this loop cost frame time the
+whole session. Worse, it also ran at DESKTOP: the mobile carousel is md:hidden
+but still mounted, so an invisible display:none copy was auto-scrolling there
+too.
+Fix in layout/Footer.tsx: `setApi={setClockApi}` on the Carousel (ui/carousel
+already exports CarouselApi + setApi) and one effect — IntersectionObserver on
+`clockApi.rootNode()`, intersecting -> `plugins().autoScroll.play()`, else
+`.stop()`. Fail-OPEN per the session rule: playOnInit starts it and only an
+explicit not-intersecting stops it, so a missed IO delivery can never freeze
+the marquee. The md:hidden desktop copy never intersects -> IO reports
+not-intersecting -> that invisible loop dies too, for free.
+Drag/infinite behaviour untouched (embla owns it; the plugin only pauses).
+Verified 390: carousel visible, embla initialized (track translate3d), 8
+slides, 8 clock texts, and the shared 1s clock still ticks (04:01:25 ->
+04:01:41 across a 2s wait — setInterval is observable in this pane). AutoScroll
+motion itself is rAF-driven and frozen here, as before the change; the gate is
+fail-open so pane state = playing. Desktop 1265: desktopUnchanged — mobile
+carousel display none, 4-clock grid visible.
+tsc clean; build Compiled successfully.
+
+## Mobile lag, round 4 — 4K image decodes in the hero
+Same report re-sent a third time; fresh-eyes audit of next/image sizing found
+the biggest single-payload offender yet: the StrategyHeroSection rotating
+split-image declared `sizes="(max-width: 768px) 100vw, 50vw"` while actually
+rendering at ~86px (w-[1.8em] of a 48px font) on mobile and ~168px (1.5em of
+112px) on desktop. Result: the browser fetched and DECODED 3840px-wide JPEGs
+(seen as w=3840 in an earlier probe) for a sub-100px box — ten mounted copies
+(both layout branches x 5 rotating images), one marked priority, re-rasterised
+on every 2.5s rotation. A multi-hundred-ms decode/raster hit in the most
+visible part of brand-strategy + all 7 service pages; on a phone this alone
+reads as "stucky".
+- All 8 StrategyHeroSections: sizes -> "(max-width: 768px) 96px, 176px".
+- OurValuesSection avatar (48-56px circle) had NO sizes at all -> 100vw
+  default; now sizes="56px".
+Verified at 390: sizes attribute live on all 10 hero imgs; network log for THIS
+navigation fetches the rotator at w=256 with no new w=3840 requests. Some img
+elements still REPORT currentSrc w=3840 in this tab — that is the srcset spec's
+already-cached-larger-candidate reuse, not a failed fix; a fresh profile only
+ever downloads 256.
+tsc clean; build Compiled successfully. (Deploy reminder repeated: all four
+perf rounds remain uncommitted local work.)
+
+## Mobile navbar — tiny gradient dot on the active page
+Both Header copies patched (page/Header.tsx for about/career/contact/work/
+brand-strategy, layout/Header.tsx which home renders via Herosection — the two
+are near-identical but NOT the same file; their `hasDropdown` shapes differ, so
+the codemod matched page/Header and layout/Header needed a hand edit).
+- new per-item flag: `isActive = item.link !== "/" && pathname.startsWith(item.link)`.
+  startsWith so /work/<slug> and /blog/<slug> still mark their section; "/" is
+  excluded because it matches every path (that entry is the Services dropdown,
+  which renders as a <button> and never reaches the Link branch anyway).
+- the non-dropdown mobile Link: `block` -> `flex items-center gap-2` so the dot
+  can sit beside the name, plus `aria-current={isActive ? "page" : undefined}`
+  and a 6px `rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]` span,
+  `aria-hidden` since aria-current already carries the meaning for AT.
+No max-md: prefixes needed anywhere — the dot lives inside MobileNav, which is
+`lg:hidden`, so it is mobile-only by construction and desktop cannot render it.
+Verified at 390 by opening the real menu (hydration-checked click) on four
+routes: /work -> dot on Work only (6x6, borderRadius 3.35e7 = fully round,
+linear-gradient background, aria-current="page", exactlyOneActive true);
+/work/aura-skincare -> still Work (slug case); /blog -> Blog only; /home ->
+NO dot, which is correct since no nav item links to /home (that is also why the
+layout/Header copy can never show a dot today — patched for consistency).
+Desktop 1265: desktopUnchanged — mobile menu display none, all its links zero
+width, 5 desktop nav links carry no dot, zero visible gradient dots anywhere.
+Probe correction: my first desktop assertion counted "nav buttons" with a
+`rounded-full px-5` selector and flagged 6 vs 5 — those were the WORK PAGE
+FILTER CHIPS (All / E-Commerce / SaaS / Branding / Campaign), not nav at all.
+Re-scoped the probe to real header links (excluding footer + mobile subtree).
+tsc clean; build Compiled successfully.

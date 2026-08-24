@@ -7,14 +7,14 @@ export default function AboutTraditional() {
     <section className="relative w-full bg-black py-12 md:py-20 font-sans overflow-hidden text-white">
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay pointer-events-none" />
 
-      <div className="mx-auto flex flex-col items-center">
+      <div className="mx-auto flex flex-col items-center max-md:items-start">
         <motion.div
           data-no-mobile-entry
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center text-center max-w-5xl z-10 px-4 max-md:px-3 md:px-10"
+          className="flex flex-col items-center text-center max-w-5xl z-10 px-4 max-md:items-start max-md:px-3 max-md:text-left md:px-10"
         >
           <div className="mb-8 inline-flex items-center justify-center rounded-full max-md:mb-6">
             <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs">

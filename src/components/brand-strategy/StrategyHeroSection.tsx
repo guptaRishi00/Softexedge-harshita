@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AgencyStats from "./AgencyStats";
 
 const ROTATING_IMAGES = [
@@ -36,9 +36,21 @@ const wordVariants = {
 export default function StrategyHeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
+      // Synchronous on-screen check at tick time — AboutImageStack's idiom,
+      // for AboutImageStack's reason: an IntersectionObserver flag that fails
+      // to arrive latches and kills the rotation for good, while one layout
+      // read every 2.5s costs nothing. Each tick used to re-render the hero,
+      // swap the split image and re-lay-out the headline even five screens
+      // up — steady background jank on every page with this hero.
+      const el = sectionRef.current;
+      if (el) {
+        const b = el.getBoundingClientRect();
+        if (b.bottom < 0 || b.top > window.innerHeight) return;
+      }
       setCurrentImageIndex(
         (prevIndex) => (prevIndex + 1) % ROTATING_IMAGES.length,
       );
@@ -65,7 +77,7 @@ export default function StrategyHeroSection() {
           src={img}
           alt="Brand visual"
           fill
-          sizes="(max-width: 768px) 100vw, 50vw"
+          sizes="(max-width: 768px) 96px, 176px"
           priority={index === 0}
           className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-in-out ${
             index === currentImageIndex
@@ -78,7 +90,7 @@ export default function StrategyHeroSection() {
   );
 
   return (
-    <section className="relative flex min-h-screen max-md:min-h-[120svh] w-full flex-col items-center justify-between overflow-hidden bg-white pt-24 pb-12 text-zinc-900">
+    <section ref={sectionRef} className="relative flex min-h-screen max-md:min-h-[120svh] w-full flex-col items-center justify-between overflow-hidden bg-white pt-24 pb-12 text-zinc-900">
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-60">
         <div className="h-[600px] w-[600px] rounded-full bg-zinc-100 blur-[120px]"></div>
       </div>

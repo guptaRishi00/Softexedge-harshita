@@ -3,6 +3,7 @@
 import { useMotionValueEvent, useScroll } from "framer-motion";
 import { ReactLenis } from "lenis/react";
 import { type ReactNode, useRef, useState } from "react";
+import { useIsMobile } from "@/lib/useIsDesktop";
 import Card, { STEP } from "./SubServiceCard";
 
 const BASE_HEIGHT = 3330;
@@ -65,6 +66,10 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   const container = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  // Non-markup prop gating only (the documented useIsMobile contract): below md
+  // this component's desktop machinery must not run, but it must not change
+  // what is rendered either.
+  const isMobile = useIsMobile();
   // Mobile-only accordion state (the card ignores it from md up). Single-open,
   // all closed initially — same behaviour as career/OpenPositions.
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -75,6 +80,11 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   });
 
   useMotionValueEvent(scrollYProgress, "change", () => {
+    // activeIndex only drives imageHidden, which the mobile classes override —
+    // so below md this callback was 4 forced-layout reads per scroll frame for
+    // nothing. That per-frame layout thrash on the scroll path is exactly what
+    // reads as "laggy" on a phone.
+    if (isMobile) return;
     let active = 0;
     for (let j = 0; j < services.length; j++) {
       const el = cardRefs.current[j];
@@ -86,7 +96,13 @@ export default function SubServices({ children }: { children?: ReactNode }) {
   });
 
   return (
-    <ReactLenis root>
+    // autoRaf={false} below md: ReactLenis otherwise runs a 60fps rAF loop
+    // from mount to unmount on every viewport. Home's SmoothScroll already
+    // skips Lenis below md for the same reason; this is the same gate, done
+    // via a prop because autoRaf is in the library effect's deps — no
+    // remount, no DOM change, desktop identical (isMobile is correct on the
+    // first client render).
+    <ReactLenis root autoRaf={!isMobile}>
       <section className="relative w-full bg-black text-white">
         <div className="mx-auto w-full px-4 max-md:px-3 max-md:pt-20 max-md:pb-16 md:px-10 pt-30 pb-32">
           <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">

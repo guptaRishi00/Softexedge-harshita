@@ -50,11 +50,16 @@ export default function ContactSection() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    // No tick below md: `index` only feeds the desktop AnimatePresence branch
+    // (mobile renders the static word), so the interval re-rendered this whole
+    // section every 6s to swap a value nothing reads — the same dead tick
+    // BlogSection's rotator already gates out.
+    if (!isDesktop) return;
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % rotatingWords.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isDesktop]);
 
   return (
     <section

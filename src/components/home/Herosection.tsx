@@ -16,6 +16,28 @@ export default function Herosection({}: any) {
   // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
   const isMobile = useIsMobile();
 
+  // Pause the hero video once it is scrolled out of view. It autoplays and
+  // loops, so without this it keeps the decoder busy for the whole visit —
+  // main-thread and battery cost on a phone while the user is three sections
+  // down. Fail-OPEN: playing is the default and only an explicit
+  // "not intersecting" pauses, so a missed IO callback can never leave the
+  // hero frozen. Runs at every breakpoint — pausing an invisible looping video
+  // has no visible effect (on desktop it also idles the canvas painter below,
+  // since rVFC only fires on presented frames).
+  useEffect(() => {
+    const video = mainVideoRef.current;
+    if (!video || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) video.play().catch(() => {});
+        else video.pause();
+      },
+      { rootMargin: "100px" },
+    );
+    io.observe(video);
+    return () => io.disconnect();
+  }, []);
+
   useEffect(() => {
     const video = mainVideoRef.current;
     const canvas = canvasRef.current;

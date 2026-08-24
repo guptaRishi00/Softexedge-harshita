@@ -182,6 +182,12 @@ export default function Header() {
               const hasDropdown =
                 (item.sections && item.sections.length > 0) ||
                 (item.dropdownItems && item.dropdownItems.length > 0);
+              // startsWith, not ===, so /work/<slug> and /blog/<slug> still mark
+              // their section. "/" is excluded because it would match every
+              // path — that entry is the Services dropdown, which renders as a
+              // button below and never reaches the Link branch anyway.
+              const isActive =
+                item.link !== "/" && pathname.startsWith(item.link);
               const isExpanded = item.name === "Services" && isServicesExpanded;
 
               return (
@@ -246,9 +252,22 @@ export default function Header() {
                     <Link
                       href={item.link}
                       onClick={closeMobileMenu}
-                      className="block w-full py-3.5 text-left text-xl font-medium text-white/90 transition-colors hover:text-white"
+                      aria-current={isActive ? "page" : undefined}
+                      className="flex w-full items-center gap-2 py-3.5 text-left text-xl font-medium text-white/90 transition-colors hover:text-white"
                     >
                       {item.name}
+                      {isActive && (
+                        // activeDotGradient: 6px dot in the site's brand
+                        // gradient, marking the page you are on. Lives inside
+                        // MobileNav, which is lg:hidden, so it is mobile-only by
+                        // construction — no max-md: needed and desktop cannot
+                        // see it. aria-hidden because aria-current on the link
+                        // already carries this meaning for assistive tech.
+                        <span
+                          aria-hidden
+                          className="h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+                        />
+                      )}
                     </Link>
                   )}
                 </div>

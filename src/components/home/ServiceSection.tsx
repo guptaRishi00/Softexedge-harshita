@@ -176,7 +176,7 @@ export default function ServiceSection() {
       className="relative w-full overflow-hidden bg-black pt-16 pb-10 max-md:pb-10 max-md:pt-20 md:pt-32 md:pb-24 text-white"
     >
       <div className="w-full px-4 max-md:px-3 md:px-10">
-        <div className="mb-10 w-full pb-10">
+        <div className="mb-10 w-full pb-10 max-md:mb-5 max-md:pb-5">
           <motion.p
             data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}

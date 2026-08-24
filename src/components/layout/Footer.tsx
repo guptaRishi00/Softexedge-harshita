@@ -3,12 +3,13 @@
 import AutoScroll from "embla-carousel-auto-scroll";
 import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
-import { useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { MdArrowOutward } from "react-icons/md";
 import { AiFillInstagram } from "react-icons/ai";
 import {
   Carousel,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
@@ -210,6 +211,32 @@ export default function Footer() {
       stopOnMouseEnter: false,
     }),
   );
+
+  // Run the clock marquee only while it is on screen. AutoScroll is a per-frame
+  // JS transform write from the main thread, and a footer is offscreen for
+  // nearly the whole visit — so this loop was costing every page frame-time
+  // the entire session (including on DESKTOP, where the mobile carousel is
+  // md:hidden but still mounted; a display:none element never intersects, so
+  // this gate also stops that invisible copy). Fail-OPEN: playOnInit starts it
+  // and only an explicit "not intersecting" stops it, so a missed IO delivery
+  // leaves the marquee running — never frozen.
+  const [clockApi, setClockApi] = useState<CarouselApi>();
+  useEffect(() => {
+    if (!clockApi || typeof IntersectionObserver === "undefined") return;
+    const autoScroll = clockApi.plugins()?.autoScroll;
+    const root = clockApi.rootNode();
+    if (!autoScroll || !root) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) autoScroll.play();
+        else autoScroll.stop();
+      },
+      { rootMargin: "100px" },
+    );
+    io.observe(root);
+    return () => io.disconnect();
+  }, [clockApi]);
+
   return (
     <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-10 text-white md:pt-24 lg:pt-32">
       <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay" />
@@ -391,6 +418,7 @@ export default function Footer() {
             <Carousel
               opts={{ align: "start", loop: true, dragFree: true }}
               plugins={[clockAutoScroll.current]}
+              setApi={setClockApi}
               // -mx-6 cancels the container's px-6 so the track runs to the
               // black panel's own edges; w-auto lets the negative margins
               // actually widen the box, which a fixed w-full would not.

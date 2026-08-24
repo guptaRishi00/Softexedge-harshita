@@ -193,6 +193,7 @@ export default function OurValuesSection() {
                           src={quotes[quoteIndex].avatar}
                           alt={quotes[quoteIndex].name}
                           fill
+                          sizes="56px"
                           className="object-cover"
                         />
                       </div>
