@@ -18830,3 +18830,118 @@ ignore it.
   `--background` (on body) serializes to `lab(100 0 0)`. Same white, two
   syntaxes; confirmed with a control element carrying `bg-white`.
 tsc clean; build Compiled successfully.
+
+## Project-wide link audit — dead routes and placeholder targets
+Audited every internal href (inline strings AND route strings held in data
+arrays, which a plain `href="..."` grep misses) against the 15 static + 2
+dynamic routes that actually exist.
+FIXED:
+- `/services` x24 — linked from all 8 SubServices files; NO such route exists,
+  so every one was a 404. Rewired per entry by what the card actually
+  describes: "Digital Products" (enterprise web apps, SaaS Platforms) ->
+  /custom-software; "UI/UX & Motion" -> /ui-ux-design; "E-Commerce" (Shopify
+  Plus, Custom Storefronts) -> /web-development. "Brand Strategy" was already
+  correct at /brand-strategy.
+- `mailto:hello@youragency.com` x8 in the CtaSections — a placeholder agency
+  address. Changed to hello@softexedge.com, the address home/ContactSection
+  already uses.
+Verified: tsc clean; re-audit reports 124 internal links resolving and ZERO
+broken; curl confirms /custom-software, /ui-ux-design, /web-development,
+/brand-strategy all HTTP 200; mailto grep now shows only softexedge.com
+addresses. Build Compiled successfully.
+NOT fixed — these need information I do not have, and inventing a destination
+would be worse than leaving the placeholder visible:
+- Footer social icons (Facebook / Instagram / LinkedIn) are `href: "#"` — need
+  the real profile URLs. Note these are object properties, so the usual
+  `href="#"` grep does not surface them.
+- Footer "Privacy Policy" `href="#"` — there is no /privacy route; linking it
+  would 404, and authoring a privacy page is a separate task.
+- work/ProjectDetailsContent "Visit Live Site" `href="#"` — src/data/projects.ts
+  has no live-URL field at all, so there is nothing to link to. Needs either
+  real client URLs added to the data (then the button reads them) or the button
+  hidden for projects without one.
+Also checked and clean: zero CTA-labelled <button>s lacking both a Link wrapper
+and an onClick.
+
+## Brand-strategy SubServices — 4 text elements matched to home/ServiceSection (mobile)
+Measured home/ServiceSection at 390 first and used THAT as the spec rather than
+copying class names, then diffed brand-strategy against it: 8 concrete
+differences. All fixed with max-md overrides (2 files, brand-strategy only):
+- tag: tracking 3px -> 3.6px (`max-md:tracking-[0.3em]`) and white/60 ->
+  `max-md:text-zinc-500`.
+- title: leading 44.4 -> 44.4444. Home leaves line-height as text-4xl's
+  1.11111 ratio; brand had pinned `max-md:leading-[1.11]`. Now
+  `max-md:leading-[1.11111]`. (First pass used 1.1111 and left a 0.0004px
+  residual — invisible, but the check was cheap so I made it exact.)
+- description: 20px/25 -> 18px/22.5 via `max-md:text-lg` (the existing
+  leading-[1.25em] then yields 22.5 by itself).
+- service title: 36px/40/-0.9 -> 24px/24/-0.96 by REPLACING the earlier
+  `max-md:text-4xl` with `max-md:text-2xl max-md:leading-none
+  max-md:tracking-[-0.04em]`. Note this supersedes the earlier "reduce the
+  services title font size" task, which had set 36px.
+Verified 390: `matchesServiceSection: true` — all 20 properties (size, weight,
+leading, tracking, colour x 4 elements) identical to the measured
+ServiceSection spec; all four card titles uniform at 24px/24px/-0.96px; the
+accordion still renders 4 cards.
+Desktop 1265: desktopUnchanged — eyebrow 12px/3px/white-60, title 72/75.6,
+description 20/25, card title 72/72/-1.8. Every added class is max-md-scoped.
+NOT changed (flagged): the tag's margin-bottom is 20px here vs 32px in
+ServiceSection. "Same as" was read as typography; the surrounding spacing on
+this section was tuned deliberately in earlier tasks, so I left it. Say the
+word to match that too.
+tsc clean; build Compiled successfully.
+
+## Brand-strategy SubServices — service title back to 36px (mobile)
+Reverts only the service-title half of the previous ServiceSection match, which
+had taken it to 24px: `max-md:text-2xl max-md:leading-none
+max-md:tracking-[-0.04em]` -> `max-md:text-4xl` (36px / 40 leading / -0.9
+tracking from the base tracking-tight). The tag, section title and description
+stay matched to home/ServiceSection — only the per-service title moved.
+Verified 390: 36px/40px on all four titles (uniform), each still ONE line,
+collapsed cards back to 120 tall, no page overflow; and the other three
+elements still match the ServiceSection spec (tag 12px/3.6px, title
+40px/44.4444px, description 18px/22.5px all true).
+Desktop 1265: desktopUnchanged — card title 72/72/-1.8, 4 cards at 600, 2 cols.
+build Compiled successfully.
+
+## Brand-strategy ProcessSection — mobile carousel made infinite
+Track now renders three identical runs of the four steps (Fragment per run,
+keys `${run}-${step.id}`) and calls the shared `useInfiniteCarousel(ref, 4, 3,
+!isDesktop)`, plus `loop` on CarouselDots so the dots map position within ONE
+run. Clone runs carry `md:hidden` + `aria-hidden` — a display:none grid child
+creates no track, so the desktop grid is untouched by the extra children.
+Reverses the earlier "no infinite copies, it would load each image 3x" note:
+measured, the 12 <img> elements resolve to 4 unique URLs, so the clones come
+from cache.
+Verified 390: 12 slides / 4 dots; runs identical (Discovery, Architecture,
+Development, Deployment ×3); stride uniform 328; parked at scrollLeft 1314 =
+one run, runway 1314 left / 2244 right. rAF is frozen in the preview pane, so
+the wrap was proven by replaying the hook's exact arithmetic at both extremes:
+0 -> 1312, 164 -> 1476, 3558 -> 2246, 3394 -> 2082 — every case moved by
+exactly one run, landed on the SAME slide index within the run, and landed
+inside the safe middle band (cannot re-trigger). Cards still 312.31x450,
+uniqueImageUrls 4, no page overflow, no React key warnings.
+Desktop 1265: 4 rendered / 8 clones display:none, gridCols exactly
+"268.6px x4", 1 row, dots display:none, scroller overflow-x visible,
+scrollLeft 0. 900px: 2 cols x 2 rows, 4 rendered, no overflow.
+biome check clean, tsc 0, build Compiled successfully.
+
+## Perf round 6 — audit clean; created noise.png; prod server restarted
+Sixth report of "whole website laggy". Fresh sweep of every per-frame source
+in src: all rAF loops (LogoLoop, SpotlightGrid, Herosection, SpecularBorder,
+Particles*, AgencyStats, carousel hooks) are IO-gated and/or mobile-gated or
+event-driven; all setIntervals are second-scale content swaps; StatsSection's
+ScrollTriggers sit inside mm.add("(min-width: 768px)") (its inner
+innerWidth<768 branch is dead code). *Particles has no consumer anywhere.
+No un-gated per-frame work found on home or brand-strategy.
+Concrete fixes this round: public/noise.png was missing while three sections
+(Footer = every page, home AboutSection, about AboutTraditional) reference
+bg-[url('/noise.png')] — ~11 404s per page load. Generated a 128x128 8-bit
+grayscale PNG (16,585 bytes, stdlib zlib/struct writer, seeded). Verified:
+curl /noise.png -> 200, 16585b.
+Root cause of "not fixed till date" (stated to user, again): NOTHING is
+committed — the deployed vercel.app site has zero perf work; and the dev
+server is inherently slow (dev React, per-request compile). The prod server
+on :3001 had stopped; rebuilt (Compiled successfully 29.5s) and restarted
+`next start -H 0.0.0.0 -p 3001` (bg bc9z2dz57): /home 200 0.38s,
+/brand-strategy 200 0.28s. Test URL: http://192.168.29.24:3001

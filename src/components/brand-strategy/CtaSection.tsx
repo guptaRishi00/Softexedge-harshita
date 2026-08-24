@@ -161,10 +161,10 @@ export default function CtaSection() {
                 Drop us a line
               </span>
               <a
-                href="mailto:hello@youragency.com"
+                href="mailto:hello@softexedge.com"
                 className="group relative w-fit text-base font-bold text-white/90 transition-colors duration-300 hover:text-white max-md:underline max-md:decoration-white/40 max-md:underline-offset-4 md:text-lg"
               >
-                hello@youragency.com
+                hello@softexedge.com
                 <MdArrowOutward
                   className="ml-1 hidden h-3.5 w-3.5 max-md:inline-block"
                   style={{ fill: "url(#cta-icon-grad)" }}

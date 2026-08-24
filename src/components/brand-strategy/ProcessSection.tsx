@@ -2,8 +2,10 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import CarouselDots from "@/components/ui/CarouselDots";
+import { useInfiniteCarousel } from "@/lib/useInfiniteCarousel";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const processSteps = [
   {
@@ -44,9 +46,17 @@ export default function ProcessSection() {
   // Below md the grid becomes a native scroll-snap carousel, same mechanics as
   // home/BlogSection: native scrolling runs on the compositor thread, so a
   // swipe never touches React. Only the dots re-render, and they own their own
-  // listener. No infinite-loop copies here — BlogSection repeats its track to
-  // loop, which would mean loading each of these four images three times.
+  // listener.
+  //
+  // The track repeats the four steps three times so the loop is endless (the
+  // hook parks in the middle run, leaving a full run of runway either way).
+  // Tripling the cards does NOT triple the image cost: the three runs point at
+  // the same four URLs, so the browser serves clones from cache — same four
+  // downloads, twelve <img> elements.
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const isDesktop = useIsDesktop();
+
+  useInfiniteCarousel(scrollerRef, processSteps.length, 3, !isDesktop);
 
   return (
     <section
@@ -91,6 +101,7 @@ export default function ProcessSection() {
           <CarouselDots
             scrollerRef={scrollerRef}
             count={processSteps.length}
+            loop
             className="mt-8 md:hidden"
           />
         </div>
@@ -104,46 +115,58 @@ export default function ProcessSection() {
           className="no-scrollbar relative w-full max-md:-mx-3 max-md:w-auto max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain max-md:scroll-pl-3 max-md:px-3"
         >
           <div className="grid grid-cols-1 gap-8 max-md:flex max-md:w-max max-md:flex-nowrap max-md:gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {processSteps.map((step, index) => (
-              <motion.div
-                key={step.id}
-                data-slide
-                data-no-mobile-entry
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.5,
-                  delay: index * 0.1,
-                }}
-                viewport={{ once: true }}
-                className="group flex cursor-pointer flex-col max-md:relative max-md:h-[450px] max-md:w-[80vw] max-md:shrink-0 max-md:snap-start max-md:overflow-hidden max-md:rounded-[2.5rem]"
-              >
-                {/* Below md this becomes career/ApplicationJourney's card: the
+            {/* Runs 1 and 2 are `md:hidden` clones: a display:none grid child
+                creates no track, so the desktop grid is still exactly the four
+                real steps in four columns. The gap lives on this flex track and
+                applies uniformly between every pair, so all runs are
+                pixel-identical and the wrap is invisible. */}
+            {[0, 1, 2].map((run) => (
+              <Fragment key={run}>
+                {processSteps.map((step, index) => (
+                  <motion.div
+                    key={`${run}-${step.id}`}
+                    aria-hidden={run !== 0 || undefined}
+                    data-slide
+                    data-no-mobile-entry
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: index * 0.1,
+                    }}
+                    viewport={{ once: true }}
+                    className={`group flex cursor-pointer flex-col max-md:relative max-md:h-[450px] max-md:w-[80vw] max-md:shrink-0 max-md:snap-start max-md:overflow-hidden max-md:rounded-[2.5rem] ${
+                      run === 0 ? "" : "md:hidden"
+                    }`}
+                  >
+                    {/* Below md this becomes career/ApplicationJourney's card: the
                     image fills the whole card, a scrim darkens the bottom, and
                     the copy is overlaid on it. Desktop keeps the stacked
                     image-above-text layout, so every override is max-md. */}
-                <div className="relative mb-6 flex aspect-[4/4.5] w-full items-center justify-center overflow-hidden rounded-[20px] bg-zinc-900 max-md:absolute max-md:inset-0 max-md:mb-0 max-md:aspect-auto max-md:rounded-none">
-                  <Image
-                    src={step.image}
-                    alt={step.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                    className="absolute inset-0 h-full w-full object-cover opacity-80 transition-all duration-700 ease-in-out group-hover:scale-110 group-hover:opacity-100 max-md:opacity-100"
-                  />
+                    <div className="relative mb-6 flex aspect-[4/4.5] w-full items-center justify-center overflow-hidden rounded-[20px] bg-zinc-900 max-md:absolute max-md:inset-0 max-md:mb-0 max-md:aspect-auto max-md:rounded-none">
+                      <Image
+                        src={step.image}
+                        alt={step.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                        className="absolute inset-0 h-full w-full object-cover opacity-80 transition-all duration-700 ease-in-out group-hover:scale-110 group-hover:opacity-100 max-md:opacity-100"
+                      />
 
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent md:hidden" />
-                </div>
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent md:hidden" />
+                    </div>
 
-                <div className="flex flex-grow flex-col max-md:absolute max-md:inset-0 max-md:z-10 max-md:justify-end max-md:p-8 max-md:py-11">
-                  <h3 className="mb-2 text-xl max-md:mb-3 max-md:text-2xl font-extrabold max-md:font-medium tracking-tight text-white">
-                    {step.title}
-                  </h3>
+                    <div className="flex flex-grow flex-col max-md:absolute max-md:inset-0 max-md:z-10 max-md:justify-end max-md:p-8 max-md:py-11">
+                      <h3 className="mb-2 text-xl max-md:mb-3 max-md:text-2xl font-extrabold max-md:font-medium tracking-tight text-white">
+                        {step.title}
+                      </h3>
 
-                  <p className="mb-6 text-[15px] max-md:mb-0 max-md:text-base font-regular leading-[1.5em] max-md:leading-[1.25em] text-zinc-400 max-md:text-white/80">
-                    {step.description}
-                  </p>
-                </div>
-              </motion.div>
+                      <p className="mb-6 text-[15px] max-md:mb-0 max-md:text-base font-regular leading-[1.5em] max-md:leading-[1.25em] text-zinc-400 max-md:text-white/80">
+                        {step.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </Fragment>
             ))}
           </div>
         </div>

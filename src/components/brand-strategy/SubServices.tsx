@@ -32,7 +32,7 @@ const services = [
     title2: "Products",
     description:
       "Our engineering and product teams collaborate to build immersive, high-performance digital experiences. From complex, enterprise-grade web applications to lightning-fast, scalable platforms.",
-    link: "/services",
+    link: "/custom-software",
     color: "bg-black",
     tags: ["Web Apps", "SaaS Platforms", "Architecture", "API Integration"],
     image:
@@ -43,7 +43,7 @@ const services = [
     title2: "& Motion",
     description:
       "We bring digital interfaces to life through cinematic visual identities and purposeful motion design. By obsessing over user journeys, micro-interactions, and accessibility, we create frictionless experiences.",
-    link: "/services",
+    link: "/ui-ux-design",
     color: "bg-black",
     tags: ["User Research", "Wireframing", "Prototyping", "Interaction Design"],
     image:
@@ -54,7 +54,7 @@ const services = [
     title2: "Commerce",
     description:
       "We engineer high-converting online storefronts tailored specifically for the modern digital consumer. By optimizing the entire purchasing funnel, we build robust e-commerce solutions.",
-    link: "/services",
+    link: "/web-development",
     color: "bg-black",
     tags: ["Shopify Plus", "Custom Storefronts", "CRO", "Payment Gateways"],
     image:
@@ -105,18 +105,18 @@ export default function SubServices({ children }: { children?: ReactNode }) {
     <ReactLenis root autoRaf={!isMobile}>
       <section className="relative w-full bg-black text-white">
         <div className="mx-auto w-full px-4 max-md:px-3 max-md:pt-20 max-md:pb-16 md:px-10 pt-30 pb-32">
-          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-500">
             What We Offer
           </span>
 
           <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-            <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-5xl lg:text-[4.5rem]">
+            <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11111] md:text-5xl lg:text-[4.5rem]">
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                 Services
               </span>
             </h2>
-            <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left">
+            <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white max-md:text-lg md:text-left">
               Delivering scalable, high-performance solutions that elevate
               brands and drive revenue.
             </p>

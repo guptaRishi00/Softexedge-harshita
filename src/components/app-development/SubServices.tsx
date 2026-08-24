@@ -39,7 +39,7 @@ const services = [
     title2: "Products",
     description:
       "Our engineering and product teams collaborate to build immersive, high-performance digital experiences. From complex, enterprise-grade web applications to lightning-fast, scalable platforms.",
-    link: "/services",
+    link: "/custom-software",
     color: "bg-black",
     tags: ["Web Apps", "SaaS Platforms", "Architecture", "API Integration"],
     image:
@@ -50,7 +50,7 @@ const services = [
     title2: "& Motion",
     description:
       "We bring digital interfaces to life through cinematic visual identities and purposeful motion design. By obsessing over user journeys, micro-interactions, and accessibility, we create frictionless experiences.",
-    link: "/services",
+    link: "/ui-ux-design",
     color: "bg-black",
     tags: ["User Research", "Wireframing", "Prototyping", "Interaction Design"],
     image:
@@ -61,7 +61,7 @@ const services = [
     title2: "Commerce",
     description:
       "We engineer high-converting online storefronts tailored specifically for the modern digital consumer. By optimizing the entire purchasing funnel, we build robust e-commerce solutions.",
-    link: "/services",
+    link: "/web-development",
     color: "bg-black",
     tags: ["Shopify Plus", "Custom Storefronts", "CRO", "Payment Gateways"],
     image:

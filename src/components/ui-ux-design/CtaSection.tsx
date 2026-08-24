@@ -141,10 +141,10 @@ export default function CtaSection() {
                 Drop us a line
               </span>
               <a
-                href="mailto:hello@youragency.com"
+                href="mailto:hello@softexedge.com"
                 className="group relative w-fit text-base font-bold text-white/90 transition-colors duration-300 hover:text-white md:text-lg"
               >
-                hello@youragency.com
+                hello@softexedge.com
                 <span className="absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 bg-white transition-transform duration-300 ease-out group-hover:origin-left group-hover:scale-x-100" />
               </a>
             </motion.div>
