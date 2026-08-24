@@ -3,7 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   SiNextdotjs,
   SiReact,
@@ -55,6 +55,52 @@ export default function HomePage() {
   const testimonialsGroupRef = useRef<HTMLDivElement>(null);
   const testimonialsInnerRef = useRef<HTMLDivElement>(null);
   const contactContainerRef = useRef<HTMLDivElement>(null);
+
+  // Sticky offset for the mobile overlaps, measured on mount and resize only —
+  // nothing here listens to scroll, so the hold itself stays a pure compositor
+  // effect.
+  //
+  // Why an offset at all: `sticky; top: 0` freezes a section the moment its TOP
+  // reaches the viewport top, which strands the tail of any section taller than
+  // the screen. `sticky; bottom: 0` does NOT solve it — that pulls an element UP
+  // into view from below and releases it on the way down, the opposite hold.
+  // The idiom that works is a NEGATIVE top of (viewport - height), so the
+  // section's BOTTOM rests on the viewport bottom: exactly what
+  // brand-strategy/page.tsx does with `top-[min(0px,calc(100vh-992px))]`, only
+  // measured here instead of hardcoded so it survives copy edits and width
+  // changes. Sections shorter than the viewport clamp to 0 and simply stick at
+  // the top.
+  useEffect(() => {
+    const holders = [
+      aboutContainerRef,
+      statsContainerRef,
+      testimonialsGroupRef,
+    ];
+
+    const apply = () => {
+      const mobile = window.matchMedia("(max-width: 767px)").matches;
+      for (const ref of holders) {
+        const el = ref.current;
+        if (!el) continue;
+        // Cleared above md so the desktop GSAP pins own positioning there.
+        el.style.top = mobile
+          ? `${Math.min(0, window.innerHeight - el.offsetHeight)}px`
+          : "";
+      }
+    };
+
+    apply();
+    window.addEventListener("resize", apply);
+    // Content settling after first paint (fonts, images) changes these heights,
+    // and setting `top` cannot itself resize a sticky box, so this cannot loop.
+    const ro = new ResizeObserver(apply);
+    for (const ref of holders) if (ref.current) ro.observe(ref.current);
+
+    return () => {
+      window.removeEventListener("resize", apply);
+      ro.disconnect();
+    };
+  }, []);
 
   useGSAP(() => {
     const mm = gsap.matchMedia();
@@ -175,7 +221,25 @@ export default function HomePage() {
         </section>
 
         <div className="relative">
-          <div ref={aboutContainerRef} className="relative z-0 bg-white">
+          {/* Below md the three overlaps are CSS `position: sticky` instead of
+              GSAP pins. Same effect — the held section stays put while the next
+              one slides over it — but the browser does it on the compositor,
+              with no per-frame JS. The GSAP version measurably janked on a
+              phone, which is the whole reason this is CSS.
+
+              `bottom-0`, not `top-0`: every one of these sections is taller
+              than a phone viewport, so sticking the TOP would freeze it with
+              its own content still unread below the fold. Sticking the BOTTOM
+              holds it only once it has been scrolled through — the same moment
+              the desktop pins use (`start: "bottom bottom"`).
+
+              Each holder is covered by an opaque, higher-z sibling
+              (Portfolio z-10, Service z-10, Contact z-30), which is what makes
+              the hand-off read as an overlap. */}
+          <div
+            ref={aboutContainerRef}
+            className="relative z-0 bg-white max-md:sticky"
+          >
             <div
               ref={aboutInnerRef}
               className="origin-top md:will-change-transform bg-white pb-0 md:pb-[25vh] lg:pb-[30vh]"
@@ -194,7 +258,7 @@ export default function HomePage() {
           <div className="relative z-20 bg-white md:-mt-[100vh]">
             <div
               ref={statsContainerRef}
-              className="relative z-0 bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
+              className="relative z-0 bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)] max-md:sticky"
             >
               <div ref={statsInnerRef} className="bg-white">
                 <StatsSection />
@@ -208,7 +272,10 @@ export default function HomePage() {
               <ServiceSection />
             </div>
 
-            <div ref={testimonialsGroupRef} className="relative z-10 bg-white">
+            <div
+              ref={testimonialsGroupRef}
+              className="relative z-10 bg-white max-md:sticky"
+            >
               <div
                 ref={testimonialsInnerRef}
                 className="origin-top md:will-change-transform"

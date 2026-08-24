@@ -18675,3 +18675,86 @@ are invisible to them. Stood up the production build locally:
 Told the user: judge on that URL; the deployed site stays laggy until the
 session's work is committed + deployed, which needs their explicit go-ahead.
 tsc clean; build Compiled successfully.
+
+## Home — overlap (pin/scale) animations added below md
+home/page.tsx: new `mm.add("(max-width: 767px)")` branch mirroring the desktop
+one, via a small `overlap(holder, next, inner, vars)` helper — three pins with
+pinSpacing:false plus a scrubbed scale/y on the held section:
+About->Portfolio, Stats->Service, Testimonials->Contact.
+Two deliberate adaptations, NOT copies of the desktop config:
+1. About pins at `bottom bottom`, not desktop's `top top`. Desktop About fits a
+   viewport; the mobile one is far taller, so pinning its TOP would fix it with
+   its own remaining content stranded below the fold. Holding once fully read
+   gives the same slide-over and matches what the other two pins already do.
+2. No `-mt-[100vh]` counterpart needed: that class is md:-only because
+   PortfolioSection is `h-auto` below md rather than `h-screen`, so there is no
+   viewport-tall gap to pull the next block back over.
+Also fixed a now-false comment + real gap in layout/SmoothScroll: it stated
+"below md this page registers NO ScrollTriggers" and returned early, skipping
+ScrollTrigger.refresh(). Mobile now HAS pins whose start/end are measured from
+the DOM, so the mobile branch performs the same 100ms refresh (Lenis stays
+skipped — native scrolling still owns mobile).
+Verified 390: 3 `.pin-spacer` elements now exist (there were none below md
+before) wrapping exactly About / Stats / Testimonials, with measured heights
+982 / 725 / 1092 — i.e. ScrollTrigger created and MEASURED the pins.
+  LIMIT, stated plainly: pin ENGAGEMENT cannot be observed in this pane.
+  Scroll sampling showed the section top tracking -scrollY linearly and
+  position never becoming `fixed`, because ScrollTrigger updates on the GSAP
+  ticker (rAF) and a direct probe confirmed rAF never fires here
+  (rafFiredSinceLastCall false). pin-spacers are created at ScrollTrigger
+  creation time, not on scroll, which is why they ARE observable. Needs an
+  on-device / prod-server check.
+  (An early assertion `topClampsWhilePinned: true` was MEANINGLESS — the
+  comparison passed for monotonically decreasing tops. `everWentFixed` was the
+  signal that mattered.)
+Desktop 1265: desktopUnchanged — 4 pin-spacers (3 page pins + PortfolioSection's
+own horizontal-scroll pin, id=portfolio, confirmed by owner inspection),
+stats wrapper margin-top -800px, about inner padding-bottom 240px, portfolio
+still exactly viewport-tall. gsap.matchMedia only runs matching branches, so the
+new max-width branch cannot execute at this width.
+PERF TENSION worth flagging: this deliberately ADDS scroll-linked pinning and
+scrubbed transforms on mobile — the same category of work five rounds of lag
+fixes removed. It is what was asked for; if mobile scrolling feels worse after
+this, these pins are the first thing to reconsider.
+tsc clean; build Compiled successfully.
+
+## Home — mobile overlaps rebuilt as CSS sticky (the GSAP pins were the lag)
+Last task's mobile GSAP pins were janky on device, exactly as flagged. Root
+cause is the mechanism, not tuning: ScrollTrigger pins run per-frame main-thread
+JS (plus a scrubbed scale 0.85 re-rasterising a full-width section every frame)
+on a phone that is already struggling. So the mobile branch was REMOVED and the
+overlap rebuilt as `position: sticky` — same effect, done by the compositor,
+zero JS per scroll frame. This is the idiom brand-strategy already uses.
+- home/page.tsx: `mm.add("(max-width: 767px)")` block deleted; the three holders
+  (About / Stats / Testimonials) get `max-md:sticky`; a mount+resize effect
+  (ResizeObserver + resize listener, NO scroll listener) sets each holder's
+  inline `top` to `min(0, innerHeight - offsetHeight)` and clears it above md.
+- layout/SmoothScroll: mobile branch reverted to the plain early return, since
+  mobile once again registers no ScrollTriggers.
+Why the measured negative top: `sticky; top:0` freezes a section as soon as its
+TOP hits the viewport top, stranding the tail of anything taller than the screen
+(About 982, Testimonials 1092 vs 844). `sticky; bottom:0` does NOT fix it — I
+tested it and it held nothing, because bottom-sticky pulls an element UP into
+view from below and releases going down, the opposite hold. The working idiom is
+a NEGATIVE top of (viewport - height) so the section's BOTTOM rests on the
+viewport bottom — brand-strategy hardcodes this
+(`top-[min(0px,calc(100vh-992px))]`); measured here so it survives copy edits
+and width changes.
+Verified 390 BEHAVIOURALLY (sticky needs no rAF, so unlike GSAP pins it is
+observable in this pane — a controlled probe first confirmed `sticky; top:0`
+engages here): offsets -138 / 0 / -248 all match min(0, 844-height); each holder
+moves before engaging then clamps EXACTLY at its offset across 400px of further
+scroll (`allThreeHold: true`); About and Testimonials rest with bottom at 844,
+so nothing is stranded. Each cover paints above its holder with an opaque
+background (Portfolio #0a0a0a z10 over z0, Service #000 z10 over z0, Contact
+#000 z30 over z10).
+Desktop 1265: desktopUnchanged — holders still `relative` (sticky is max-md),
+4 pin-spacers incl. PortfolioSection's own, stats wrapper -800px, about padding
+240px. NOTE the desktop holders DO carry inline `top: 0px` — that is GSAP's pin
+boilerplate (`inset: 0px auto auto 0px`), not my offset; asserting "inline top
+cleared" was the wrong test and flagged a false regression. The right assertion
+is that none of MY measured values (-200/-352/-40 at this height) leaked.
+TRADE-OFF stated: the desktop scale-0.85/y-40 scrub is NOT reproduced on mobile.
+It is the expensive half (continuous re-raster of a full-width section) and
+reinstating it would reintroduce the lag. Mobile gets the overlap itself.
+tsc clean; build Compiled successfully.
