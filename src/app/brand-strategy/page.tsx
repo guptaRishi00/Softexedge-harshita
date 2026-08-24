@@ -3,7 +3,7 @@ import CtaSection from "@/components/brand-strategy/CtaSection";
 import FaqSection from "@/components/brand-strategy/FaqSection";
 import OurTechStack from "@/components/brand-strategy/OurTechStack";
 import ProcessSection from "@/components/brand-strategy/ProcessSection";
-import ProjectsSlot from "@/components/brand-strategy/ProjectsSlot";
+import ProjectShowcase from "@/components/brand-strategy/ProjectShowcase";
 import StrategyHeroSection from "@/components/brand-strategy/StrategyHeroSection";
 import SubServices, {
   SUBSERVICES_STICK_TOP,
@@ -57,7 +57,7 @@ export default function BrandStrategyPage({}: Props) {
           </div>
         </div>
         <OurTechStack />
-        <ProjectsSlot />
+        <ProjectShowcase />
         <ExperimentalTestimonials />
         <TechLogoCarousel />
         <div className="p-3 max-md:pt-0 max-md:[&>section]:pt-0 max-md:[&>section]:pb-13">

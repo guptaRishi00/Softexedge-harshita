@@ -74,8 +74,13 @@ export default function Card({
         } ${
           // Each row draws only its OWN top rule, so the list ends without one.
           // The last card adds a matching bottom rule to close it off.
+          // `bottom-px`, not `bottom-0`: the page's #process-overlap wrapper
+          // carries `-mt-px` with an opaque black background at z-20, so its
+          // top edge lands exactly on this card's last pixel row and painted
+          // the rule out entirely. One pixel up puts the line flush against
+          // that edge instead of under it.
           isLast
-            ? "max-md:after:content-[''] max-md:after:absolute max-md:after:bottom-0 max-md:after:inset-x-3 max-md:after:h-px max-md:after:bg-white/10"
+            ? "max-md:after:content-[''] max-md:after:absolute max-md:after:bottom-px max-md:after:inset-x-3 max-md:after:h-px max-md:after:bg-white/10"
             : ""
         }`}
       >

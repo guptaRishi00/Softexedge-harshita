@@ -2,10 +2,9 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import CarouselDots from "@/components/ui/CarouselDots";
-import { tweenScrollLeft } from "@/lib/tweenScrollLeft";
-import { slideStride, useInfiniteCarousel } from "@/lib/useInfiniteCarousel";
+import { useInfiniteCarousel } from "@/lib/useInfiniteCarousel";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import SpecularBorder from "../ui/SpecularBorder";
 
@@ -19,11 +18,6 @@ const smoothSpring = {
 } as const;
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
-
-// Autoplay cadence for the mobile carousel. RESUME is the quiet period after a
-// swipe: advancing on top of the reader is worse than not advancing at all.
-const AUTOPLAY_MS = 4000;
-const AUTOPLAY_RESUME_MS = 2500;
 
 const projects = [
   {
@@ -78,63 +72,6 @@ export default function ProjectShowcase() {
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   useInfiniteCarousel(scrollerRef, projects.length, 3, !isDesktop);
-
-  // Self-advancing half of the mobile carousel. Deliberately an interval over a
-  // scroll position rather than a frame loop: it wakes 4x a minute instead of
-  // 60x a second, and it reads scrollLeft at tick time so a swipe or a dot tap
-  // can never leave it pointing at a stale index.
-  useEffect(() => {
-    if (isDesktop) return;
-    const el = scrollerRef.current;
-    if (!el) return;
-
-    let pointerDown = false;
-    let lastInteraction = 0;
-    // Starts true, i.e. fails OPEN: if the observer below never reports (no
-    // IntersectionObserver, or a first callback that never arrives) the
-    // carousel still advances. Gating on a false default means one missing
-    // callback leaves it frozen forever, which is the worse failure.
-    let onScreen = true;
-
-    const hold = () => {
-      pointerDown = true;
-      lastInteraction = performance.now();
-    };
-    const release = () => {
-      pointerDown = false;
-      lastInteraction = performance.now();
-    };
-
-    el.addEventListener("pointerdown", hold, { passive: true });
-    el.addEventListener("pointerup", release, { passive: true });
-    el.addEventListener("pointercancel", release, { passive: true });
-
-    // Offscreen ticks would silently skip cards the reader never saw, and cost
-    // a tween for nothing.
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        onScreen = entry.isIntersecting;
-      },
-      { threshold: 0.2 },
-    );
-    io.observe(el);
-
-    const tick = setInterval(() => {
-      if (pointerDown || !onScreen) return;
-      if (performance.now() - lastInteraction < AUTOPLAY_RESUME_MS) return;
-      const stride = slideStride(el);
-      if (stride <= 0) return;
-      tweenScrollLeft(el, el.scrollLeft + stride);
-    }, AUTOPLAY_MS);
-
-    return () => {
-      clearInterval(tick);
-      io.disconnect();
-      el.removeEventListener("pointerdown", hold);
-      el.removeEventListener("pointerup", release);
-      el.removeEventListener("pointercancel", release);
-    };
-  }, [isDesktop]);
 
   const getRowHeight = (isRow1: boolean) => {
     if (hoveredId === null) return isRow1 ? "48%" : "52%";
@@ -239,13 +176,12 @@ export default function ProjectShowcase() {
           </motion.div>
         </div>
 
-        {/* Mobile: an endless native scroll-snap carousel that also advances
-            itself — same mechanics as home/BlogSection, plus PortfolioSection's
-            autoplay. It replaced a pure CSS marquee because pagination dots
-            need a real scroll position to read: a continuously drifting
-            transform has none, and dots against it would flicker between cards
-            rather than mark one. Native scrolling still runs on the compositor,
-            so a swipe never touches React.
+        {/* Mobile: an endless native scroll-snap carousel, driven only by the
+            reader's finger — no autoplay. Native scrolling IS the drag here:
+            the browser owns the grab, the momentum and the snap, all on the
+            compositor, so a swipe never touches React. That is also why there
+            is no JS pointer-drag handler — one would have to fight the native
+            gesture rather than add to it.
 
             Three runs, because useInfiniteCarousel parks in the second one so
             there is a full run of runway in both directions. Per-card `mr-4`
@@ -267,7 +203,7 @@ export default function ProjectShowcase() {
                     <div
                       key={`${run}-${project.id}`}
                       data-slide
-                      className="mr-4 w-[80vw] shrink-0 snap-start"
+                      className="mr-4 w-[calc(100vw-1.5rem)] shrink-0 snap-start"
                     >
                       <ProjectCard
                         project={project}
@@ -323,7 +259,7 @@ function ProjectCard({
           : undefined
       }
       transition={smoothSpring}
-      className="group relative h-full min-h-[300px] w-full cursor-pointer max-md:h-[300px]"
+      className="group relative h-full min-h-[300px] w-full cursor-pointer max-md:h-[460px]"
     >
       <div className="relative h-full w-full overflow-hidden rounded-[20px]">
         <MotionImage
@@ -411,6 +347,21 @@ function ProjectCard({
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Mobile details, always on. Desktop reveals this copy on hover via
+              the AnimatePresence block above, but there is no hover on touch —
+              so below md the same information is simply present, sitting in the
+              bottom slot of the card's justify-between column. `md:hidden`, so
+              desktop never renders a second copy. The title is NOT repeated
+              here: it already sits at the top of the card. */}
+          <div className="md:hidden">
+            <p className="mb-2 inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-[0.3em] text-[0.65rem] font-medium uppercase tracking-[0.3em] text-transparent">
+              Featured Case
+            </p>
+            <p className="text-sm font-light leading-relaxed text-zinc-300">
+              {project.description}
+            </p>
+          </div>
         </div>
       </div>
 

@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Navbar as AceternityNavbar,
   MobileNav,
@@ -128,8 +128,23 @@ const navItems: NavItem[] = [
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isServicesExpanded, setIsServicesExpanded] = useState(false);
   const pathname = usePathname();
+  // Sub-service routes (/brand-strategy, /web-development, ...) are not
+  // top-level nav items — they live inside the Services dropdown. Arriving on
+  // one should reveal where you are, so the accordion starts open there.
+  const isSubServiceRoute = navItems
+    .flatMap((i) => i.dropdownItems ?? [])
+    .some((sub) => pathname.startsWith(sub.link));
+  const [isServicesExpanded, setIsServicesExpanded] = useState(isSubServiceRoute);
+
+  // Seeding useState only covers a fresh mount; an App Router navigation can
+  // keep this Header instance alive, so re-open when the route BECOMES a
+  // sub-service one. Keyed on isSubServiceRoute rather than pathname so a
+  // manual collapse while already on a sub-service page is not undone on the
+  // next render.
+  useEffect(() => {
+    if (isSubServiceRoute) setIsServicesExpanded(true);
+  }, [isSubServiceRoute]);
 
   const toggleMobileMenu = useCallback(
     () => setIsMobileMenuOpen((prev) => !prev),
@@ -238,9 +253,23 @@ export default function Header() {
                                   key={`mob-drop-${ssIdx}`}
                                   href={sub.link}
                                   onClick={closeAllMenus}
-                                  className="w-full py-2.5 text-left text-base text-white/60 transition-colors hover:text-white"
+                                  aria-current={
+                                    pathname.startsWith(sub.link)
+                                      ? "page"
+                                      : undefined
+                                  }
+                                  className="flex w-full items-center gap-2 py-2.5 text-left text-base text-white/60 transition-colors hover:text-white"
                                 >
                                   {sub.name}
+                                  {pathname.startsWith(sub.link) && (
+                                    // Same activeDotGradient as the top-level
+                                    // rows, at the same 6px, so "you are here"
+                                    // reads identically at both menu depths.
+                                    <span
+                                      aria-hidden
+                                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+                                    />
+                                  )}
                                 </Link>
                               ))}
                             </div>

@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
@@ -67,6 +67,7 @@ const cardVariants = {
 
 export default function OurValuesSection() {
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
   const [direction, setDirection] = useState(1);
 
   const goTo = useCallback((next: number, dir: number) => {
@@ -77,11 +78,24 @@ export default function OurValuesSection() {
   // quoteIndex is a real dependency: it re-arms the timer, so a swipe or a dot
   // click gets a full 6s dwell rather than the remainder of the previous one.
   useEffect(() => {
-    const id = setInterval(() => goTo(quoteIndex + 1, 1), 6000);
+    const id = setInterval(() => {
+      // Synchronous on-screen check at tick time (AboutImageStack's idiom):
+      // the swap re-renders the quote card and runs an AnimatePresence exit +
+      // enter, and it used to do that every 6s for the whole visit even with
+      // the section far offscreen. One layout read per 6s costs nothing, and
+      // unlike an IO flag it cannot latch the cycler dead.
+      const el = sectionRef.current;
+      if (el) {
+        const b = el.getBoundingClientRect();
+        if (b.bottom < 0 || b.top > window.innerHeight) return;
+      }
+      goTo(quoteIndex + 1, 1);
+    }, 6000);
     return () => clearInterval(id);
   }, [quoteIndex, goTo]);
   return (
     <section
+      ref={sectionRef}
       id="culture"
       className="relative flex w-full flex-col overflow-hidden bg-black font-sans py-20 md:py-32"
     >

@@ -18479,3 +18479,199 @@ Probe correction: my first desktop assertion counted "nav buttons" with a
 FILTER CHIPS (All / E-Commerce / SaaS / Branding / Campaign), not nav at all.
 Re-scoped the probe to real header links (excluding footer + mobile subtree).
 tsc clean; build Compiled successfully.
+
+## Mobile navbar — Services dropdown auto-opens on sub-service pages + sub dot
+Extends last task's active dot. Both Header copies:
+- `isSubServiceRoute`: does pathname match ANY dropdownItems link. Seeds
+  `useState(isSubServiceRoute)` so the accordion is already open on arrival,
+  plus a `useEffect` keyed on isSubServiceRoute (NOT pathname) to cover App
+  Router navigations that keep the Header instance alive — keying on the
+  boolean means a manual collapse while already on a sub-service page is not
+  undone on the next render.
+- sub-service Link: `w-full` -> `flex w-full items-center gap-2`, plus
+  aria-current and the same 6px gradient dot used at top level.
+BUG I INTRODUCED AND CAUGHT: the codemod inserted the isSubServiceRoute block
+at the `useState(false)` line, which sits ABOVE `const pathname =
+usePathname()` in both files — so `.some(...)` (which runs immediately during
+render) read `pathname` in its temporal dead zone. `bunx tsc --noEmit` exited 0
+and MISSED it, because the reference lives inside a callback where TS cannot
+prove the execution order. Only the runtime console caught it. Fixed by moving
+the single `const pathname = usePathname()` above the block in both files;
+verified one declaration each and correct ordering (pathname@136/131,
+isSubServiceRoute@140/135).
+Also note: the console then showed a WALL of "pathname is defined multiple
+times" at line 153 — stale buffered messages from the pre-fix compile, not the
+current source (grep proved a single declaration). Re-navigating cleared them
+and the page rendered.
+Verified 390 on three routes: /brand-strategy -> dropdown auto-open (8 sub
+links visible, chevron rotate-180), dot ONLY on "Brand Strategy & Identity"
+(6x6, gradient, aria-current=page), zero top-level dots; /web-development ->
+same, dot on "Web Development"; /about -> dropdown COLLAPSED (sub links not
+rendered), dot on "About Us" only.
+Desktop 1265: desktopUnchanged — mobile menu display none, its links zero
+width, zero visible gradient dots, no dots on desktop nav links, page renders.
+tsc clean; build Compiled successfully.
+
+## Brand-strategy — ProjectsSlot reverted, ProjectShowcase restored on mobile
+Undid the earlier swap: page.tsx imports and renders <ProjectShowcase /> again,
+and src/components/brand-strategy/ProjectsSlot.tsx is DELETED (it was imported
+only by this page, so removal is self-contained; grep for "ProjectsSlot" across
+src now returns 0). home/PortfolioSection is untouched and still serves the
+homepage.
+Verified 390: ProjectShowcase mounted with its own mobile carousel back —
+heading "Our Projects", 15 slides (3 runs x 5) of 312, 5 dots, parked at
+scrollLeft 1640 (= one run, useInfiniteCarousel), scrollable; #portfolio NOT
+mounted.
+  snapType initially read "none": NOT a regression — the autoplay's
+  tweenScrollLeft sets an inline `scroll-snap-type: none` synchronously and
+  restores it in an rAF step this pane never runs. Clearing the inline override
+  returned "x mandatory" from the class, confirming the artifact.
+Desktop 1265: desktopUnchanged — 2 rows of 3+2 cards side by side, wrap 800
+tall, bg black, md:hidden mobile block display none, no PortfolioSection.
+tsc clean (exit 0); build Compiled successfully.
+
+## Brand-strategy ProjectShowcase — taller static draggable cards (mobile)
+Naming note: the user said "WorkProjectShowcase", but that component lives on
+/work; on brand-strategy it is brand-strategy/ProjectShowcase. Worked on the
+latter (the carousel they described) and flagged it.
+Four asks, mobile only:
+1. "long" cards: `max-md:h-[300px]` -> `max-md:h-[460px]`.
+2. "details should appear": desktop reveals Featured Case + description on
+   HOVER, which does not exist on touch. Added a `md:hidden` block in the
+   card's bottom slot (the column is justify-between, so it lands opposite the
+   title) with the gradient "Featured Case" eyebrow + description. Title is NOT
+   repeated — it already sits at the top of the card. Desktop renders no second
+   copy.
+3. "static not moving": DELETED the whole autoplay effect (interval +
+   IntersectionObserver + pointer hold/release) and its now-dead imports
+   (tweenScrollLeft, slideStride, useEffect) and constants (AUTOPLAY_MS,
+   AUTOPLAY_RESUME_MS). Nothing else consumed them.
+4. "draggable" + "infinite": both already native/existing and kept — the track
+   is a native scroll-snap container (browser owns grab, momentum, snap, on the
+   compositor) and useInfiniteCarousel still renders 3 runs. No JS pointer-drag
+   handler added on purpose: it would fight the native gesture.
+Verified 390: card 460 tall (was 300) x 312 wide, details block VISIBLE
+("Featured Case" + description) alongside the title, 15 slides = 3 runs, parked
+at scrollLeft 1640 = exactly one run width (proof useInfiniteCarousel.start()
+ran), overflow-x auto + scrollable, 5 dots.
+  STATIC proven behaviourally: after 10s (2.5 former autoplay periods)
+  scrollLeft was still 1640 AND tweenScrollLeft's fingerprint — the inline
+  `scroll-snap-type: none` it sets synchronously — never appeared. Bonus: snap
+  now computes to `x mandatory` instead of the old frozen "none".
+  Infinite WRAP itself is unobservable here: useInfiniteCarousel runs wrap()
+  inside requestAnimationFrame, and a direct probe confirmed rAF never fires in
+  this pane (rafFiredSinceLastCall false). Structure + the one-run parking are
+  the evidence; the hook is unchanged from BlogSection's proven usage.
+Desktop 1265: desktopUnchanged — 2 rows of 3+2 side by side, wrap 800, mobile
+carousel display none, the new detail blocks display none, card min-height
+300 and NOT 460. Confirmed the max-md class is inert at this width with a
+control element carrying the same class (it did not resolve to 460).
+  (First desktop pass flagged "cardHeight expected 384 got 300" — my invented
+  number; 300 is min-h-[300px] governing because the framer row height is
+  rAF-driven and frozen in this pane. Unchanged by construction: the only edited
+  class is max-md-scoped.)
+tsc clean; build Compiled successfully.
+
+## Brand-strategy — OurTechStack -> ProjectShowcase gap matched to Process -> Tech
+Measured both gaps content-to-content first: target (Process -> Tech) 95, actual
+(Tech -> Showcase) 127. Composition explained the 32 difference exactly —
+127 = tech pb 64 + showcase pt 64 - 1px seam margin; 95 = process pb 96 + tech
+pt 0 - 1. So the fix was to drop tech's mobile bottom padding by 32.
+`max-md:pb-16` -> `max-md:pb-8` on brand-strategy/OurTechStack (a per-page copy;
+the 7 service copies still have neither class, grep = 0).
+This precisely reverts the bump I added two tasks ago, and the reason it is now
+wrong is worth recording: that increase was made while ProjectsSlot rendered
+home/PortfolioSection there, whose panel starts with a full-bleed image at
+offset 0 (NO top padding). ProjectShowcase has 64px of its own top padding, so
+once it came back the extra 32 was double-counted.
+Verified 390: NOW_techToShowcase 95 === TARGET_processToTech 95 (gapsMatch
+true), was 127; tech padding-bottom 32, showcase padding-top 64; carousel
+intact at 15 slides; no page overflow.
+Desktop 1265: desktopUnchanged — tech padding 0/0, margin-top 0, rect gap to
+showcase 0, showcase mounted; confirmed the edited max-md class is inert at
+this width with a control element (it did not resolve to 32px).
+Measurement note: a first pass reported the gaps as 63 vs 95 — backwards —
+because the "first painted element" heuristic picked each section's
+absolutely-positioned full-bleed decoration overlay (inset-0, starts at the
+section's top edge). Filtering out position:absolute / pointer-events:none
+elements gave the true 127 vs 95.
+tsc clean (build); build Compiled successfully.
+
+## Brand-strategy — OurTechStack -> ProjectShowcase gap reduced again (mobile)
+`max-md:pb-8` -> `max-md:pb-4` on brand-strategy/OurTechStack (32 -> 16), so the
+content-to-content gap goes 95 -> 79.
+NOTE this deliberately breaks the Process->Tech parity set one task earlier
+(that gap is still 95): the newer instruction to reduce further supersedes it.
+Flagged to the user; the remaining 79 is mostly ProjectShowcase's own 64px
+`max-md:pt-16`, so going much below this means touching the showcase's top
+padding rather than the tech section's bottom.
+Verified 390: techToShowcase 79 (was 95), tech padding-bottom 16, showcase
+padding-top 64, sections still flush at the -1px seam, carousel intact (15
+slides), no page overflow.
+Desktop 1265: desktopUnchanged — tech padding 0/0, margin-top 0, rect gap 0,
+showcase mounted; control element confirms `max-md:pb-4` is inert at this width.
+build Compiled successfully.
+
+## Brand-strategy SubServices — bottom rule under E-Commerce made visible
+The colour was NEVER wrong: measured, the last card's `::after` and every
+card's `::before` are the same `bg-white/10`
+(oklab(0.999994 …/0.1)), same 1px height, same inset-x-3. A 260px-wide scan of
+the band below the card found exactly ONE line and ONE distinct colour, so
+nothing else was competing either.
+REAL cause, proven by geometry: the page's `#process-overlap` wrapper carries
+`max-md:-mt-px` with `bg-black` at `z-20`, and its top edge sat at exactly
+1815.19 — precisely where the rule's single pixel row started. `overlapCoversRule
+true, coveredByPx 1` on a 1px-tall rule = the opaque black block painted the
+whole line out. What the user saw was the line being eaten, not re-tinted.
+Fix: `max-md:after:bottom-0` -> `max-md:after:bottom-px`, moving the rule one
+pixel up so it sits flush ABOVE the overlay's edge instead of under it.
+Verified 390: rule span [1814.19, 1815.19] vs overlap top 1815.19 ->
+`ruleNowClearOfOverlay true, coveredByPx 0`; colour, 1px height and 12px insets
+all identical to the top rules (`colorsIdentical true`).
+Desktop 1265: desktopUnchanged — both pseudo rules `content: none` (max-md
+scoped), the real 1px border-top still draws the desktop divider, 4 cards at
+600, 2 columns.
+Lesson worth keeping: when a correctly-styled hairline "looks wrong", check
+whether a later sibling with a negative margin and an opaque background is
+stacked over it before touching the colour.
+build Compiled successfully.
+
+## Brand-strategy ProjectShowcase — one card per screen (mobile)
+Slide width `w-[80vw]` -> `w-[calc(100vw-1.5rem)]`, i.e. the viewport minus the
+scroller's own 12px gutters, so a snapped card fills the content width and the
+next one starts past the right edge. Lives inside the md:hidden carousel block,
+so it is mobile-only by construction.
+Verified 390: slide 312 -> 366 spanning 12..378, visibleSlideCount 1,
+peekOfNextPx 0, no second slide intersecting the viewport at all. Stride 328 ->
+382 and useInfiniteCarousel re-parked itself at 1910 = 5 x 382 = exactly one
+run, so the loop measurement followed the new width automatically.
+Advancing one stride lands "Nova Tech" in the identical 12..378 slot, still
+alone (stillOnlyOne true) — snapping is card-by-card, not drifting.
+Holds across widths: 320 -> 296, 390 -> 366, 430 -> 406, each exactly
+innerWidth - 24 with one visible card and no page overflow; card height 460 and
+the details block still render at 430.
+Desktop 1265: desktopUnchanged — 2 rows of 3+2 side by side, wrap 800, mobile
+carousel display none, and no desktop card is viewport-wide (the calc never
+reaches it).
+build Compiled successfully.
+
+## Mobile lag, round 5 — last cycler gated + PRODUCTION SERVER for on-device proof
+Fourth identical lag report. Code-side, one straggler remained from the round-3
+cycler audit: about/OurValuesSection's 6s quote cycler ticked forever (its swap
+re-renders the quote card + AnimatePresence exit/enter, offscreen included, on
+/about and /career). Gated with the tick-time getBoundingClientRect idiom via a
+new sectionRef — fail-open like the others.
+The bigger deliverable: the user keeps judging on the DEPLOYED site (has zero
+fixes) or the dev server (adds its own constant overhead), so all five rounds
+are invisible to them. Stood up the production build locally:
+- bun run build (Compiled successfully) then `bunx next start -p 3001` in the
+  background (dev keeps 3000).
+- curl: /brand-strategy 200 in 0.082s, /home 200 in 0.027s.
+- Pane check on :3001 confirms it serves the FIXED code: prod bundle (no dev
+  chunks), hero img sizes "(max-width: 768px) 96px, 176px", OurTechStack
+  marquee CSS-driven (animationName scroll x2), showcase carousel 15 slides,
+  lenis class present at desktop-serving default.
+- Phone URL on this LAN: http://192.168.29.24:3001 (IPv4 from ipconfig).
+Told the user: judge on that URL; the deployed site stays laggy until the
+session's work is committed + deployed, which needs their explicit go-ahead.
+tsc clean; build Compiled successfully.
