@@ -7,6 +7,10 @@ import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
+// Travel a single direction must accumulate before the bar is allowed to
+// hide or re-show. Small enough that a deliberate swipe clears it instantly.
+const DIRECTION_THRESHOLD = 8;
+
 interface NavbarProps {
   children: React.ReactNode;
   className?: string;
@@ -98,9 +102,16 @@ export const Navbar = ({ children, className }: NavbarProps) => {
     if (!el) return;
     let lastScroll = 0;
     let hidden = false;
+    // Where the current run of travel in one direction started. The hide/show
+    // decision is made against THIS, not against the previous scroll event.
+    let anchor = 0;
+    let direction = 0;
 
     const onScroll = () => {
-      const latest = window.scrollY;
+      // Clamped: iOS reports a NEGATIVE scrollY while rubber-banding at the
+      // top, and the moment that bounce turns around it reads as an upward
+      // scroll — one of the ways the bar used to flap at rest.
+      const latest = Math.max(0, window.scrollY);
 
       const shouldBeVisible = latest > 80;
       // Guard with a ref instead of handing setState a same-value functional
@@ -114,12 +125,27 @@ export const Navbar = ({ children, className }: NavbarProps) => {
         setVisible(shouldBeVisible);
       }
 
-      const shouldHide = latest > lastScroll && latest > 120;
+      // Direction used to flip on a SINGLE pixel of travel, and momentum
+      // scrolling on a phone reverses constantly — so the bar restarted its
+      // 300ms slide several times a second and read as jitter, or as a bar
+      // that would not settle. A run must now travel DIRECTION_THRESHOLD px
+      // before it is allowed to move the bar at all; a real swipe clears that
+      // in one frame, the jitter of a fling never does.
+      const next =
+        latest > lastScroll ? 1 : latest < lastScroll ? -1 : direction;
+      if (next !== direction) {
+        direction = next;
+        anchor = lastScroll;
+      }
+      lastScroll = latest;
+
+      if (Math.abs(latest - anchor) < DIRECTION_THRESHOLD) return;
+
+      const shouldHide = direction === 1 && latest > 120;
       if (shouldHide !== hidden) {
         hidden = shouldHide;
         el.style.translate = hidden ? "0 -120px" : "0 0";
       }
-      lastScroll = latest;
     };
 
     onScroll();
@@ -131,7 +157,11 @@ export const Navbar = ({ children, className }: NavbarProps) => {
     <div
       ref={ref}
       className={cn(
-        "fixed inset-x-0 top-0 z-[100] flex justify-center transition-[translate] duration-300 ease-out will-change-transform [transform:translateZ(0)]",
+        // `translateZ(0)` alone holds the compositor layer the translate
+        // transition needs; `will-change: transform` was a second, redundant
+        // promotion holding a full-width layer on every route. Matches the
+        // homepage copy (ui/resizable-navbar).
+        "fixed inset-x-0 top-0 z-[100] flex justify-center transition-[translate] duration-300 ease-out [transform:translateZ(0)]",
         className,
       )}
     >

@@ -17,17 +17,29 @@ export default function Herosection({}: any) {
   // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
   const isMobile = useIsMobile();
 
-  // Pause the hero video once it is scrolled out of view. It autoplays and
-  // loops, so without this it keeps the decoder busy for the whole visit —
-  // main-thread and battery cost on a phone while the user is three sections
-  // down. Fail-OPEN: playing is the default and only an explicit
-  // "not intersecting" pauses, so a missed IO callback can never leave the
-  // hero frozen. Runs at every breakpoint — pausing an invisible looping video
-  // has no visible effect (on desktop it also idles the canvas painter below,
-  // since rVFC only fires on presented frames).
+  // Owns hero video playback outright: it starts here, not from `autoPlay`.
+  //
+  // Whether the video runs AT ALL is decided by a synchronous matchMedia read,
+  // never by an observer callback — the same gate the canvas painter below
+  // uses, and the same reload-to-cross-the-breakpoint trade-off. That ordering
+  // is the whole fix: `max-md:hidden` hides the box but not the element, so
+  // with `autoPlay` a phone decoded this video for the entire visit into a
+  // `display: none` box, and the observer could never stop it (a display:none
+  // element reports "not intersecting" once, at mount, when `pause()` is a
+  // no-op on a video that has not started — and never reports again).
+  //
+  // Above md it stays fail-OPEN exactly as before: playback is started
+  // unconditionally right here, and only an explicit "not intersecting" pauses
+  // it, so a missed IO delivery can never leave the hero frozen.
   useEffect(() => {
     const video = mainVideoRef.current;
-    if (!video || typeof IntersectionObserver === "undefined") return;
+    if (!video) return;
+
+    if (window.matchMedia("(max-width: 767px)").matches) return;
+
+    video.play().catch(() => {});
+
+    if (typeof IntersectionObserver === "undefined") return;
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) video.play().catch(() => {});
@@ -150,40 +162,71 @@ export default function Herosection({}: any) {
           the homepage only" report. Containment scopes those repaints to this
           box; the translateZ promotion keeps the blur on the GPU. */}
       <div className="absolute inset-0 overflow-hidden [contain:paint] [transform:translateZ(0)]">
+        {/* No `autoPlay` — the effect above owns playback. `max-md:hidden`
+            only hides the box, so with the attribute here a phone decoded this
+            looping video for the whole visit into a `display: none` element
+            nobody could see, and nothing could stop it (see the effect). */}
+        {/* `preload="none"`: with no `autoPlay`, nothing is fetched until the
+            effect calls `play()` — which never happens below md, so a phone no
+            longer downloads 332KB for an element it cannot see. Above md the
+            effect calls `play()` during hydration, so the fetch simply starts
+            there instead of during HTML parse; the backdrop is a 6px-blurred
+            dark video over `bg-zinc-950`, so the few hundred ms this shifts
+            are not perceptible. */}
         <video
           ref={mainVideoRef}
           src="/assets/video9.mp4"
-          autoPlay
+          preload="none"
           loop
           muted
           playsInline
           className="absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4] object-cover blur-[6px] max-md:hidden"
         />
 
-        {/* Mobile: the SAME backdrop, with the blur baked into the file instead
-            of computed per frame. Geometry is copied verbatim from the video
-            above — same offsets, same 25% box, same origin-top-left scale-4.4,
-            same object-cover — so nothing shifts across the breakpoint; only
-            the blur source differs. `blur-[6px]` on a PLAYING video makes
-            WebKit re-run a full-screen GPU blur pass on every decoded frame,
-            which is the homepage-only scroll cost; a static image is blurred
-            once at decode and then merely composited.
+        {/* Mobile: astro.webp replaces the video outright. Plain
+            `absolute inset-0` + `fill` here rather than the video's
+            25%-box/scale-4.4 hack — that chain only exists to blow a small
+            video up, and a real image just covers the box. Net effect on a
+            phone: no video decode, no per-frame blur pass, one 28KB still.
 
-            The video keeps `max-md:hidden`, and the existing IntersectionObserver
-            above pauses a non-intersecting video — a display:none element never
-            intersects — so below md the decoder stops too, not just the blur.
-
-            Baked sigma 30 at 480px wide ~= blur(6px) magnified 4.4x on screen.
-            Drop a replacement at this same path to restyle it. */}
-        <div className="hidden max-md:block absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4]">
+            `sizes` is 100vw, but the source is only 213x278, so Next serves the
+            original and the browser upscales it; it reads soft on a phone. Give
+            me a larger export and it sharpens with no code change. */}
+        {/* `scale-110`: a blurred element fades out at its own edges, and this
+            box is exactly the hero, so an un-inflated blur would show a soft
+            seam down all four sides. Overflowing ~18px each way puts that
+            falloff outside the parent's `overflow-hidden`. The video avoided
+            this the same way, via its -5% offsets and scale-4.4. */}
+        <div className="hidden max-md:block absolute inset-0 scale-110">
           <Image
-            src="/assets/hero-blurred-mobile.webp"
+            src="/assets/astro.webp"
             alt=""
             aria-hidden
             fill
             priority
+            // `unoptimized`: the optimizer was picking a 96px-wide candidate
+            // from a source that is only 213px to begin with, which upscaled
+            // to ~4x across the hero and looked pixelated. The original file
+            // is already a 28KB webp, so serving it untouched is both the
+            // sharpest and the smallest option available.
+            unoptimized
             sizes="100vw"
-            className="object-cover"
+            // Same blur-[6px] the desktop video carries, so both breakpoints
+            // read as the same soft backdrop. Crucially this is NOT the cost
+            // that made the video expensive: a filter on a PLAYING video is
+            // recomputed every decoded frame, whereas a static image is
+            // blurred once at raster and then only composited — nothing
+            // invalidates the layer, so there is no per-frame work.
+            className="object-cover blur-[6px]"
+          />
+          {/* The video was legible under text only because `blur(6px)` flattened
+              it; there is no scrim in this hero. A crisp photo with a bright
+              flare and a white cloud band would fight the white headline, so
+              this tint restores that contrast while leaving the astronaut
+              clearly visible. Delete this div for the untinted image. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-black/45"
           />
         </div>
       </div>

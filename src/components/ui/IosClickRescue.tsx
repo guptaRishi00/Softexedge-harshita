@@ -33,6 +33,11 @@ const RESCUE_AFTER_MS = 120;
 const MOVE_TOLERANCE_PX = 12;
 const MAX_PRESS_MS = 700;
 const INTERACTIVE = "a[href], button, [role='button'], label, summary";
+// Form controls were NOT covered before, which is why the contact fields still
+// needed two taps in Safari: the first tap was eaten exactly as it is for a
+// link, but nothing re-dispatched it.
+const FIELD = "input, textarea, select";
+const RESCUABLE = `${INTERACTIVE}, ${FIELD}`;
 
 export default function IosClickRescue() {
   useEffect(() => {
@@ -53,7 +58,7 @@ export default function IosClickRescue() {
       downY = e.clientY;
       downAt = performance.now();
       const el = e.target instanceof Element ? e.target : null;
-      candidate = (el?.closest(INTERACTIVE) as HTMLElement | null) ?? null;
+      candidate = (el?.closest(RESCUABLE) as HTMLElement | null) ?? null;
     };
 
     const onClick = () => {
@@ -70,8 +75,23 @@ export default function IosClickRescue() {
       // The pointer must still be over the same control — releasing elsewhere
       // is a cancelled tap, and native behaviour would not click it either.
       const at =
-        e.target instanceof Element ? e.target.closest(INTERACTIVE) : null;
+        e.target instanceof Element ? e.target.closest(RESCUABLE) : null;
       if (at !== el) return;
+
+      // Fields take a DIFFERENT rescue from links and buttons, for two reasons.
+      // 1. Their activation is focus, not click — `.click()` on an input does
+      //    not open the keyboard.
+      // 2. It must happen SYNCHRONOUSLY, here inside the pointerup handler:
+      //    iOS only opens the keyboard for a `focus()` that runs within a user
+      //    gesture, and the 120ms timer below would have left that gesture, so
+      //    a deferred focus would move the caret but leave the keyboard shut.
+      // If Safari was going to focus the field anyway this is a no-op, and the
+      // activeElement check keeps a tap inside an already-focused field from
+      // stealing its own caret placement.
+      if (el.matches(FIELD)) {
+        if (document.activeElement !== el) el.focus();
+        return;
+      }
 
       const seen = clockOfClicks;
       window.clearTimeout(rescueTimer);

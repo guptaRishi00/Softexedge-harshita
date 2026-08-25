@@ -19559,3 +19559,174 @@ Desktop 1265: lg pill display flex with links intact, whole mobile nav
 display:none; scrolled, the desktop pill still has backdrop blur(40px) and
 bg 0.6 — untouched.
 tsc 0, biome format clean, build Compiled successfully.
+
+## Safari double-tap on form fields — IosClickRescue extended to inputs (round 20)
+Cause: IosClickRescue's selector was
+`a[href], button, [role='button'], label, summary` — FORM CONTROLS WERE NEVER
+COVERED. Safari eats a field's first tap for the same reason it eats a link's
+(the page mutates during the synthetic hover pass), but nothing re-dispatched
+it, so the user had to tap twice. Verified the screenshot's fields live in
+home/ContactSection.tsx, used by BOTH /home and /contact.
+Fix, one file: added `const FIELD = "input, textarea, select"` and
+`RESCUABLE = INTERACTIVE + FIELD`; pointerdown/pointerup now match RESCUABLE.
+Fields take a DIFFERENT rescue from links, deliberately:
+ - `.focus()`, not `.click()` — clicking an input does not open the keyboard;
+ - SYNCHRONOUSLY inside the pointerup handler, NOT via the 120ms timer, because
+   iOS only opens the keyboard for a focus() that runs inside a user gesture;
+   a deferred focus would move the caret and leave the keyboard shut.
+ - skipped when the field is already `document.activeElement`, so a tap inside
+   a focused field cannot steal its own caret placement.
+VERIFIED 375 under touch emulation, simulating the exact sequence Safari
+delivers on a dropped tap (pointerdown + pointerup, NO click):
+  text input focused on first tap: true
+  select   focused on first tap: true
+  textarea focused on first tap: true
+GUARDS all hold (these were the real risk of focusing at pointerup):
+  scroll fling (moved 60px > MOVE_TOLERANCE_PX 12) does NOT focus: true
+  release over a different element (cancelled tap) does NOT focus: true
+  tap inside an already-focused field preserves caret at index 5: true
+  links/buttons still take the DELAYED CLICK rescue, exactly 1 click: true
+Desktop 1266: touchLike false, same synthetic sequence leaves the field
+unfocused — the `(hover: none) and (pointer: coarse)` gate holds, a mouse never
+gets synthetic focus.
+tsc 0, biome 0 findings, build Compiled successfully.
+NOTE: the user's screenshot is the DEPLOYED vercel.app site, which still has
+none of this session's work — this fix only reaches them on a redeploy.
+
+## Home hero mobile backdrop -> astro.webp (round 21)
+Replaces last round's generated hero-blurred-mobile.webp with the user's
+public/assets/astro.webp (213x278, 28KB, a full-bleed astronaut-over-Earth
+photo). Desktop video path untouched.
+ - Dropped the video's 25%-box / origin-top-left / scale-[4.4] chain for the
+   mobile branch: that hack exists only to blow up a small VIDEO, and a real
+   image just covers the box. Now plain `absolute inset-0` + `fill` +
+   `object-cover`. Verified it covers the hero exactly (351x780 vs 351x780).
+ - `unoptimized` added after measuring a real defect: Next's optimizer served a
+   96x125 candidate from a 213px source, a ~3.6x upscale that looked
+   pixelated. Serving the original drops the upscale to 1.65x and the file is
+   already a 28KB webp, so it is both sharper AND smaller. naturalSize now
+   213x278, currentSrc /assets/astro.webp.
+ - JUDGEMENT CALL, flagged to the user: added a mobile-only
+   `bg-black/45` scrim. This hero has NO scrim — the video was legible under
+   the white headline only because `blur(6px)` flattened it. A crisp photo with
+   a bright flare and a white cloud band would fight the type. One div, deletable.
+ - Deleted the now-unreferenced public/assets/hero-blurred-mobile.webp
+   (git-tracked, so recoverable).
+Verified 375: astro img loaded, object-cover, filter none, covers hero,
+scrim rgba(0,0,0,0.45) pointer-events none, video display:none,
+liveBlurLayers 0 (no video decode and no per-frame blur on mobile at all now).
+Desktop 1265: video display block, filter blur(6px), box 1349x955; astro
+wrapper display:none; sharp canvas preview still visible and unfiltered.
+PANE ARTIFACT ruled out, not hand-waved: desktop video reported paused with
+currentTime frozen at 4.12 and even a manual play() was refused — because
+document.visibilityState is "hidden" (pane backgrounded) and Chrome blocks
+playback in a hidden document. Video was in-viewport with readyState 4, so
+nothing structural.
+tsc 0, biome format clean, build Compiled successfully.
+
+## Home hero mobile — blur restored on the astro.webp backdrop (round 22)
+Added `blur-[6px]` to the mobile image, the same value the desktop video
+carries, so both breakpoints read as the same soft backdrop.
+WHY THIS DOES NOT REINTRODUCE THE LAG (the distinction that matters): the cost
+established back in round 10 was a filter on a PLAYING VIDEO — WebKit re-runs
+that blur pass on every decoded frame. A STATIC image is blurred once at raster
+and then only composited; nothing invalidates the layer, so there is no
+per-frame work. The video also remains `max-md:hidden` and not decoding.
+Also inflated the backdrop box with `scale-110`. A blurred element fades out at
+its OWN edges, and this box was exactly the hero, so an un-inflated blur would
+have shown a soft seam down all four sides. The video dodged this the same way
+via its -5% offsets and scale-4.4.
+Verified 375: image filter blur(6px); backdrop box 386x857 vs hero 351x780 =
+18px of bleed per side, coversHeroFully true, parent overflow hidden (so the
+falloff is clipped, no seam); scrim still present; video display:none and
+not decoding.
+GOTCHA worth remembering: `wrapperTransform` read "none" even though scale-110
+was applied — Tailwind v4 writes the STANDALONE `scale` property, not
+`transform`. Confirmed via getComputedStyle().scale === "1.1" and by the box
+geometry (386/351 = 1.0997). Do not read `transform` to test a Tailwind scale.
+Desktop 1265 unchanged: video display block, filter blur(6px), box 1349x955;
+astro wrapper display:none; sharp canvas preview visible and unfiltered.
+tsc 0, biome format clean, build Compiled successfully.
+NOTE for the user: the blur now stacks with the bg-black/45 scrim I added last
+round. Since blur alone improves type legibility, that tint could likely drop
+to ~/25 or go entirely — one token, their call.
+
+## 2026-08-25 — Mobile /home lag investigation (analysis only, NO code changes)
+Task: user reports navbar + homepage elements laggy/slow/sticky in MOBILE view only; desktop fine. Fresh whole-project analysis requested, changes forbidden until approved.
+
+Verified at runtime (user's dev server :3000, 375x812 emulation):
+1. **Both <video> elements play forever on mobile.** video9.mp4 (hero, max-md:hidden, display:none, rect 0x0) paused:false t=6.7s; video3.mp4 (portfolio panel, rect x=1501 y=1986 — fully offscreen) paused:false t=3.2s. Root cause: every IO pause path is fail-OPEN and fires its initial callback BEFORE media loads — pause() no-ops on a not-yet-started video, autoPlay then starts it, and intersection state never changes again so no further callback ever fires. Herosection.tsx:29-40, PortfolioSection.tsx:117-127, VideoViewportPause (only pauses !video.paused). ~1.3MB downloaded + permanent decode on phones. Contradicts Herosection comment "on a phone: no video decode" and map claim.
+2. astro.webp 213x278 upscaled to 386x857@2x (confirmed; known).
+3. All 4 portfolio panel images loading=eager at 100vw on mobile (PortfolioSection.tsx:579).
+4. Secondary main-thread load: AboutImageStack 12px blur exit anim every 3.5s; MobileNav width/grid-rows layout transitions (resizable-navbar.tsx:433,577); Footer 1s clock tick + embla AutoScroll; navbar will-change contradiction (resizable-navbar.tsx:139 vs comment 137).
+Full issue list delivered in chat. No files outside .claude/ touched.
+
+## 2026-08-25 — Mobile /home lag: fixes applied (navbar first, then the rest)
+Follow-up to the analysis entry above. Scope: `/home` mobile only. No commit.
+
+**Navbar — `ui/resizable-navbar.tsx`** (imported ONLY by `layout/Header` -> `/home`):
+1. *Hide/show flapped on 1px of travel.* `shouldHide = latest > lastScroll` flipped on every
+   direction reversal, and momentum/rubber-band scrolling reverses constantly — the bar
+   restarted its 300ms slide many times a second. Added an 8px `DIRECTION_THRESHOLD` run
+   anchor + `Math.max(0, scrollY)` (iOS reports negative scrollY at the top).
+   Verified: 8 synthetic ±3px jitter events produced 0 toggles; real 40px swipes still
+   hide/show. Was: every jitter event toggled.
+2. Removed `will-change-transform` (contradicted the comment on its own line; kept
+   `translateZ(0)`). Verified computed `willChange: transform` -> `auto`.
+
+**Videos — the dominant cost (both confirmed decoding forever on mobile).**
+Root cause: fail-OPEN IO + `autoPlay`. The observer's ONLY callback fires at mount, when
+`pause()` is a no-op on a video that has not started; `autoPlay` then starts it and the
+element never changes intersection state again, so no second callback ever comes.
+- `Herosection.tsx`: dropped `autoPlay`; effect now gates on a SYNCHRONOUS
+  `matchMedia("(max-width: 767px)")` (same idiom as the canvas painter / SmoothScroll)
+  and calls `play()` itself above md. Fail-open preserved on desktop.
+- `PortfolioSection.tsx`: dropped `autoPlay`; initial play decided by a synchronous
+  on-screen check (same idiom as the file's own carousel `isOnScreen()`).
+Verified mobile: both `paused:true, currentTime:0`, no `autoplay` attr, mobile gate true.
+**A/B control:** re-adding `autoPlay` under the same hidden-document pane also showed
+`paused:true` — so the desktop "paused" reading is the preview pane (`document.hidden:true`,
+IO never fires there per CLAUDE.md), NOT a regression. Manual `play()` returned "PLAY OK".
+
+**Others**: `AboutImageStack` EXIT blur 12 -> 0 (animated `filter: blur()` re-rasterises
+every frame; mobile-only component; restore by setting the constant back to 12).
+`PortfolioSection` panel images `loading="eager"` -> eager on panel 0 only, lazy for the
+other four (verified 1 eager / 4 lazy).
+
+Checks: `bunx tsc --noEmit` exit 0; biome rule-sets on all 4 changed files identical to
+HEAD (all findings pre-existing); `bun run build` succeeded, /home prerendered.
+NOT done, deliberately: navbar `width`/`grid-template-rows` layout transitions (would change
+visuals; re-measure on device now the main thread is free), hero asset too small (213x278,
+needs a bigger export), footer 1s clock tick, `snap-mandatory` axis-lock.
+`page/resizable-navbar.tsx` has the IDENTICAL scroll+will-change bug for every other route —
+left alone per CLAUDE.md's "confirm scope before editing duplicated navigation".
+
+## 2026-08-25 — Mobile /home lag: remaining items (continued)
+Picked up the two items left for a decision in the previous entry. No commit.
+
+**`page/resizable-navbar.tsx`** (serves every route except `/home`) — applied the identical
+two fixes made to the homepage copy: 8px `DIRECTION_THRESHOLD` run anchor +
+`Math.max(0, scrollY)`, and removed the redundant `will-change-transform`.
+Verified on `/about`: `willChange: auto`, 8 synthetic ±3px jitter events -> **0 toggles**,
+real 50px/170px swipes still hide and re-show.
+
+**`preload="none"` on both `<video>`s** (Herosection, PortfolioSection).
+Follows from removing `autoPlay`: with no attribute and no `play()` call, nothing is fetched.
+- Cold-load MOBILE (390x844): `mp4RequestsMade: []` — **zero** mp4 requests; both videos
+  `readyState:0`, `bufferedRanges:0`, paused. Was 332KB + 951KB = ~1.28MB per visit.
+- Cold-load DESKTOP (1280x900): hero `paused:false`, `readyState:4`, `bufferedRanges:1`,
+  `video9.mp4` fetched (332KB) — `play()` triggers the load, so `preload="none"` costs
+  desktop only the shift from parse-time to hydration-time. `video3.mp4` correctly NOT
+  fetched on either breakpoint (offscreen). This also settles the previous entry's open
+  question: desktop playback is confirmed working, not merely inferred.
+
+Checks: `bunx tsc --noEmit` exit 0; biome rule-sets identical to HEAD on all changed files
+(`page/resizable-navbar` 4 a11y + 5 noArrayIndexKey before AND after — all pre-existing);
+`bun run build` exit 0, "Compiled successfully", 35/35 static pages.
+
+Still open, with reasons (unchanged): navbar `width`/`grid-template-rows` layout transitions
+(any compositor-only rewrite changes the visual — re-measure on device now the main thread is
+free); hero asset 213x278 needs a larger export; `snap-mandatory` axis-lock is a design call.
+Footer 1s clock tick examined and DELIBERATELY left: 12 leaf re-renders/sec with pre-built
+Intl formatters is well under a millisecond, and browsers already throttle it in background
+tabs — gating it on visibility would add latch-prone async state for no measurable gain.

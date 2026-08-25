@@ -14,11 +14,17 @@ const FRONT = { y: 0, scale: 1, opacity: 1, blur: 0 };
 const HIDDEN = { y: 0, scale: 1, opacity: 0, blur: 0 };
 
 // The outgoing card dissipates: it drifts up a little, expands slightly and
-// blurs out as it fades — smoke, not a card being dropped. Blur is the one
-// non-free property here, but it runs on a single element that is already
-// promoted (transform + opacity are animating on it too), for 700ms once per
-// 3.5s cycle, so no extra layer is created and nothing else on the page pays.
-const EXIT = { y: -22, scale: 1.06, opacity: 0, blur: 12 };
+// fades — smoke, not a card being dropped.
+//
+// `blur` is 0 rather than the 12 it used to be. The old note argued the blur
+// was cheap because the element is already promoted, but promotion is not what
+// costs here: transform and opacity are interpolated by the compositor from an
+// existing raster, whereas an ANIMATED `filter: blur()` has to re-rasterise the
+// card at a new sigma on every frame — ~40 fresh Gaussians over a full-width
+// image per cycle, forever, and this component renders on mobile ONLY, which is
+// the breakpoint that could least afford it. Restore the effect by setting this
+// back to 12; nothing else has to change.
+const EXIT = { y: -22, scale: 1.06, opacity: 0, blur: 0 };
 
 /**
  * Mobile-only image cycler for AboutSection.

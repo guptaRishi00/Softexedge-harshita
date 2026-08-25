@@ -102,18 +102,40 @@ export default function PortfolioSection() {
   const panelsRef = useRef<HTMLDivElement>(null);
   const isDesktop = useIsDesktop();
 
-  // Pause the panel videos while the section is offscreen. An autoplaying,
-  // looping <video> keeps decoding frames for as long as the page lives, and
-  // this section sits mid-page — so on a phone the decoder competed with
-  // scrolling long after the panel scrolled away. Fail-OPEN by design: videos
-  // autoplay by default and only an explicit "not intersecting" pauses them,
-  // so a missed IO delivery can never leave a panel stuck black (the same
-  // fail-open rule the brand-strategy carousel autoplay follows).
+  // Owns panel-video playback outright: they start here, not from `autoPlay`.
+  //
+  // The initial decision is a SYNCHRONOUS on-screen check — the same idiom the
+  // carousel autoplay below already uses — rather than the observer's first
+  // callback. That ordering is the fix. These panels are offscreen at mount,
+  // so the observer's one and only callback fired "not intersecting" while
+  // `pause()` was still a no-op on a video that had not started yet; `autoPlay`
+  // then started it, the panel never intersected again, and no second callback
+  // ever came. The result was a 951KB video decoding for the entire visit
+  // behind a panel four slides to the right.
+  //
+  // A video that IS on screen at mount still plays immediately and is only ever
+  // stopped by an explicit "not intersecting", so the fail-open behaviour that
+  // keeps a visible panel from sticking on a black frame is unchanged.
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || typeof IntersectionObserver === "undefined") return;
+    if (!container) return;
     const videos = Array.from(container.querySelectorAll("video"));
     if (videos.length === 0) return;
+
+    const onScreen = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      return (
+        r.bottom > 0 &&
+        r.top < window.innerHeight &&
+        r.right > 0 &&
+        r.left < window.innerWidth
+      );
+    };
+    for (const v of videos) {
+      if (onScreen(v)) v.play().catch(() => {});
+    }
+
+    if (typeof IntersectionObserver === "undefined") return;
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -532,7 +554,7 @@ export default function PortfolioSection() {
             </p>
           </div>
 
-          {projects.map((project) => (
+          {projects.map((project, panelIndex) => (
             <div
               key={project.id}
               // max-md:isolate — on mobile nothing above this panel creates a
@@ -557,10 +579,17 @@ export default function PortfolioSection() {
 
               <div className="absolute inset-0 -z-20 overflow-hidden">
                 {project.type === "video" ? (
+                  // No `autoPlay` — the effect above starts it, so a panel
+                  // that is offscreen at mount never begins decoding at all.
+                  // `preload="none"` follows from that: this panel is four
+                  // slides right of the entry point, so its 951KB was being
+                  // pulled down on every visit for a background most readers
+                  // never scroll to. Playback does not wait for the whole file
+                  // either — `play()` starts as soon as enough is buffered.
                   <video
-                    autoPlay
                     muted
                     loop
+                    preload="none"
                     playsInline
                     className="h-full w-full object-cover"
                   >
@@ -572,11 +601,16 @@ export default function PortfolioSection() {
                     alt={project.title}
                     fill
                     sizes="100vw"
-                    // Eager on purpose: this is the panel's background, not an
-                    // incidental image. next/image defaults to lazy, which the
-                    // raw <img> here never was, and a deferred load leaves the
-                    // panel rendering as a black box until it arrives.
-                    loading="eager"
+                    // Eager for the FIRST panel only. Eager everywhere meant
+                    // all five full-viewport backgrounds were fetched and
+                    // decoded during load — four of them for panels sitting
+                    // off to the right of a horizontal scroller that the reader
+                    // may never reach. On a phone those decodes land in the
+                    // same window as first scroll and read as tap latency.
+                    // The original "a deferred load leaves the panel black"
+                    // note still holds for the panel you can actually see on
+                    // arrival, which is exactly the one kept eager.
+                    loading={panelIndex === 0 ? "eager" : "lazy"}
                     className="h-full w-full object-cover"
                   />
                 )}
