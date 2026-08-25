@@ -19455,3 +19455,69 @@ rgb(15,15,15) far away.
 Desktop 1265 after the change: grid renders 80 cells / 10 cols / 2 children,
 no crash, console clean apart from dev HMR websocket noise.
 tsc 0, biome clean, build Compiled successfully.
+
+## Removed unused components (round 17)
+Two files deleted, both provably unreachable:
+  src/components/ui/Particles.tsx   (270 lines)
+  src/components/ui/StarBorder.tsx  ( 78 lines)
+Component count 133 -> 131.
+METHOD — not a guess: built a transitive reachability graph over all 161
+src/*.ts(x) files, resolving `@/` and relative specifiers plus /index
+resolution, seeded from EVERY file under src/app (what Next.js actually
+loads), and took the complement. Exactly two components were unreachable.
+Cross-checked each with `git grep` (plain `grep -r` timed out scanning
+node_modules — use git grep in this repo): ZERO references anywhere in src
+outside their own files, and none in config either. History corroborates both:
+the log records StarBorder was superseded by SpecularBorder on 2026-07-27
+("now has ZERO importers") and Particles died when the Footer import was
+removed.
+DEPENDENCY CHECK before deleting: Particles imported `ogl`, but
+ui/SpecularBorder.tsx imports it too, so `ogl` keeps a live consumer and
+package.json needed no change (no lockfile churn, nothing to sign off).
+SAFETY: verified the repo is a git repo with a CLEAN tree before deleting —
+something auto-commits here, my own SpotlightGrid `paintCells` edit was already
+in HEAD — so both files are recoverable with `git checkout HEAD -- <path>`.
+VERIFIED AFTER: tsc exit 0; `bun run build` Compiled successfully, 35 static
+pages generated; re-ran the reachability audit — 159/159 files reachable,
+"STILL UNUSED: NONE".
+Scope note: the audit found ZERO unused non-component files, so nothing outside
+src/components was in question.
+
+## Home hero — mobile swaps the live-blurred video for a PRE-BLURRED image (round 18)
+TWO CORRECTIONS to the brief, both material:
+1. The hero uses `filter: blur(6px)` ON THE <video> ELEMENT, not `backdrop-blur`.
+   Step 2's find-and-replace (`backdrop-blur-[X]` -> `+ max-md:backdrop-blur-none`)
+   had NO target: round 13 already proved zero live backdrop-filters render on
+   the mobile homepage. The DIAGNOSIS was right though — a live blur over a
+   playing video is the homepage-only cost — so the swap was built anyway.
+2. `next/image` was not imported in Herosection; added.
+Change (1 file + 1 new asset):
+ - video keeps its classes, gains `max-md:hidden`.
+ - new `hidden max-md:block` wrapper whose geometry is copied VERBATIM from the
+   video (`absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left
+   scale-[4.4]`) containing `<Image fill sizes="100vw" priority alt=""
+   aria-hidden className="object-cover">`. Only the blur SOURCE differs.
+ASSET GENERATED, not left as a dead placeholder — referencing a missing file
+would have blanked the mobile hero (the /noise.png 404 lesson). Baked with the
+available ffmpeg from the hero's own frame:
+  crop=316:720:482:0 (portrait crop ~0.4377, matching the on-screen box aspect)
+  scale=480:1094 lanczos, gblur=sigma=30, libwebp q82
+  -> public/assets/hero-blurred-mobile.webp, 6,488 bytes, 480x1094.
+  sigma maths: blur(6px) at the 97.5px-wide box magnified 4.4x is ~26.4px over
+  a ~429px render => sigma ~6.15% of width => 30 at 480 wide.
+  6.5KB vs the 340KB video. Overwrite that same path to restyle.
+VERIFIED 375: liveBlurLayers on the whole page = 0 (was blur(6px) over the full
+first screen); image loaded, object-fit cover, filter none; video display none.
+GEOMETRY PROOF (a display:none box measures 0x0, so I briefly un-hid the video,
+measured, and reverted): video 386x857 @-6,-23 vs image 386x857 @-6,-23 —
+geometryIdentical TRUE, so no layout shift across the swap.
+Desktop 1265 unchanged: video display block, filter blur(6px), playing, box
+1349x955; mobile wrapper display:none; the SHARP canvas preview still present,
+visible, filter none.
+TWO HONEST CAVEATS: (a) the video reported paused:false on mobile — a
+display:none element never intersects, so the existing IntersectionObserver
+should pause it on a real device, but IO is inert in this pane so I could not
+confirm it; (b) `max-md:hidden` does not stop the 340KB video from being
+FETCHED on mobile — only conditional rendering would, which needs isMobile and
+was outside the requested CSS-swap approach.
+tsc 0, biome clean, build Compiled successfully.

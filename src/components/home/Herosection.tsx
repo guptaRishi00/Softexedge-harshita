@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { NO_ENTRY, useIsMobile } from "@/lib/useIsDesktop";
 import Header from "../layout/Header";
@@ -156,8 +157,35 @@ export default function Herosection({}: any) {
           loop
           muted
           playsInline
-          className="absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4] object-cover blur-[6px]"
+          className="absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4] object-cover blur-[6px] max-md:hidden"
         />
+
+        {/* Mobile: the SAME backdrop, with the blur baked into the file instead
+            of computed per frame. Geometry is copied verbatim from the video
+            above — same offsets, same 25% box, same origin-top-left scale-4.4,
+            same object-cover — so nothing shifts across the breakpoint; only
+            the blur source differs. `blur-[6px]` on a PLAYING video makes
+            WebKit re-run a full-screen GPU blur pass on every decoded frame,
+            which is the homepage-only scroll cost; a static image is blurred
+            once at decode and then merely composited.
+
+            The video keeps `max-md:hidden`, and the existing IntersectionObserver
+            above pauses a non-intersecting video — a display:none element never
+            intersects — so below md the decoder stops too, not just the blur.
+
+            Baked sigma 30 at 480px wide ~= blur(6px) magnified 4.4x on screen.
+            Drop a replacement at this same path to restyle it. */}
+        <div className="hidden max-md:block absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4]">
+          <Image
+            src="/assets/hero-blurred-mobile.webp"
+            alt=""
+            aria-hidden
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        </div>
       </div>
 
       <Header />
