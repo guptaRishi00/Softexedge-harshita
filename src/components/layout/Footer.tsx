@@ -4,9 +4,9 @@ import AutoScroll from "embla-carousel-auto-scroll";
 import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { AiFillInstagram } from "react-icons/ai";
 import { FaFacebookF, FaLinkedinIn } from "react-icons/fa";
 import { MdArrowOutward } from "react-icons/md";
-import { AiFillInstagram } from "react-icons/ai";
 import {
   Carousel,
   type CarouselApi,
@@ -159,13 +159,7 @@ const offices = [
   { city: "Paris", timeZone: "Europe/Paris" },
 ];
 
-function OfficeClock({
-  city,
-  timeZone,
-}: {
-  city: string;
-  timeZone: string;
-}) {
+function OfficeClock({ city, timeZone }: { city: string; timeZone: string }) {
   return (
     <div className="flex flex-col items-start gap-3">
       <div className="flex items-center gap-2">
@@ -239,7 +233,7 @@ export default function Footer() {
 
   return (
     <footer className="relative w-full overflow-hidden rounded-[20px] bg-black pb-8 pt-10 text-white md:pt-24 lg:pt-32">
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay" />
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay max-md:hidden" />
 
       <div className="relative z-10 mx-auto w-full flex flex-col px-6 max-md:gap-12 md:px-10 lg:px-16">
         <div className="grid grid-cols-1 items-start gap-12 pb-16 max-md:contents lg:grid-cols-12 md:pb-20">

@@ -95,7 +95,7 @@ export default function StrategyHeroSection() {
       className="relative flex min-h-screen max-md:min-h-[120svh] w-full flex-col items-center justify-between overflow-hidden bg-white pt-24 pb-12 text-zinc-900"
     >
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-60">
-        <div className="h-[600px] w-[600px] rounded-full bg-zinc-100 blur-[120px]"></div>
+        <div className="h-[600px] w-[600px] rounded-full bg-zinc-100 blur-[120px] max-md:hidden"></div>
       </div>
 
       <div className="relative z-10 flex flex-1 w-full max-w-7xl flex-col items-center justify-center text-center lg:mt-30 px-6 md:px-10">

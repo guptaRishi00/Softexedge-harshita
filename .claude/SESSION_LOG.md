@@ -19123,3 +19123,41 @@ Standing recommendation (third time): commit + deploy. The vercel.app site
 still has ZERO of the seven rounds of fixes; testing there will always feel
 identical to "not fixed till date". Test URL until then:
 http://192.168.29.24:3001
+
+## Perf round 8 — SAFARI named for the first time; gated WebKit-expensive CSS below md
+User finally specified the browser: Safari. All prior rounds profiled Chromium,
+which barely feels this class of cost. Live 390 audit (computed styles, prod
+then dev) found and fixed, all with max-md: gates so desktop is untouched:
+- home Herosection: the hero backdrop is an AUTOPLAYING VIDEO at 25% size
+  scaled 4.4x with filter blur(6px) covering 403x891 — per-frame decode +
+  upscale + re-blur on the first screen. `max-md:blur-none` (the 4.4x upscale
+  alone already renders soft; GPU scaling is free). Likely the single biggest
+  "homepage laggy in Safari" cause.
+- home AboutSection: 240x240 blur-3xl orb framer-animated with
+  repeat:Infinity — continuous re-blur while on screen. `max-md:hidden`.
+- 8x StrategyHeroSection (brand-strategy + 7 clones): 600x600 blur-[120px]
+  zinc-100 orb at opacity-60 ON A WHITE HERO — near-invisible on a phone,
+  most expensive filter WebKit paints. `max-md:hidden`.
+- brand-strategy ProjectShowcase chips (15 rendered) + work ProjectCard chip:
+  backdrop-blur(12px) -> `max-md:bg-black/50 max-md:backdrop-blur-none`,
+  the exact idiom home PortfolioSection already used for the same reason.
+  (work ProjectCard's tech-tag chips are hover-only = desktop-only, skipped.)
+- Footer (every page) + AboutTraditional noise layers: full-section
+  mix-blend-overlay at opacity .04 -> `max-md:hidden` (blend modes force
+  offscreen compositing in WebKit; imperceptible at 4% on a phone).
+- home StatsSection holder: shadow-[0_-50px_80px_...] served the desktop
+  overlap seam; mobile overlap is gone -> `max-md:shadow-none`.
+Verified 390 (both pages): backdrop-filters 0 (was 15), big blur filters 0
+(was blur(6px)@403x891 + blur(64px)@240x240 + blur(120px)@390x600), blend
+layers 0, >=40px shadows 0; chips solid black/50 and legible.
+Desktop 1265 both pages: hero video blur(6px) ON, both orbs visible with
+filters, stats shadow ON, footer noise overlay ON, chips correctly md:hidden.
+CAVEAT stated to user: no iOS Safari available here — these are the
+documented WebKit jank sources, verified removed-below-md by computed style,
+not FPS-profiled on a device.
+Prod servers keep getting [killed] between turns (bg bbl3k2siv died like
+bc9z2dz57). Told user to run `bun run start -- -H 0.0.0.0 -p 3001` in their
+own terminal.
+13 files touched. tsc 0, biome clean on touched files (Footer's remaining
+lint findings are the known pre-existing href="#" socials + index keys),
+build Compiled successfully.

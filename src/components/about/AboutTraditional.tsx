@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 export default function AboutTraditional() {
   return (
     <section className="relative w-full bg-black py-12 md:py-20 font-sans overflow-hidden text-white">
-      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-overlay pointer-events-none max-md:hidden" />
 
       <div className="mx-auto flex flex-col items-center max-md:items-start">
         <motion.div

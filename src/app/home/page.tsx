@@ -199,7 +199,7 @@ export default function HomePage() {
           <div className="relative z-20 bg-white md:-mt-[100vh]">
             <div
               ref={statsContainerRef}
-              className="relative z-0 bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
+              className="relative z-0 bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)] max-md:shadow-none"
             >
               <div ref={statsInnerRef} className="bg-white">
                 <StatsSection />

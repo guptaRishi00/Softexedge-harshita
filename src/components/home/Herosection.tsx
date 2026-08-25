@@ -150,7 +150,7 @@ export default function Herosection({}: any) {
           loop
           muted
           playsInline
-          className="absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4] object-cover blur-[6px]"
+          className="absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4] object-cover blur-[6px] max-md:blur-none"
         />
       </div>
 
