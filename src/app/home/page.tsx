@@ -3,7 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import {
   SiNextdotjs,
   SiReact,
@@ -55,114 +55,6 @@ export default function HomePage() {
   const testimonialsGroupRef = useRef<HTMLDivElement>(null);
   const testimonialsInnerRef = useRef<HTMLDivElement>(null);
   const contactContainerRef = useRef<HTMLDivElement>(null);
-
-  // Sticky offset for the mobile overlaps, measured on mount and resize only —
-  // nothing here listens to scroll, so the hold itself stays a pure compositor
-  // effect.
-  //
-  // Why an offset at all: `sticky; top: 0` freezes a section the moment its TOP
-  // reaches the viewport top, which strands the tail of any section taller than
-  // the screen. `sticky; bottom: 0` does NOT solve it — that pulls an element UP
-  // into view from below and releases it on the way down, the opposite hold.
-  // The idiom that works is a NEGATIVE top of (viewport - height), so the
-  // section's BOTTOM rests on the viewport bottom: exactly what
-  // brand-strategy/page.tsx does with `top-[min(0px,calc(100vh-992px))]`, only
-  // measured here instead of hardcoded so it survives copy edits and width
-  // changes. Sections shorter than the viewport clamp to 0 and simply stick at
-  // the top.
-  useEffect(() => {
-    const holders = [
-      aboutContainerRef,
-      statsContainerRef,
-      testimonialsGroupRef,
-    ];
-
-    const apply = () => {
-      const mobile = window.matchMedia("(max-width: 767px)").matches;
-      for (const ref of holders) {
-        const el = ref.current;
-        if (!el) continue;
-        // Cleared above md so the desktop GSAP pins own positioning there.
-        el.style.top = mobile
-          ? `${Math.min(0, window.innerHeight - el.offsetHeight)}px`
-          : "";
-      }
-    };
-
-    apply();
-    window.addEventListener("resize", apply);
-    // Content settling after first paint (fonts, images) changes these heights,
-    // and setting `top` cannot itself resize a sticky box, so this cannot loop.
-    const ro = new ResizeObserver(apply);
-    for (const ref of holders) if (ref.current) ro.observe(ref.current);
-
-    return () => {
-      window.removeEventListener("resize", apply);
-      ro.disconnect();
-    };
-  }, []);
-
-  // Shrink fallback for browsers WITHOUT scroll-driven animations — notably
-  // iOS Safari before 26. Where `animation-timeline` is supported the CSS in
-  // globals.css owns the shrink and not a line of this runs.
-  //
-  // This is deliberately not a return to the GSAP scrub: that drove pinning,
-  // position:fixed and layout every frame. This is one passive, rAF-coalesced
-  // listener writing a transform on three elements — no reads of anything but
-  // the cover's own rect, and no layout forced beyond it.
-  useEffect(() => {
-    if (
-      typeof CSS !== "undefined" &&
-      CSS.supports("animation-timeline: view()")
-    ) {
-      return;
-    }
-    if (!window.matchMedia("(max-width: 767px)").matches) return;
-
-    const pairs: Array<
-      [
-        React.RefObject<HTMLDivElement | null>,
-        React.RefObject<HTMLDivElement | null>,
-      ]
-    > = [
-      [aboutInnerRef, portfolioRef],
-      [statsInnerRef, serviceContainerRef],
-      [testimonialsInnerRef, contactContainerRef],
-    ];
-
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      for (const [innerRef, coverRef] of pairs) {
-        const inner = innerRef.current;
-        const cover = coverRef.current;
-        if (!inner || !cover) continue;
-        // 0 while the cover is still below the fold, 1 once it has fully
-        // arrived — the same mapping as the CSS `entry 0% -> entry 100%`.
-        const top = cover.getBoundingClientRect().top;
-        const p = Math.min(1, Math.max(0, 1 - top / window.innerHeight));
-        inner.style.transform = p
-          ? `scale(${1 - 0.15 * p}) translateY(${40 * p}px)`
-          : "";
-      }
-    };
-    // Cancel-and-rearm rather than a pending flag: a flag cleared only inside
-    // the callback latches forever if that callback never runs.
-    const onScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(frame);
-      for (const [innerRef] of pairs) {
-        if (innerRef.current) innerRef.current.style.transform = "";
-      }
-    };
-  }, []);
 
   useGSAP(() => {
     const mm = gsap.matchMedia();
@@ -282,29 +174,16 @@ export default function HomePage() {
           </div>
         </section>
 
-        <div className="relative overlap-scope">
-          {/* Below md the three overlaps are CSS `position: sticky` instead of
-              GSAP pins. Same effect — the held section stays put while the next
-              one slides over it — but the browser does it on the compositor,
-              with no per-frame JS. The GSAP version measurably janked on a
-              phone, which is the whole reason this is CSS.
-
-              `bottom-0`, not `top-0`: every one of these sections is taller
-              than a phone viewport, so sticking the TOP would freeze it with
-              its own content still unread below the fold. Sticking the BOTTOM
-              holds it only once it has been scrolled through — the same moment
-              the desktop pins use (`start: "bottom bottom"`).
-
-              Each holder is covered by an opaque, higher-z sibling
-              (Portfolio z-10, Service z-10, Contact z-30), which is what makes
-              the hand-off read as an overlap. */}
-          <div
-            ref={aboutContainerRef}
-            className="relative z-0 bg-white max-md:sticky"
-          >
+        <div className="relative">
+          {/* Desktop only: GSAP pins each holder while the next section
+              slides over it (Portfolio z-10, Service z-10, Contact z-30 are the
+              opaque covers). Below md there is no overlap at all — every
+              ScrollTrigger here lives inside `mm.add("(min-width: 768px)")`, so
+              the sections simply stack and scroll normally. */}
+          <div ref={aboutContainerRef} className="relative z-0 bg-white">
             <div
               ref={aboutInnerRef}
-              className="overlap-held-about origin-top md:will-change-transform bg-white pb-0 md:pb-[25vh] lg:pb-[30vh]"
+              className="origin-top md:will-change-transform bg-white pb-0 md:pb-[25vh] lg:pb-[30vh]"
             >
               <AboutSection />
             </div>
@@ -312,7 +191,7 @@ export default function HomePage() {
 
           <div
             ref={portfolioRef}
-            className="overlap-cover-portfolio relative z-10 bg-[#0a0a0a] lg:shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]"
+            className="relative z-10 bg-[#0a0a0a] lg:shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)]"
           >
             <PortfolioSection />
           </div>
@@ -320,27 +199,24 @@ export default function HomePage() {
           <div className="relative z-20 bg-white md:-mt-[100vh]">
             <div
               ref={statsContainerRef}
-              className="relative z-0 bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)] max-md:sticky"
+              className="relative z-0 bg-white shadow-[0_-50px_80px_rgba(0,0,0,0.5)]"
             >
-              <div ref={statsInnerRef} className="overlap-held-stats bg-white">
+              <div ref={statsInnerRef} className="bg-white">
                 <StatsSection />
               </div>
             </div>
 
             <div
               ref={serviceContainerRef}
-              className="overlap-cover-service relative z-10 w-full shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)] max-md:shadow-none"
+              className="relative z-10 w-full shadow-[0_-8px_16px_-2px_rgb(0_0_0_/_0.18),0_-4px_8px_-4px_rgb(0_0_0_/_0.15)] max-md:shadow-none"
             >
               <ServiceSection />
             </div>
 
-            <div
-              ref={testimonialsGroupRef}
-              className="relative z-10 bg-white max-md:sticky"
-            >
+            <div ref={testimonialsGroupRef} className="relative z-10 bg-white">
               <div
                 ref={testimonialsInnerRef}
-                className="overlap-held-testimonials origin-top md:will-change-transform"
+                className="origin-top md:will-change-transform"
               >
                 <ExperimentalTestimonials />
                 <TechLogoCarousel />
@@ -349,20 +225,14 @@ export default function HomePage() {
 
             <div
               ref={contactContainerRef}
-              className="overlap-cover-contact relative z-30 lg:shadow-[0_-12px_24px_-2px_rgb(0_0_0_/_0.24),0_-6px_12px_-4px_rgb(0_0_0_/_0.2)]"
+              className="relative z-30 lg:shadow-[0_-12px_24px_-2px_rgb(0_0_0_/_0.24),0_-6px_12px_-4px_rgb(0_0_0_/_0.2)]"
             >
               <ContactSection />
 
               {/* hello? */}
             </div>
 
-            {/* z-40 below md: the Testimonials holder above is sticky and its
-                containing block runs to the end of THIS wrapper, so it is still
-                stuck (invisible behind Contact) once Blog arrives. Blog was
-                `static`/`z-auto`, i.e. under the holder's z-10, so the held
-                section painted back over it. Blog's own section is already
-                opaque, so a stacking rank above the holder is all it needs. */}
-            <div className="[&>section]:pt-16 max-md:relative max-md:z-40 md:[&>section]:pt-30">
+            <div className="[&>section]:pt-16 md:[&>section]:pt-30">
               <BlogSection />
             </div>
           </div>

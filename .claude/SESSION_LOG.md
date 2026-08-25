@@ -18973,3 +18973,38 @@ diff. Always use ./node_modules/.bin/biome or `bun run lint`/`bun run format`.
 Recovered by re-running the project binary over src/components/brand-strategy/.
 Also removed a genuinely unused `React` default import in ProjectShowcase
 (only textual "React." mentions were in a comment).
+
+## Home — mobile overlapping animation REMOVED
+Undoes the mobile overlap work from earlier this session (desktop GSAP pins
+untouched). Removed from src/app/home/page.tsx: the sticky-offset useEffect
+(holders + ResizeObserver + resize listener writing a measured negative
+`top`), the scroll-driven-animation FALLBACK useEffect (the rAF shrink for
+browsers without `animation-timeline`), `max-md:sticky` x3, all seven
+`overlap-scope`/`overlap-cover-*`/`overlap-held-*` hooks, and the Blog
+wrapper's `max-md:relative max-md:z-40` (it existed only to outrank the
+now-gone sticky holder). `useEffect` import dropped — no effects left.
+From globals.css: the whole `@supports (animation-timeline: view())` block
+(67 lines incl. @keyframes overlap-shrink).
+All refs kept — every one is used by the desktop useGSAP block.
+Verified 390 (dev :3000, SSR HTML confirms 0 occurrences of overlap-scope /
+max-md:sticky / overlap-held): stickyCount 0, inlineTopCount 0,
+animationTimelineCount 0, transformedHolders 0. Sections stack EXACTLY, each
+top == previous bottom: About 1035+982=2017 -> Portfolio 2017+591=2608 ->
+Stats 2608+725=3333 -> Service 3333+1128=4461 -> Testimonials 4461+1092=5553
+-> Contact 5553+1849=7402 -> Blog. No negative margins on mobile.
+Scroll-drift probe (the decisive test): About/Stats/Testimonials each drift
+0px across 1200->2200, 2200->4800, 4800->5600 — i.e. they move 1:1 with
+scroll, nothing holds. docHeight 9893.
+Desktop 1265: `md:-mt-[100vh]` still resolves to -900px, 4 pin-spacers still
+created, docHeight 16237, 3 `pin: true` / 3 ScrollTrigger.create all still
+inside `mm.add("(min-width: 768px)")`; `matchMedia` now appears exactly once
+in the file (gsap.matchMedia) so no mobile JS remains.
+PANE LIMITATION (not a regression): desktop pins could not be observed
+holding, because `scrollTo()` bypasses Lenis and Lenis's rAF is frozen in the
+preview pane, so ScrollTrigger.update() never fires. Desktop safety rests on
+the diff being mobile-gated by construction: both effects were
+matchMedia("(max-width:767px)") gated (the sticky one wrote `top:""` on
+desktop, a no-op), the CSS block was `@media (max-width:767px)`, and every
+removed class was `max-md:` or referenced only inside that media query.
+biome exit 0 (5 pre-existing !important warnings elsewhere in globals.css),
+tsc exit 0, build Compiled successfully.
