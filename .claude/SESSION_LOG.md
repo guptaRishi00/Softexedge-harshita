@@ -19008,3 +19008,118 @@ desktop, a no-op), the CSS block was `@media (max-width:767px)`, and every
 removed class was `max-md:` or referenced only inside that media query.
 biome exit 0 (5 pre-existing !important warnings elsewhere in globals.css),
 tsc exit 0, build Compiled successfully.
+
+## Brand-strategy SubServices — service title + row y-padding matched to home ServiceSection (mobile)
+Re-does the service-title match that was reverted two tasks ago, this time
+WITH the y-padding the user added to the ask (likely why size-alone looked
+wrong). SubServiceCard only:
+- title anchor `max-md:py-10` (40px) -> `max-md:py-9` (36px), = ServiceSection's
+  row `py-9`.
+- h3 `max-md:text-4xl` -> `max-md:leading-none max-md:tracking-[-0.04em]
+  max-sm:text-2xl`. ServiceSection's h3 is `text-2xl leading-none
+  tracking-[-0.04em] sm:text-5xl`, i.e. 24px under 640 and 48px from 640-767.
+  Scoping the small size to `max-sm:` reproduces BOTH bands without a stacked
+  `sm:max-md:` variant, because this h3's base is already text-5xl (48px) and
+  `md:text-6xl` does not start until 768.
+Reference measured live on /home: 390 -> row pad 36/36, title
+24px|24px|500|-0.96px; 700 -> pad 36/36, title 48px|48px|500|-1.92px.
+Verified 390: all four rows allTitlesMatch true, allPadsMatch true, each title
+still ONE line, no page overflow. Verified 700: pad 36/36, title
+48px|48px|500|-1.92px — exact.
+Desktop 1265 unchanged: title 72|72|500|-1.8px, anchor pad 0/0, 4 cards at 600.
+(The anchor computes display:block there, not inline-block, because it is a
+flex item and flex blockifies children — pre-existing, not from this change.)
+NOTE not changed, scope was title+padding: the mobile row is 108px tall vs
+ServiceSection's 96px, because SubServiceCard's arrow chip (h-9) is an in-flow
+flex sibling while ServiceSection's is `absolute -translate-y-1/2` and so adds
+no height. Say the word and I'll absolutely-position this one to match.
+biome exit 0, tsc exit 0, build Compiled successfully.
+
+## Brand-strategy SubServices — reduced gap between service rows (mobile)
+One token: title anchor `max-md:py-9` (36px) -> `max-md:py-6` (24px).
+Row 108 -> 84px, text-to-text gap 84 -> 60px (-29%). This intentionally backs
+off the ServiceSection padding match set in the previous task (that was py-9
+to equal ServiceSection's rows) — the user looked at the result and wanted the
+gaps smaller, so the row rhythm is now tighter than home's by 12px per side.
+Title size/weight/tracking still match ServiceSection exactly.
+IMPORTANT measurement note for future work on this file: the preview pane
+FREEZES CSS transitions, and the collapsed image div carries
+`max-md:transition-[height]`. That made the collapsed card measure 558px with
+a 450px image row — a pane artifact, NOT a bug. Injecting
+`transition:none!important` + reflow gives the true values (image 0px, card
+108px before this change). Always kill transitions before measuring collapsed
+accordion heights here.
+Verified 390 (transitions disabled): all four rows pad 24/24, anchorH 84,
+cardH 84, titles 24px one line, gaps [60,60,60], no page overflow.
+Accordion still works: clicking a row expands 84 -> 689px
+(gridRows "84px 406px 151.219px").
+Desktop 1265 unchanged: anchor pad 0/0, title 72|72|500|-1.8px, cardH 600,
+2 cols of 553px, image 450px.
+tsc exit 0, build Compiled successfully.
+
+## Brand-strategy SubServices — service row gap reduced again (mobile)
+Same single token, one step further: `max-md:py-6` (24px) -> `max-md:py-5`
+(20px). Row 84 -> 76px, text-to-text gap 60 -> 52px.
+Running progression: py-9 gap 84 -> py-6 gap 60 -> py-5 gap 52.
+FLOOR WORTH KNOWING: the arrow chip is `h-9` (36px) and is an in-flow flex
+sibling, so it — not the 24px text — sets the row's content height. Gap
+= 2*padding + 12 (the chip's overhang past the text). Even at py-0 the gap
+would still be 12px. To go below that the chip must become
+`absolute -translate-y-1/2` the way home/ServiceSection's is.
+Verified 390 (transitions disabled first — the pane freezes them and inflates
+collapsed heights): pads all 20/20, anchorH/cardH all 76, titles all 24px on
+one line, gaps [52,52,52], touch target still >=44px, no page overflow.
+Desktop 1265 unchanged: pad 0/0, title 72|72|500|-1.8px, cardH 600,
+2 cols of 553px, chip display:none.
+tsc exit 0, build Compiled successfully.
+
+## Brand-strategy ProjectShowcase — mobile card content restyled to WorkProjectShowcase (mobile)
+Card box untouched (max-md:h-[460px], rounded-[20px], image, scrim, p-8). Only
+the overlay CONTENT below md changes, from {title top / "Featured Case" eyebrow
++ description bottom} to work/ProjectCard's resting layout:
+- top row: category chip left + year right (both `md:hidden`); the existing
+  title div gains `max-md:hidden` so desktop's top-slot title is unchanged.
+- bottom `md:hidden` block: title (`text-3xl font-bold tracking-tight`) +
+  description as subtitle (`mt-2 text-sm font-medium text-white/60`) — work's
+  classes verbatim, minus its md:/lg: title steps which cannot apply here.
+NEW DATA (flagged): these five local projects had no category/year, which the
+work card's top row needs. Added both to the array and widened ProjectCard's
+inline prop type. Categories use src/data/projects.ts's vocabulary; YEARS ARE
+PLACEHOLDERS I chose: SaaS/2025 Aura AI, SaaS/2025 Nova Tech, Branding/2024
+Lumina Vision, E-Commerce/2024 Apex Dynamics, Web App/2024 Nexus Core.
+Verified by measuring the REAL work card at 390 and string-comparing every
+property across all five brand-strategy cards: allMatchWorkCard true —
+chip 10.4px|700|uppercase|1.04px|white.8 + pad 4px 12px + radius 8px +
+backdrop blur(12px); year 14px|500|white.5; title 30px|700|-0.75px; subtitle
+14px|500|white.6 with mt 8px; overlay pad 32px. cardHeights [460], top-slot
+title hidden on all five, no page overflow.
+Desktop 1265 unchanged: 5 cards, top-slot title visible 30px|500|-0.75px,
+chip hidden, mobile block hidden, overlay pad 40px.
+GOTCHA HIT AGAIN: python io.open(...,"w") translates \n -> CRLF on Windows,
+which biome rejects. Normalized ProjectShowcase.tsx + SubServiceCard.tsx back
+to LF. Future edits must pass newline="\n".
+Also: `cmd | tail` masks the real exit code — tsc "exit 0" was tail's. Checked
+with a separate `tsc --noEmit >/dev/null; echo $?` -> 0.
+biome exit 0, tsc exit 0, build Compiled successfully.
+
+## Perf round 7 — measured proof: the lag is dev-build + undeployed fixes
+Seventh identical report. New-code audit (since round 6): ProjectShowcase
+chips carry 1 backdrop-blur class (same as work page), both infinite
+carousels are pure passive scroll listeners (no timers), no new videos.
+Nothing to fix in code.
+NEW EVIDENCE, measured via PerformanceObserver longtask buffered:true in the
+pane at 390 (same machine, same pages, 2.5s window from load):
+  dev :3000 /home — 9 long tasks, 1217ms blocked, worst 276ms, interactive 1356ms
+  prod :3001 /home — 7 long tasks,  801ms blocked, worst 141ms, interactive  596ms
+  prod :3001 /brand-strategy — 4 tasks, 368ms blocked, worst 120ms, interactive 94ms
+  prod steady-state 3s window after load: 0 long tasks, 0ms blocked
+i.e. ALL remaining cost is load-time hydration; after load the main thread is
+completely quiet — scrolling has nothing to jank it. Dev build blocks ~1.5x
+more and is interactive 2.3x later; a mid-range phone multiplies all of this
+4-6x, which is the "stucky" feel.
+Prod server on :3001 died between sessions (bg processes do not survive);
+restarted (bg bbl3k2siv): /home 200 0.31s, /brand-strategy 200 0.27s.
+Standing recommendation (third time): commit + deploy. The vercel.app site
+still has ZERO of the seven rounds of fixes; testing there will always feel
+identical to "not fixed till date". Test URL until then:
+http://192.168.29.24:3001

@@ -97,9 +97,9 @@ export default function Card({
             variants={contentItem}
             href={link}
             onClick={handleTitleClick}
-            className="group inline-block max-md:order-1 max-md:flex max-md:w-full max-md:items-center max-md:justify-between max-md:gap-4 max-md:py-10"
+            className="group inline-block max-md:order-1 max-md:flex max-md:w-full max-md:items-center max-md:justify-between max-md:gap-4 max-md:py-5"
           >
-            <h3 className="text-5xl font-medium tracking-tight text-white max-md:min-w-0 max-md:text-4xl md:text-6xl lg:text-7xl">
+            <h3 className="text-5xl font-medium tracking-tight text-white max-md:min-w-0 max-md:leading-none max-md:tracking-[-0.04em] max-sm:text-2xl md:text-6xl lg:text-7xl">
               {title1}
               {title1 === "E" ? "-" : " "}
               {title2}

@@ -23,6 +23,8 @@ const projects = [
   {
     id: 0,
     title: "Aura AI",
+    category: "SaaS",
+    year: "2025",
     description: "Next-gen artificial intelligence platform interface.",
     image:
       "https://plus.unsplash.com/premium_photo-1773861007414-869af2ea91b8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDEyOHxDRHd1d1hKQWJFd3x8ZW58MHx8fHx8",
@@ -31,6 +33,8 @@ const projects = [
   {
     id: 1,
     title: "Nova Tech",
+    category: "SaaS",
+    year: "2025",
     description: "Fintech dashboard for modern banking solutions.",
     image:
       "https://images.unsplash.com/photo-1775185172840-47fe371943e5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDEwMnxDRHd1d1hKQWJFd3x8ZW58MHx8fHx8",
@@ -39,6 +43,8 @@ const projects = [
   {
     id: 2,
     title: "Lumina Vision",
+    category: "Branding",
+    year: "2024",
     description: "Immersive VR/AR experience branding.",
     image:
       "https://images.unsplash.com/photo-1775887065658-988ef1c262c6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDkyfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
@@ -47,6 +53,8 @@ const projects = [
   {
     id: 3,
     title: "Apex Dynamics",
+    category: "E-Commerce",
+    year: "2024",
     description: "E-commerce platform for high-end sports gear.",
     image:
       "https://images.unsplash.com/photo-1772528205616-e65dc0994c7b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDE3OHxDRHd1d1hKQWJFd3x8ZW58MHx8fHx8",
@@ -55,6 +63,8 @@ const projects = [
   {
     id: 4,
     title: "Nexus Core",
+    category: "Web App",
+    year: "2024",
     description: "Cybersecurity infrastructure data visualization.",
     image:
       "https://images.unsplash.com/photo-1777646346045-df4bd1114148?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDYwfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
@@ -230,6 +240,8 @@ function ProjectCard({
   project: {
     id: number;
     title: string;
+    category: string;
+    year: string;
     description: string;
     image: string;
     baseFlex: number;
@@ -303,11 +315,22 @@ function ProjectCard({
             transition={smoothSpring}
             className="flex items-start justify-between"
           >
-            <div>
+            {/* Desktop keeps the title in the top slot. Below md this card
+                adopts work/ProjectCard's resting layout instead — category chip
+                left, year right, title moved down to the bottom slot — so the
+                two showcases read the same on a phone. */}
+            <div className="max-md:hidden">
               <h3 className="text-2xl font-medium tracking-tight text-white md:text-3xl">
                 {project.title}
               </h3>
             </div>
+
+            <span className="rounded-md border border-white/20 bg-black/20 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-widest text-white/80 backdrop-blur-md md:hidden">
+              {project.category}
+            </span>
+            <span className="text-sm font-medium text-white/50 md:hidden">
+              {project.year}
+            </span>
           </motion.div>
 
           <AnimatePresence>
@@ -348,17 +371,16 @@ function ProjectCard({
             )}
           </AnimatePresence>
 
-          {/* Mobile details, always on. Desktop reveals this copy on hover via
-              the AnimatePresence block above, but there is no hover on touch —
-              so below md the same information is simply present, sitting in the
-              bottom slot of the card's justify-between column. `md:hidden`, so
-              desktop never renders a second copy. The title is NOT repeated
-              here: it already sits at the top of the card. */}
+          {/* Mobile details, always on — desktop reveals its copy on hover via
+              the AnimatePresence block above, and there is no hover on touch.
+              Classes are work/ProjectCard's resting bottom block verbatim (its
+              md:/lg: title steps are dropped since this block is md:hidden), so
+              the two cards match below md. */}
           <div className="md:hidden">
-            <p className="mb-2 inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-[0.3em] text-[0.65rem] font-medium uppercase tracking-[0.3em] text-transparent">
-              Featured Case
-            </p>
-            <p className="text-sm font-light leading-relaxed text-zinc-300">
+            <h3 className="text-3xl font-bold tracking-tight text-white">
+              {project.title}
+            </h3>
+            <p className="mt-2 text-sm font-medium text-white/60">
               {project.description}
             </p>
           </div>
