@@ -97,7 +97,7 @@ export default function SubServices({ children }: { children?: ReactNode }) {
 
   const content = (
     <section className="relative w-full bg-black text-white">
-      <div className="mx-auto w-full px-4 max-md:px-3 max-md:pt-20 max-md:pb-16 md:px-10 pt-30 pb-32">
+      <div className="mx-auto w-full px-4 max-md:px-3 max-md:pt-20 max-md:pb-12 md:px-10 pt-30 pb-32">
         <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-500">
           What We Offer
         </span>
@@ -126,7 +126,6 @@ export default function SubServices({ children }: { children?: ReactNode }) {
               cardRefs.current[i] = el;
             }}
             open={openIndex === i}
-            isLast={i === services.length - 1}
             onToggle={() => setOpenIndex((prev) => (prev === i ? null : i))}
             {...service}
           />

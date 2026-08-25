@@ -43,7 +43,6 @@ export default function Card({
   image,
   open = false,
   onToggle,
-  isLast = false,
 }: any) {
   // Below md the card is an accordion row, matching career/OpenPositions: the
   // title is the header and everything under it collapses. The mechanism is
@@ -69,19 +68,16 @@ export default function Card({
       }}
     >
       <div
-        className={`relative grid min-h-[50vh] max-md:min-h-0 md:h-[600px] w-full origin-top grid-cols-1 gap-12 max-md:gap-0 overflow-hidden border-t border-white/10 max-md:border-t-0 max-md:before:content-[''] max-md:before:absolute max-md:before:top-0 max-md:before:inset-x-3 max-md:before:h-px max-md:before:bg-white/10 ${color} px-4 max-md:px-3 max-md:pt-0 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16 ${
+        className={`relative grid min-h-[50vh] max-md:min-h-0 md:h-[600px] w-full origin-top grid-cols-1 gap-12 max-md:gap-0 overflow-hidden border-t border-white/10 max-md:border-t-0 ${color} px-4 max-md:px-3 max-md:pt-0 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16 ${
           open ? "max-md:pb-12" : "max-md:pb-0"
         } ${
-          // Each row draws only its OWN top rule, so the list ends without one.
-          // The last card adds a matching bottom rule to close it off.
-          // `bottom-px`, not `bottom-0`: the page's #process-overlap wrapper
-          // carries `-mt-px` with an opaque black background at z-20, so its
-          // top edge lands exactly on this card's last pixel row and painted
-          // the rule out entirely. One pixel up puts the line flush against
-          // that edge instead of under it.
-          isLast
-            ? "max-md:after:content-[''] max-md:after:absolute max-md:after:bottom-px max-md:after:inset-x-3 max-md:after:h-px max-md:after:bg-white/10"
-            : ""
+          // Below md the rules sit only BETWEEN services: every card draws its
+          // own top rule EXCEPT the first, and no card draws a bottom one — so
+          // four services show three dividers and the list has no outer edges.
+          // Desktop is untouched: it still gets the real `border-t` above.
+          i === 0
+            ? ""
+            : "max-md:before:content-[''] max-md:before:absolute max-md:before:top-0 max-md:before:inset-x-3 max-md:before:h-px max-md:before:bg-white/10"
         }`}
       >
         <motion.div

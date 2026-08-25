@@ -91,7 +91,9 @@ export default function SpotlightGrid({
     if (!el) return;
     const read = () => {
       const style = getComputedStyle(el);
-      const tracks = style.gridTemplateColumns.split(" ").filter(Boolean).length;
+      const tracks = style.gridTemplateColumns
+        .split(" ")
+        .filter(Boolean).length;
       if (tracks > 0) setRenderedCols(tracks);
 
       const rawCol = style
@@ -115,7 +117,9 @@ export default function SpotlightGrid({
       // Same object when nothing moved: this runs from a ResizeObserver, and a
       // fresh object every tick would re-render on every scroll-driven reflow.
       setVisibleRows((prev) =>
-        prev && prev.start === start && prev.end === end ? prev : { start, end },
+        prev && prev.start === start && prev.end === end
+          ? prev
+          : { start, end },
       );
     };
     read();
@@ -154,7 +158,8 @@ export default function SpotlightGrid({
     : sweepRowStart;
   const colEnd = reshaped
     ? gridClamp(
-        Math.round((((sweepColEnd ?? columns - 1) + 1) / columns) * COLUMNS) - 1,
+        Math.round((((sweepColEnd ?? columns - 1) + 1) / columns) * COLUMNS) -
+          1,
         COLUMNS - 1,
       )
     : (sweepColEnd ?? COLUMNS - 1);
@@ -169,8 +174,15 @@ export default function SpotlightGrid({
 
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
-  const [focus, setFocus] = useState<{ row: number; col: number } | null>(null);
-  const [sweepHead, setSweepHead] = useState(-1);
+  // Refs, not state. These change up to 30x/sec on mobile, and every one of
+  // those commits used to re-render the whole grid -- TOTAL_ITEMS cells, three
+  // divs each, reconciled per frame. The loop now writes the two paint-only
+  // properties (opacity, background-color) straight onto the cells, so it does
+  // ZERO React work. `getIntensity` reads these refs during render as well, so
+  // a genuine re-render (resize, prop change) still paints the current frame
+  // rather than resetting the grid to dark.
+  const focusRef = useRef<{ row: number; col: number } | null>(null);
+  const sweepHeadRef = useRef(-1);
 
   const scatterSteps = useMemo(() => {
     if (!scatter) return null;
@@ -212,9 +224,7 @@ export default function SpotlightGrid({
     // cost (and its per-frame mutations kept iOS withholding native clicks --
     // see IosClickRescue). ~30fps commits of a drift this slow are visually
     // identical there.
-    const minFrameMs = window.matchMedia("(max-width: 767px)").matches
-      ? 33
-      : 0;
+    const minFrameMs = window.matchMedia("(max-width: 767px)").matches ? 33 : 0;
     let lastCommit = -Infinity;
     const tick = (now: number) => {
       if (!start) start = now;
@@ -226,13 +236,15 @@ export default function SpotlightGrid({
       const t = ((now - start) / 1000) * speed;
 
       if (sweep) {
-        const regionCount =
-          (colEnd - colStart + 1) * (rowEnd - rowStart + 1);
+        const regionCount = (colEnd - colStart + 1) * (rowEnd - rowStart + 1);
         const period = regionCount + sweepTrail;
         const next = (t * SWEEP_CELLS_PER_SEC) % period;
-        setSweepHead((cur) =>
-          Math.floor(next) === Math.floor(cur) ? cur : next,
-        );
+        // Same whole-step gate as before, minus the functional setState that
+        // React had to run (and mostly bail out of) on every frame.
+        if (Math.floor(next) !== Math.floor(sweepHeadRef.current)) {
+          sweepHeadRef.current = next;
+          paintRef.current();
+        }
         raf = requestAnimationFrame(tick);
         return;
       }
@@ -255,7 +267,8 @@ export default function SpotlightGrid({
 
       mouseX.set(-0.05 * dims.w + (fCol + 0.5) * cell);
       mouseY.set(gridTop + (fRow + 0.5) * cell);
-      setFocus({ row: fRow, col: fCol });
+      focusRef.current = { row: fRow, col: fCol };
+      paintRef.current();
 
       raf = requestAnimationFrame(tick);
     };
@@ -305,7 +318,7 @@ export default function SpotlightGrid({
         const ordinal = (row - rowStart) * regionCols + (col - colStart);
         const step = scatterSteps ? scatterSteps[ordinal] : ordinal;
 
-        const behind = sweepHead - step;
+        const behind = sweepHeadRef.current - step;
         if (behind < 0 || behind > sweepTrail) return 0;
         return Math.sin(Math.PI * (1 - behind / sweepTrail)) ** 2;
       };
@@ -327,6 +340,7 @@ export default function SpotlightGrid({
       return Math.max(own, arm * PLUS_ARM);
     }
 
+    const focus = focusRef.current;
     if (!focus) return 0;
 
     const row = Math.floor(index / COLUMNS);
@@ -337,6 +351,29 @@ export default function SpotlightGrid({
     if (distance > 3.5) return 0;
     return Math.max(0, 1 - distance / 1.79);
   };
+
+  // Writes exactly what a re-render would have written, without the re-render.
+  // Both properties are paint-only, so this forces no layout. Cell order
+  // matches the render map: child 0 is the glow, child 1 is the core.
+  const paintCells = () => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const cells = grid.children;
+    for (let index = 0; index < cells.length; index++) {
+      const intensity = getIntensity(index);
+      const glow = cells[index].firstElementChild as HTMLElement | null;
+      const core = glow?.nextElementSibling as HTMLElement | null;
+      if (glow) glow.style.opacity = String(intensity * 0.8);
+      if (core) {
+        const v = Math.round(15 * (1 - intensity));
+        core.style.backgroundColor = `rgb(${v}, ${v}, ${v})`;
+      }
+    }
+  };
+  // Latest-ref so the loop always calls a fresh closure without that closure
+  // having to enter the effect's dependency array.
+  const paintRef = useRef<() => void>(() => {});
+  paintRef.current = paintCells;
 
   const sweepStepMs = 1000 / Math.max(0.001, speed * SWEEP_CELLS_PER_SEC);
   const sweepTween = sweep ? `${sweepStepMs}ms linear` : undefined;

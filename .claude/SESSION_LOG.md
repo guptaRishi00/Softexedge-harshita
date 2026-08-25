@@ -19384,3 +19384,74 @@ Server note: user confirmed they are on :3000 (dev). :3001 prod is down, so the
 last five mobile-perf rounds (navbar layer isolation, carousel layout reads,
 Lenis not mounted below md, opaque mobile header, plus round 8's WebKit gating)
 are only visible on a fresh prod build.
+
+## Brand-strategy SubServices — outer rules removed + header gap tightened (mobile)
+Two requests in one turn, both mobile-only, SubServiceCard.tsx + SubServices.tsx
+(SubServiceCard is imported ONLY by brand-strategy, so blast radius is one page).
+
+1) Rules now sit only BETWEEN services.
+   - The unconditional `max-md:before:*` top rule moved out of the base class
+     string into a `i === 0 ? "" : <before rule>` ternary, so the first card
+     draws none.
+   - The `isLast ? <after rule>` bottom rule deleted outright, so the last card
+     draws none. `isLast` then had no consumer: removed from the card's props
+     AND from the parent's <Card> call (grep isLast -> 0 hits in both files).
+   - Desktop deliberately untouched: it uses a real `border-t border-white/10`
+     on every card, which is not a max-md class and was not edited.
+   Verified 375 via ::before/::after computed content+height per card:
+     i0 top false / bottom false, i1..i3 top TRUE / bottom false
+     -> 3 dividers between 4 services, no outer lines. verdict CORRECT.
+
+2) Gap between the description and the first service reduced.
+   Header `max-md:pb-16` -> `max-md:pb-12` (64px -> 48px).
+   Verified 375: headerPaddingBottom 48px, desc-bottom -> anchor-top 64 -> 48,
+   desc-bottom -> title-top 90 -> 74 (-16px). No page overflow, and the rule
+   state above re-confirmed in the same probe (rulesStillCorrect true).
+
+Desktop 1265 after BOTH edits: header paddingBottom still 128px (pb-32, a
+non-max-md class), all 4 cards keep 1px border-top, heights uniform 600,
+titles uniform 72px.
+tsc 0, biome format clean, build Compiled successfully.
+
+## SpotlightGrid — React removed from the animation loop entirely (round 16)
+User's critique was CORRECT and the throttle alone was not the fix: reducing to
+33ms cut the FREQUENCY of `setFocus` but every surviving commit still
+re-rendered 80 cells x 3 divs.
+First, a scoping fact that changes the blast radius — usage audit of all 9
+SpotlightGrid instances:
+  sweep=YES (setFocus unreachable, tick returns early): blog/BlogHeroSection,
+    brand-strategy/CtaSection
+  sweep=NO  (setFocus path, 30 re-renders/sec on mobile): the SEVEN sub-service
+    CtaSections — ai-marketing-automation, app-development, custom-software,
+    digital-marketing, ui-ux-design, video-production, web-development
+So the reported problem was real on 7 pages; brand-strategy hit the sweep path,
+whose setSweepHead was already floor-gated but still handed React a functional
+update to run and bail out of on EVERY frame.
+Fix — both paths off React state, one file:
+  - `const [focus,setFocus]` / `[sweepHead,setSweepHead]` -> `focusRef` /
+    `sweepHeadRef`.
+  - new `paintCells()` writes `opacity` on child 0 and `backgroundColor` on
+    child 1 of each cell directly — both paint-only properties, so no forced
+    layout — reusing the SAME `getIntensity` the render uses, so there is no
+    second copy of the math.
+  - exposed to the loop via a latest-ref (`paintRef.current = paintCells`) so
+    the closure stays fresh without entering the effect's dep array.
+  - `getIntensity` now reads the refs, so a genuine re-render (resize, prop
+    change) still paints the current frame instead of resetting to dark.
+  - sweep keeps its whole-step gate, now as a plain if.
+PROOF the loop can no longer re-render: `grep setFocus|setSweepHead` -> NONE.
+A rAF loop can only trigger React reconciliation via setState/context/props and
+it now touches none — zero re-renders is guaranteed by construction, not just
+observed. (The pane cannot run the loop itself: it is started from inside an
+IntersectionObserver callback, and this pane has inert IO plus frozen rAF.)
+Write path verified live at 375 on /web-development (a sweep=NO page) by
+replicating paintCells with a synthetic focus: 80 cells, 2 children each
+(matches what paintCells targets), 10 columns; focus cell glow opacity 0 -> 0.8
+(writeTookEffect true), far cell opacity 0, 4 cells lit in the falloff.
+The core colour first read stale rgb(15,15,15) — it carries
+`transition-colors duration-300` and this pane freezes transitions; with
+transitions killed it reads the correct rgb(0,0,0) at the focus and
+rgb(15,15,15) far away.
+Desktop 1265 after the change: grid renders 80 cells / 10 cols / 2 children,
+no crash, console clean apart from dev HMR websocket noise.
+tsc 0, biome clean, build Compiled successfully.
