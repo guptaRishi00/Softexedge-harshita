@@ -18945,3 +18945,31 @@ server is inherently slow (dev React, per-request compile). The prod server
 on :3001 had stopped; rebuilt (Compiled successfully 29.5s) and restarted
 `next start -H 0.0.0.0 -p 3001` (bg bc9z2dz57): /home 200 0.38s,
 /brand-strategy 200 0.28s. Test URL: http://192.168.29.24:3001
+
+## Brand-strategy — OurTechStack/ProjectShowcase/ProcessSection headers matched to home ServiceSection (mobile)
+SubServices was already matched (earlier task); this applies the same treatment
+to the other three section headers, mobile only. Per file: tag gains
+`max-md:tracking-[0.3em] max-md:text-zinc-500` (size 12px + weight 500 already
+matched); h2 `max-md:leading-[1.11]` -> `max-md:leading-[1.11111]`;
+description gains `max-md:text-lg` (was 20px). ProcessSection h2 additionally
+gains `max-md:tracking-tight` (base is tracking-tighter, -2px at 40px vs the
+target's -1px) — same "full visual match" interpretation the user accepted for
+SubServices.
+Reference measured on /home at 390: tag 12/16/500/3.6px/zinc-500, title
+40/44.4444/700/-1px, desc 18/22.5/300. All four brand-strategy sections
+(What We Offer, Our Toolkit, Selected Work, How We Work) measure EXACTLY equal
+— tagOK/titleOK/descOK true via string-equal computed specs.
+Desktop 1265 unchanged: tags 12/3px/white-60; titles 80px with original
+leadings (none->80/80, [0.9]->80/72) and ProcessSection tracking still -4px;
+descs 20/25. tsc 0, biome clean, build Compiled successfully.
+Note: verification ran against the dev server on :3000 (PID 28116, started
+outside this session); confirmed it serves current disk code by counting the
+new classes in SSR HTML (4/4/1). Prod server on :3001 is DOWN (bg task
+stopped).
+TOOLING TRAP hit this task: `npx biome` resolves a STALE GLOBAL biome 0.3.3,
+not the project's 2.2.0. It silently "passed", and its --write rewrote two
+files with CRLF, which the real linter then rejected as a whole-file format
+diff. Always use ./node_modules/.bin/biome or `bun run lint`/`bun run format`.
+Recovered by re-running the project binary over src/components/brand-strategy/.
+Also removed a genuinely unused `React` default import in ProjectShowcase
+(only textual "React." mentions were in a comment).

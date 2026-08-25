@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useIsDesktop } from "@/lib/useIsDesktop";
 import Image from "next/image";
+import { useIsDesktop } from "@/lib/useIsDesktop";
 
 const techStack = [
   { id: 2, name: "Next.js", image: "/assets/nextjs.png" },
@@ -43,7 +43,7 @@ export default function OurTechStack() {
     <section className="relative w-full overflow-hidden bg-black pt-0 text-white max-md:-mt-px max-md:pb-4">
       <div className="mx-auto w-full md:pb-25">
         <div className="mx-auto mb-20 px-4 max-md:mb-8 max-md:px-3 md:px-10">
-          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-500">
             Our Toolkit
           </span>
 
@@ -54,7 +54,7 @@ export default function OurTechStack() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               viewport={{ once: true }}
-              className="text-4xl font-bold leading-none tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-5xl lg:text-[5rem]"
+              className="text-4xl font-bold leading-none tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11111] md:text-5xl lg:text-[5rem]"
             >
               Our Tech{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
@@ -68,7 +68,7 @@ export default function OurTechStack() {
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
-              className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+              className="max-w-2xl text-xl font-light leading-[1.25em] text-white max-md:text-lg md:text-left"
             >
               Powered by modern, reliable, and scalable technologies to bring
               your vision to life.

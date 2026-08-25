@@ -65,7 +65,7 @@ export default function ProcessSection() {
     >
       <div className="mx-auto w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-16 md:mb-35">
-          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-500">
             How We Work
           </span>
 
@@ -76,7 +76,7 @@ export default function ProcessSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="text-4xl font-bold leading-none tracking-tighter text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-[5rem]"
+              className="text-4xl font-bold leading-none tracking-tighter text-white max-md:text-[2.5rem] max-md:leading-[1.11111] max-md:tracking-tight md:text-[5rem]"
             >
               Our{" "}
               <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
@@ -90,7 +90,7 @@ export default function ProcessSection() {
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
-              className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+              className="max-w-2xl text-xl font-light leading-[1.25em] text-white max-md:text-lg md:text-left"
             >
               A streamlined approach to turning complex challenges into elegant
               digital solutions, from initial concept to global scale. from

@@ -109,8 +109,6 @@ export default function AboutSection() {
       viewport={{ once: true, amount: 0.2 }}
       className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 max-md:px-3 max-md:pb-14 max-md:pt-8 md:px-10 lg:mb-20"
     >
-      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.04] mix-blend-multiply" />
-
       <div className="relative z-10 mx-auto">
         <div className="grid items-center gap-16 max-md:gap-8 lg:grid-cols-[1fr_0.9fr]">
           {/* Below md the two grid items swap via `order` so the image leads and
@@ -269,7 +267,7 @@ export default function AboutSection() {
                           damping: 20,
                           mass: 1,
                         }}
-                        className="absolute inset-0 origin-bottom-right overflow-hidden rounded-[28px] bg-zinc-200 will-change-transform"
+                        className="absolute inset-0 origin-bottom-right overflow-hidden rounded-[28px] bg-white will-change-transform"
                       >
                         <Image
                           src={card.url}

@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import CarouselDots from "@/components/ui/CarouselDots";
 import { useInfiniteCarousel } from "@/lib/useInfiniteCarousel";
 import { useIsDesktop } from "@/lib/useIsDesktop";
@@ -95,7 +95,7 @@ export default function ProjectShowcase() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase, delay: 0 }}
-            className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60"
+            className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-500"
           >
             Selected Work
           </motion.span>
@@ -107,7 +107,7 @@ export default function ProjectShowcase() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, ease: premiumEase, delay: 0.1 }}
-              className="text-5xl font-bold leading-[0.9] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11] md:text-7xl lg:text-[5rem]"
+              className="text-5xl font-bold leading-[0.9] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11111] md:text-7xl lg:text-[5rem]"
             >
               Our{" "}
               <span className="bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
@@ -121,7 +121,7 @@ export default function ProjectShowcase() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, ease: premiumEase, delay: 0.2 }}
-              className="max-w-2xl text-xl font-light leading-[1.25em] text-white md:text-left"
+              className="max-w-2xl text-xl font-light leading-[1.25em] text-white max-md:text-lg md:text-left"
             >
               Delivering scalable, high-performance solutions that elevate
               brands and drive revenue. Delivering scalable, high-performance

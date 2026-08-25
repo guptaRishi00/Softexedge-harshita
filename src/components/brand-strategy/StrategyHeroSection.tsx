@@ -90,7 +90,10 @@ export default function StrategyHeroSection() {
   );
 
   return (
-    <section ref={sectionRef} className="relative flex min-h-screen max-md:min-h-[120svh] w-full flex-col items-center justify-between overflow-hidden bg-white pt-24 pb-12 text-zinc-900">
+    <section
+      ref={sectionRef}
+      className="relative flex min-h-screen max-md:min-h-[120svh] w-full flex-col items-center justify-between overflow-hidden bg-white pt-24 pb-12 text-zinc-900"
+    >
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center opacity-60">
         <div className="h-[600px] w-[600px] rounded-full bg-zinc-100 blur-[120px]"></div>
       </div>
@@ -111,24 +114,38 @@ export default function StrategyHeroSection() {
           data-no-mobile-entry
           initial="hidden"
           animate="visible"
-          onAnimationComplete={() => setIsExpanded(true)} 
+          onAnimationComplete={() => setIsExpanded(true)}
           className="mb-6 flex flex-col items-center text-[clamp(2.5rem,12.3vw,3rem)] font-bold leading-[1em] tracking-tight text-black sm:text-6xl md:text-7xl lg:text-[7rem]"
         >
           <span className="flex items-center justify-center whitespace-nowrap max-md:hidden">
-            <motion.span data-no-mobile-entry variants={wordVariants}>We</motion.span>
-            <motion.span data-no-mobile-entry variants={wordVariants} className="ml-3 md:ml-6">
+            <motion.span data-no-mobile-entry variants={wordVariants}>
+              We
+            </motion.span>
+            <motion.span
+              data-no-mobile-entry
+              variants={wordVariants}
+              className="ml-3 md:ml-6"
+            >
               Build
             </motion.span>
 
             {splitImage}
 
-            <motion.span data-no-mobile-entry variants={wordVariants}>Brands</motion.span>
+            <motion.span data-no-mobile-entry variants={wordVariants}>
+              Brands
+            </motion.span>
           </span>
 
           <span className="mt-2 flex space-x-3 max-md:hidden md:mt-4 md:space-x-6">
-            <motion.span data-no-mobile-entry variants={wordVariants}>That</motion.span>
-            <motion.span data-no-mobile-entry variants={wordVariants}>People</motion.span>
-            <motion.span data-no-mobile-entry variants={wordVariants}>Trust</motion.span>
+            <motion.span data-no-mobile-entry variants={wordVariants}>
+              That
+            </motion.span>
+            <motion.span data-no-mobile-entry variants={wordVariants}>
+              People
+            </motion.span>
+            <motion.span data-no-mobile-entry variants={wordVariants}>
+              Trust
+            </motion.span>
           </span>
 
           {/* Mobile: same six words regrouped onto three lines, with the split
