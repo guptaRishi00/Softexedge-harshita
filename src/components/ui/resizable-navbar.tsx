@@ -560,25 +560,32 @@ export const MobileNavMenu = ({
     // Height is a layout property and cannot be composited, but this is a
     // one-shot tap interaction on a small subtree — not a loop — so the cost is
     // paid once per open rather than every frame.
+    // Always-mounted CSS grid-rows accordion, not AnimatePresence + a framer
+    // height tween. The old version MOUNTED the whole menu subtree (~15 links)
+    // synchronously at tap time and then ran a JS-driven height animation --
+    // per-frame framer work on the main thread, which is exactly when iOS is
+    // also busy: the "expands in a laggy, sticky way" report. Mount cost is now
+    // paid once at page load; a tap only flips classes and the browser runs
+    // the transition with zero JS per frame. Same idiom as the SubServiceCard
+    // accordion. Padding lives on the innermost div because a grid track
+    // cannot shrink below its item's OWN padding.
+    // `invisible` when closed keeps the mounted links out of the focus order
+    // and the accessibility tree, restoring what unmounting used to provide.
     return (
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            key="mobile-dropdown"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full overflow-hidden"
-          >
-            <div
-              className={cn("flex w-full flex-col px-7 pt-1 pb-5", className)}
-            >
-              {children}
-            </div>
-          </motion.div>
+      <div
+        className={cn(
+          "grid w-full transition-[grid-template-rows,opacity,visibility] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          isOpen
+            ? "visible grid-rows-[1fr] opacity-100"
+            : "invisible grid-rows-[0fr] opacity-0",
         )}
-      </AnimatePresence>
+      >
+        <div className="min-h-0 w-full overflow-hidden">
+          <div className={cn("flex w-full flex-col px-7 pt-1 pb-5", className)}>
+            {children}
+          </div>
+        </div>
+      </div>
     );
   }
 

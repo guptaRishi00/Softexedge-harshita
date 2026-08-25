@@ -19521,3 +19521,41 @@ confirm it; (b) `max-md:hidden` does not stop the 340KB video from being
 FETCHED on mobile — only conditional rendering would, which needs isMobile and
 was outside the requested CSS-swap approach.
 tsc 0, biome clean, build Compiled successfully.
+
+## Mobile menu: framer height tween -> CSS grid-rows accordion (round 19)
+Two symptoms reported; they have DIFFERENT causes and only one is a code bug.
+
+A) "navbar expands in a laggy, sticky way" — REAL, fixed.
+   MobileNavMenu's dropdown branch was `AnimatePresence` + a framer
+   `height: 0 -> "auto"` tween. That did two expensive things AT TAP TIME:
+   MOUNTED the whole menu subtree (13 links) synchronously, then ran a
+   JS-driven height animation frame by frame on the main thread — precisely
+   when iOS is busiest. Same pattern again in the Services sub-accordion.
+   Replaced BOTH with the always-mounted CSS grid-rows 0fr/1fr idiom already
+   used by SubServiceCard: a tap now only flips classes and the browser runs
+   the transition with zero JS per frame; mount cost moved to page load.
+   `invisible` when closed keeps the pre-mounted links out of the focus order
+   and a11y tree, restoring what unmounting used to give. Padding sits on the
+   innermost div because a grid track cannot shrink below its item's own
+   padding.
+   4 files (both navbar twins + both Header twins). `AnimatePresence, motion`
+   became unused in BOTH Headers -> import removed (biome noUnusedImports 0).
+
+B) "link navigates after two seconds" — NOT a navbar bug. Measured on :3000:
+     cold route (dev compiles it on demand): 1021ms
+     already-compiled route:                 234ms
+     second warm nav:                        308ms
+   Links are already `next/link` client-side navigations. The 2s is Next's
+   DEV on-demand per-route compilation, which does not exist in a production
+   build (all 33 routes prebuilt). No code change made for this — there is
+   nothing in the navbar to fix.
+
+VERIFIED 375: closed state — 13 links MOUNTED, grid-rows 0px, visibility
+hidden, opacity 0, track height 0, and linksHitTestableWhenClosed FALSE (they
+cannot steal taps). Tap toggle -> grid-rows 380px, visible, opacity 1, pill
+widens to its isOpen 96%, /contact link hit-tests to itself. Tap Services ->
+inner accordion 372px visible with all 8 sub-links.
+Desktop 1265: lg pill display flex with links intact, whole mobile nav
+display:none; scrolled, the desktop pill still has backdrop blur(40px) and
+bg 0.6 — untouched.
+tsc 0, biome format clean, build Compiled successfully.

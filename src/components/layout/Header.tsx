@@ -1,5 +1,4 @@
 "use client";
-import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -135,7 +134,8 @@ export default function Header() {
   const isSubServiceRoute = navItems
     .flatMap((i) => i.dropdownItems ?? [])
     .some((sub) => pathname.startsWith(sub.link));
-  const [isServicesExpanded, setIsServicesExpanded] = useState(isSubServiceRoute);
+  const [isServicesExpanded, setIsServicesExpanded] =
+    useState(isSubServiceRoute);
 
   // Seeding useState only covers a fresh mount; an App Router navigation can
   // keep this Header instance alive, so re-open when the route BECOMES a
@@ -235,47 +235,46 @@ export default function Header() {
                         </svg>
                       </button>
 
-                      <AnimatePresence initial={false}>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{
-                              duration: 0.3,
-                              ease: [0.16, 1, 0.3, 1],
-                            }}
-                            className="w-full overflow-hidden"
-                          >
-                            <div className="mb-3 flex w-full flex-col rounded-xl bg-white/[0.06] px-3 py-1">
-                              {item.dropdownItems?.map((sub, ssIdx) => (
-                                <Link
-                                  key={`mob-drop-${ssIdx}`}
-                                  href={sub.link}
-                                  onClick={closeAllMenus}
-                                  aria-current={
-                                    pathname.startsWith(sub.link)
-                                      ? "page"
-                                      : undefined
-                                  }
-                                  className="flex w-full items-center gap-2 py-2.5 text-left text-base text-white/60 transition-colors hover:text-white"
-                                >
-                                  {sub.name}
-                                  {pathname.startsWith(sub.link) && (
-                                    // Same activeDotGradient as the top-level
-                                    // rows, at the same 6px, so "you are here"
-                                    // reads identically at both menu depths.
-                                    <span
-                                      aria-hidden
-                                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
-                                    />
-                                  )}
-                                </Link>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      {/* Same always-mounted grid-rows accordion as the menu
+                          itself (see MobileNavMenu): a tap flips classes, CSS
+                          runs the reveal, no framer height tween on the main
+                          thread and no mount cost at tap time. */}
+                      <div
+                        className={`grid w-full transition-[grid-template-rows,opacity,visibility] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                          isExpanded
+                            ? "visible grid-rows-[1fr] opacity-100"
+                            : "invisible grid-rows-[0fr] opacity-0"
+                        }`}
+                      >
+                        <div className="min-h-0 w-full overflow-hidden">
+                          <div className="mb-3 flex w-full flex-col rounded-xl bg-white/[0.06] px-3 py-1">
+                            {item.dropdownItems?.map((sub, ssIdx) => (
+                              <Link
+                                key={`mob-drop-${ssIdx}`}
+                                href={sub.link}
+                                onClick={closeAllMenus}
+                                aria-current={
+                                  pathname.startsWith(sub.link)
+                                    ? "page"
+                                    : undefined
+                                }
+                                className="flex w-full items-center gap-2 py-2.5 text-left text-base text-white/60 transition-colors hover:text-white"
+                              >
+                                {sub.name}
+                                {pathname.startsWith(sub.link) && (
+                                  // Same activeDotGradient as the top-level
+                                  // rows, at the same 6px, so "you are here"
+                                  // reads identically at both menu depths.
+                                  <span
+                                    aria-hidden
+                                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+                                  />
+                                )}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <Link
