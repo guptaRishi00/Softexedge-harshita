@@ -19161,3 +19161,226 @@ own terminal.
 13 files touched. tsc 0, biome clean on touched files (Footer's remaining
 lint findings are the known pre-existing href="#" socials + index keys),
 build Compiled successfully.
+
+## Prod server now run BY THE USER (round 8 follow-up)
+User ran `bun run start -- -H 0.0.0.0 -p 3001` in their own terminal (PID
+13048) — immune to the bg-task [killed] problem that took down bc9z2dz57 and
+bbl3k2siv. Verified: 0.0.0.0:3001 LISTENING; /home 200 0.36s,
+/brand-strategy 200 0.26s; served HTML contains all round-8 Safari fix
+markers (max-md:blur-none, blur-[120px] max-md:hidden,
+max-md:backdrop-blur-none) — it's the latest build. Phone test URL:
+http://192.168.29.24:3001 (same Wi-Fi). Awaiting user's Safari verdict;
+if smooth -> commit + deploy.
+
+## Navbar lag on home mobile — floating pill's backdrop-blur removed (round 9)
+User narrowed it: "only the navbar is very laggy in homepage" (mobile). Cause:
+the mobile floating pill (MobileNav dropdown mode, both navbar twins) gets
+`backdrop-blur-md` once scrolled past 80px — a FIXED element with
+backdrop-filter re-blurs the page beneath on every scrolled frame in WebKit.
+Round 8's audit measured backdropCount 0 because it ran at scrollY=0, where
+the bar is transparent — state-dependent classes hide from static audits.
+Fix (one line in ui/resizable-navbar.tsx + page/resizable-navbar.tsx):
+floating pill `bg-[#0b0b10]/90 backdrop-blur-md` -> `bg-[#0b0b10]/95` (no
+blur; 95% opacity reads near-identical). The 300vh/300vw backdrop-blur
+overlay at line ~220 is inside `hidden lg:flex` NavItems = desktop hover
+backdrop, not the mobile problem — left alone. DynamicButton's blur-2xl glow
+is filter-on-static-content (rendered once, cached) — left alone.
+Verified 375 (scrollTo alone does NOT fire the scroll listener in this pane —
+must window.dispatchEvent(new Event("scroll")); computed values then lag
+behind the class change because transitions are frozen — kill transitions +
+reflow to read landed values): floating classes present
+(translate-y-2.5 border-white/10 bg-[#0b0b10]/95 shadow-2xl), backdropFilter
+NONE, bg alpha 0.95, width 69%, radius 18px, zero backdrop-filters anywhere
+on the scrolled page. Desktop 1266 scrolled: exactly one backdrop element —
+the lg NavBody pill, blur(40px) — unchanged.
+tsc 0, biome 0 on both files, build Compiled successfully.
+User's :3001 prod server predates this fix — they must restart it
+(Ctrl+C, then `bun run start -- -H 0.0.0.0 -p 3001`) to feel it.
+
+## Home hero — background blur restored on mobile (user's call)
+Reverts round 8's `max-md:blur-none` on the hero backdrop video: user saw the
+unblurred upscale and wants the blur look on mobile too. Line is back to
+`object-cover blur-[6px]` at every breakpoint. This knowingly re-adds the
+per-frame video re-blur cost on the mobile hero (the round-8 log documents
+why it was removed) — aesthetics won.
+Verified 375: video filter blur(6px) at 386x857; the OTHER round-8/9 fixes
+are still in place (About orb hidden, 0 backdrop-filters). Desktop 1266:
+blur(6px) unchanged. tsc 0, build Compiled successfully.
+User's :3001 prod server needs a restart to serve this.
+
+## Navbar lag on home — ROOT CAUSE found: blurred playing video under a fixed navbar (round 10)
+User's clue "why only the homepage" was the key. Homepage is the ONLY page with
+an autoplaying video behind the fixed navbar. `filter: blur(6px)` on a PLAYING
+video makes WebKit re-run a full-screen GPU blur pass every decoded frame; the
+`position: fixed` navbar shares that compositing path and gets re-rasterised
+24x/sec with it. Other pages have static heroes -> navbar composited once.
+Round 9's `backdrop-blur` removal was real but only a contributing factor; this
+is the actual mechanism, and it is why the symptom was homepage-specific.
+Fix (3 files, blur look 100% preserved — user asked to keep it):
+- Herosection hero backdrop wrapper: `[contain:paint] [transform:translateZ(0)]`
+  — scopes the per-frame repaints to that box and keeps the blur on its own GPU
+  layer instead of a shared one.
+- BOTH navbar twins' fixed root: `will-change-transform [transform:translateZ(0)]`
+  — promotes the bar to its own layer so it is merely COMPOSITED over the hero,
+  never re-rasterised with it.
+Verified 375: heroWrap contain "paint" + transform matrix set, navbar
+willChange "transform" + fixed, video filter STILL blur(6px) (look unchanged),
+box 386x857. Regression check that mattered — the scroll hide/show writes the
+standalone `translate` property and I added `transform`; they compose fine:
+scrolled down -> inline translate "0px -120px" (hideWorks true), back up ->
+"0px". (My showWorks assertion was wrong, not the code: browser normalises
+`0 0` to `0px`. Rendered position lags only because the pane freezes CSS
+transitions.)
+Desktop 1265 unchanged: video filter blur(6px), nav willChange transform,
+and critically the SHARP canvas preview still present/visible/unblurred
+(300x150, filter none) — a pre-blurred video source would have broken it,
+which is why baking the blur into the asset was rejected: one <video> element
+feeds BOTH the blurred backdrop and the sharp canvas preview.
+MY ERROR THIS ROUND: tried to write a captured frame by inlining a 24KB base64
+string into a bash heredoc -> ENAMETOOLONG, uv_spawn. Nothing was half-applied
+(poster never created, blur + round-9 navbar fix both intact). Never inline
+large blobs into shell commands.
+tsc 0, biome format clean on all 3 (remaining findings are pre-existing
+noExplicitAny / a11y / unused-param), build Compiled successfully.
+
+## Gate layout reads in scroll events — carousel helpers (round 11)
+Audited EVERY scroll-driven callback in src. Findings:
+- 8x SubServices `useMotionValueEvent` — the file the user named: ALREADY gated
+  (`if (isMobile) return;`), verified across all 8 copies. Nothing to do.
+- both navbar twins' onScroll — read `window.scrollY` only. That is a cached
+  scroll position, NOT a forced layout. Left alone.
+- `lib/useInfiniteCarousel.ts` + `ui/CarouselDots.tsx` — THE REAL OFFENDERS.
+  Both called `slideStride()` (querySelectorAll + offsetLeft) plus
+  scrollWidth/clientWidth from inside the scroll callback = a forced
+  synchronous layout on every frame of every swipe. Worse than SubServices was,
+  because these render ONLY below md, so 100% of the cost was on the phone.
+SCOPE CORRECTION stated to user: "gate to desktop" cannot apply here — these
+carousels do not exist above md, so gating them off would delete the feature.
+The equivalent fix is hoisting the reads out of the scroll path:
+- cache `stride` + `maxScroll`, measured on mount and in a ResizeObserver
+  (CarouselDots gained an RO; useInfiniteCarousel already had one).
+- steady-state scroll frames now read `el.scrollLeft` and nothing else.
+- useInfiniteCarousel re-measures ONLY at an actual wrap (~once per lap), which
+  doubles as the correction for content settling after mount; both wrap
+  branches re-test against the fresh values so a mid-flight geometry change is
+  a no-op rather than a mis-jump.
+VERIFIED at 375 by instrumenting the property getters and driving the REAL
+scroll callbacks (rAF is frozen in this pane, so window.requestAnimationFrame
+was shimmed to run synchronously — do this instead of a rAF loop, which hangs):
+  control (one old-style slideStride call): 2 offsetLeft, 1 qSA, 1 scrollWidth
+    -> proves the instrumentation actually fires, so 0 below is not a false negative
+  30 steady-state scroll frames: 0 offsetLeft, 0 qSA, 0 scrollWidth
+    -> forcedLayoutsPerScrollFrame 0.00 (was >=4 per frame per helper)
+  functional: scrollLeft set to 5 -> wrapped to 1264 (one run width), loop intact
+  dots present (17 across the page's carousels)
+Desktop 1265 unaffected by construction (hook `enabled = !isDesktop`, dots
+`md:hidden`) and confirmed: scroller overflow-x visible, scrollLeft 0, 0 dots
+visible, 20 slides rendered. Home 1265: 28 slides / 8 dots, console clean
+(only dev HMR websocket noise).
+tsc 0, biome 0 on both files, build Compiled successfully.
+
+## Lenis on mobile — upgraded from autoRaf={false} to NOT MOUNTING AT ALL (round 12)
+All 8 ReactLenis mounts already had `autoRaf={!isMobile}` from an earlier round,
+and home's SmoothScroll already early-returns below md — so the literal ask was
+done. But measuring it exposed that the gate was too weak:
+  at 375, <html class="h-full antialiased font-sans lenis"> — lenisMounted TRUE.
+`autoRaf={false}` only stops the rAF loop; the instance is still CONSTRUCTED,
+keeps the `lenis` class on <html>, and keeps its wheel/touch/scroll/resize
+listeners attached. On iOS those touch listeners sit directly in the path of
+native momentum scrolling — a plausible contributor to the "stucky" feel the
+user has reported for 8 rounds.
+Change (8 files, the "wrap your sections using the same isMobile flag" half of
+the ask): the section JSX is hoisted to `const content`, and the return is now
+  `return isMobile ? content : <ReactLenis root>{content}</ReactLenis>;`
+so below md Lenis is never constructed. `isMobile` is correct on the first
+client render (documented useIsMobile contract), so there is no remount and no
+SSR/client desync.
+Verified 375 /brand-strategy: htmlClasses "h-full antialiased font-sans" —
+lenisMounted FALSE (was TRUE), lenisSmooth false, and content intact (all 4
+service titles still render, scrollHeight 9087).
+Verified 1265: htmlClasses still end in "lenis" — lenisMountedOnDesktop TRUE,
+4 titles at 72px, card holders still position:sticky, scrollHeight 12130.
+Desktop behaviour unchanged.
+Swept for any remaining un-gated Lenis: only SmoothScroll's `new Lenis(`, which
+sits behind its `matchMedia("(max-width: 767px)") -> return` guard (verified).
+tsc 0, biome format clean on all 8, build Compiled successfully.
+
+## Mobile header forced opaque — last nested-blur/blend removed (round 13)
+Round 9 already took `backdrop-blur-md` off the mobile floating pill, but left
+it at `bg-[#0b0b10]/95` — still TRANSLUCENT, so the compositor still had to
+blend the fixed bar against whatever moved beneath it, which on /home is the
+hero's playing video carrying its own blur(6px).
+Change (both navbar twins, 1 token): floating state
+`bg-[#0b0b10]/95` -> `bg-[#0b0b10]` (fully opaque). Comment updated in both to
+record why. Applied to BOTH twins rather than only home's `ui/` copy because
+they are literal duplicates and drift between them has caused a runtime crash
+before; 95%->100% over a near-black hero is visually indistinguishable.
+Audited the whole mobile header path first — the other two blur layers are
+DESKTOP-ONLY and were left alone: the `bg-black/60 backdrop-blur-2xl` pill and
+the 300vh/300vw `bg-black/20 backdrop-blur-md` hover backdrop both sit inside
+`hidden lg:flex`. The non-dropdown MobileNavHeader was already opaque bg-white.
+Verified 375 /home, scrolled to 500 so the pill is FLOATING, transitions frozen
+so computed values are the landed ones: pillBackgroundColor "rgb(11, 11, 16)"
+— no alpha channel at all — pillBackdropFilter "none", pillOpaque true, width
+still 69%, hero video still blur(6px).
+Closed a verification gap worth remembering: an element that is `display:none`
+still reports `position:fixed`, so a "is it visible" filter of
+`offsetParent !== null || position === 'fixed'` FALSELY counts hidden desktop
+elements. Re-probed with display/getClientRects: the single remaining
+backdrop-filter on mobile is the lg-only pill at display:none,
+actuallyRendered false => ZERO live backdrop-filters on the mobile homepage.
+Desktop 1265 unchanged: lg pill still blur(40px), the 19 portfolio chips still
+blur(12px) (they carry max-md:backdrop-blur-none), mobile pill display:none,
+hero video blur(6px).
+tsc 0, biome format clean, build Compiled successfully.
+
+## SpotlightGrid 30fps mobile throttle — verified already in place (round 14)
+No code change needed; the exact ask was implemented in an earlier perf round.
+`src/components/ui/SpotlightGrid.tsx`:
+  const minFrameMs = window.matchMedia("(max-width: 767px)").matches ? 33 : 0;
+  ... inside tick(now): if (now - lastCommit < minFrameMs) { raf = rAF(tick); return; }
+The gate sits BEFORE the `sweep` branch, so both animation modes (setSweepHead
+and setFocus) are throttled, and it is the only per-frame setState in the file
+(the other useStates are layout/config, set outside the loop).
+VERIFIED by replaying the exact gate against a synthetic 2s @60fps clock in the
+browser at both breakpoints:
+  mobile  — matchMedia true,  minFrameMs 33 -> 60 commits / 120 frames = 30.0fps,
+            60 React re-renders AVOIDED per 2s
+  desktop — matchMedia false, minFrameMs 0  -> 120 commits / 120 frames = 60.0fps,
+            unthrottled, unchanged
+Why replay rather than drive the live loop: the loop is only started from inside
+an IntersectionObserver callback, and this pane has BOTH inert IO and frozen
+rAF, so the real loop cannot be started here at all. Stated to the user rather
+than papered over.
+Scope note for the user: SpotlightGrid does NOT render on /home — it is on
+brand-strategy's CtaSection, blog/BlogHeroSection, and the 7 clone CtaSections.
+So this throttle cannot be the homepage-specific lag.
+Also confirmed `IosClickRescue`, which the throttle comment cites as the reason
+iOS withheld taps, really exists and is mounted in app/layout.tsx.
+Caveat recorded: `innerWidth` reads stale in this pane (reported 1250 while the
+viewport was 375 and matchMedia correctly reported mobile) — trust matchMedia,
+which is also what the component itself reads.
+
+## IosClickRescue — confirmed implemented at root layout AND functionally proven (round 15)
+Answer: yes, already implemented. `src/components/ui/IosClickRescue.tsx`,
+mounted unconditionally in `src/app/layout.tsx` line 29, inside <body> above
+{children}, so it is live on every route.
+Mechanism: on `pointerup` over an a[href]/button/[role=button]/label/summary,
+wait RESCUE_AFTER_MS (120); if no native click arrived by then, call
+`el.click()`. Guarded to touch only via
+`matchMedia("(hover: none) and (pointer: coarse)")`, plus MOVE_TOLERANCE_PX 12,
+MAX_PRESS_MS 700, same-element release, and a click-counter snapshot so it can
+never double-fire.
+FUNCTIONALLY VERIFIED (not just read) on :3000 under the pane's touch emulation:
+  case A, dropped tap  — pointerdown+pointerup, NO native click
+                       -> clicks 1  (rescue fired)
+  case B, normal tap   — pointerdown+pointerup+native click
+                       -> 2 immediately, still 2 after 250ms (no double)
+  verdict: recovers dropped taps, never doubles a good one.
+Desktop 1265: touchLike false, same dropped sequence -> clicks 0,
+rescueCorrectlyInactive true — the guard holds, a mouse can never get a
+synthesised second click.
+Server note: user confirmed they are on :3000 (dev). :3001 prod is down, so the
+last five mobile-perf rounds (navbar layer isolation, carousel layout reads,
+Lenis not mounted below md, opaque mobile header, plus round 8's WebKit gating)
+are only visible on a fresh prod build.

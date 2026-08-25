@@ -42,12 +42,23 @@ export function useInfiniteCarousel(
 
     let frame = 0;
     let started = false;
+    // Geometry is cached OUT of the scroll path. `slideStride` runs a
+    // querySelectorAll and reads offsetLeft, and `scrollWidth`/`clientWidth`
+    // do the same -- every one of them forces a synchronous layout. Calling
+    // them from the scroll callback meant a forced layout on EVERY frame of
+    // every swipe, and this hook is enabled only below md, so that cost landed
+    // squarely on the phone. Measured on mount and on resize instead.
+    let stride = 0;
+    let maxScroll = 0;
 
-    const runWidth = () => slideStride(el) * itemCount;
+    const measure = () => {
+      stride = slideStride(el);
+      maxScroll = el.scrollWidth - el.clientWidth;
+    };
 
     // Park in the second run so the first backward swipe has somewhere to go.
     const start = () => {
-      const w = runWidth();
+      const w = stride * itemCount;
       if (w <= 0) return;
       started = true;
       el.scrollLeft = w;
@@ -55,16 +66,23 @@ export function useInfiniteCarousel(
 
     const wrap = () => {
       frame = 0;
-      const w = runWidth();
-      if (w <= 0) return;
       if (!started) {
+        measure();
         start();
         return;
       }
-      const stride = w / itemCount;
-      const max = el.scrollWidth - el.clientWidth;
-      if (el.scrollLeft <= stride) el.scrollLeft += w;
-      else if (el.scrollLeft >= max - stride) el.scrollLeft -= w;
+      // Steady state reads scrollLeft and nothing else -- no forced layout.
+      const sl = el.scrollLeft;
+      if (sl > stride && sl < maxScroll - stride) return;
+      // Only at an ACTUAL wrap -- roughly once per lap -- is it worth paying
+      // for a re-measure, which doubles as the correction if content settled
+      // after mount. Both branches below re-test against the fresh values, so
+      // a geometry change between frames simply does nothing this frame.
+      measure();
+      const w = stride * itemCount;
+      if (w <= 0) return;
+      if (sl <= stride) el.scrollLeft = sl + w;
+      else if (sl >= maxScroll - stride) el.scrollLeft = sl - w;
     };
 
     const onScroll = () => {
@@ -74,9 +92,11 @@ export function useInfiniteCarousel(
       frame = requestAnimationFrame(wrap);
     };
 
+    measure();
     start();
     // Widths depend on layout that may not be final at mount (fonts, images).
     const ro = new ResizeObserver(() => {
+      measure();
       if (!started) start();
     });
     ro.observe(el);

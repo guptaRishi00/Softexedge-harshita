@@ -33,23 +33,38 @@ export default function CarouselDots({
     const el = scrollerRef.current;
     if (!el) return;
 
-    const measure = () => {
+    // Geometry cached out of the scroll path: `slideStride` (querySelectorAll
+    // + offsetLeft) and `scrollWidth` each force a synchronous layout, and
+    // these dots render only below md -- so measuring per frame put a forced
+    // layout on every frame of every swipe, on the phone.
+    let stride = 0;
+    let maxScroll = 0;
+
+    const measureGeometry = () => {
+      stride = slideStride(el);
+      maxScroll = el.scrollWidth - el.clientWidth;
+    };
+
+    const update = () => {
       if (count < 2) return;
       if (loop) {
         // Position within ONE run: the track repeats, so a ratio against the
         // full scrollWidth would sweep the dots several times per lap.
-        const stride = slideStride(el);
         if (stride <= 0) return;
         const i = Math.round(el.scrollLeft / stride) % count;
         setActive((i + count) % count);
         return;
       }
-      const max = el.scrollWidth - el.clientWidth;
-      if (max <= 0) return;
-      const unit = max / (count - 1);
+      if (maxScroll <= 0) return;
+      const unit = maxScroll / (count - 1);
       setActive(
         Math.min(count - 1, Math.max(0, Math.round(el.scrollLeft / unit))),
       );
+    };
+
+    const refresh = () => {
+      measureGeometry();
+      update();
     };
 
     const onScroll = () => {
@@ -58,13 +73,19 @@ export default function CarouselDots({
       // never runs — the async-flag failure mode this codebase has hit before.
       // Re-arming per event cannot latch and still measures once per frame.
       cancelAnimationFrame(frame.current);
-      frame.current = requestAnimationFrame(measure);
+      frame.current = requestAnimationFrame(update);
     };
 
-    measure();
+    refresh();
+    // Slide widths are viewport-relative and layout may not be final at mount
+    // (fonts, images), so re-measure when the scroller's box changes.
+    const ro = new ResizeObserver(refresh);
+    ro.observe(el);
+
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       el.removeEventListener("scroll", onScroll);
+      ro.disconnect();
       if (frame.current) cancelAnimationFrame(frame.current);
     };
   }, [scrollerRef, count, loop]);

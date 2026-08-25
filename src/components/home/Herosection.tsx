@@ -142,7 +142,13 @@ export default function Herosection({}: any) {
           left/top -5% reproduce what `scale-110`'s centre origin did: a centred
           110% scale puts the top-left at -5% of the box, and percentage
           left/top resolve against that same box. */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* Own compositor layer + paint containment. The video below carries
+          `blur-[6px]`, and a filter on a PLAYING video re-runs its blur pass
+          every decoded frame. Without this the fixed navbar sitting above it
+          is dragged into that same repaint 24x/sec — the "navbar is laggy on
+          the homepage only" report. Containment scopes those repaints to this
+          box; the translateZ promotion keeps the blur on the GPU. */}
+      <div className="absolute inset-0 overflow-hidden [contain:paint] [transform:translateZ(0)]">
         <video
           ref={mainVideoRef}
           src="/assets/video9.mp4"
@@ -150,7 +156,7 @@ export default function Herosection({}: any) {
           loop
           muted
           playsInline
-          className="absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4] object-cover blur-[6px] max-md:blur-none"
+          className="absolute left-[-5%] top-[-5%] h-[25%] w-[25%] origin-top-left scale-[4.4] object-cover blur-[6px]"
         />
       </div>
 

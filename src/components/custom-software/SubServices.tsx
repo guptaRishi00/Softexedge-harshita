@@ -99,57 +99,59 @@ export default function SubServices({ children }: { children?: ReactNode }) {
     setActiveIndex((cur) => (cur === active ? cur : active));
   });
 
-  return (
-    // autoRaf={false} below md: ReactLenis otherwise runs a 60fps rAF loop
-    // from mount to unmount on every viewport. Home's SmoothScroll already
-    // skips Lenis below md for the same reason; this is the same gate, done
-    // via a prop because autoRaf is in the library effect's deps — no
-    // remount, no DOM change, desktop identical (isMobile is correct on the
-    // first client render).
-    <ReactLenis root autoRaf={!isMobile}>
-      <section className="relative w-full bg-black text-white">
-        <div className="mx-auto w-full px-4 md:px-10 pt-20 pb-32">
-          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
-            What We Offer
-          </span>
+  const content = (
+    <section className="relative w-full bg-black text-white">
+      <div className="mx-auto w-full px-4 md:px-10 pt-20 pb-32">
+        <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60">
+          What We Offer
+        </span>
 
-          <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-            <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
-              Our{" "}
-              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
-                Services
-              </span>
-            </h2>
-            <p className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:text-left">
-              Delivering scalable, high-performance solutions that elevate
-              brands and drive revenue.
-            </p>
-          </div>
+        <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+          <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white md:text-5xl lg:text-[4.5rem]">
+            Our{" "}
+            <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              Services
+            </span>
+          </h2>
+          <p className="max-w-2xl text-2xl font-light leading-[1.25em] text-white md:text-left">
+            Delivering scalable, high-performance solutions that elevate brands
+            and drive revenue.
+          </p>
         </div>
+      </div>
 
-        <div ref={container} className="group/cards relative w-full">
-          {services.map((service, i) => (
-            <Card
-              key={i}
-              i={i}
-              isLast={i === services.length - 1}
-              imageHidden={activeIndex > i}
-              registerRef={(el: HTMLDivElement | null) => {
-                cardRefs.current[i] = el;
-              }}
-              {...service}
-            />
-          ))}
+      <div ref={container} className="group/cards relative w-full">
+        {services.map((service, i) => (
+          <Card
+            key={i}
+            i={i}
+            isLast={i === services.length - 1}
+            imageHidden={activeIndex > i}
+            registerRef={(el: HTMLDivElement | null) => {
+              cardRefs.current[i] = el;
+            }}
+            {...service}
+          />
+        ))}
 
-          {children ? (
-            <div className="relative z-40 w-full">{children}</div>
-          ) : (
-            <div className="pointer-events-none h-[100vh] w-full" />
-          )}
-        </div>
-      </section>
-    </ReactLenis>
+        {children ? (
+          <div className="relative z-40 w-full">{children}</div>
+        ) : (
+          <div className="pointer-events-none h-[100vh] w-full" />
+        )}
+      </div>
+    </section>
   );
+
+  // Below md Lenis is not mounted AT ALL, rather than mounted with
+  // autoRaf={false}. Stopping the rAF loop still left the instance
+  // CONSTRUCTED: it kept the `lenis` class on <html> and kept its wheel,
+  // touch, scroll and resize listeners attached — and on iOS those touch
+  // listeners sit directly in the path of native momentum scrolling, which is
+  // the "stucky" feel. Home's SmoothScroll already skips Lenis below md for
+  // the same reason. `isMobile` is correct on the FIRST client render, so this
+  // never remounts and the desktop tree is byte-identical to before.
+  return isMobile ? content : <ReactLenis root>{content}</ReactLenis>;
 }
 
 function Card({

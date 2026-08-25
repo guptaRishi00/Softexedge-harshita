@@ -131,7 +131,7 @@ export const Navbar = ({ children, className }: NavbarProps) => {
     <div
       ref={ref}
       className={cn(
-        "fixed inset-x-0 top-0 z-[100] flex justify-center transition-[translate] duration-300 ease-out",
+        "fixed inset-x-0 top-0 z-[100] flex justify-center transition-[translate] duration-300 ease-out will-change-transform [transform:translateZ(0)]",
         className,
       )}
     >
@@ -289,7 +289,7 @@ export const NavItems = ({
                   className={cn(
                     "absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 z-[110]",
                     item.dropdownItems
-                      ? "w-[90vw] max-w-[1400px]" 
+                      ? "w-[90vw] max-w-[1400px]"
                       : item.sections
                         ? item.sections.length > 1
                           ? "w-[650px]"
@@ -438,13 +438,21 @@ export const MobileNav = ({
           // 69% width is measured off the reference recording, where the
           // scrolled bar spans 65..355 of a 420px viewport. The reference's
           // ends are fully rounded; this deliberately uses rounded-2xl instead.
+          //
+          // The floating fill is FULLY OPAQUE -- no alpha, no backdrop-filter.
+          // This bar is `fixed` over /home's hero, which is a playing video
+          // carrying its own blur(6px): a backdrop-filter here would re-sample
+          // and re-blur that moving content every frame, and even a 95%-alpha
+          // fill still forced a per-frame blend against it. Opaque lets the
+          // compositor skip the blend, and over a near-black hero the two were
+          // visually indistinguishable anyway.
           isOpen
             ? "w-[96%] rounded-[18px]"
             : visible
               ? "w-[69%] rounded-2xl"
               : "w-full rounded-none",
           floating
-            ? "translate-y-2.5 border border-white/10 bg-[#0b0b10]/90 backdrop-blur-md shadow-2xl"
+            ? "translate-y-2.5 border border-white/10 bg-[#0b0b10] shadow-2xl"
             : "translate-y-0 border border-transparent bg-transparent",
           className,
         )}
