@@ -20313,3 +20313,61 @@ correct aria-label, and `coversCard: true` (link rect === card rect). All 5 targ
 
 Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome IDENTICAL
 across all 8 (7 pre-existing `noUnusedImports` before and after).
+
+## 2026-08-25 — Performance report: audited its claims, applied what held up
+Report: `C:\Users\sanky\Downloads\performance_report.md`. Constraint: no UI changes.
+I baselined FIRST (prod build + `next start` on :3100, resource-timing), because several of
+the report's claims were checkable — and five of them are WRONG for this codebase:
+
+1. **Central premise false.** "`use client` at page level drags PortfolioSection/AboutSection/
+   BlogSection/ContactSection into the client bundle." All 8 home sections **already declare
+   `"use client"` themselves** — removing it from `home/page.tsx` moves NOTHING to the server.
+   130 of 150 .tsx files are client components; this is an animation-heavy brochure site where
+   that is inherent, not misuse.
+2. **False.** "Header/Footer are globally shared high-level components." The ROOT layout mounts
+   neither — only VideoViewportPause + IosClickRescue. Each page imports them itself.
+3. **False.** "Header's 8 Unsplash images may be eagerly fetched." They sit inside
+   `{hasDropdown && hovered === idx && ...}` — they mount on hover only.
+4. **False.** "home/page.tsx runs ResizeObserver and scroll listeners." grep count = **0**.
+5. **False.** "animation-timeline: view() — which you already have a fallback for." The string
+   does not appear anywhere in src/. Also "WebGL/ogl in Herosection": Herosection has 0 ogl
+   references; ogl's only consumer is `ui/SpecularBorder`.
+
+BASELINE (production, /home desktop): **316 KB JS / 11 requests**, 439 KB total. High for a
+brochure site but not the "massive" figure implied.
+
+APPLIED — verified win:
+- **Deferred `ogl`/WebGL.** `SpecularBorder` is ogl's only consumer and all THREE call sites
+  already render it as `{isHovered && ...}`, so it can never be on first paint. Wrapped in
+  `dynamic(..., { ssr: false })` in blog/BlogCard, work/ProjectCard, brand-strategy/
+  ProjectShowcase. VERIFIED by chunk identity: the shader chunk (`precision highp float`,
+  52KB raw) is **not fetched** on /blog or /work initial load — it now arrives on first hover.
+
+APPLIED — correct but NO measured win:
+- **Deferred `lenis`** in SmoothScroll (static import -> `import("lenis")` inside the effect,
+  with a `cancelled` guard so a StrictMode teardown cannot leak the instance). Mobile now never
+  evaluates it (`lenisActive: false`, chunk absent); desktop still runs it. But /home measured
+  **316 KB on both breakpoints, before and after** — no payload change.
+- **Step 2, dynamic imports for 10 below-fold sections on /home** (ssr left at default TRUE so
+  markup is still server-rendered). Result: **316 KB / 11 requests — byte-identical to
+  baseline.** With `ssr: true` React needs every component to hydrate, so Turbopack fetches
+  the same chunk set regardless. The report's headline remedy does nothing in this build.
+  UI proven unchanged: `bodyScrollHeight` 17137 before AND after, and #testimonials/#contact/
+  #services/#portfolio all still present in the SSR'd DOM.
+
+NOT APPLIED, with reasons:
+- Step 1 (strip `"use client"` from home/page.tsx, extract `<ScrollAnimator>`): zero benefit
+  per finding 1, and the GSAP effect owns nine refs on wrappers interleaved with the sections,
+  so restructuring it is high UI risk for no gain.
+- Step 3 (split Header/Footer into server + client leaves): both are client by NECESSITY —
+  Header uses `usePathname` + `useState`, Footer uses `useSyncExternalStore` + embla. Splitting
+  buys nothing while risking the nav/footer layout.
+- Step 4 (throttle ResizeObserver/scroll in home/page.tsx): there are none (finding 4).
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome clean on
+HEAD and now for all 5 changed files.
+
+RECOMMENDATION recorded: keep the ogl deferral; consider reverting the 10 `dynamic()` wrappers
+in home/page.tsx, which measure zero and add indirection. The real weight is gsap (6.4M) +
+framer-motion (5.5M) in node_modules — reducing THAT needs fewer animated components, not
+re-bundling.

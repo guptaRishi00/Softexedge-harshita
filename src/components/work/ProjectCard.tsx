@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -8,7 +9,14 @@ import { MdArrowOutward } from "react-icons/md";
 import type { Project } from "@/data/projects";
 import { useIsDesktop } from "@/lib/useIsDesktop";
 import { cn } from "@/lib/utils";
-import SpecularBorder from "../ui/SpecularBorder";
+// Deferred: SpecularBorder is the only consumer of `ogl` (WebGL, ~722K in
+// node_modules) and every call site below renders it as `{isHovered && ...}`,
+// so it can never appear on first paint. `ssr: false` keeps the WebGL bundle
+// out of the initial payload entirely and fetches it on the first hover; the
+// rendered output is unchanged because the server never emitted this border.
+const SpecularBorder = dynamic(() => import("../ui/SpecularBorder"), {
+  ssr: false,
+});
 
 export const premiumEase = [0.16, 1, 0.3, 1] as const;
 

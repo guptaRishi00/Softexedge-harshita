@@ -2,7 +2,9 @@
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
+// TYPE-only: erased at compile time, so it costs nothing at runtime. The real
+// module is pulled in by the dynamic `import("lenis")` inside the effect.
+import type Lenis from "lenis";
 import { type ReactNode, useEffect } from "react";
 
 export default function SmoothScroll({ children }: { children: ReactNode }) {
@@ -20,34 +22,55 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       return;
     }
 
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
-      orientation: "vertical",
-      gestureOrientation: "vertical",
-      smoothWheel: true,
-      wheelMultiplier: 1,
+    // Lenis is imported DYNAMICALLY rather than at module scope. It is ~481K
+    // in node_modules and is the only thing this component needs it for, yet a
+    // static import put it in the initial payload of every page that renders
+    // SmoothScroll — including phones, which return above and never construct
+    // it. Deferring it means mobile downloads none of it, and desktop fetches
+    // it after hydration instead of before first paint. Native scrolling is
+    // already correct in the gap, so nothing moves on screen.
+    let lenis: Lenis | undefined;
+    let update: ((time: number) => void) | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // The effect can be torn down before the import settles (StrictMode's
+    // double-invoke does exactly this), so the late callback has to know it
+    // was cancelled or it would leak a Lenis instance and a ticker callback
+    // that nothing holds a reference to.
+    let cancelled = false;
+
+    import("lenis").then(({ default: LenisCtor }) => {
+      if (cancelled) return;
+
+      lenis = new LenisCtor({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
+        orientation: "vertical",
+        gestureOrientation: "vertical",
+        smoothWheel: true,
+        wheelMultiplier: 1,
+      });
+
+      lenis.on("scroll", () => {
+        ScrollTrigger.update();
+      });
+
+      update = (time: number) => {
+        lenis?.raf(time * 1000);
+      };
+
+      gsap.ticker.add(update);
+      gsap.ticker.lagSmoothing(0);
+
+      timer = setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 100);
     });
-
-    lenis.on("scroll", () => {
-      ScrollTrigger.update();
-    });
-
-    const update = (time: number) => {
-      lenis.raf(time * 1000);
-    };
-
-    gsap.ticker.add(update);
-    gsap.ticker.lagSmoothing(0);
-
-    const timer = setTimeout(() => {
-      ScrollTrigger.refresh();
-    }, 100);
 
     return () => {
-      lenis.destroy();
-      gsap.ticker.remove(update);
-      clearTimeout(timer);
+      cancelled = true;
+      if (update) gsap.ticker.remove(update);
+      if (timer) clearTimeout(timer);
+      lenis?.destroy();
     };
   }, []);
 

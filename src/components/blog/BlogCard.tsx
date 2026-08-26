@@ -1,11 +1,19 @@
 "use client";
 
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { MdArrowOutward } from "react-icons/md";
 import type { BlogPost } from "@/data/blog";
-import SpecularBorder from "../ui/SpecularBorder";
+// Deferred: SpecularBorder is the only consumer of `ogl` (WebGL, ~722K in
+// node_modules) and every call site below renders it as `{isHovered && ...}`,
+// so it can never appear on first paint. `ssr: false` keeps the WebGL bundle
+// out of the initial payload entirely and fetches it on the first hover; the
+// rendered output is unchanged because the server never emitted this border.
+const SpecularBorder = dynamic(() => import("../ui/SpecularBorder"), {
+  ssr: false,
+});
 
 // The hover treatment is desktop-only. iOS fires mouseenter on a tap, so a
 // tapped card would scale up, zoom its image, dim its siblings and grow a

@@ -3,6 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import dynamic from "next/dynamic";
 import { useRef } from "react";
 import {
   SiNextdotjs,
@@ -11,18 +12,36 @@ import {
   SiTypescript,
 } from "react-icons/si";
 
-import AboutSection from "@/components/home/AboutSection";
-import BlogSection from "@/components/home/BlogSection";
-import ContactSection from "@/components/home/ContactSection";
-import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import Herosection from "@/components/home/Herosection";
-import PortfolioSection from "@/components/home/PortfolioSection";
-import ServiceSection from "@/components/home/ServiceSection";
-import StatsSection from "@/components/home/StatsSection";
-import Footer from "@/components/layout/Footer";
 import SmoothScroll from "@/components/layout/SmoothScroll";
-import LogoLoop from "@/components/ui/LogoLoop";
-import TechLogoCarousel from "@/components/ui/TechLogoCarousel";
+
+// Everything below the hero is code-split. `ssr` is left at its default TRUE
+// on purpose: the markup is still server-rendered, so the HTML, the layout and
+// the first paint are byte-identical to before — this only decides which client
+// chunk the section rides in, never whether it exists. `ssr: false` would have
+// shipped an empty section until hydration, which is a visible change and is
+// exactly what was ruled out.
+
+const AboutSection = dynamic(() => import("@/components/home/AboutSection"));
+const BlogSection = dynamic(() => import("@/components/home/BlogSection"));
+const ContactSection = dynamic(
+  () => import("@/components/home/ContactSection"),
+);
+const ExperimentalTestimonials = dynamic(
+  () => import("@/components/home/ExperimentalTestimonials"),
+);
+const PortfolioSection = dynamic(
+  () => import("@/components/home/PortfolioSection"),
+);
+const ServiceSection = dynamic(
+  () => import("@/components/home/ServiceSection"),
+);
+const StatsSection = dynamic(() => import("@/components/home/StatsSection"));
+const Footer = dynamic(() => import("@/components/layout/Footer"));
+const LogoLoop = dynamic(() => import("@/components/ui/LogoLoop"));
+const TechLogoCarousel = dynamic(
+  () => import("@/components/ui/TechLogoCarousel"),
+);
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
