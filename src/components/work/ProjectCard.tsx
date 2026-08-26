@@ -186,8 +186,18 @@ export default function ProjectCard({
                     <div className="mt-6">
                       <span
                         className={cn(
-                          "group/cta relative inline-flex h-12 w-fit cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:pl-5 hover:pr-2 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100",
-                          ctaActive && "pl-5 pr-2 before:scale-x-100",
+                          "group/cta relative inline-flex h-12 w-fit cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:pl-3 hover:pr-3 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100",
+                          // Both padded states are 12px. Only these two are
+                          // raised — the RESTING `pl-0 pr-2` above is left as
+                          // it was because it is the one that applies on touch:
+                          // `hover:` is inside `@media (hover: hover)` and
+                          // `ctaActive` is gated on
+                          // `isHovered = isHoveredProp && isDesktop`, so both
+                          // are desktop-only and the mobile card is untouched.
+                          // Right padding therefore animates 8px -> 12px
+                          // alongside the white sweep and the 0 -> 12px left
+                          // inset, which is not separable from that motion.
+                          ctaActive && "pl-3 pr-3 before:scale-x-100",
                         )}
                       >
                         <span

@@ -229,83 +229,108 @@ export default function ServiceSection() {
         </div>
 
         <div className="group/list flex w-full flex-col">
-          {services.map((service, index) => (
-            <a
-              key={index}
-              href={service.href}
-              // See ChannelCard: on iOS the synthesised hover pass on the
-              // first tap animates the desktop cursor pill in, which makes
-              // Safari swallow that tap's click. The pill is `hidden md:flex`,
-              // so there is nothing to show on touch anyway.
-              onMouseEnter={isMobile ? undefined : handleMouseEnter}
-              onMouseLeave={isMobile ? undefined : handleMouseLeave}
-              className="group relative flex w-full cursor-none items-center justify-between py-9 md:py-12 max-md:cursor-pointer max-md:pr-11"
-            >
-              <div className="flex items-center">
-                <div
-                  className={cn(
-                    "relative h-[50px] shrink-0 overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
-                    "w-0 group-hover:mr-4 group-hover:w-[80px] group-hover:opacity-100 md:group-hover:mr-8 md:group-hover:w-[150px]",
+          {services.map((service, index) => {
+            // The hover image opens BETWEEN two words of the title
+            // ("AI & Marketing [image] Automation"), so the line has to be
+            // split rather than prefixed. Splitting before the LAST word puts
+            // it there for every entry in this list, and lands on the natural
+            // midpoint of the two-word titles ("Web [image] Development").
+            const words = service.title.split(" ");
+            const titleHead = words.slice(0, -1).join(" ");
+            const titleTail = words[words.length - 1];
 
-                    "max-md:hidden",
-                  )}
+            return (
+              <a
+                key={index}
+                href={service.href}
+                // See ChannelCard: on iOS the synthesised hover pass on the
+                // first tap animates the desktop cursor pill in, which makes
+                // Safari swallow that tap's click. The pill is `hidden md:flex`,
+                // so there is nothing to show on touch anyway.
+                onMouseEnter={isMobile ? undefined : handleMouseEnter}
+                onMouseLeave={isMobile ? undefined : handleMouseLeave}
+                className="group relative flex w-full cursor-none items-center justify-between py-9 md:py-12 max-md:cursor-pointer max-md:pr-11"
+              >
+                <div className="flex items-center">
+                  <h3
+                    className={cn(
+                      "text-2xl font-medium leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-5xl md:text-[clamp(2.5rem,5vw,5rem)]",
+                      "text-white group-hover/list:text-white/20 group-hover:!text-white",
+                    )}
+                  >
+                    {titleHead}{" "}
+                    {/* `inline-block` + `align-middle` so it sits in the line box
+                      between the two words instead of leading the row. Its
+                      HEIGHT is unconditional (only the width animates), which is
+                      what keeps the line box — and therefore every row below —
+                      from moving on hover; that was already true when this sat
+                      in the flex row, and it stays true here.
+                      Exactly ONE literal space is emitted, before the span —
+                      the gap after it comes from `mr`, and JSX strips the
+                      newline between `</span>` and the tail word. Two spaces
+                      (one each side) would collapse to one visually, but would
+                      leave a double space in `textContent`, which is what gets
+                      copied and read aloud. So below md, where this is
+                      `display: none`, the heading is character-for-character
+                      the title it has always been. */}
+                    <span
+                      className={cn(
+                        "relative inline-block h-[50px] align-middle overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
+                        "w-0 group-hover:mr-4 group-hover:w-[80px] group-hover:opacity-100 md:group-hover:mr-8 md:group-hover:w-[150px]",
+
+                        "max-md:hidden",
+                      )}
+                    >
+                      <Image
+                        src={service.image}
+                        alt={service.title}
+                        fill
+                        // 150px at every width now: the mobile 100vw candidate only
+                        // existed for the full-bleed card thumbnail, which is gone.
+                        sizes="150px"
+                        className="absolute inset-0 h-full w-full scale-110 object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
+                      />
+                    </span>
+                    {titleTail}
+                  </h3>
+                </div>
+
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-0 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border border-[#2a2a2a] bg-[#080808] md:hidden"
                 >
-                  <Image
-                    src={service.image}
-                    alt={service.title}
-                    fill
-                    // 150px at every width now: the mobile 100vw candidate only
-                    // existed for the full-bleed card thumbnail, which is gone.
-                    sizes="150px"
-                    className="absolute inset-0 h-full w-full scale-110 object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
+                  <svg width="0" height="0" className="absolute">
+                    <title>Service arrow gradient</title>
+                    <defs>
+                      <linearGradient
+                        id={`service-arrow-grad-${index}`}
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop stopColor="#2E5BFF" offset="0%" />
+                        <stop stopColor="#149CCB" offset="100%" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <MdArrowOutward
+                    className="h-4 w-4"
+                    style={{ fill: `url(#service-arrow-grad-${index})` }}
                   />
                 </div>
 
-                <h3
-                  className={cn(
-                    "text-2xl font-medium leading-none tracking-[-0.04em] transition-colors duration-500 sm:text-5xl md:text-[clamp(2.5rem,5vw,5rem)]",
-                    "text-white group-hover/list:text-white/20 group-hover:!text-white",
-                  )}
-                >
-                  {service.title}
-                </h3>
-              </div>
-
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute right-0 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full border border-[#2a2a2a] bg-[#080808] md:hidden"
-              >
-                <svg width="0" height="0" className="absolute">
-                  <title>Service arrow gradient</title>
-                  <defs>
-                    <linearGradient
-                      id={`service-arrow-grad-${index}`}
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="0%"
-                    >
-                      <stop stopColor="#2E5BFF" offset="0%" />
-                      <stop stopColor="#149CCB" offset="100%" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <MdArrowOutward
-                  className="h-4 w-4"
-                  style={{ fill: `url(#service-arrow-grad-${index})` }}
-                />
-              </div>
-
-              {index !== services.length - 1 && (
-                <div
-                  className={cn(
-                    "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500",
-                    "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
-                  )}
-                />
-              )}
-            </a>
-          ))}
+                {index !== services.length - 1 && (
+                  <div
+                    className={cn(
+                      "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500",
+                      "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
+                    )}
+                  />
+                )}
+              </a>
+            );
+          })}
         </div>
       </div>
 

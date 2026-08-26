@@ -62,7 +62,13 @@ export default function ContactPage({}: any) {
         </div>
       </div>
 
-      <div className="relative z-10 [&>section]:pt-12 [&>section]:pb-6 max-md:[&>section]:pb-14 md:[&>section]:pt-28 md:[&>section]:pb-8">
+      {/* This `md:pb-*` must track ExperimentalTestimonials' own `pb-10`: a
+          `[&>section]` rule outranks the section's own utility on specificity,
+          so the gap to TechLogoCarousel is set HERE for this route, not by the
+          component. Keep the two in step or /contact drifts from every other
+          page. Desktop-only — the mobile `pb-6` / `max-md:pb-14` pair is
+          untouched. */}
+      <div className="relative z-10 [&>section]:pt-12 [&>section]:pb-6 max-md:[&>section]:pb-14 md:[&>section]:pt-28 md:[&>section]:pb-10">
         <ExperimentalTestimonials />
       </div>
       <div className="relative z-10 md:[&>section]:pb-20">

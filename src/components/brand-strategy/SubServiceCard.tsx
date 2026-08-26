@@ -37,7 +37,6 @@ export default function Card({
   title1,
   title2,
   description,
-  tags,
   link,
   color,
   image,
@@ -68,16 +67,22 @@ export default function Card({
       }}
     >
       <div
-        className={`relative grid min-h-[50vh] max-md:min-h-0 md:h-[600px] w-full origin-top grid-cols-1 gap-12 max-md:gap-0 overflow-hidden border-t border-white/10 max-md:border-t-0 ${color} px-4 max-md:px-3 max-md:pt-0 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16 ${
+        className={`relative grid min-h-[50vh] max-md:min-h-0 md:h-[600px] w-full origin-top grid-cols-1 gap-12 max-md:gap-0 overflow-hidden ${color} px-4 max-md:px-3 max-md:pt-0 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16 before:absolute before:top-0 before:h-px before:bg-white/10 before:inset-x-10 max-md:before:inset-x-3 before:content-[''] ${
           open ? "max-md:pb-12" : "max-md:pb-0"
         } ${
+          // The rule is a `::before` at both breakpoints now, not a `border-t`.
+          // A border always spans the full padding box, so it ran edge to edge;
+          // a positioned pseudo can be inset, and `inset-x-10` lines it up with
+          // the card's own `md:px-10` gutter — the same treatment StatsSection
+          // uses for its dividers. Mobile keeps `inset-x-3`, matching `px-3`.
+          //
           // Below md the rules sit only BETWEEN services: every card draws its
           // own top rule EXCEPT the first, and no card draws a bottom one — so
           // four services show three dividers and the list has no outer edges.
-          // Desktop is untouched: it still gets the real `border-t` above.
-          i === 0
-            ? ""
-            : "max-md:before:content-[''] max-md:before:absolute max-md:before:top-0 max-md:before:inset-x-3 max-md:before:h-px max-md:before:bg-white/10"
+          // Desktop keeps a rule on all four, including the first, which is why
+          // the first card is silenced with `content-none` rather than by
+          // withholding the pseudo outright.
+          i === 0 ? "max-md:before:content-none" : ""
         }`}
       >
         <motion.div
@@ -128,8 +133,10 @@ export default function Card({
           </motion.a>
 
           {/* Both wrappers are `display: contents` from md up, so the desktop
-              flex column still sees the paragraph and the tag row as its own
-              direct children -- same boxes, same gap-16, same stagger order. */}
+              flex column still sees the paragraph as its own direct child --
+              same box, same gap-16, same stagger order. (This used to wrap the
+              paragraph AND a row of tag pills; the pills were removed, so the
+              collapse machinery now carries the paragraph alone.) */}
           <div
             className={`contents max-md:order-3 max-md:grid max-md:transition-[grid-template-rows] max-md:duration-500 max-md:ease-[cubic-bezier(0.16,1,0.3,1)] ${
               open ? "max-md:grid-rows-[1fr]" : "max-md:grid-rows-[0fr]"
@@ -147,23 +154,6 @@ export default function Card({
               >
                 {description}
               </motion.p>
-
-              {tags && tags.length > 0 && (
-                <motion.div
-                  data-no-mobile-entry
-                  variants={contentItem}
-                  className="flex flex-wrap items-center gap-3 pt-4 max-md:hidden max-md:pt-0"
-                >
-                  {tags.map((tag: string, index: number) => (
-                    <span
-                      key={index}
-                      className="rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium tracking-wide text-zinc-300 transition-colors max-md:rounded-lg "
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </motion.div>
-              )}
             </div>
           </div>
         </motion.div>

@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { useRef, useState } from "react";
 import CarouselDots from "@/components/ui/CarouselDots";
 import { useInfiniteCarousel } from "@/lib/useInfiniteCarousel";
@@ -10,19 +11,28 @@ import SpecularBorder from "../ui/SpecularBorder";
 
 const MotionImage = motion.create(Image);
 
-const smoothSpring = {
-  type: "spring",
-  stiffness: 100,
-  damping: 24,
-  mass: 1,
-} as const;
-
 const premiumEase = [0.16, 1, 0.3, 1] as const;
+
+// A TWEEN, not the spring this used to be, because this choreography is
+// layout-driven: a single hover animates BOTH row `height`s and ALL the card
+// `flex` values, so every frame is a full relayout of the grid and of the
+// images, gradients and text inside it. A spring at stiffness 100 / damping 24
+// keeps emitting frames through its overshoot and settle tail for roughly a
+// second after the movement already reads as finished — that tail was most of
+// the cost, and it is what made the hover feel heavy. A fixed duration ends
+// deterministically, and re-hovering interrupts cleanly instead of compounding
+// with a still-settling spring. Matches the seven TracingBorder copies.
+const smoothTween = {
+  type: "tween",
+  duration: 0.45,
+  ease: premiumEase,
+} as const;
 
 const projects = [
   {
     id: 0,
     title: "Aura AI",
+    href: "/work/aura-skincare",
     category: "SaaS",
     year: "2025",
     description: "Next-gen artificial intelligence platform interface.",
@@ -33,6 +43,7 @@ const projects = [
   {
     id: 1,
     title: "Nova Tech",
+    href: "/work/nova-workspace",
     category: "SaaS",
     year: "2025",
     description: "Fintech dashboard for modern banking solutions.",
@@ -43,6 +54,7 @@ const projects = [
   {
     id: 2,
     title: "Lumina Vision",
+    href: "/work/lumina-festival",
     category: "Branding",
     year: "2024",
     description: "Immersive VR/AR experience branding.",
@@ -53,6 +65,7 @@ const projects = [
   {
     id: 3,
     title: "Apex Dynamics",
+    href: "/work/apex-analytics",
     category: "E-Commerce",
     year: "2024",
     description: "E-commerce platform for high-end sports gear.",
@@ -63,6 +76,7 @@ const projects = [
   {
     id: 4,
     title: "Nexus Core",
+    href: "/work",
     category: "Web App",
     year: "2024",
     description: "Cybersecurity infrastructure data visualization.",
@@ -157,7 +171,7 @@ export default function ProjectShowcase() {
         <div className="flex h-auto w-full flex-col gap-4 max-md:hidden md:h-[100vh] md:gap-6">
           <motion.div
             animate={isDesktop ? { height: getRowHeight(true) } : undefined}
-            transition={smoothSpring}
+            transition={smoothTween}
             className="flex h-auto w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
           >
             {row1.map((project) => (
@@ -172,7 +186,7 @@ export default function ProjectShowcase() {
 
           <motion.div
             animate={isDesktop ? { height: getRowHeight(false) } : undefined}
-            transition={smoothSpring}
+            transition={smoothTween}
             className="flex h-auto w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
           >
             {row2.map((project) => (
@@ -240,6 +254,7 @@ function ProjectCard({
   project: {
     id: number;
     title: string;
+    href: string;
     category: string;
     year: string;
     description: string;
@@ -270,7 +285,7 @@ function ProjectCard({
             }
           : undefined
       }
-      transition={smoothSpring}
+      transition={smoothTween}
       className="group relative h-full min-h-[300px] w-full cursor-pointer max-md:h-[460px]"
     >
       <div className="relative h-full w-full overflow-hidden rounded-[20px]">
@@ -284,14 +299,22 @@ function ProjectCard({
             isDesktop
               ? {
                   scale: isHovered ? 1.06 : 1.02,
+                  // Both states MUST list the same filter functions in the
+                  // same order. The resting value used to be plain
+                  // `brightness(0.85)` while the dimmed one added
+                  // `grayscale(80%)`, and framer cannot interpolate between
+                  // two filter lists of different shape — it swapped them
+                  // discretely instead, which is the "blink" on hover.
+                  // Spelling out `grayscale(0%)` at rest costs nothing
+                  // visually and lets both functions animate as numbers.
                   filter:
                     isAnyHovered && !isHovered
                       ? "brightness(0.3) grayscale(80%)"
-                      : "brightness(0.85)",
+                      : "brightness(0.85) grayscale(0%)",
                 }
               : undefined
           }
-          transition={smoothSpring}
+          transition={smoothTween}
           className="absolute inset-0 h-full w-full object-cover"
         />
 
@@ -312,7 +335,7 @@ function ProjectCard({
                 ? { opacity: isHovered ? 0 : 1, y: isHovered ? -10 : 0 }
                 : undefined
             }
-            transition={smoothSpring}
+            transition={smoothTween}
             className="flex items-start justify-between"
           >
             {/* Desktop keeps the title in the top slot. Below md this card
@@ -388,6 +411,18 @@ function ProjectCard({
       </div>
 
       {isHovered && <SpecularBorder radius={20} />}
+
+      {/* Cover link rather than wrapping the card: the `motion.div` above IS
+          the flex item whose `flex` value animates, so putting an anchor
+          around it would hand the animated property to a non-flex-item and
+          collapse the row. Same overlay idiom as home/PortfolioSection. z-30
+          clears the z-20 content, which is inert text — there is nothing else
+          interactive inside the card to shadow. */}
+      <Link
+        href={project.href}
+        className="absolute inset-0 z-30 rounded-[20px]"
+        aria-label={`View ${project.title}`}
+      />
     </motion.div>
   );
 }

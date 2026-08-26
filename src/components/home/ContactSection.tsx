@@ -28,7 +28,11 @@ const channels = [
   {
     label: "Studio",
     value: "San Francisco",
-    href: "#location",
+    // Was `#location`, which matched no element on any page — the tap did
+    // nothing. There is no location/map section to anchor to, so this points at
+    // the contact page rather than inventing a maps URL for an address the
+    // site does not state.
+    href: "/contact",
     Icon: MapPin,
     colSpan: "sm:col-span-1",
   },

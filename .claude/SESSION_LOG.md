@@ -19730,3 +19730,586 @@ free); hero asset 213x278 needs a larger export; `snap-mandatory` axis-lock is a
 Footer 1s clock tick examined and DELIBERATELY left: 12 leaf re-renders/sec with pre-built
 Intl formatters is well under a millisecond, and browsers already throttle it in background
 tabs — gating it on visibility would add latch-prone async state for no measurable gain.
+
+## 2026-08-25 — AboutSection CTA: symmetric hover padding (desktop only)
+Request: on `/home` desktop, the "Connect With Us" button in AboutSection shows a black
+border on hover with lopsided insets — make left padding match right. Mobile must not change.
+
+Change: `src/components/home/AboutSection.tsx:178`, one class — `hover:pl-6` -> `hover:pl-3.5`,
+matching the existing `hover:pr-3.5`. Diff is 1 insertion / 1 deletion.
+
+Why this cannot touch mobile: Tailwind v4 emits every `hover:` utility inside
+`@media (hover: hover)`. Read straight out of the CSSOM:
+  `.hover\:pl-3\.5:hover` -> padding-left: calc(var(--spacing) * 3.5)   media (hover: hover)
+  `.hover\:pr-3\.5:hover` -> padding-right: calc(var(--spacing) * 3.5)  media (hover: hover)
+Identical declarations, same specificity, same media block. With `--spacing: .25rem` both
+resolve to **14px** (was 24px left vs 14px right). At 390px emulation
+`matchMedia('(hover: hover)').matches === false` and the button still computes
+paddingLeft 0px / paddingRight 10px — i.e. the resting mobile state, unchanged.
+
+NOT changed (identical buttons, deliberately left alone — request named AboutSection only):
+`ExperimentalTestimonials.tsx:160` and `BlogSection.tsx:326` still carry `hover:pl-6`.
+Confirmed at runtime the testimonials one is still on pl-6. Say the word to align them.
+
+Checks: `bunx tsc --noEmit` exit 0; biome on the file = 1 pre-existing `noArrayIndexKey`
+(the word-split map, untouched). A live :hover was NOT exercised — the Browser pane was not
+displayed, so it neither composites nor accepts pointer input; verification is structural
+(CSSOM rules + resolved pixel values + computed styles), per the project's mobile rules.
+
+## 2026-08-25 — Site-wide: symmetric hover padding on CTA buttons (desktop only)
+Extends the previous AboutSection fix to every page. Two asymmetric patterns existed:
+
+- **Pattern A** `hover:pl-6 hover:pr-3.5` (24px vs 14px) -> `hover:pl-3.5` — 13 files:
+  8x `<service>/CtaSection.tsx`, home/BlogSection, home/ExperimentalTestimonials,
+  blog/RelatedArticles, work/NextProject, work/ProjectDetailsContent.
+  Verified beforehand that all 13 `hover:pl-6` occurrences were paired with
+  `hover:pr-3.5` on the same line (0 unpaired), so the sweep was unambiguous.
+- **Pattern B** `hover:pl-5 hover:pr-2` (20px vs 8px) -> `hover:pl-2` — 2 files:
+  blog/BlogCard (also `group-hover:pl-5` -> `pl-2`), work/ProjectCard (also the
+  `ctaActive && "pl-5 pr-2"` branch). `ctaActive` is gated on
+  `isHovered = isHoveredProp && isDesktop`, so that branch is desktop-only.
+
+Mobile untouched, same reason as before: Tailwind v4 emits `hover:` AND `group-hover:`
+inside `@media (hover: hover)` — confirmed in the CSSOM, e.g.
+`.group-hover\:pl-2:is(:where(.group):hover *)` sits in `media: (hover: hover)`.
+Every `max-md:` padding on these buttons is untouched.
+
+Verification:
+- Source assertion across ALL tsx: 16 call sites, every hover pl/pr pair equal, 0 mismatches;
+  0 remaining `hover:pl-6` / `hover:pl-5`.
+- DOM assertion per route (`allSymmetric`): /home 3 buttons, /work 3, /blog 11,
+  /web-development 3 — all true, `bad: []`.
+- `bunx tsc --noEmit` exit 0. `bun run build` exit 0, 35/35 static pages.
+- Biome rule multiset HEAD vs working tree over all 16 files: **IDENTICAL**
+  (8 noSvgWithoutTitle, 1 useValidAnchor, 2 useExhaustiveDependencies, 9 noArrayIndexKey).
+  NOTE: comparing a directory run against per-file runs is invalid — biome's
+  `--max-diagnostics` truncates the directory run (showed 18 vs 20). Compare per-file both sides.
+
+A live `:hover` was NOT exercised — the Browser pane is not displayed, so it neither
+composites nor accepts pointer input. Verification is structural (class pairs + CSSOM media
+context), per the project's mobile rules.
+
+Note: the perf work from earlier today was committed by the user as `1ad42a0`; confirmed the
+committed Herosection carries `preload="none"` and no stray `autoPlay` from the A/B test.
+
+## 2026-08-25 — Static-padding CTAs missed by the hover sweep (desktop only)
+User flagged the OurValuesSection "Connect With Me" button. Root cause of the miss: the
+previous sweep matched only `hover:pl-*` / `hover:pr-*`. THESE buttons set padding
+**statically** (`pl-5 pr-2` = 20px/8px) and reveal their box via a `before:` white sweep or a
+permanent border — so the padding never appears in a hover: utility and the grep could not see
+them. Re-scanned for static `pl-N pr-M` where N != M on button-like elements; found exactly 3:
+
+- `about/OurValuesSection.tsx:235` — "Connect With Me" (the reported one)
+- `blog/BlogFeaturedSection.tsx:98` — "Read Article"
+- `career/OpenPositions.tsx:302` — "Apply Now" (border+bg always visible, so most exposed)
+
+All three `pl-5` -> `pl-2`, matching their existing `pr-2`. 3 files, 3 insertions/3 deletions.
+
+Cascade check done BEFORE editing, because each pairs the base padding with a `max-md:`
+override and it was not obvious which wins (Tailwind emits `pl-*` after `px-*`, so source
+order alone suggested the base might beat `max-md:px-3`). Measured at 390px on the live page:
+"Read Article" computed **12px/12px** (from `max-md:px-3`) and OurValues **0px/12px** (from
+`max-md:pl-0 max-md:pr-3`) — the `max-md:` variants win, so changing the base cannot reach
+mobile. Post-change re-measure at 390px: still 12px/12px, identical to baseline.
+
+Desktop after (1280px): /blog "Read Article" 8px/8px symmetric; /about "Connect With Me"
+8px/8px symmetric. `career` "Apply Now" NOT measured — it lives behind a collapsed accordion
+that would not open in the preview pane (timers run ~4x slow there); its symmetry is inferred
+from source + the identical `max-md:px-3` structure verified on BlogFeaturedSection.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome
+identical HEAD vs now (1 pre-existing `format`, 1 pre-existing `noUnusedImports`).
+
+METHOD WARNING (bit me twice now): biome results differ by invocation method.
+`--stdin-file-path` resolved a DIFFERENT rule set than an on-disk check on the same content
+(2 a11y findings vs format+noUnusedImports), and `grep -c "lint/"` silently drops the
+`format` line. Always compare HEAD vs working tree using the SAME on-disk method, and grep
+for `lint/` AND `format`.
+
+## 2026-08-25 — /blog: increase button x-padding (desktop only)
+Enumerated every padded interactive element on /blog at 1280px rather than guessing which
+count as "buttons" — 6 found: 2 are badges (`Featured`, `Resources`, px-4, plain spans, NOT
+buttons), 1 is the shared navbar "Get in Touch" (px-8 = 32px already), and 3 are CTA pills.
+
+Changed (both blog-only, verified by import graph):
+- `blog/BlogFeaturedSection.tsx:98` "Read Article" — `pl-2 pr-2` -> `pl-3 pr-3` (8px -> 12px)
+- `blog/BlogCard.tsx:116` "Read Article" — `pr-2` -> `pr-3` and `hover:/group-hover:pl-2 pr-2`
+  -> `-3`. `pl-0` at rest left alone (deliberate flush-left alignment with the card copy);
+  the existing "pr constant, pl animates" structure is preserved, now at 12px instead of 8px.
+
+NOT changed, deliberately:
+- `brand-strategy/CtaSection` "Connect With Us" (hover 14px) — this component renders on
+  **7 routes** (/about, /blog, /blog/[slug], /brand-strategy, /contact, /work, /work/[slug]),
+  so bumping it under a "/blog only" scope would silently change 6 other pages. Already the
+  most generous CTA at 14px.
+- Navbar "Get in Touch" (px-8 = 32px) — site-wide via `page/Header`, and already generous.
+- `Featured` / `Resources` chips — badges, not buttons.
+
+Blast radius checked first: BlogFeaturedSection and BlogListSection are imported only by
+`app/blog/page.tsx`; BlogCard is used only by BlogListSection (the `brand-strategy/SubServiceCard`
+hit was a COMMENT, not an import).
+
+Verified at runtime — desktop 1280: featured 12px/12px symmetric; card 0px/12px at rest
+(pl-0 by design, hover resolves to 12/12 via `hover:pl-3`/`pr-3`, --spacing .25rem x 3).
+Mobile 390: both 12px/12px, **identical to the pre-change baseline** — `max-md:px-3` governs
+below md, so the base-padding edits cannot reach mobile.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome HEAD vs
+now IDENTICAL (both clean, compared with the same on-disk method and grepping `lint/` AND
+`format`, per the earlier method warning). Live :hover not exercised — pane does not composite
+or accept pointer input; hover value is derived from the resolved spacing scale.
+
+## 2026-08-25 — /home ServiceSection: hover image opens BETWEEN the words (desktop only)
+Asked first — "between the texts" was ambiguous (vertically between rows vs inline). User
+clarified: inside the heading, e.g. "AI & Marketing <image> Automation".
+
+Change (`home/ServiceSection.tsx`, 1 file): the image moved from a sibling of the `<h3>`
+(where it expanded to the LEFT of the whole line) to INSIDE it, between two words. The map
+callback gained a block body computing `titleHead` / `titleTail` by splitting on the LAST
+space — that reproduces the user's example for every entry and lands on the natural midpoint
+of the 2-word titles. `div` -> `span` with `inline-block align-middle`.
+
+Two things that keep desktop from shifting, both verified rather than assumed:
+- The span's HEIGHT is unconditional (only width animates), so the line box is already
+  100px tall at rest — hovering cannot change row height. Simulated all 8 images at their
+  hovered width inline: row heights 196px before AND after, section 2005px both. No wrap
+  either (a wrapped title would have grown its row).
+- Exactly ONE literal space is emitted, BEFORE the span; the gap after comes from `mr-4`/
+  `md:mr-8` (kept from the original, so total hover width is unchanged: 80+16 / 150+32).
+
+Whitespace trap worth remembering: the first attempt used `{" "}` on BOTH sides of the span
+plus `mx` margins. It LOOKS right — CSS collapses the pair to one space — but `textContent`
+came back "AI & Marketing  Automation" with a double space, which is what copy-paste and
+screen readers get. Caught it by asserting the mobile heading text against the literal title
+strings, not by eyeballing. After the fix: `textExactMatch: true` for all 8 titles.
+
+Mobile untouched: span is `max-md:hidden` (`display: none` confirmed on all 8), headings
+character-for-character identical to the originals, row heights all 96px.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome HEAD vs
+now IDENTICAL (1 pre-existing noStaticElementInteractions, 1 pre-existing noArrayIndexKey).
+Live :hover not exercised — pane does not composite or accept pointer input; the hovered
+geometry was reproduced by applying the hover width/margin inline and measuring.
+
+Open nit reported to user: splitting before the last word orphans an ampersand in 3 titles
+("Digital Marketing & [img] Growth", "Custom Software & [img] SaaS", "Brand Strategy & [img]
+Identity"). One-line fix available (skip back a word when the preceding token is "&").
+
+## 2026-08-25 — Footer: drop "( peek responsibly )"
+`layout/Footer.tsx:459` — "Privacy Policy ( peek responsibly )" -> "Privacy Policy".
+Single occurrence site-wide (grep confirms 0 remaining); `layout/Footer` is the shared footer,
+so this lands on every route that renders it — which is what "in footer" implies.
+1 file, 1 insertion / 1 deletion. No layout or class change; link href stays "#".
+
+Verified at runtime on /home: footer bottom row now reads
+["© Made By Softexedge", "All Rights Reserved", "Privacy Policy"], and
+`/peek responsibly/i.test(document.body.innerText)` === false.
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome
+HEAD vs now IDENTICAL.
+
+## 2026-08-25 — Normalise ExperimentalTestimonials -> TechLogoCarousel gap to /home (desktop only)
+12 routes render both components. Rather than infer the gap from the `[&>section]:` arbitrary
+variants (easy to misread), measured the rendered gap on every one at 1280px as
+`ET.paddingBottom + TLCouter.paddingTop + structuralGap`.
+
+Reference /home = **32px** (they sit as bare adjacent siblings there; the gap is simply
+ExperimentalTestimonials' own `pb-8`, and TechLogoCarousel has no desktop `pt`).
+
+Already correct at 32px — no edit: /contact and all 8 service pages (brand-strategy,
+web-development, ai-marketing-automation, app-development, custom-software, digital-marketing,
+ui-ux-design, video-production).
+
+Fixed — both were 40px because a page wrapper overrode the section's own padding:
+- `app/about/page.tsx` ET wrapper: `md:[&>section]:pb-10` -> `pb-8`
+- `app/work/page.tsx`  ET wrapper: `md:[&>section]:pb-10` -> `pb-8`
+Both now measure 32px at 1280px.
+
+Care taken: /about has `md:[&>section]:pb-10` TWICE — the other is the `#our-team` wrapper
+(line 53) and was left alone; confirmed still present after the edit. `md:pb-[100vh]` on the
+/work wrapper is the pin spacer, not part of the gap, and is untouched.
+
+Mobile untouched, proven from the diff rather than assumed: the only token that changes on
+either line is the `md:`-prefixed one, and `md:` utilities live inside
+`@media (min-width: 48rem)`, so they cannot apply at 390px. Every mobile class
+(`[&>section]:pb-6 max-md:[&>section]:pb-11` on about, `[&>section]:pb-11` on work) is
+byte-identical. Measured at 390px after the change: both 48px (44 + 4), consistent with those
+untouched classes.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome HEAD vs
+now IDENTICAL (1 pre-existing noBannedTypes, 1 pre-existing noEmptyPattern).
+
+## 2026-08-25 — Bump ExperimentalTestimonials -> TechLogoCarousel gap to 40px on ALL routes (desktop only)
+32px -> **40px** (`pb-8` -> `pb-10`), uniform across all 12 routes that render both.
+
+The gap has THREE sources, not one — a `[&>section]:pb-*` page wrapper outranks the section's
+own utility on specificity (0,1,1 vs 0,1,0), so wherever a wrapper sets it, the component is
+overruled. Changed all four places so they agree:
+- `home/ExperimentalTestimonials.tsx:92` `pb-8` -> `pb-10` — governs the 9 routes with no wrapper
+- `app/about/page.tsx`   ET wrapper `md:[&>section]:pb-8` -> `pb-10`
+- `app/work/page.tsx`    ET wrapper `md:[&>section]:pb-8` -> `pb-10`
+- `app/contact/page.tsx` ET wrapper `md:[&>section]:pb-8` -> `pb-10`
+
+**/contact was the trap.** It has its own ET wrapper override that happened to equal 32px, so
+last task's audit passed it as "already correct" and it was NOT flagged as an override. Bumping
+only the component would have left /contact alone at 32px while 11 routes moved — the exact
+drift this task forbids. Found it by grepping for surviving `md:[&>section]:pb-8` after editing,
+not by re-reading the pages. (`app/blog/page.tsx:32` also has that class but wraps CtaSection —
+/blog renders no ExperimentalTestimonials, so it is unrelated and untouched.)
+
+Verified at 1280px, all 12 routes measured individually: home, about, work, contact,
+brand-strategy, web-development, ai-marketing-automation, app-development, custom-software,
+digital-marketing, ui-ux-design, video-production — **every one 40px**.
+
+Mobile untouched: the component change is to a BASE utility, but `max-md:pb-14` already governs
+below md, so it cannot reach mobile; the three wrapper changes are `md:`-prefixed. Measured at
+390px after the change: /home /contact /web-development 56px (etPb 56 = `max-md:pb-14`),
+/about /work 48px (their wrappers' `max-md:[&>section]:pb-11` = 44 + 4). Same as before.
+
+Note (not actioned, mobile is out of scope): the MOBILE gap is itself inconsistent — 56px on
+most routes vs 48px on /about and /work. Say the word if that should be unified too.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome HEAD vs
+now IDENTICAL across all 4 files.
+
+## 2026-08-25 — /home: audit and fix link targets
+Enumerated all 123 anchors on /home at 1280px, then validated every destination: HTTP-checked
+all 21 internal paths, and resolved every `#hash` against the target page's DOM ids.
+
+Fixed (3 files):
+- `home/PortfolioSection.tsx` — `/work/traul` returned **HTTP 404**. `work/[slug]` calls
+  `notFound()` for any slug missing from `src/data/projects.ts`, and Traul is the only one of
+  the 5 homepage panels with no entry there (finova-dashboard / lumina-festival /
+  nova-workspace / zephyr-mobility all match exactly). Repointed to `/work`.
+- `home/ContactSection.tsx` — "Studio" used `href="#location"`; **no `id="location"` exists
+  anywhere in src/**, so the click did nothing. Repointed to `/contact` rather than inventing
+  a maps URL for an address the site never states.
+- `layout/Header.tsx` — the Services dropdown's own label had `link: "/"`, so clicking it left
+  the services menu and bounced to the site root (307 -> /home). Now `/home#services`, the
+  section the menu is about and the same target the footer's "Our Services" already uses.
+
+Verified after: re-ran the audit — 0 dangling anchors, 0 traul links, all 21 internal paths
+200 (`/` is 307 by design, that redirect is intentional in `app/page.tsx`).
+
+Mobile untouched. The Header change is desktop-only BY CONSTRUCTION, confirmed at 390px:
+the Services entry takes the `hasDropdown` branch in MobileNavMenu and renders as a
+`<button>`, never a Link, so `item.link` is not read there (`isActive` is computed for every
+item but only consumed in the non-dropdown branch). The other two are href-only changes with
+no layout effect. Measured at 390px: Services still 1 button, studio href `/contact`,
+0 traul links, 0 dangling hashes.
+
+NOT fixable without input — 4 `href="#"` placeholders remain, all in `layout/Footer`:
+3 social icons (Facebook / Instagram / LinkedIn) and "Privacy Policy". Real social URLs are
+unknown and there is no privacy-policy route to link to; inventing either would be fabrication.
+Reported to the user.
+
+Also reported, not actioned (content issue, not a link bug): the homepage BlogSection's
+hardcoded `blogPosts` array has cards 3 and 4 pointing at the SAME slug as card 2
+(`rise-at-seven-expansion`) while showing different titles. That array is independent of
+`src/data/blog.ts`, which holds 6 real slugs. Sourcing the cards from blog.ts would fix titles
+and hrefs together, but that changes displayed content, which was not asked for.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome HEAD vs
+now IDENTICAL across all 3 files.
+
+## 2026-08-25 — /career QuoteCard: give the desktop quote glyph the mobile STYLE
+`career/QuoteCard.tsx:135` — `max-md:fill-black` -> `fill-black` (one token).
+
+The two breakpoints differed in exactly ONE property: the fill. Below md the variant painted
+the glyph black; above md nothing applied, so it fell back to the element's `fill="none"`
+attribute and rendered as a hollow outline. Stroke colour (`text-[#464646]` via
+`stroke="currentColor"`) and `strokeWidth="1"` were already shared, so dropping the variant is
+the whole change. `md:h-12 md:w-12` is untouched, so desktop keeps its own larger size — the
+request was style, not sizing.
+
+Reachability traced before editing: QuoteCard <- career/CarouselCard <- CareerHeroSection /
+career/InfiniteRow. All career-scoped, so nothing outside /career can see this.
+
+Verified on /career, 12 quote icons, ALL collapsing to a single computed variant per breakpoint:
+- 1280px: fill `rgb(0,0,0)` (was `none`), stroke `rgb(70,70,70)`, strokeWidth 1px, **48x48**
+- 390px:  fill `rgb(0,0,0)`, stroke `rgb(70,70,70)`, strokeWidth 1px, **24x24** — unchanged
+Style now identical across breakpoints; sizes still deliberately differ (48 vs 24).
+
+Mobile untouched: the computed fill below md was black via the variant and is black via the
+base utility now — same value, confirmed at 390px.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome HEAD vs
+now IDENTICAL (file is clean both sides).
+
+## 2026-08-25 — /career "Apply Now": increase x-padding
+`career/OpenPositions.tsx:302` — `pl-2 pr-2` -> `pl-3 pr-3` (8px -> 12px). 1 file,
+1 insertion / 1 deletion.
+
+This is the button the earlier symmetry sweep took from `pl-5 pr-2` to `pl-2 pr-2`; net change
+from HEAD is `pl-5 pr-2` -> `pl-3 pr-3`.
+
+**Measured live this time** — the previous entry could only INFER this button's geometry
+because it sits behind a collapsed accordion that would not open in the preview pane. The
+blocker was that the accordion toggle is not a `<button>`: it is a
+`div.cursor-pointer.justify-between` with an `onClick` (which is exactly why this file carries
+`noStaticElementInteractions` + `useKeyWithClickEvents` biome ignores). Clicking that div
+mounts the panel — `{open && <motion.div>}` mounts on state change even though the framer
+enter animation never runs in the pane. Recipe worth reusing for this file.
+
+Results:
+- 1280px: paddingLeft/Right **12px / 12px**, symmetric, height 56px (`h-14`)
+- 390px:  paddingLeft/Right **12px / 12px**, height 48px (`h-12`) — governed by the untouched
+  `max-md:px-3`, which was already 12px, so mobile is unchanged. Desktop and mobile now happen
+  to share the same 12px x-padding.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome HEAD vs
+now IDENTICAL (1 pre-existing `format`, 1 pre-existing `noUnusedImports`).
+
+## 2026-08-25 — OurValuesSection "Connect With Me": increase x-padding
+`about/OurValuesSection.tsx:235` — `pl-2 pr-2` -> `pl-3 pr-3` (8px -> 12px). 1 file,
+1 insertion / 1 deletion. (Net from HEAD: `pl-5 pr-2` -> `pl-3 pr-3`.)
+
+This component holds TWO separate "Connect With Me" buttons, so the target had to be picked
+deliberately: the DESKTOP one at :235 (`h-14`, sweep-in white `before:` pill, wrapped in a
+`max-md:hidden` Link) and a compact MOBILE one at :421 (`h-11`, always-white `bg-white px-3`).
+The screenshot showed the white pill with black text and a black icon tile — that is the
+desktop button in its HOVER state (`before:scale-x-100` + `group-hover:bg-black` on the tile),
+not the mobile variant. Only :235 was touched.
+
+Blast radius checked first: OurValuesSection is imported by `/about` AND `/career` (the three
+other grep hits — QuoteCard, CarouselDots, AboutTraditional — are comment references, not
+imports), so this lands on both routes.
+
+Verified at 1280px on BOTH routes: visible desktop button (h-14 / 56px) now **12px / 12px**
+symmetric. Mobile variant present but `visible: false` there, still 12px.
+At 390px on /about: desktop variant hidden (`visibleOnScreen: false`) with its untouched
+`max-md:pl-0 max-md:pr-3` giving 0px/12px; the VISIBLE mobile variant (h-11 / 44px) unchanged
+at 12px/12px. Mobile view is untouched.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome HEAD vs
+now IDENTICAL (file clean both sides).
+
+## 2026-08-25 — /career ApplicationJourney: reduce description -> cards gap (desktop only)
+`career/ApplicationJourney.tsx:54` — `md:mb-35` (140px) -> `md:mb-20` (80px) on the header
+wrapper, which is what separates the description from the card grid (the grid itself adds no
+top margin).
+
+Sized from a measurement, not a guess: before the change the wrapper computed
+`margin-bottom: 140px` and the real gap from the description's text bottom to the grid top was
+**120px** — close to the height of the copy block itself, and roughly double the 64px the same
+gap uses below md. 80px brings the visual gap to 60px, still a clear separation and now in
+proportion with the mobile value.
+
+Verified after:
+- 1280px: `margin-bottom: 80px`, visual gap **60px** (was 140px / 120px)
+- 390px:  `margin-bottom: 64px`, visual gap 64px — **unchanged**
+
+Mobile untouched, confirmed from the diff: the only differing token on the line is the
+`md:`-prefixed one; `mb-16` and `max-md:mb-16` are byte-identical and `md:` utilities live
+inside `@media (min-width: 48rem)`.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome clean
+(HEAD and now both report no findings — note the first comparison used a mistyped character
+class, so it was re-run directly against the file to confirm).
+
+## 2026-08-25 — /work ProjectCard "View Project": increase x-padding
+`work/ProjectCard.tsx:189,196` — the two PADDED states go 8px -> 12px:
+`hover:pl-2 hover:pr-2` -> `hover:pl-3 hover:pr-3`, and `ctaActive && "pl-2 pr-2"` -> `"pl-3 pr-3"`.
+The RESTING `pl-0 pr-2` is deliberately left alone — see below.
+
+Scope: `work/ProjectCard.tsx` is /work-ONLY. The 8 other `ProjectShowcase.tsx` files that
+appear to use a `<ProjectCard>` each define their OWN local `function ProjectCard` (e.g.
+web-development:162, brand-strategy:235) and do not import this one — only
+`work/WorkProjectShowcase.tsx` does. The blue edge glow in the screenshot is `SpecularBorder`,
+which is this card's border component, confirming the target.
+
+Why the resting state was NOT raised: `pl-0 pr-2` is the one padding that applies on touch.
+Raising it would move the mobile card. Both states I did raise are desktop-only —
+`hover:` lives in `@media (hover: hover)` and `ctaActive` is gated on
+`isHovered = isHoveredProp && isDesktop`. Consequence, accepted: right padding now animates
+8px -> 12px during the reveal, alongside the white sweep and the 0 -> 12px left inset.
+
+Verification, and a technique note. The CTA does not exist at rest — the whole block
+(title/description/tags/button) is inside `<AnimatePresence>{isHovered && ...}`, which is why
+the first DOM query found 0. Dispatching a bubbling `mouseover` on
+`div.group.relative.w-full.cursor-pointer` makes React synthesise its `onMouseEnter` and mounts
+it (framer's enter animation still never runs in the pane). Reusable for hover-mounted UI.
+Adding `pl-3 pr-3` to the element's classList did NOT change computed padding — `.pl-0`/`.pr-2`
+are already on it and win by stylesheet order, so classList probing is NOT a valid way to
+resolve a Tailwind value. Read the CSSOM instead:
+  `.hover\:pl-3:hover` -> padding-left: calc(var(--spacing) * 3)   media (hover: hover)
+  `.hover\:pr-3:hover` -> padding-right: calc(var(--spacing) * 3)  media (hover: hover)
+`calc(var(--spacing) * 3)` resolves to **12px** on this page (vs 8px for *2).
+
+Mobile untouched, and structurally unreachable: at 390px `(hover: hover)` is false AND
+dispatching mouseover on all 9 cards mounted **0** CTAs, because `isDesktop` is false. The
+button cannot render on mobile at all.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome clean on
+HEAD and now.
+
+## 2026-08-25 — ExperimentalTestimonials: kill the 4px card sliver at the scroller's left edge
+`home/ExperimentalTestimonials.tsx` track — `px-4` (16px) -> `px-3` (12px). One component,
+so all 12 routes that render it are fixed at once.
+
+Root cause, measured not guessed. Above md the track is paginated by whole strides of
+`step` = cardWidth + gap = 440 + 12 = 452, but its left PADDING was 16px. After one step the
+previous card's right edge lands at `paddingLeft - stride + cardWidth`, which reduces to
+`paddingLeft - gap` = 16 - 12 = **4px INSIDE** the scroller — a 4px slice of the previous card
+left showing. Matching the padding to the gap makes that exactly 0.
+
+Measuring it needed a workaround: clicking the arrow does NOT move the track in the preview
+pane (framer never runs there — `transform` stayed `none` even after `active` changed), so the
+paginated position was reproduced by writing `translateX(-stride)` onto the track inline and
+reading card 0's right edge relative to the scroller.
+- BEFORE: padding 16, gap 12, stride 452 -> atRest 456, afterOneStep **+4**, afterTwoSteps -448
+  (matches the predicted 4 exactly)
+- AFTER:  padding 12, gap 12, stride 452 -> atRest 452, afterOneStep **0**, afterTwoSteps -452
+Spot-checked /about as well: afterOneStep 0, `sliverVisible: false`.
+
+Side effect, intended: at rest the whole row now begins 4px further left (12px inset instead
+of 16px). The track's RIGHT padding also drops to 12px, which is invisible — the track is
+`w-max` inside an `overflow-hidden` scroller and the last card is far past the right edge.
+
+Mobile untouched: `max-md:px-11` overrides the base padding below md. Measured at 390px —
+track padding still 44px/44px, gap 0, scroller `overflow-x: auto` (the native snap carousel,
+which never translates by a stride, so this class was never involved there).
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome clean on
+HEAD and now.
+
+## 2026-08-25 — /brand-strategy SubServiceCard: remove tag pills, then inset the dividers
+Both changes in `brand-strategy/SubServiceCard.tsx` (15 insertions / 25 deletions total).
+Scope confirmed with the user first, per CLAUDE.md's rule on the 8 duplicated service sections:
+**/brand-strategy ONLY**. `SubServiceCard.tsx` exists only in brand-strategy and is imported
+only by `brand-strategy/SubServices.tsx`; the other 7 service pages render their tags inline
+from their own `SubServices.tsx` and were left alone (verified: /web-development still shows
+all four tag texts).
+
+1. **Pills removed.** Deleted the `{tags && tags.length > 0 && (...)}` block. User clarified
+   "pills only", so the `tags:` data arrays in `SubServices.tsx` are deliberately KEPT (all 4
+   still present) — the data is now unused by this card. The `tags` destructure WAS removed
+   from the props, because leaving it tripped a NEW `noUnusedFunctionParameters` finding; my
+   first pass also left a `format` violation, fixed with `biome format --write`. A stale
+   comment describing "the paragraph and the tag row" was corrected.
+   Verified /brand-strategy at 1440px: 0 pill elements, 0 of the 4 tag strings in the DOM.
+
+2. **Dividers inset.** The rules were `border-t border-white/10` — a border always spans the
+   full padding box, so it ran edge to edge and cannot be inset. Replaced with a `::before`
+   rule at both breakpoints: `before:inset-x-10` on desktop (40px, matching the card's own
+   `md:px-10` gutter) and `max-md:before:inset-x-3` (12px, matching `px-3`) — the same
+   treatment StatsSection already uses for its dividers.
+   Desktop 1440px: rule width **1345px**, inset 40px/40px, `border-top-width: 0px`, height 1px,
+   colour unchanged (was 1425px edge-to-edge).
+   Mobile 390px UNCHANGED: card 0 still has NO rule (`content: none` — kept by silencing the
+   pseudo for i===0 rather than withholding it, since desktop needs a rule on all four), cards
+   1-3 still 12px inset / 366px wide.
+
+Lint: HEAD had `noArrayIndexKey` + `noExplicitAny`; now only `noExplicitAny` — one FEWER, since
+the removed pills held the `key={index}`. `bunx tsc --noEmit` exit 0; `bun run build` exit 0,
+35/35 static pages.
+
+OBSERVED, NOT MINE, NOT FIXED: a React **hydration mismatch** fires on /brand-strategy AND on
+/web-development. Not caused by these edits — a Tailwind className is a static string,
+identical on server and client. NOTE: I did not bisect to prove it pre-dates the session, so
+this is reasoning, not proof. Prime suspect worth checking separately: `useIsMobile()` reads
+`matchMedia` during the FIRST client render (see the warning in `lib/useIsDesktop.ts`), and
+several components feed it into framer `transition` props — framer writes inline `style`, which
+IS markup, so a server(false)/client(true) disagreement could desync the style attribute.
+
+## 2026-08-25 — ProjectShowcase hover: fix the blink and the lag (all 8 service showcases)
+User declined a scope question and said "fix the hover effect on the cards", so I made the
+call: all 8 `*/ProjectShowcase.tsx`. The 7 TracingBorder copies were byte-identical, so the
+fix was applied to one and COPIED to the other 6 (guarantees they cannot drift); brand-strategy
+is the SpecularBorder variant with a different structure and was edited by hand.
+
+TWO distinct defects, both fixed:
+
+1. **The blink** — `filter` animated between `"brightness(0.85)"` and
+   `"brightness(0.3) grayscale(80%)"`. The two filter LISTS have different shapes, and framer
+   cannot interpolate that structurally — it swaps discretely, which is the visible pop.
+   Fixed by spelling out the resting value as `"brightness(0.85) grayscale(0%)"` so both
+   functions animate as numbers. Costs nothing visually.
+
+2. **The lag** — every hover ran `smoothSpring` (stiffness 100 / damping 24) over
+   **LAYOUT** properties: both row `height`s AND all 7 card `flex` values, i.e. 9 simultaneous
+   layout animations, each relayouting the grid and its images/gradients/text every frame,
+   with a spring's overshoot-and-settle tail continuing ~1s after the motion reads as done —
+   on top of 7 concurrent image `filter` rasterizations. Replaced `smoothSpring` with
+   `smoothTween` = `{ type: "tween", duration: 0.45, ease: premiumEase }`, bounding the layout
+   work and letting a re-hover interrupt cleanly instead of compounding with a settling spring.
+   `premiumEase` already existed in each file and is used the same way elsewhere there.
+
+Verified structurally — all 8 files report `tween 0.45s + premiumEase`, 0 `smoothSpring`
+references remain, and every file has exactly one symmetric `brightness(0.85) grayscale(0%)`.
+`bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome IDENTICAL across
+all 8 (7 pre-existing `noUnusedImports` before and after).
+
+NOT MEASURED, said plainly: framer does not run in the preview pane (confirmed again here —
+the cards read `flex: 0 1 auto`, `filter: none`, `transform: none`, i.e. no `animate` values
+applied at all), so the smoothness gain is reasoned from removing the spring settle tail and
+from making the filter interpolable — it was not observed, and no frame rate was captured.
+Worth a look on a real browser.
+
+## 2026-08-25 — Safari pin/scale investigation (/career PerksSection) — PARTIAL, not verified
+CANNOT REPRODUCE HERE: this machine is Windows and the preview pane is Chromium, so no Safari
+is available. Nothing below was observed failing; the Safari behaviour is reported, not seen.
+
+How the effect is actually built (worth recording — it is NOT a GSAP pin):
+- The "pin" is pure CSS: `md:sticky md:top-[calc(100vh-NNNNpx)]` on a wrapper, with
+  `md:-mb-[100vh]` on its parent and `md:pb-[100vh]` on the following block giving the stuck
+  element its runway. Used on SIX pages with a hardcoded per-section constant:
+  about 1104/994, blog 856, career 1200/1216, work 4096.
+- The "scale down" is `ui/ShrinkOnOverlap` — a GSAP `scrub` tween, gated to
+  `mm.add("(min-width: 768px)")`.
+
+FIXED (real, rule-backed, but NOT proven to be the Safari symptom):
+`ui/ShrinkOnOverlap.tsx` — `will-change-transform` -> `md:will-change-transform`. The only
+transform on that element comes from the desktop-gated GSAP tween, so below md the hint was
+promoting a full-section layer that nothing ever moves — the exact thing CLAUDE.md's mobile
+rules forbid. Verified: 1440px still `will-change: transform`; 390px now `auto` (both
+instances), and 0 sticky elements below md as expected.
+
+MEASURED, and the two things I would investigate next:
+1. Both scaled elements sit INSIDE the `position: sticky` wrapper (confirmed
+   `insideSticky: true`). ScrollTrigger derives start/end from the trigger's rect, but a stuck
+   element's rect stops tracking the document — GSAP's own guidance is to avoid sticky
+   elements as triggers. `ShrinkOnOverlap` also calls `ScrollTrigger.refresh()` on rAF, at
+   400ms, on `load`, and on `fonts.ready`; any refresh landing while the element is stuck
+   computes wrong start/end. Blink and WebKit differ in when sticky offsets are applied
+   relative to layout reads, which is a very plausible works-in-Chrome/fails-in-Safari split.
+2. The sticky offsets resolve NEGATIVE at ordinary laptop heights — measured -300px and
+   -316px at 1440x900 — because the constant (1200/1216px) exceeds the viewport. The effect
+   therefore depends on the section being taller than the viewport AND on that hardcoded
+   constant matching its real rendered height; Safari's different font metrics/line breaking
+   would shift that height and mis-place the pin.
+
+Deliberately NOT changed blind: re-pointing the ScrollTrigger away from the sticky subtree, or
+swapping `100vh` for `svh`/`dvh`, would alter six pages that currently work in Chrome, with no
+way to test the result here. Asked the user for the platform (macOS vs iPadOS) and the exact
+symptom first.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome clean
+HEAD and now.
+
+## 2026-08-25 — ProjectShowcase cards: make them links (all 8 service showcases)
+The cards had NO href at all (`grep -c href` was 0) — they were never clickable.
+
+Mapping chosen by the user after I flagged that the card names are placeholders that echo but
+do not match `src/data/projects.ts` ("Aura AI" vs the real "Aura Skincare — E-Commerce", etc.,
+and "Nexus Core" has no counterpart). User picked map-by-name knowingly:
+  Aura AI -> /work/aura-skincare · Nova Tech -> /work/nova-workspace
+  Lumina Vision -> /work/lumina-festival · Apex Dynamics -> /work/apex-analytics
+  Nexus Core -> /work (no counterpart exists)
+So each card's LABEL disagrees with the case study it opens — accepted deliberately, recorded
+here so it is not later mistaken for a bug.
+
+Implementation: an absolutely-positioned cover `<Link>` inside the card, NOT a wrapper.
+The `motion.div` IS the flex item whose `flex` value animates, so wrapping it in an anchor
+would hand the animated property to a non-flex-item and collapse the row. Same overlay idiom
+as `home/PortfolioSection`. `z-30` clears the `z-20` content, which is inert text — the card
+holds no other interactive element to shadow. `aria-label="View <title>"` gives the anchor a
+name. Applied to the 7 identical copies by editing one and COPYING; brand-strategy edited by
+hand (different structure: extra `category`/`year` fields, mobile carousel branch).
+
+Verified on /ai-marketing-automation at 1440px: all 5 cards carry the expected href, the
+correct aria-label, and `coversCard: true` (link rect === card rect). All 5 targets return
+**HTTP 200** (/work/aura-skincare, /work/nova-workspace, /work/lumina-festival,
+/work/apex-analytics, /work) — no 404s, unlike the `/work/traul` case found on the homepage.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome IDENTICAL
+across all 8 (7 pre-existing `noUnusedImports` before and after).

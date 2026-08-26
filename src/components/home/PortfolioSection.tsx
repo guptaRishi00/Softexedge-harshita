@@ -37,7 +37,12 @@ const projects = [
     image: "/assets/traul3.png",
     category: "LOGISTICS",
     type: "image",
-    href: "/work/traul",
+    // `/work/traul` 404'd: `work/[slug]` calls `notFound()` for any slug absent
+    // from `src/data/projects.ts`, and Traul is the one panel here with no
+    // entry there (the other four match a project exactly). Pointing at the
+    // listing keeps the panel clickable instead of dead; give me a Traul entry
+    // in projects.ts and this goes back to `/work/traul`.
+    href: "/work",
   },
   {
     id: 2,

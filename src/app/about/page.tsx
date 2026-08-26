@@ -55,6 +55,12 @@ export default function AboutPage({}: Props) {
           <OurTeamSection />
         </div>
       </div>
+      {/* This `md:pb-*` must track ExperimentalTestimonials' own `pb-10`: a
+          `[&>section]` rule outranks the section's own utility on specificity,
+          so the gap to TechLogoCarousel is set HERE for this route, not by the
+          component. Keep the two in step or /about drifts from every other
+          page. Desktop-only — the mobile `pb-6` / `max-md:pb-11` pair is
+          untouched. */}
       <div className="[&>section]:pt-13 [&>section]:pb-6 max-md:[&>section]:pb-11 md:[&>section]:pt-24 md:[&>section]:pb-10">
         <ExperimentalTestimonials />
       </div>

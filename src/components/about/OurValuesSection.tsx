@@ -232,7 +232,7 @@ export default function OurValuesSection() {
                         // h-5 arrows, text-lg). Colours are deliberately NOT
                         // copied — that CTA is dark-on-white, this one lives on
                         // a dark card and keeps its white-on-transparent sweep.
-                        className="group relative flex h-14 max-md:h-16 w-full sm:w-fit max-md:w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-5 pr-2 max-md:pl-0 max-md:pr-3 transition-colors duration-300 hover:border-white before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100"
+                        className="group relative flex h-14 max-md:h-16 w-full sm:w-fit max-md:w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-3 pr-3 max-md:pl-0 max-md:pr-3 transition-colors duration-300 hover:border-white before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100"
                       >
                         <span className="relative z-10 text-base max-md:text-lg font-bold tracking-tight text-white transition-colors group-hover:text-black">
                           Connect With Me

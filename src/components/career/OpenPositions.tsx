@@ -299,7 +299,7 @@ export default function OpenPositions() {
                         <div className="pt-2">
                           <a
                             href={`mailto:careers@softexedge.com?subject=Application for ${job.title}`}
-                            className="group/btn relative z-10 flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-black pl-5 pr-2 transition-all duration-300 hover:border-white hover:bg-white max-md:h-12 max-md:gap-2 max-md:rounded-lg max-md:px-3 max-md:border-white max-md:bg-white"
+                            className="group/btn relative z-10 flex h-14 w-fit cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/20 bg-black pl-3 pr-3 transition-all duration-300 hover:border-white hover:bg-white max-md:h-12 max-md:gap-2 max-md:rounded-lg max-md:px-3 max-md:border-white max-md:bg-white"
                           >
                             <span className="text-base font-bold tracking-tight text-white transition-colors duration-300 group-hover/btn:text-black max-md:text-lg max-md:text-black">
                               Apply Now

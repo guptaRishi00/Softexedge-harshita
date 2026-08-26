@@ -79,7 +79,17 @@ export default function ShrinkOnOverlap({
     <div ref={containerRef}>
       <div
         ref={innerRef}
-        className={cn("origin-top will-change-transform", className)}
+        // `md:will-change-transform`, not the unscoped version this had. The
+        // only thing that ever transforms this element is the GSAP tween
+        // below, and that lives inside `mm.add("(min-width: 768px)")` — so
+        // below md the hint promoted a full-section layer that nothing was
+        // ever going to move, which is exactly what the project's mobile rules
+        // forbid. It also matters here specifically: this element sits INSIDE
+        // a `position: sticky` wrapper on all six pages that use it, and a
+        // permanently promoted descendant is one of the things WebKit handles
+        // differently from Blink when deciding how to composite a stuck
+        // ancestor.
+        className={cn("origin-top md:will-change-transform", className)}
       >
         {children}
       </div>

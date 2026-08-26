@@ -2,24 +2,34 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import React, { useState } from "react";
 import TracingBorder from "../ui/TracingBorder";
 
 const MotionImage = motion.create(Image);
 
-const smoothSpring = {
-  type: "spring",
-  stiffness: 100,
-  damping: 24,
-  mass: 1,
-} as const;
-
 const premiumEase = [0.16, 1, 0.3, 1] as const;
+
+// A TWEEN, not the spring this used to be, because this choreography is
+// layout-driven: a single hover animates BOTH row `height`s and ALL seven card
+// `flex` values, so every frame is a full relayout of the grid and of the
+// images, gradients and text inside it. A spring at stiffness 100 / damping 24
+// keeps emitting frames through its overshoot and settle tail for roughly a
+// second after the movement already reads as finished — that tail was most of
+// the cost, and it is what made the hover feel heavy. A fixed duration ends
+// deterministically, and re-hovering interrupts cleanly instead of compounding
+// with a still-settling spring.
+const smoothTween = {
+  type: "tween",
+  duration: 0.45,
+  ease: premiumEase,
+} as const;
 
 const projects = [
   {
     id: 0,
     title: "Aura AI",
+    href: "/work/aura-skincare",
     description: "Next-gen artificial intelligence platform interface.",
     image:
       "https://plus.unsplash.com/premium_photo-1773861007414-869af2ea91b8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDEyOHxDRHd1d1hKQWJFd3x8ZW58MHx8fHx8",
@@ -28,6 +38,7 @@ const projects = [
   {
     id: 1,
     title: "Nova Tech",
+    href: "/work/nova-workspace",
     description: "Fintech dashboard for modern banking solutions.",
     image:
       "https://images.unsplash.com/photo-1775185172840-47fe371943e5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDEwMnxDRHd1d1hKQWJFd3x8ZW58MHx8fHx8",
@@ -36,6 +47,7 @@ const projects = [
   {
     id: 2,
     title: "Lumina Vision",
+    href: "/work/lumina-festival",
     description: "Immersive VR/AR experience branding.",
     image:
       "https://images.unsplash.com/photo-1775887065658-988ef1c262c6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDkyfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
@@ -44,6 +56,7 @@ const projects = [
   {
     id: 3,
     title: "Apex Dynamics",
+    href: "/work/apex-analytics",
     description: "E-commerce platform for high-end sports gear.",
     image:
       "https://images.unsplash.com/photo-1772528205616-e65dc0994c7b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDE3OHxDRHd1d1hKQWJFd3x8ZW58MHx8fHx8",
@@ -52,6 +65,7 @@ const projects = [
   {
     id: 4,
     title: "Nexus Core",
+    href: "/work",
     description: "Cybersecurity infrastructure data visualization.",
     image:
       "https://images.unsplash.com/photo-1777646346045-df4bd1114148?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDYwfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D",
@@ -124,7 +138,7 @@ export default function ProjectShowcase() {
             animate={{
               height: getRowHeight(true),
             }}
-            transition={smoothSpring}
+            transition={smoothTween}
             className="flex h-[400px] w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
           >
             {row1.map((project) => (
@@ -141,7 +155,7 @@ export default function ProjectShowcase() {
             animate={{
               height: getRowHeight(false),
             }}
-            transition={smoothSpring}
+            transition={smoothTween}
             className="flex h-[500px] w-full flex-col gap-4 md:h-auto md:flex-row md:gap-6"
           >
             {row2.map((project) => (
@@ -167,6 +181,7 @@ function ProjectCard({
   project: {
     id: number;
     title: string;
+    href: string;
     description: string;
     image: string;
     baseFlex: number;
@@ -185,7 +200,7 @@ function ProjectCard({
         flex: isHovered ? 4 : isAnyHovered ? 1.15 : project.baseFlex,
         scale: isHovered ? 1.01 : 1,
       }}
-      transition={smoothSpring}
+      transition={smoothTween}
       className="group relative h-full min-h-[300px] w-full cursor-pointer overflow-hidden rounded-[20px]"
     >
       <MotionImage
@@ -196,12 +211,19 @@ function ProjectCard({
         sizes="(max-width: 768px) 100vw, 50vw"
         animate={{
           scale: isHovered ? 1.06 : 1.02,
+          // Both states MUST list the same filter functions in the same order.
+          // The resting value used to be plain `brightness(0.85)` while the
+          // dimmed one added `grayscale(80%)`, and framer cannot interpolate
+          // between two filter lists of different shape — it swapped them
+          // discretely instead, which is the "blink" on hover. Spelling out
+          // `grayscale(0%)` at rest costs nothing visually and lets both
+          // functions animate as numbers.
           filter:
             isAnyHovered && !isHovered
               ? "brightness(0.3) grayscale(80%)"
-              : "brightness(0.85)",
+              : "brightness(0.85) grayscale(0%)",
         }}
-        transition={smoothSpring}
+        transition={smoothTween}
         className="absolute inset-0 h-full w-full object-cover"
       />
 
@@ -230,7 +252,7 @@ function ProjectCard({
             opacity: isHovered ? 0 : 1,
             y: isHovered ? -10 : 0,
           }}
-          transition={smoothSpring}
+          transition={smoothTween}
           className="flex items-start justify-between"
         >
           <div>
@@ -277,6 +299,18 @@ function ProjectCard({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Cover link rather than wrapping the card: the `motion.div` above IS
+          the flex item whose `flex` value animates, so putting an anchor
+          around it would hand the animated property to a non-flex-item and
+          collapse the row. Same overlay idiom as home/PortfolioSection. z-30
+          clears the z-20 content, which is inert text — there is nothing else
+          interactive inside the card to shadow. */}
+      <Link
+        href={project.href}
+        className="absolute inset-0 z-30 rounded-[20px]"
+        aria-label={`View ${project.title}`}
+      />
     </motion.div>
   );
 }

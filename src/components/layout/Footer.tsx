@@ -456,7 +456,7 @@ export default function Footer() {
             <div className="flex flex-wrap items-center gap-6 max-md:justify-center">
               <p className="tracking-wide">All Rights Reserved</p>
               <a href="#" className="transition-colors hover:text-white">
-                Privacy Policy ( peek responsibly )
+                Privacy Policy
               </a>
             </div>
           </motion.div>

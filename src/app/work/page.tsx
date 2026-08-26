@@ -62,6 +62,13 @@ export default function WorkPage() {
         </div>
         <div
           id="work-testimonials"
+          // This `md:pb-*` must track ExperimentalTestimonials' own `pb-10`: a
+          // `[&>section]` rule outranks the section's own utility on
+          // specificity, so the gap to TechLogoCarousel is set HERE for this
+          // route, not by the component. Keep the two in step or /work drifts
+          // from every other page. Desktop-only — the mobile `pb-11` is
+          // untouched, as is `md:pb-[100vh]`, which is the pin spacer and not
+          // part of the gap.
           className="relative z-20 bg-white md:pb-[100vh] [&>section]:pt-16 [&>section]:pb-11 md:[&>section]:pt-26 md:[&>section]:pb-10"
         >
           <ExperimentalTestimonials />

@@ -113,7 +113,7 @@ export default function BlogCard({
             </div>
 
             <div className="mt-8 flex items-center justify-between max-md:mt-6">
-              <span className="group/cta relative inline-flex h-12 w-fit cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:pl-5 hover:pr-2 group-hover:pl-5 group-hover:pr-2 max-md:h-11 max-md:gap-2 max-md:rounded-lg max-md:px-3 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100 group-hover:before:scale-x-100 max-md:before:scale-x-100">
+              <span className="group/cta relative inline-flex h-12 w-fit cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-xl pl-0 pr-3 transition-all duration-300 hover:pl-3 hover:pr-3 group-hover:pl-3 group-hover:pr-3 max-md:h-11 max-md:gap-2 max-md:rounded-lg max-md:px-3 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100 group-hover:before:scale-x-100 max-md:before:scale-x-100">
                 <span className="relative z-10 text-sm font-bold tracking-tight text-white transition-colors duration-300 group-hover/cta:text-black group-hover:text-black max-md:text-base max-md:text-black">
                   Read Article
                 </span>

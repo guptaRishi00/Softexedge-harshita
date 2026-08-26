@@ -51,7 +51,12 @@ export default function ApplicationJourney() {
   return (
     <section className="relative w-full bg-white px-6 max-md:px-3 py-24 text-zinc-900 md:py-32">
       <div className="mx-auto w-full">
-        <div className="mx-auto flex max-w-3xl flex-col items-center text-center mb-16 max-md:mb-16 max-md:items-start max-md:text-left md:mb-35">
+        {/* `md:mb-20` (80px) replaces `md:mb-35` (140px) — that left a 120px
+            void between the description and the cards, nearly the height of the
+            copy block itself and about double the 64px the same gap uses below
+            md. Desktop-only: `mb-16` + `max-md:mb-16` still own the mobile
+            value, which is untouched. */}
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-center mb-16 max-md:mb-16 max-md:items-start max-md:text-left md:mb-20">
           <motion.div
             data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}

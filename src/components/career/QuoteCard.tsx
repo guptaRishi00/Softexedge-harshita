@@ -132,7 +132,14 @@ export default function QuoteCard({ text }: { text: string }) {
         strokeWidth="1"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="relative z-10 h-6 w-6 shrink-0 text-[#464646] max-md:fill-black md:h-12 md:w-12"
+        // `fill-black` is now unconditional. It used to be `max-md:fill-black`,
+        // so above md the glyph fell back to the element's `fill="none"` and
+        // read as a hollow outline while mobile showed the filled mark. The
+        // fill is the only thing that differed — stroke colour and width are
+        // shared — so dropping the variant gives desktop the mobile STYLE while
+        // `md:h-12 md:w-12` keeps its own larger size. Below md the computed
+        // fill is unchanged: it was black via the variant, it is black now.
+        className="relative z-10 h-6 w-6 shrink-0 fill-black text-[#464646] md:h-12 md:w-12"
       >
         <title>Quote</title>
         <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" />

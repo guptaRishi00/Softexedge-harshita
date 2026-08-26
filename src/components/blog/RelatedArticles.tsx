@@ -196,7 +196,7 @@ export default function RelatedArticles({ related }: { related: BlogPost[] }) {
           <div className="flex w-full items-center justify-end max-md:hidden md:w-auto">
             <Link
               href="/blog"
-              className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5"
+              className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-3.5 hover:pr-3.5"
             >
               <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
                 Explore all articles

@@ -82,7 +82,14 @@ export default function ExperimentalTestimonials() {
   return (
     <section
       id="testimonials"
-      className="relative overflow-hidden bg-white pt-16 pb-8 text-zinc-900 max-md:pb-14 max-md:pt-17 md:pt-32"
+      // `pb-10` is the desktop gap to TechLogoCarousel, which declares no top
+      // padding above md — so this single value IS that gap on the 10 routes
+      // that render the two as bare siblings. It reads as a base utility but is
+      // desktop-only in effect: `max-md:pb-14` already governs below md, so
+      // raising it here cannot move the mobile layout. /about and /work
+      // override it from their page wrappers at higher specificity and are
+      // kept in step by hand — see the note in each.
+      className="relative overflow-hidden bg-white pt-16 pb-10 text-zinc-900 max-md:pb-14 max-md:pt-17 md:pt-32"
     >
       <div className="mx-auto flex w-full flex-col gap-10 px-4 max-md:px-3 md:px-10 lg:flex-row lg:items-stretch lg:gap-10">
         <motion.div
@@ -157,7 +164,7 @@ export default function ExperimentalTestimonials() {
                   label aligns with the copy above. */}
               <Link
                 href="/contact"
-                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-6 hover:pr-3.5 max-md:gap-4 max-md:border-0 max-md:pr-3"
+                className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-3.5 hover:pr-3.5 max-md:gap-4 max-md:border-0 max-md:pr-3"
               >
                 <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
                   Connect With Us
@@ -243,7 +250,16 @@ export default function ExperimentalTestimonials() {
             // short of exactly one copy and the loop jumps each cycle. Folding the
             // spacing into each card makes width = 2N*(card+gap), so -50% lands
             // precisely on the duplicate.
-            className="flex w-max flex-row gap-4 px-4 md:gap-3 max-md:gap-0 max-md:px-11"
+            // `px-3` (12px), not `px-4` (16px), because above md the track is
+            // paginated by whole strides of `step` = card + gap = 440 + 12.
+            // The previous card's right edge therefore lands at
+            // `paddingLeft - stride + cardWidth`, i.e. `paddingLeft - gap`:
+            // at 16px that left a 4px sliver of the previous card showing at
+            // the scroller's left edge after every arrow press. Matching the
+            // padding to the gap makes that exactly 0. Mobile is unaffected —
+            // `max-md:px-11` overrides this below md, where the carousel is a
+            // native snap scroller and never translates by a stride.
+            className="flex w-max flex-row gap-4 px-3 md:gap-3 max-md:gap-0 max-md:px-11"
           >
             {duplicatedTestimonials.map((item, i) => (
               <div

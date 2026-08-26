@@ -98,7 +98,7 @@ export default function CtaSection() {
             >
               <button
                 type="button"
-                className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-6 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out max-md:h-12 max-md:gap-2 max-md:rounded-lg max-md:px-3 max-md:before:scale-x-100 hover:before:scale-x-100"
+                className="group relative flex h-14 w-fit cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:border-white hover:pl-3.5 hover:pr-3.5 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out max-md:h-12 max-md:gap-2 max-md:rounded-lg max-md:px-3 max-md:before:scale-x-100 hover:before:scale-x-100"
               >
                 <span className="relative z-10 text-base font-bold tracking-tight text-white transition-colors duration-300 max-md:text-lg max-md:text-black group-hover:text-black">
                   Connect With Us
