@@ -20371,3 +20371,84 @@ RECOMMENDATION recorded: keep the ogl deferral; consider reverting the 10 `dynam
 in home/page.tsx, which measure zero and add indirection. The real weight is gsap (6.4M) +
 framer-motion (5.5M) in node_modules — reducing THAT needs fewer animated components, not
 re-bundling.
+
+## 2026-08-25 — Performance report, second pass: implemented Steps 1 and 3
+Report resubmitted unchanged, so I treated it as a decision to implement the two steps I had
+declined, and did them faithfully. Steps 2 and 5 were already in from the previous pass.
+
+**Step 1 — the "leaf" refactor.** New `home/ScrollAnimator.tsx` (client) owns the GSAP pins,
+the three scrub tweens and all nine wrapper divs their refs attach to. `app/home/page.tsx` no
+longer carries `"use client"` and is now a Server Component that hands the sections in as
+ELEMENT props (`hero`, `about`, `portfolio`, …). page.tsx went 259 -> ~50 lines.
+
+**Step 3 — the Footer split.** New `layout/FooterInteractiveClocks.tsx` (client) holds
+everything that made the clocks interactive: the shared 1s tick behind `useSyncExternalStore`,
+the four `Intl.DateTimeFormat` instances, `offices`, `OfficeClock`, `LocalTime`, the embla +
+AutoScroll marquee and its IntersectionObserver. Footer.tsx shed 182 lines and NO LONGER
+imports embla at all (`grep -c embla` = 0).
+
+**PROOF OF NO UI CHANGE — the important artifact.** Snapshotted the prerendered HTML before the
+refactor, then diffed it after, normalising away `<script>` blocks and `/_next/static` chunk
+hashes. Server-rendered markup is BYTE-IDENTICAL:
+  home.html   323,818 chars — identical
+  about.html  448,535 chars — identical
+  career.html 470,606 chars — identical
+Runtime on /home also matches the pre-refactor snapshot exactly: 4 `.pin-spacer` elements (GSAP
+pins intact), `bodyScrollHeight` 17137, all five anchors present, lenis active. /about footer:
+12 clock cells, 4 cities, embla mounted — the extracted clocks still run.
+
+**PAYLOAD: STILL 316 KB / 11 requests — unchanged.** Same as the original baseline and same as
+after Step 2. Steps 1, 2 and 3 have now each been implemented and each measured ZERO reduction,
+for the reason established last pass: all 8 home sections declare `"use client"` themselves, so
+moving the directive around relocates code between files without moving anything to the server.
+Footer is still a client component too — its body is framer `whileInView` + `useIsMobile()`
+throughout, which the clock extraction cannot address.
+
+Only measured win across both passes remains the ogl deferral (52KB shader chunk no longer
+fetched on /blog or /work until first hover).
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome — the two
+NEW files are clean, page.tsx clean, Footer.tsx identical to HEAD (1 pre-existing
+`useValidAnchor`, 1 pre-existing `noArrayIndexKey`).
+
+## 2026-08-27 — "navbar causing rerenders on mobile": measured it; cause was MY dynamic imports
+Investigated by instrumenting the render phase (temporary `lib/rcDebug.ts` + `rc()` calls in
+Herosection, Header, Navbar, NavBody, MobileNav, MobileNavHeader, MobileNavMenu), measuring in a
+PRODUCTION build, then removing all of it. Dev-server numbers were discarded as unusable —
+StrictMode double-invokes and Fast Refresh from my own edits made them swing 8 vs 2.
+
+FINDINGS (production, /home):
+- All seven components rendered **4x on mount, in lockstep**. Equal counts matter: if the
+  navbar's own `setVisible` were firing, Navbar would exceed Herosection. It did not.
+- Per-render state logging proved nothing in the navbar changed: `isMobile: true` on all four
+  Herosection renders, `visible: false` on all four Navbar renders. Same state, four renders.
+- **Not mobile-specific.** Desktop measured 4 as well.
+- **No idle loop.** Counts held at 4 from 7s to 29s with no interaction.
+
+CAUSE: the `next/dynamic` wrappers I added on /home for the perf audit's Step 2. Each lazy
+chunk resolving re-rendered the subtree. Proved by reverting them to static imports and
+re-measuring: **4 renders -> 1 render** for every one of the seven components.
+
+FIX: /home's 10 section imports in `app/home/page.tsx` and `LogoLoop` in `ScrollAnimator` are
+static again, with a comment in page.tsx recording the measurements so they are not
+reintroduced. This is the third independent reason to drop Step 2 — it measured zero payload
+benefit twice, and now measurably cost renders. Bonus: JS went **316 KB -> 307 KB**.
+The ogl/SpecularBorder deferral (a real measured win) is untouched.
+
+VERIFIED after cleanup: prerendered markup still byte-identical to the pre-refactor baseline
+(home 323,818 / about 448,535 / career 470,606 chars). Desktop: hydrated, 4 pin-spacers, lenis
+active. Mobile: hydrated, 0 pin-spacers and lenis inactive — both CORRECT, since pins and Lenis
+are `md:`-only. Instrumentation fully removed (`grep rcDebug|__rc` = clean).
+
+Caveat recorded: desktop `bodyScrollHeight` reads 17140 vs 17137 before. SSR markup is
+byte-identical and pin count is unchanged at 4, so this is 3px of GSAP pin-spacer measurement
+variance, not a content or layout change.
+
+TOOLING TRAP worth remembering: `pkill -f "next start"` does NOT kill the server on this
+machine. A stale process kept port 3100 and served the OLD build's chunks, which produced 404/500
+chunk errors and a page that never hydrated — I nearly misread that as an app bug. Kill by port:
+`netstat -ano | grep :3100` then `Stop-Process -Id <pid> -Force`.
+
+Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome — the two
+new files clean, and resizable-navbar / Header / Herosection each IDENTICAL to their HEAD
+baselines.
