@@ -24,7 +24,11 @@ const MotionImage = motion.create(Image);
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
-const CTA_ACTIVATE_DELAY = 450;
+// 0, not removed: the timeout still defers the class by one tick after the
+// hover block mounts, which is what lets the CTA's 300ms white-sweep CSS
+// transition actually play (mounting WITH the class would paint it
+// pre-pressed, no sweep). The user asked for the old 450ms arm delay gone.
+const CTA_ACTIVATE_DELAY = 0;
 
 // A TWEEN, not the spring this used to be, because this choreography is
 // layout-driven: a single hover animates BOTH row `height`s and ALL the card
@@ -37,15 +41,17 @@ const CTA_ACTIVATE_DELAY = 450;
 // with a still-settling spring. Matches the seven TracingBorder copies.
 const smoothTween = {
   type: "tween",
-  // 0.8s with a softer entry than premiumEase: at 0.45s the [0.16,1,...]
-  // curve lands ~80% of the travel in the first ~150ms, which reads as a
-  // lurch rather than a glide. [0.22,1,0.36,1] starts ~30% gentler and the
-  // longer run gives the layout animation a visible settle. Every property
-  // that expands the card (row heights, flex, image scale/filter, gradient)
-  // shares this object, so the whole choreography slows in lockstep. Desktop
-  // only in effect: every `animate` that uses it is isDesktop-gated.
-  duration: 0.8,
-  ease: [0.22, 1, 0.36, 1],
+  // Ease-IN-OUT, not the expo-out family: every out-curve tried here
+  // ([0.16,1,...], then [0.22,1,...]) front-loads ~70% of the travel into
+  // the first ~20% of the run, so however long the duration, the START is a
+  // jolt — which is exactly what kept reading as "sudden, like a shock".
+  // easeInOutCubic starts from zero velocity, glides, and lands softly.
+  // Every property that expands the card (row heights, flex, image
+  // scale/filter, gradient) shares this object, so the whole choreography
+  // moves as one motion. Desktop only in effect: every `animate` that uses
+  // it is isDesktop-gated.
+  duration: 0.85,
+  ease: [0.65, 0, 0.35, 1],
 } as const;
 
 const projects = [
@@ -359,7 +365,7 @@ function ProjectCard({
 
         <motion.div
           animate={isDesktop ? { opacity: isHovered ? 1 : 0.6 } : undefined}
-          transition={{ duration: 0.5 }}
+          transition={smoothTween}
           className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent"
         />
 
@@ -410,11 +416,19 @@ function ProjectCard({
                 exit={{
                   opacity: 0,
                   y: 15,
+                  // Quick clean exit; the slow entrance tween would make
+                  // unhover feel laggy and fight the next card's reveal.
+                  transition: { duration: 0.3, ease: premiumEase },
                 }}
+                // A tween in the same family as smoothTween, not the old
+                // spring(120/20): the spring popped the copy in faster than
+                // the 0.8s card expansion and read as a shock. The 0.12s
+                // delay lets the card lead and the copy follow it in — one
+                // continuous motion instead of two competing ones.
                 transition={{
-                  type: "spring",
-                  stiffness: 120,
-                  damping: 20,
+                  duration: 0.6,
+                  ease: [0.65, 0, 0.35, 1],
+                  delay: 0.12,
                 }}
                 // Contents are work/ProjectCard's hover block verbatim
                 // (title, description, tech tags, View Project CTA) so the two

@@ -6,8 +6,8 @@ import { type ReactNode, useRef, useState } from "react";
 import { useIsMobile } from "@/lib/useIsDesktop";
 import Card, { STEP } from "./SubServiceCard";
 
-const BASE_HEIGHT = 2840;
-const EXTRA_TAIL = 200;
+const BASE_HEIGHT = 2659;
+const EXTRA_TAIL = 300;
 const POST_STACK_SCROLL = 250;
 
 const CARD_MARGIN = "0px";
@@ -97,19 +97,19 @@ export default function SubServices({ children }: { children?: ReactNode }) {
 
   const content = (
     <section className="relative w-full bg-black text-white">
-      <div className="mx-auto w-full px-4 max-md:px-3 max-md:pt-20 max-md:pb-12 md:px-10 pt-30 pb-32">
+      <div className="mx-auto w-full px-4 max-md:px-3 max-md:pt-20 max-md:pb-12 md:px-10 pt-22 pb-24">
         <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-500">
           What We Offer
         </span>
 
         <div className="flex w-full flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-          <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11111] md:text-5xl lg:text-[4.5rem]">
+          <h2 className="text-4xl font-bold leading-[1.05] tracking-tight text-white max-md:text-[2.5rem] max-md:leading-[1.11111] lg:text-[3.5rem]">
             Our{" "}
             <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
               Services
             </span>
           </h2>
-          <p className="max-w-2xl text-xl font-light leading-[1.25em] text-white max-md:text-lg md:text-left">
+          <p className="max-w-2xl text-lg font-light leading-[1.25em] text-white md:text-left">
             Delivering scalable, high-performance solutions that elevate brands
             and drive revenue.
           </p>

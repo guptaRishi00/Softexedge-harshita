@@ -58,16 +58,32 @@ export default function Card({
   return (
     <div
       ref={registerRef}
-      className="sticky w-full max-md:static max-md:[transform:none]! max-md:[margin-bottom:0px]!"
+      className="sticky w-full max-md:static max-md:[transform:none]! max-md:[margin-bottom:0px]! max-md:[margin-top:0px]!"
       style={{
         top: "5vh",
         transform: `translateY(${i * STEP}px)`,
-        marginBottom: "0px",
+        // The EXIT choreography clamps each card by its MARGIN box against
+        // the shared container end — per-card differences there desync the
+        // unpins and the strips collapse (seen live twice). The first card is
+        // 40px shorter, so it carries a +40px margin: border box 460 + margin
+        // 40 = 500, identical to every other card's margin box. Flow strides,
+        // pin points and unpin offsets all stay uniform; only the visible
+        // card surface shrinks. Mobile neutralises the margin via the
+        // max-md:[margin-bottom:0px]! override.
+        marginBottom: i === 0 ? "40px" : "0px",
+        // Card 2 rides 100px closer to card 1 in FLOW (the visible black
+        // region between rule 1 and rule 2 shrinks 660 -> 560), while its
+        // pinned position and unpin scroll stay put: sticky insets clamp the
+        // border edge and the end-clamp uses the bottom margin edge, neither
+        // of which a negative TOP margin touches (verified empirically at
+        // 1440x900 - pinned tops and exit strips identical). Mobile
+        // neutralised by max-md:[margin-top:0px]! on this wrapper.
+        marginTop: i === 1 ? "-100px" : "0px",
         zIndex: i,
       }}
     >
       <div
-        className={`relative grid min-h-[50vh] max-md:min-h-0 md:h-[500px] w-full origin-top grid-cols-1 gap-12 max-md:gap-0 overflow-hidden ${color} px-4 max-md:px-3 max-md:pt-0 md:px-10 pb-24 md:pb-10 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16 before:absolute before:top-0 before:h-px before:bg-white/10 before:inset-x-10 max-md:before:inset-x-3 before:content-[''] ${
+        className={`relative grid min-h-[50vh] max-md:min-h-0 ${i === 0 ? "md:h-[28.75rem]" : "md:h-[500px]"} w-full origin-top grid-cols-1 gap-12 max-md:gap-0 overflow-hidden ${color} px-4 max-md:px-3 max-md:pt-0 md:px-10 pb-24 md:pb-10 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16 before:absolute before:top-0 before:h-px before:bg-white/10 before:inset-x-10 max-md:before:inset-x-3 before:content-[''] ${
           open ? "max-md:pb-12" : "max-md:pb-0"
         } ${
           // The rule is a `::before` at both breakpoints now, not a `border-t`.
@@ -159,7 +175,7 @@ export default function Card({
         </motion.div>
 
         <div
-          className={`relative w-full h-[350px] max-md:order-2 md:h-[25rem] overflow-hidden rounded-2xl max-md:transition-[height] max-md:duration-500 max-md:ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`relative w-full h-[350px] max-md:order-2 ${i === 0 ? "md:h-[22.5rem]" : "md:h-[25rem]"} overflow-hidden rounded-2xl max-md:transition-[height] max-md:duration-500 max-md:ease-[cubic-bezier(0.16,1,0.3,1)] ${
             open ? "max-md:mt-6 max-md:mb-8" : "max-md:h-0"
           }`}
         >

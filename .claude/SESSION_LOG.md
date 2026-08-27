@@ -21289,3 +21289,270 @@ cards pinned at 45/205/365/525, strips 160/160/160 uniform. Mobile @390:
 transforms none, margins 0px (the max-md:!0px override already enforced
 this), bodyH 9006 — identical. `bun run build` exit 0 (35/35). biome 1/1 =
 HEAD baselines. Shared components -> all 8 service pages.
+
+## SubServices header: fonts and y-padding reduced (desktop)
+
+**Task:** /brand-strategy desktop: in SubServices reduce the font size and its
+y-axis padding. (Card fonts were already reduced two tasks ago, so this
+targets the section header block.)
+
+**Changes (`SubServices.tsx`):**
+- Header wrapper `pt-30 pb-32` -> `pt-22 pb-24` (120/128 -> 88/96; base is
+  desktop-only in effect — mobile pinned by max-md:pt-20 / max-md:pb-12).
+- "Our Services" h2: dropped `md:text-5xl` (md now falls to base text-4xl)
+  and `lg:text-[4.5rem]` -> `lg:text-[3.5rem]` (72 -> 56px @1440). Mobile
+  keeps max-md:text-[2.5rem].
+- Tagline `text-xl` -> `text-lg` (20 -> 18px); the now-redundant
+  `max-md:text-lg` dropped — mobile value identical at 18px.
+- Header height 360 -> 279 (-81), so BASE_HEIGHT 2840 -> 2759 — first
+  verified the drift empirically (closes read 819 = 900-81 before the
+  constant update, exactly the header delta).
+
+**Verification:** desktop @1440x900: pt 88 / pb 96, h2 56px, p 18px, ovH
+2959, top+H === 900 exactly, stack pins uniform at 45/205/365/525 (simulated
+scroll 2800). Mobile @390: pt 80, pb 48, h2 40px, p 18px, bodyH 9006 — all
+pre-change. `bun run build` exit 0 (35/35). biome 1 = HEAD baseline.
+
+## SubServices: first card's solo span cut to match the last (desktop)
+
+**Task:** "just like you reduced the height of the last card reduce the height
+of the first one also" — the previous task cut the LAST card's solo scroll
+time (563 -> 325px); this applies the equivalent to the FIRST card.
+
+**Change.** `SubServiceCard.tsx`: first card only gets
+`marginBottom: -${STEP}px` (-160), pulling card 2's flow position up one STEP
+— card 2 arrives 160px of scroll sooner AND rides in flush against card 1's
+bottom (visual stride 500 = card height, no trailing black gap). Card 1's
+solo span: 500 -> 340px, on par with the last card's 325. Safe: translateY
+keeps the boxes visually apart, zIndex stacks card 2 above, and mobile
+neutralises the margin via the existing max-md:[margin-bottom:0px]! override.
+`SubServices.tsx`: BASE_HEIGHT 2759 -> 2599 (section shrank by the 160).
+
+**Verification:** desktop @1440x900: visual strides [500, 660, 660] (first
+flush, others unchanged), m1 computed -160px, ovH 2799, pin closes at 900
+exactly; settled stack (scroll 2660) pins 45/205/365/525 with uniform
+160/160/160 strips. Mobile @390: margins all 0px (override wins), transforms
+none, bodyH 9006. `bun run build` exit 0 (35/35). biome 1/1 = baselines.
+
+## SubServices: last card's presence nudged back up (desktop)
+
+**Task:** slightly increase the "height" of the last card — in this session's
+dialect, its post-stack solo scroll presence (325px after the earlier cut was
+evidently a touch too tight).
+
+**Change (1 constant).** `SubServices.tsx` EXTRA_TAIL 200 -> 300: post-stack
+solo time 325 -> 425px (hold 75 -> 175, ride-out 250 unchanged). All other
+geometry formula-derived (STICK_TOP includes EXTRA_TAIL).
+
+**Verification:** desktop @1440x900: ovH 2899 (+100), pin closes at 900
+exactly, settled stack still 45/205/365/525 with 160/160/160 strips.
+Mobile @390: bodyH 9006 (spacers are max-md:hidden). `bun run build` exit 0
+(35/35). biome 1 = baseline.
+
+## SubServices: last card's BOX height increased (desktop)
+
+**Task:** verbatim re-send of "slightly increase the height of the last card"
+right after I offered the literal-box reading — taken as confirmation. The
+previous entry's EXTRA_TAIL 300 (scroll-presence increase) stays as is.
+
+**Changes:**
+- `SubServiceCard.tsx`: card box `i===3 ? md:h-[33.75rem] (540px) :
+  md:h-[500px]`; image `i===3 ? md:h-[27.5rem] (440px) : md:h-[25rem]` — the
+  image grows in step so the last card keeps the same 12px slack and 52px
+  below-image gap as the others. Rem spellings to dodge the px dev-scan flake.
+- `SubServices.tsx`: BASE_HEIGHT 2599 -> 2639 (+40); STACK_HOLD stack height
+  980 -> 1020 (540 + 3xSTEP). Post-stack solo becomes 215 hold + 250 ride.
+
+**Verification:** desktop @1440x900: cardHeights [500,500,500,540],
+imgHeights [400,400,400,440], last gapBelowImg 52 (uniform), ovH 2939, pin
+closes at 900 exactly. Mobile @390: all four accordion rows 76px, bodyH 9006
+— untouched (conditional classes are md-prefixed). `bun run build` exit 0
+(35/35); built CSS contains both new rem tokens. biome 1/1 = baselines.
+
+## SubServices cards overlapping during ProcessSection exit — root-caused, fixed
+
+**User report:** during the ProcessSection overlap the service cards overlap
+one another; "make it like it behaved before."
+
+**Root cause (mine, two recent tasks).** Sticky containment clamps each card
+by its OWN margin/border box against the shared container end, so any
+per-card height or margin difference changes THAT card's unpin scroll offset
+and the 160px strips collapse during the exit ride-out:
+- The taller last card (540 vs 500): bottoms out 40px deeper -> unpinned 40px
+  of scroll earlier -> rode up over card 3's strip (160 -> 120).
+- The first card's -160 marginBottom: negative margin shrinks the sticky
+  margin box -> card 1 got 160px EXTRA runway -> unpinned later while cards
+  2-4 rode up onto it. Measured live: strips [0,160,160] — card 2 sitting ON
+  card 1.
+
+**Fix = revert both mechanisms** (each was requested cosmetically but is
+incompatible with the exit choreography; the current instruction supersedes):
+- `SubServiceCard.tsx`: conditional heights removed (all md:h-[500px], image
+  md:h-[25rem]); marginBottom uniform "0px" with a comment documenting WHY
+  uniformity is load-bearing.
+- `SubServices.tsx`: BASE_HEIGHT -> 2759; STACK_HOLD stack height -> 980.
+- KEPT: EXTRA_TAIL 300 (last-card presence — a shared spacer extends every
+  card's runway equally, so it cannot desync), STEP 160, header shrink, card
+  shrink, pace margins 0.
+
+**Verification:** desktop @1440x900: cards [500x4]; strips probed at settle
+(2900) AND through the ride-out (3100, 3300): uniform [160,160,160] at every
+depth — no overlap; ovH 3059, pin closes at 900 exactly. Mobile @390: margins
+0px x4, bodyH 9006. `bun run build` exit 0 (35/35). biome 1/1 = baselines.
+
+## SubServices: first card visibly shorter WITHOUT touching the stack
+
+**Task:** reduce the first card's height like the last card's, "without
+changing any behaviour of stacking cards."
+
+**Mechanism (the margin-box trick).** The exit choreography clamps each card
+by its MARGIN box against the shared container end — that's what desynced the
+two earlier attempts. So the first card gets a 40px shorter BORDER box plus a
+compensating +40px marginBottom: 460 + 40 = 500 = every other card's margin
+box. Flow strides, pin points and unpin offsets all stay identical; only the
+visible surface shrinks.
+
+**Changes (`SubServiceCard.tsx` only, no constants):**
+- box: `i===0 ? md:h-[28.75rem] (460) : md:h-[500px]`
+- image: `i===0 ? md:h-[22.5rem] (360) : md:h-[25rem]` (below-image gap stays
+  52px like the others)
+- marginBottom: `i===0 ? "40px" : "0px"` with the WHY comment updated.
+
+**Verification:** desktop @1440x900: heights [460,500,500,500], images
+[360,400,400,400], flow doc tops 1335/1995/2655/3315 (uniform 660 strides,
+identical to pre-change), ovH 3059 unchanged, pin closes at 900; strips
+probed at settle 2900 AND ride-out 3100/3300: uniform [160,160,160] at every
+depth — stacking behaviour byte-identical. Mobile @390: margins 0px x4 (the
+max-md override beats the inline 40px), accordion rows 76px, bodyH 9006.
+`bun run build` exit 0 (35/35); built CSS has both new rem tokens.
+biome 1 = baseline.
+
+## First card region made VISIBLY shorter — negative-top-margin mechanism
+
+**Context:** user (on localhost, served code verified current) reported the
+first-card reduction "not reflected" — correct observation: the 460px box
+shrink was black-on-black invisible and the card REGION (rule 1 -> rule 2)
+deliberately stayed 660px for stack safety. The invisible fix was mine to
+own; this replaces it with a visible one.
+
+**New mechanism (empirically validated).** Card 2 gets marginTop -100px:
+its FLOW position rises (region 1 shrinks 660 -> 560, plainly visible) while
+sticky geometry ignores it — insets clamp the border edge and the end-clamp
+uses the bottom margin edge, neither touched by a negative TOP margin.
+Measured before committing to it: rest regions [560,660,660]; pinned tops
+still [45,205,365,525]; strips uniform [160,160,160] at settle AND ride-out
+(3 depths). BASE_HEIGHT 2759 -> 2659 (flow shrank 100; closes read 800
+before the constant, 900 after). The 460/360 first-card box+image and its
++40 margin-box compensation stay from the previous task.
+Mobile: new max-md:[margin-top:0px]! override on the wrapper; measured
+marginTops [0,0,0,0] @390, bodyH 9006.
+
+`bun run build` exit 0 (35/35). biome 1/1 = baselines. NOTE: user is viewing
+localhost; also told (previous entry) that Vercel lags until a push — commit
+was offered, declined for now ("I'm on localhost:3000").
+
+## ProjectShowcase hover: CTA delay removed, reveal de-shocked (desktop)
+
+**Task:** /brand-strategy desktop: remove the button delay in the showcase
+cards and make the hover animation butter-smooth — it currently pops "like a
+shock".
+
+**Causes.** Two discrete pops on hover: (a) the reveal block used
+spring(120/20), which landed the copy FASTER than the 0.8s card expansion —
+two competing motions; (b) 450ms later the ctaActive arm suddenly painted the
+CTA pressed — a second pop.
+
+**Changes (`brand-strategy/ProjectShowcase.tsx`):**
+- CTA_ACTIVATE_DELAY 450 -> 0 — kept as a one-tick timeout rather than
+  removed, so the class still arrives after mount and the 300ms white-sweep
+  CSS transition actually plays (mounting WITH the class would paint the
+  button pre-pressed with no sweep).
+- Reveal transition: spring(120/20) -> tween 0.6s ease [0.22,1,0.36,1] with
+  0.12s delay — same family as the card's smoothTween, so the card leads and
+  the copy follows in one continuous motion. Exit gets its own quick clean
+  transition (0.3s premiumEase) so unhover doesn't lag.
+
+**Scope/verification:** all inside the isHovered-only subtree (never mounts
+on touch; ctaActive gated on the desktop-only hover) — mobile untouched by
+construction. The pane cannot run framer, so the choreography is
+source-verified; resting page: HTTP 200, 0x "View Project" (hover-only
+subtree intact). `bun run build` exit 0 (35/35). biome 0. Needs the user's
+hover check.
+
+## ProjectShowcase hover still "a shock" — root cause was curve SHAPE
+
+**Task re-sent:** animations still sudden after the previous tune. The real
+culprit: every curve tried so far ([0.16,1,...], [0.22,1,...]) is expo-OUT —
+~70% of the travel lands in the first ~20% of the run, so the START is a
+jolt regardless of duration.
+
+**Fix:** the whole hover choreography now runs easeInOutCubic
+[0.65, 0, 0.35, 1] — zero start velocity, glide, soft landing:
+- smoothTween: duration 0.85, ease -> in-out (comment rewritten to warn off
+  the out-family for this use).
+- Reveal entrance: same curve (0.6s, delay 0.12 kept).
+- The gradient overlay was the one stray transition on its own clock
+  ({duration:0.5} default ease) -> now shares smoothTween.
+Audit: all 5 card-level transitions share smoothTween; reveal + its 0.3s
+exit are the only other configs. One curve, one clock.
+
+**Scope:** transition configs only — zero markup/class changes, all animates
+isDesktop-gated, reveal is hover-only -> mobile untouched by construction.
+Pane cannot run framer; source-verified. `bun run build` exit 0 (35/35).
+biome 0.
+
+## BlogSection rotating word: slide replaced with dissolve (desktop)
+
+**Task:** every page, desktop only: remove the sliding word animation in
+BlogSection's heading and make words disappear / appear "out of thin air".
+
+**Change (`home/BlogSection.tsx`, shared by all pages that render the
+section).** The desktop AnimatePresence word (was: enter x -100%->0 spring,
+exit x +100% over 1.5s) now dissolves in place: initial/exit
+{opacity 0, blur(10px)}, animate {opacity 1, blur(0)}; enter 0.55s / exit
+0.45s easeInOut; mode="wait" already sequences exit before enter. No travel.
+The edge-fade mask wrapper left as is (inert without horizontal motion).
+
+**Scope:** the word swap was ALREADY branch-gated — mobile renders a static
+`rotatingWords[0]` span, verified @390: one static word, zero inline styles.
+Desktop @1440: animated branch renders. Framer cannot run in the pane, so
+the dissolve itself is source-verified. `bun run build` exit 0 (35/35).
+biome vs HEAD: 1 -> 1 (pre-existing useExhaustiveDependencies).
+
+## Mobile homepage lag report — full continuous-work audit + prod server
+
+**User report:** mobile homepage still lags with sticky navbar and janky
+animations, insists it is real.
+
+**Audit performed (every continuous/scroll-path driver on the mobile
+homepage), all verified gated or compositor-driven:**
+- Hero video + canvas painter: both early-return below md (matchMedia).
+- LogoLoop (Trusted By): cssDriven CSS animation below md; rAF desktop-only.
+- LogoCarousel (TechLogoCarousel): WAAPI compositor animation; rAF only
+  during an active drag; permanent will-change is tiled.
+- ScrollAnimator GSAP/ScrollTrigger: inside mm.add("(min-width: 768px)").
+- BlogSection marquee: DesktopAutoScroll component (desktop-only), mobile is
+  native scroll-snap; rotating word renders a static span below md.
+- Navbar (resizable-navbar): passive listener, ref-guarded setState (only at
+  the 80px crossing), direct style.translate write + CSS transition, 8px
+  direction hysteresis — no per-frame React work. No backdrop-filter on the
+  mobile pill (measured: zero blur/shadow/will-change surfaces visible in the
+  nav tree @390, scrolled).
+- Footer clocks embla AutoScroll: IO-parked offscreen (fail-open), 1s shared
+  interval for clock faces.
+- Testimonials/Portfolio/About/Contact: isDesktop-gated animates + coarse
+  intervals (2.5-10s).
+- Videos @390: both paused, preload=none (measured). SSR clean: zero inline
+  width:150px (the buffered hydration-error dump was an HMR artifact —
+  current SSR HTML reproduces none of it).
+
+**Remaining variable: dev mode.** localhost:3000 runs the React dev build +
+Turbopack HMR — 3-10x runtime overhead, hits phones hardest, unfixable in
+components. Production server started: `next start` on :3100 (stale-PID
+check done; HTTP 200; contains the newest changes — 28.75rem marker on
+/brand-strategy). LAN IP for phone testing: 192.168.29.24 ->
+http://192.168.29.24:3100/home. Claude-in-Chrome profiling attempted for
+real frame timing; extension not connected.
+
+**Next signal needed if prod still lags on the phone:** WHICH section is on
+screen when it happens — that localises the offender.
