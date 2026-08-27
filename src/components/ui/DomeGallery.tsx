@@ -11,6 +11,13 @@ type DomeGalleryProps = {
   grayscale?: boolean;
   autoRotate?: boolean;
   autoRotateSpeed?: number;
+  /** Externally pause the auto-rotation (e.g. while another section overlaps
+      this one). Same freeze/resume bookkeeping as the built-in
+      IntersectionObserver pause, so the strip resumes where it stopped. */
+  paused?: boolean;
+  /** Same opt-in LogoLoop has: flip the travel direction from md up while
+      mobile keeps the component's original leftward drift. */
+  desktopDirection?: "left" | "right";
   imageBorderRadius?: string;
   cardOverlay?: boolean;
 };
@@ -62,6 +69,8 @@ export default function DomeGallery({
   grayscale = true,
   autoRotate = false,
   autoRotateSpeed = 4,
+  paused = false,
+  desktopDirection,
   imageBorderRadius = "20px",
   cardOverlay = false,
 }: DomeGalleryProps) {
@@ -146,6 +155,13 @@ export default function DomeGallery({
     };
   }, [dims, pool, gap, compact]);
 
+  // The prop is read through a ref so a pause/unpause does NOT re-run the
+  // main effect below — re-running it would zero `start` and visibly snap the
+  // strip back to offset 0. The tiny effect after it just nudges the running
+  // machinery through syncRef.
+  const pausedRef = useRef(paused);
+  const syncRef = useRef<(() => void) | null>(null);
+
   useEffect(() => {
     if (!autoRotate || stripPitch === 0) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -154,31 +170,49 @@ export default function DomeGallery({
     if (!track || !root) return;
 
     const pxPerSecond = 25 * autoRotateSpeed;
+    // Rightward travel keeps the translate inside [-stripPitch, 0] (offset -
+    // stripPitch, increasing) rather than going positive: copies are laid out
+    // from x=0 rightward, so a positive translate would pull the strip's left
+    // edge into view with nothing behind it, while shifting within one period
+    // is seamless. `compact` (set in the same measure pass as dims) pins
+    // mobile to the original leftward math.
+    const rightward = desktopDirection === "right" && !compact;
     let raf = 0;
     let start = 0;
     let pausedAt = 0;
+    let inView = true;
     const tick = (now: number) => {
       if (!start) start = now;
       const offset = (((now - start) / 1000) * pxPerSecond) % stripPitch;
-      track.style.transform = `translate3d(${-offset}px, 0, 0)`;
+      track.style.transform = `translate3d(${
+        rightward ? offset - stripPitch : -offset
+      }px, 0, 0)`;
       raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
+    // Freeze/resume shared by both pause sources (viewport exit and the
+    // `paused` prop): offset is absolute-time-derived, so resuming pushes the
+    // origin forward by the paused span to continue exactly where it stopped.
+    const freeze = () => {
+      if (!raf) return;
+      cancelAnimationFrame(raf);
+      raf = 0;
+      pausedAt = performance.now();
+    };
+    const resume = () => {
+      if (raf || !inView || pausedRef.current) return;
+      if (start) start += performance.now() - pausedAt;
+      raf = requestAnimationFrame(tick);
+    };
+    syncRef.current = () => (pausedRef.current ? freeze() : resume());
+
+    if (!pausedRef.current) raf = requestAnimationFrame(tick);
 
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
-            if (raf) continue;
-            // offset is absolute-time-derived, so push the origin forward by the
-            // paused span to resume exactly where it stopped
-            if (start) start += performance.now() - pausedAt;
-            raf = requestAnimationFrame(tick);
-          } else if (raf) {
-            cancelAnimationFrame(raf);
-            raf = 0;
-            pausedAt = performance.now();
-          }
+          inView = entry.isIntersecting;
+          if (inView) resume();
+          else freeze();
         }
       },
       { rootMargin: "200px" },
@@ -188,8 +222,14 @@ export default function DomeGallery({
     return () => {
       observer.disconnect();
       cancelAnimationFrame(raf);
+      syncRef.current = null;
     };
-  }, [autoRotate, autoRotateSpeed, stripPitch]);
+  }, [autoRotate, autoRotateSpeed, stripPitch, compact, desktopDirection]);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+    syncRef.current?.();
+  }, [paused]);
 
   return (
     <div

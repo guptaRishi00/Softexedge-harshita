@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import DomeGallery from "../ui/DomeGallery";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -53,6 +54,38 @@ const GALLERY_MEDIA = [
 ];
 
 export default function WorkHeroSection() {
+  // Desktop: the showcase (#work-showcase) slides over this pinned hero, and
+  // the dome kept animating underneath the covering layer — DomeGallery's own
+  // IntersectionObserver can't catch that, because the pinned hero never
+  // leaves the viewport, it only gets covered. Observing the OVERLAPPING
+  // element instead: the moment any part of #work-showcase enters the
+  // viewport the overlap has begun, so the dome pauses; scrolling back above
+  // it resumes. Mounted only from md up — below md there is no pin (the
+  // sections stack in normal flow) and the dome's built-in viewport pause
+  // already governs, so mobile behaviour is byte-identical.
+  const [overlapped, setOverlapped] = useState(false);
+
+  useEffect(() => {
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
+    const target = document.getElementById("work-showcase");
+    if (!target) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) setOverlapped(entry.isIntersecting);
+      },
+      // The -1px bottom margin is load-bearing: at scroll 0 the showcase's
+      // top sits EXACTLY at the viewport bottom (hero is min-h-screen), and
+      // the IO spec counts merely TOUCHING boxes as intersecting (ratio 0,
+      // isIntersecting true) - without the margin the dome arrived paused on
+      // first paint and never moved. Shrinking the root's bottom edge by 1px
+      // means the showcase must actually intrude into the viewport before it
+      // counts as overlapping.
+      { threshold: 0, rootMargin: "0px 0px -1px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <main className="relative flex min-h-screen w-full flex-col overflow-hidden bg-black font-sans selection:bg-[#2E5BFF]/20">
       <div
@@ -62,6 +95,8 @@ export default function WorkHeroSection() {
         <DomeGallery
           images={GALLERY_MEDIA}
           autoRotate
+          paused={overlapped}
+          desktopDirection="right"
           autoRotateSpeed={1}
           grayscale={false}
           cardOverlay

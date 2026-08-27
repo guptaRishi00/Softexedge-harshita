@@ -37,8 +37,15 @@ const CTA_ACTIVATE_DELAY = 450;
 // with a still-settling spring. Matches the seven TracingBorder copies.
 const smoothTween = {
   type: "tween",
-  duration: 0.45,
-  ease: premiumEase,
+  // 0.8s with a softer entry than premiumEase: at 0.45s the [0.16,1,...]
+  // curve lands ~80% of the travel in the first ~150ms, which reads as a
+  // lurch rather than a glide. [0.22,1,0.36,1] starts ~30% gentler and the
+  // longer run gives the layout animation a visible settle. Every property
+  // that expands the card (row heights, flex, image scale/filter, gradient)
+  // shares this object, so the whole choreography slows in lockstep. Desktop
+  // only in effect: every `animate` that uses it is isDesktop-gated.
+  duration: 0.8,
+  ease: [0.22, 1, 0.36, 1],
 } as const;
 
 const projects = [
@@ -130,7 +137,7 @@ export default function ProjectShowcase() {
       <div className="pointer-events-none absolute inset-0 opacity-[0.04]" />
 
       <div className="relative mx-auto flex w-full flex-col gap-20 max-md:gap-10 md:gap-5">
-        <div className="mb-34 w-full max-md:mb-0">
+        <div className="mb-[7.5rem] w-full max-md:mb-0">
           <motion.span
             data-no-mobile-entry
             initial={{ opacity: 0, y: 20 }}

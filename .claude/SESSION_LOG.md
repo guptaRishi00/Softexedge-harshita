@@ -20988,3 +20988,172 @@ subtree, eyebrow existed nowhere else); mobile @390 bodyH 9006 — identical to
 all pre-change measurements (hover block never mounts below md); desktop @1440
 resting: 5 cards, no CTA, zero console errors. `bun run build` exit 0 (35/35).
 biome 0 diagnostics after sort fix (file was 0 at HEAD).
+
+## ProjectShowcase card expansion slowed and smoothed (desktop)
+
+**Task:** /brand-strategy desktop: the card expanding animation is not smooth —
+make it smooth and slow.
+
+**Cause.** `smoothTween` ran 0.45s with premiumEase [0.16,1,0.3,1] — that
+curve lands ~80% of the travel in the first ~150ms of a 0.45s run, so the
+row-height + flex expansion read as a lurch.
+
+**Change (timing only).** `brand-strategy/ProjectShowcase.tsx` smoothTween:
+duration 0.45 -> 0.8, ease [0.16,1,0.3,1] -> [0.22,1,0.36,1] (~30% gentler
+entry, long settle). All five consumers (two row heights, card flex/scale,
+image scale/filter, gradient opacity) share the object, so the choreography
+slows in lockstep — audited each: every `animate` using it is
+`isDesktop ? {...} : undefined`, so mobile is inert by construction; no
+markup or class changed.
+
+**Verification:** pane cannot run framer, so timing is source-verified;
+consumer audit above; `bun run build` exit 0 (19.1s, 35/35); biome 0.
+Shared component -> applies to all 8 service pages.
+
+## Brand-strategy: header->cards gap equalized across three sections (desktop)
+
+**Task:** /brand-strategy desktop: ProcessSection, OurTechStack and
+ProjectShowcase should have the SAME space between their header block and
+their cards.
+
+**Measured @1440 before:** Process 140 (md:mb-35), Toolkit 144 (header mb-20
+80px + rows wrapper py-16 top 64px), Showcase 156 (header mb-34 136px +
+container md:gap-5 20px). Target: 140 (Process's value, untouched).
+
+**Changes:**
+- `OurTechStack.tsx` header: `mb-20` -> `mb-19` (76+64=140). Mobile pinned by
+  its existing `max-md:mb-8`.
+- `ProjectShowcase.tsx` header: `mb-34` -> `mb-[7.5rem]` (120+20=140). Mobile
+  pinned by `max-md:mb-0`. NOTE: `mb-30` was tried first and the dev server's
+  Tailwind scan NEVER generated it (even after touching globals.css) while
+  `mb-19` from the same edit batch did — DOM had the class, CSS had no rule,
+  computed 0px. The arbitrary-value spelling re-triggered the scan and works;
+  the clean build scan contains both tokens, so this is a dev-cache flake, but
+  the arbitrary form is kept since it is proven in both pipelines.
+
+**Verification:** desktop @1440 after: process 140 / toolkit 140 /
+showcase 140 — equal. Mobile @390: header margins 64/32/0px and bodyH 9006,
+all pre-change values. `bun run build` exit 0 (35/35); built CSS chunk
+contains both `mb-19` and the 7.5rem rule (grep 1 each). biome 0 + 0.
+Shared components -> all 8 service pages equalize together.
+
+## Blog: CtaSection -> Footer desktop gap reduced
+
+**Task:** /blog desktop: slightly reduce the gap between CtaSection and Footer.
+
+**Measured @1440:** 140px (Cta wrapper `[&>section]:pb-8` 32 + footer wrapper
+`md:pt-27` 108). Change: `blog/page.tsx` footer wrapper `md:pt-27` ->
+`md:pt-19` (one 32px step). Mobile pt is the base `pt-7` — untouched.
+
+**Verification:** desktop @1440 after: gap 108, wrapper pt 76px. Mobile @390:
+wrapper pt 28px (pt-7) unchanged. `bun run build` exit 0 (35/35). biome 0.
+
+## Work hero: dome carousel pauses during the overlap (desktop)
+
+**Task:** /work desktop: when the showcase overlap happens, the hero carousel
+(the auto-rotating DomeGallery strip) should stop; mobile untouched.
+
+**Why it kept running.** DomeGallery already pauses via its own
+IntersectionObserver when scrolled out of view — but on /work the hero is
+PINNED: during the overlap it never leaves the viewport, it only gets covered
+by #work-showcase sliding over it, so the IO never fired and the rAF strip
+kept animating (and burning frames) underneath the covering layer.
+
+**Changes:**
+- `ui/DomeGallery.tsx`: new `paused?: boolean` prop (default false; the work
+  hero is the only consumer). The rAF effect now shares one freeze()/resume()
+  pair between both pause sources (viewport exit + the prop); the prop is read
+  through a ref and synced by a tiny second effect, so pausing does NOT re-run
+  the main effect (that would zero `start` and snap the strip to offset 0).
+  Resume still pushes the time origin forward by the paused span, so it
+  continues exactly where it stopped.
+- `work/WorkHeroSection.tsx`: observes the OVERLAPPING element instead of the
+  hero — an IntersectionObserver on #work-showcase, threshold 0: the moment it
+  enters the viewport the overlap has begun -> paused=true; scrolling back
+  above it resumes. Mounted only from md up (matchMedia guard); below md there
+  is no pin, sections stack in flow, and the dome's built-in viewport pause
+  already governs — mobile byte-identical.
+
+**Gotcha hit:** the python heredoc used for the edits wrote with the Windows
+locale codepage, turning the em-dashes in new comments into invalid UTF-8
+(0x97) — Turbopack failed with "failed to convert rope into string". Fixed at
+byte level (0x97 -> UTF-8 em dash); the fix is why edits in this repo go
+through perl or python with explicit binary/UTF-8 IO.
+
+**Verification:** pane cannot run rAF or fire IO, so pause behaviour is
+source-verified. Runtime on a fresh tab: /work desktop @1440 — #work-showcase
+(the observed id) exists, dome track renders 162 cards, zero console errors;
+mobile @390 — 300 track cards, page renders, zero console errors.
+`bun run build` exit 0 (13.0s, 35/35). biome: both files carry exactly their
+1 pre-existing HEAD diagnostic each (unused premiumEase / trailing-space
+format), verified against HEAD copies at the same paths.
+
+## Work hero: dome carousel now travels left-to-right (desktop)
+
+**Task:** /work desktop: hero carousel should move left to right; mobile as is.
+
+**Change.** `ui/DomeGallery.tsx` gained `desktopDirection?: "left"|"right"` —
+the same opt-in LogoLoop already has. In the rAF tick, rightward travel maps
+to `translate3d(offset - stripPitch)` (increasing, within [-stripPitch, 0])
+rather than a positive translate: copies are laid out from x=0 rightward, so
+going positive would drag the strip's left edge into view with nothing behind
+it, while shifting within one period wraps seamlessly. Gated on the existing
+`compact` state (matchMedia max-width:767px, set in the measure pass), so
+mobile keeps the original leftward math; effect deps extended with
+compact + desktopDirection. `work/WorkHeroSection.tsx` passes
+`desktopDirection="right"` (sole consumer).
+
+**Verification:** rAF does not run in the pane, so travel direction is
+source-verified (sign math above). Fresh-tab runtime: /work desktop AND
+mobile @390 load with ZERO console errors. (An HMR-only "deps array changed
+size" error appeared on the hot-reloaded tab — expected when a hook's deps
+grow in place — and does not occur on fresh loads.) `bun run build` exit 0
+(10.1s, 35/35). biome: same 1+1 pre-existing HEAD diagnostics as the previous
+task, nothing new.
+
+## Work hero direction task re-sent verbatim — re-verified, no code change
+
+The previous entry's change is intact (hero passes desktopDirection="right",
+line 92; tick uses `offset - stripPitch` when rightward). Established two new
+facts while re-verifying:
+- rAF genuinely NEVER fires in the pane (probe: 0 ticks in 600ms), so the dome
+  is frozen in any preview here — direction cannot be observed in this
+  environment by anyone.
+- Single-writer confirmed: the rAF tick is the only writer of the track's
+  transform (grep). Direction proven arithmetically: rightward translate over
+  t=0..8s at pitch 3246.6 is -3246.6 -> ... -> -3046.6, strictly increasing =
+  left-to-right; old formula was 0 -> -200 (leftward).
+
+Likely reason for the repeat: the change is LOCAL and uncommitted — the
+Vercel draft (softexedge-2026-draft-one.vercel.app) does not have it, and a
+browser tab from the mid-task broken-chunk window needs a hard refresh on
+localhost:3000.
+
+## Work hero dome frozen on desktop — my overlap-pause bug, fixed
+
+**User report:** /work desktop hero carousel not moving at all. This also
+retroactively explains the previous verbatim re-send of the direction task —
+it was never a caching issue; the dome was frozen.
+
+**Root cause (mine, from the overlap-pause task).** The overlap detector
+observed #work-showcase with `{threshold: 0}` and no rootMargin. At scroll 0
+the showcase's top sits EXACTLY at the viewport bottom (hero is min-h-screen;
+measured showcaseTop 900 === innerHeight 900 @1440x900), and the
+IntersectionObserver spec counts merely TOUCHING boxes as intersecting
+(ratio 0, isIntersecting true). So `overlapped` became true on first paint and
+the dome mounted paused, permanently.
+
+**Fix (1 line + comment).** `work/WorkHeroSection.tsx` IO options ->
+`{ threshold: 0, rootMargin: "0px 0px -1px 0px" }`: the root's bottom edge is
+pulled up 1px, so the showcase must actually intrude into the viewport before
+it counts as overlapping. At rest: not intersecting -> dome runs. Real
+overlap (>=2px scroll): pause. Scroll back above: resume. Mobile untouched —
+the matchMedia(min-width:768px) early-return is unchanged.
+
+**Verification limits, stated plainly:** probes prove the pane fires NEITHER
+rAF (0 ticks/600ms) NOR IntersectionObserver (no callback in 800ms for a
+fully visible element), so the fixed behaviour cannot be observed here. Proof
+chain: measured touching geometry (900 === 900) + spec semantics + the -1px
+margin arithmetic. `bun run build` exit 0 (35/35). biome: 1 pre-existing
+diagnostic (unused premiumEase), unchanged. Needs the user's browser check on
+a hard-refreshed localhost:3000/work.
