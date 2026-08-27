@@ -30,7 +30,7 @@ export default function BrandStrategyPage({}: Props) {
       <div className="overflow-x-clip w-full">
         <Header dropdown />
         <div className="relative z-0">
-          <div className="z-0 bg-white md:sticky md:top-[min(0px,calc(100vh-992px))]">
+          <div className="z-0 bg-white md:sticky md:top-[min(0px,calc(100vh-1024px))]">
             <ShrinkOnOverlap
               endSelector="#subservices-overlap"
               className="origin-[center_calc(100%-100vh)]"
@@ -52,14 +52,19 @@ export default function BrandStrategyPage({}: Props) {
               <SubServices />
             </ShrinkOnOverlap>
           </div>
-          <div id="process-overlap" className="relative z-20 bg-black max-md:-mt-px">
+          <div
+            id="process-overlap"
+            className="relative z-20 bg-black max-md:-mt-px"
+          >
             <ProcessSection />
           </div>
         </div>
         <OurTechStack />
         <ProjectShowcase />
         <ExperimentalTestimonials />
-        <TechLogoCarousel />
+        <div className="md:[&>section]:pb-24">
+          <TechLogoCarousel />
+        </div>
         <div className="p-3 max-md:pt-0 max-md:[&>section]:pt-0 max-md:[&>section]:pb-13">
           <CtaSection />
         </div>

@@ -34,6 +34,14 @@ export interface LogoLoopProps {
   logos: LogoItem[];
   speed?: number;
   direction?: "left" | "right" | "up" | "down";
+  /**
+   * Horizontal direction to use from md up, overriding `direction` there
+   * and leaving the sub-md behaviour exactly as `direction` set it.
+   * Exists because `direction` feeds BOTH drivers — the desktop rAF loop
+   * and the mobile CSS keyframes — so flipping it would flip the phone
+   * too. Omit for the old single-direction behaviour.
+   */
+  desktopDirection?: "left" | "right";
   width?: number | string;
   logoHeight?: number;
   gap?: number;
@@ -245,6 +253,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
     logos,
     speed = 120,
     direction = "left",
+    desktopDirection,
     width = "100%",
     logoHeight = 28,
     gap = 32,
@@ -273,6 +282,10 @@ export const LogoLoop = React.memo<LogoLoopProps>(
     // (scroll work, image decode, React commits) can't stutter it. Desktop
     // keeps the rAF loop — its hover speed-easing needs per-frame JS.
     const [cssDriven, setCssDriven] = useState<boolean>(false);
+    // Same (max-width: 767px) query as `cssDriven`, but WITHOUT the
+    // reduced-motion term: which driver runs and which way it points are
+    // separate questions.
+    const [isBelowMd, setIsBelowMd] = useState<boolean>(false);
 
     const effectiveHoverSpeed = useMemo(() => {
       if (hoverSpeed !== undefined) return hoverSpeed;
@@ -283,17 +296,26 @@ export const LogoLoop = React.memo<LogoLoopProps>(
 
     const isVertical = direction === "up" || direction === "down";
 
+    // `desktopDirection` only ever applies at md and up, so the phone keeps
+    // whatever `direction` gave it. `isBelowMd` is false on the server and on
+    // the first client render, which is safe here: it feeds an animation
+    // parameter, never markup, so there is nothing for hydration to mismatch.
+    const effectiveDirection =
+      !isBelowMd && desktopDirection && !isVertical
+        ? desktopDirection
+        : direction;
+
     const targetVelocity = useMemo(() => {
       const magnitude = Math.abs(speed);
       let directionMultiplier: number;
       if (isVertical) {
-        directionMultiplier = direction === "up" ? 1 : -1;
+        directionMultiplier = effectiveDirection === "up" ? 1 : -1;
       } else {
-        directionMultiplier = direction === "left" ? 1 : -1;
+        directionMultiplier = effectiveDirection === "left" ? 1 : -1;
       }
       const speedMultiplier = speed < 0 ? -1 : 1;
       return magnitude * directionMultiplier * speedMultiplier;
-    }, [speed, direction, isVertical]);
+    }, [speed, effectiveDirection, isVertical]);
 
     const updateDimensions = useCallback(() => {
       const containerWidth = containerRef.current?.clientWidth ?? 0;
@@ -345,7 +367,10 @@ export const LogoLoop = React.memo<LogoLoopProps>(
       if (isVertical) return;
       const mobile = window.matchMedia("(max-width: 767px)");
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-      const update = () => setCssDriven(mobile.matches && !reduced.matches);
+      const update = () => {
+        setCssDriven(mobile.matches && !reduced.matches);
+        setIsBelowMd(mobile.matches);
+      };
       update();
       mobile.addEventListener("change", update);
       reduced.addEventListener("change", update);

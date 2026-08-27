@@ -4,10 +4,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { MdArrowOutward } from "react-icons/md";
 import CarouselDots from "@/components/ui/CarouselDots";
 import { useInfiniteCarousel } from "@/lib/useInfiniteCarousel";
 import { useIsDesktop } from "@/lib/useIsDesktop";
+import { cn } from "@/lib/utils";
+
 // Deferred: SpecularBorder is the only consumer of `ogl` (WebGL, ~722K in
 // node_modules) and every call site below renders it as `{isHovered && ...}`,
 // so it can never appear on first paint. `ssr: false` keeps the WebGL bundle
@@ -20,6 +23,8 @@ const SpecularBorder = dynamic(() => import("../ui/SpecularBorder"), {
 const MotionImage = motion.create(Image);
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
+
+const CTA_ACTIVATE_DELAY = 450;
 
 // A TWEEN, not the spring this used to be, because this choreography is
 // layout-driven: a single hover animates BOTH row `height`s and ALL the card
@@ -40,6 +45,7 @@ const projects = [
   {
     id: 0,
     title: "Aura AI",
+    tech: ["SHOPIFY", "NEXT.JS", "TAILWIND"],
     href: "/work/aura-skincare",
     category: "SaaS",
     year: "2025",
@@ -51,6 +57,7 @@ const projects = [
   {
     id: 1,
     title: "Nova Tech",
+    tech: ["NEXT.JS", "FRAMER MOTION", "TAILWIND"],
     href: "/work/nova-workspace",
     category: "SaaS",
     year: "2025",
@@ -62,6 +69,7 @@ const projects = [
   {
     id: 2,
     title: "Lumina Vision",
+    tech: ["THREE.JS", "GSAP", "NEXT.JS", "CONTENTFUL"],
     href: "/work/lumina-festival",
     category: "Branding",
     year: "2024",
@@ -73,6 +81,7 @@ const projects = [
   {
     id: 3,
     title: "Apex Dynamics",
+    tech: ["REACT", "D3.JS", "PYTHON", "POSTGRESQL"],
     href: "/work/apex-analytics",
     category: "E-Commerce",
     year: "2024",
@@ -84,6 +93,7 @@ const projects = [
   {
     id: 4,
     title: "Nexus Core",
+    tech: ["REACT", "D3.JS", "NODE.JS", "TYPESCRIPT"],
     href: "/work",
     category: "Web App",
     year: "2024",
@@ -266,6 +276,7 @@ function ProjectCard({
     category: string;
     year: string;
     description: string;
+    tech: string[];
     image: string;
     baseFlex: number;
   };
@@ -278,6 +289,19 @@ function ProjectCard({
   // flex/scale/filter animates write inline styles that fight the static
   // mobile column layout.
   const isDesktop = useIsDesktop();
+
+  // Same CTA arm as work/ProjectCard: the "View Project" pill paints itself
+  // pressed 450ms into a hover. isHovered can only become true on desktop
+  // (the mouseenter guard above), so this never runs on touch.
+  const [ctaActive, setCtaActive] = useState(false);
+  useEffect(() => {
+    if (!isHovered) {
+      setCtaActive(false);
+      return;
+    }
+    const timer = setTimeout(() => setCtaActive(true), CTA_ACTIVATE_DELAY);
+    return () => clearTimeout(timer);
+  }, [isHovered]);
 
   return (
     <motion.div
@@ -385,19 +409,88 @@ function ProjectCard({
                   stiffness: 120,
                   damping: 20,
                 }}
-                className="max-w-md"
+                // Contents are work/ProjectCard's hover block verbatim
+                // (title, description, tech tags, View Project CTA) so the two
+                // showcases read the same on hover; only the wrapper's in-flow
+                // placement is this card's own. Desktop-only by construction:
+                // isHovered is never set on touch.
+                className="w-full"
               >
-                <p className="mb-4 inline-block bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-[0.3em] text-xs font-medium uppercase tracking-[0.3em] text-transparent">
-                  Featured Case
-                </p>
-
                 <h3 className="text-4xl font-semibold tracking-tight text-white md:text-5xl lg:text-6xl">
                   {project.title}
                 </h3>
 
-                <p className="mt-5 text-sm font-light leading-relaxed text-zinc-300 md:text-base">
+                <p className="mt-4 max-w-xl text-sm font-light leading-[1.5em] text-zinc-300 md:text-base">
                   {project.description}
                 </p>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {project.tech.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-md border border-white/15 bg-white/5 px-3 py-1 text-[0.6rem] font-bold uppercase tracking-widest text-white/80 backdrop-blur-md"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="mt-6">
+                  <span
+                    className={cn(
+                      "group/cta relative inline-flex h-12 w-fit cursor-pointer items-center justify-between gap-3 overflow-hidden rounded-xl pl-0 pr-2 transition-all duration-300 hover:pl-3 hover:pr-3 before:absolute before:inset-0 before:origin-left before:scale-x-0 before:bg-white before:transition-transform before:duration-300 before:ease-out hover:before:scale-x-100",
+                      ctaActive && "pl-3 pr-3 before:scale-x-100",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "relative z-10 text-sm font-bold tracking-tight text-white transition-colors duration-300 group-hover/cta:text-black",
+                        ctaActive && "text-black",
+                      )}
+                    >
+                      View Project
+                    </span>
+
+                    <span
+                      className={cn(
+                        "relative z-10 flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white text-black transition-colors duration-300 group-hover/cta:bg-black",
+                        ctaActive && "bg-black",
+                      )}
+                    >
+                      <svg width="0" height="0" className="absolute">
+                        <title>View project arrow gradient</title>
+                        <defs>
+                          <linearGradient
+                            id={`showcase-cta-grad-${project.id}`}
+                            x1="0%"
+                            y1="0%"
+                            x2="100%"
+                            y2="0%"
+                          >
+                            <stop stopColor="#2E5BFF" offset="0%" />
+                            <stop stopColor="#149CCB" offset="100%" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+
+                      <MdArrowOutward
+                        className={cn(
+                          "absolute z-10 h-4 w-4 transition-transform duration-300 group-hover/cta:-translate-y-8 group-hover/cta:translate-x-8",
+                          ctaActive && "-translate-y-8 translate-x-8",
+                        )}
+                      />
+                      <MdArrowOutward
+                        className={cn(
+                          "absolute z-10 h-4 w-4 -translate-x-8 translate-y-8 transition-transform duration-300 group-hover/cta:translate-x-0 group-hover/cta:translate-y-0",
+                          ctaActive && "translate-x-0 translate-y-0",
+                        )}
+                        style={{
+                          fill: `url(#showcase-cta-grad-${project.id})`,
+                        }}
+                      />
+                    </span>
+                  </span>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

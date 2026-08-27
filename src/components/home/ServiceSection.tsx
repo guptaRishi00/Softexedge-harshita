@@ -173,7 +173,7 @@ export default function ServiceSection() {
       id="services"
       ref={containerRef}
       onMouseLeave={isMobile ? undefined : handleMouseLeave}
-      className="relative w-full overflow-hidden bg-black pt-16 pb-10 max-md:pb-10 max-md:pt-20 md:pt-32 md:pb-24 text-white"
+      className="relative w-full overflow-hidden bg-black pt-16 pb-10 max-md:pb-10 max-md:pt-20 md:pt-32 md:pb-32 text-white"
     >
       <div className="w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-10 w-full pb-10 max-md:mb-5 max-md:pb-5">
@@ -272,11 +272,25 @@ export default function ServiceSection() {
                       leave a double space in `textContent`, which is what gets
                       copied and read aloud. So below md, where this is
                       `display: none`, the heading is character-for-character
-                      the title it has always been. */}
+                      the title it has always been.
+                      That asymmetry is why `mr` is an em and not a px step: the
+                      LEFT gap is a space GLYPH, so it scales with the font,
+                      while the heading is `clamp(2.5rem,5vw,5rem)` — a fixed
+                      `mr-8` (32px) matched it at no width at all.
+                      The value is `0.1933em`, NOT Satoshi's raw space of
+                      0.2333em, because this h3 also carries
+                      `tracking-[-0.04em]`. Letter-spacing is added after every
+                      character, so the space is delivered 0.04em narrower than
+                      the glyph measures — but a MARGIN is immune to tracking.
+                      Authoring the margin at the raw space width therefore left
+                      the right gap 0.04em (2.88px at the 72px size) wider than
+                      the left, which is visible. Pre-shrinking it by the same
+                      tracking puts both sides on the same effective width at
+                      every size in the clamp range. */}
                     <span
                       className={cn(
                         "relative inline-block h-[50px] align-middle overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
-                        "w-0 group-hover:mr-4 group-hover:w-[80px] group-hover:opacity-100 md:group-hover:mr-8 md:group-hover:w-[150px]",
+                        "w-0 group-hover:mr-[0.1933em] group-hover:w-[80px] group-hover:opacity-100 md:group-hover:w-[150px]",
 
                         "max-md:hidden",
                       )}
@@ -320,14 +334,17 @@ export default function ServiceSection() {
                   />
                 </div>
 
-                {index !== services.length - 1 && (
-                  <div
-                    className={cn(
-                      "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500",
-                      "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
-                    )}
-                  />
-                )}
+                {/* Every row draws its bottom rule on desktop, including the
+                    last — but mobile keeps its original look (no rule under
+                    the final row), so the last row's rule is max-md:hidden
+                    rather than the row being skipped outright. */}
+                <div
+                  className={cn(
+                    "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500",
+                    "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
+                    index === services.length - 1 && "max-md:hidden",
+                  )}
+                />
               </a>
             );
           })}

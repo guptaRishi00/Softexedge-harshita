@@ -183,6 +183,9 @@ export default function ScrollAnimator({
             logos={techLogos}
             speed={50}
             direction="left"
+            // Desktop runs left-to-right; below md `direction` still governs, so
+            // the phone keeps the original travel.
+            desktopDirection="right"
             logoHeight={28}
             gap={90}
             hoverSpeed={0}

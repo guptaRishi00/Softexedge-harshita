@@ -6,12 +6,12 @@ import { type ReactNode, useRef, useState } from "react";
 import { useIsMobile } from "@/lib/useIsDesktop";
 import Card, { STEP } from "./SubServiceCard";
 
-const BASE_HEIGHT = 3330;
+const BASE_HEIGHT = 3170;
 const EXTRA_TAIL = 400;
 const POST_STACK_SCROLL = 450;
 
 const CARD_MARGIN = "max(0px, 22vh - 190px)";
-const STACK_HOLD = `max(0px, calc(${1170 + EXTRA_TAIL - POST_STACK_SCROLL}px + ${CARD_MARGIN} - 95vh))`;
+const STACK_HOLD = `max(0px, calc(${1130 + EXTRA_TAIL - POST_STACK_SCROLL}px + ${CARD_MARGIN} - 95vh))`;
 
 export const SUBSERVICES_STICK_TOP = `calc(100vh - ${BASE_HEIGHT + EXTRA_TAIL}px - 4 * ${CARD_MARGIN})`;
 

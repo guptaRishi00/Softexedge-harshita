@@ -16,9 +16,17 @@ export default function EdgeToEdgeCarousel({ images }: { images: string[] }) {
           plain media variant. Deliberately NOT the `.marquee-track` class: that
           carries `:hover { animation-play-state: paused }`, which would be new
           desktop behaviour. Travel and timing are identical to the framer
-          version (0 -> -50%, 65s, linear, infinite); mobile plays it in reverse
-          to run rightward like TechLogoCarousel. */}
-      <div className="flex w-max [animation:scroll_65s_linear_infinite] motion-reduce:[animation:none] max-md:[animation-direction:reverse]">
+          version (0 -> -50%, 65s, linear, infinite); BOTH breakpoints now play
+          it in reverse to run rightward like TechLogoCarousel — desktop used to
+          be the odd one out, running leftward.
+          The `md:` variant is spelled out rather than dropping the prefix and
+          letting one unvariant `[animation-direction:reverse]` cover both: the
+          base `[animation:...]` here is the animation SHORTHAND, which resets
+          `animation-direction` to normal, and two unvariant arbitrary
+          properties would then be decided by Tailwind's own sort order. A
+          variant always sorts after the unvariant shorthand, so keeping both
+          prefixed is what guarantees the reverse actually wins. */}
+      <div className="flex w-max [animation:scroll_65s_linear_infinite] motion-reduce:[animation:none] max-md:[animation-direction:reverse] md:[animation-direction:reverse]">
         {[...set, ...set].map((src, idx) => (
           <div
             key={idx}

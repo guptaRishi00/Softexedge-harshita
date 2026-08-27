@@ -20485,3 +20485,506 @@ TOOLING TRAP (second one this session): `bun run build` first FAILED type-check 
 a torn write, because the user's `bun dev` writes `.next/dev/types/` while the build reads the
 same directory. Nothing to do with the source. `rm -rf .next/dev/types` then rebuilding gave a
 clean exit 0. Do not chase type errors that live in `.next/` while a dev server is running.
+
+## 2026-08-27 — Normalise the tail-section gaps to /home (desktop only)
+Measured every gap at 1440px as `prev.paddingBottom + gapBetweenBoxes + next.paddingTop`
+before touching anything.
+
+/home STANDARD:
+  ExperimentalTestimonials -> TechLogoCarousel  40
+  TechLogoCarousel -> ContactSection           256
+  ContactSection -> BlogSection                248
+  BlogSection -> Footer                        268
+
+FIXED — the one pair with a direct /home counterpart on every route, "gap before Footer":
+  /about 280 -> 268 · /career 280 -> 268 · /work 280 -> 268
+  /contact 216 -> 268 · /blog 208 -> 268
+One token each, on the Footer wrapper: `md:pt-24 -> md:pt-21` (about/career/work),
+`md:pt-8 -> md:pt-21` (contact), `md:pt-12 -> md:pt-27` (blog). All 5 now measure exactly 268.
+Already correct and untouched: /home, /brand-strategy and all 8 service pages — every one of
+them already used a 12px footer wrapper (`p-3` / `md:p-3`), which is what produces 268.
+`ExperimentalTestimonials -> TechLogoCarousel` re-verified at 40 on all 6 routes that have it.
+
+NOT CHANGED — reported instead, because /home has NO counterpart to copy: /home's chain ends
+ET -> TechLogoCarousel -> ContactSection -> BlogSection -> Footer, but every other page inserts
+a **CtaSection and a FaqSection** in that stretch, and /home has neither. Current values:
+                        TLC->Cta   Cta->Faq   Faq->Blog
+  /about                  128        108        136
+  /work                   136        116        120
+  /brand-strategy         140         92        120
+  /web-development        140         92        120
+  /contact (Faq before Cta): TLC->Faq 120, Faq->Cta 100
+Inventing a target for these would not be "matching /home" — it would be picking a new number.
+The service-page trio (140/92/120) is the majority pattern if the user wants them unified.
+
+Mobile untouched, and provably so: every edit is a `md:`-prefixed token inside
+`@media (min-width: 48rem)`, and the base `pt-7` still governs below md. Measured at 390px on
+/blog (largest change, 48->108) and /contact: footer wrapper padding-top **28px**, gap 104 —
+the `md:` value does not apply.
+
+Checks: `bunx tsc --noEmit` 0 errors in src/; `bun run build` exit 0, 35/35 static pages; biome
+IDENTICAL to HEAD across all 5 files. Diff: 5 files, 5 insertions / 5 deletions.
+
+## 2026-08-27 — ServiceSection hover image: equalise the left/right gaps (desktop only)
+`home/ServiceSection.tsx` — `group-hover:mr-4 ... md:group-hover:mr-8` -> a single
+`group-hover:mr-[0.2333em]`. One class token (plus a comment).
+
+The asymmetry was structural, not a wrong number. The two gaps come from DIFFERENT mechanisms:
+- LEFT gap = the literal space text node before the span (a GLYPH, so it scales with font-size)
+- RIGHT gap = the span's `margin-right` (was `mr-8`, a FIXED 32px)
+The heading is `md:text-[clamp(2.5rem,5vw,5rem)]`, i.e. 40-80px, so the space ranges ~9.3-18.7px
+while the margin stayed 32px — the two matched at NO viewport width. Measured: space = 16.79px
+at a 72px font (1440px viewport) vs 32px margin.
+
+Satoshi's space is a constant **0.2333em** — verified at two sizes: 16.79/72 = 0.2332 and
+10.5/45 = 0.2333. So an em margin equals the space glyph at every size in the clamp range, and
+the gaps stay equal as the heading scales. A px value could only ever be right at one width.
+
+VERIFIED STRUCTURALLY, and I could NOT observe the hovered pixel layout — stating that plainly:
+the pane cannot hover, and every attempt to fake the hovered geometry failed for a harness
+reason (inline styles AND an injected `!important` stylesheet both read back as unapplied —
+`width:150px !important` left `spanWidth: 0` — even though `span.matches('#services h3 > span')`
+was true). What IS verified:
+- the compiled rule, read from the CSSOM:
+  `.group-hover\:mr-\[0\.2333em\]:is(:where(.group):hover *)` -> `margin-right: 0.2333em`,
+  inside `@media (hover: hover)`
+- the left gap is the space glyph at 0.2333em (measured at two font sizes)
+Equal by construction. Worth a real hover in a browser to confirm it reads right.
+
+Mobile untouched, doubly: the span is `max-md:hidden` (`display: none` confirmed on all 8 rows
+at 390px) AND `group-hover:` lives in `@media (hover: hover)`, which is false on touch
+(confirmed `hoverMediaMatches: false`). Heading text still character-for-character correct on
+mobile (`headingTextExact: true` against the 8 literal titles) — the single-space fix from the
+earlier task is intact.
+
+Checks: `bunx tsc --noEmit` 0 errors in src/; `bun run build` exit 0, 35/35 static pages; biome
+IDENTICAL to HEAD (1 noStaticElementInteractions + 1 noArrayIndexKey both sides).
+
+## 2026-08-27 — ServiceSection hover image: right gap still wider — real cause was letter-spacing
+`home/ServiceSection.tsx` — `group-hover:mr-[0.2333em]` -> `group-hover:mr-[0.1933em]`.
+
+My previous entry claimed the gaps were equal because the margin matched Satoshi's raw space
+of 0.2333em. That was WRONG, and the user's hover screenshot showed it. The missed factor:
+this h3 carries **`tracking-[-0.04em]`** (measured `letter-spacing: -2.88px` at the 72px size).
+Letter-spacing is added after every typographic character unit, so the SPACE is delivered
+0.04em narrower than the glyph measures — but a MARGIN is immune to tracking. Authoring the
+margin at the raw glyph width therefore left the right side 0.04em (2.88px at 72px) wider.
+Modelled in em with LS = -0.04:
+  left  = LS(after "&") + space(0.2333) + LS(after space) = 0.1533em
+  right = margin + LS(after the atomic inline)            = margin - 0.04
+  equal  =>  margin = 0.1933em  ( = raw space + tracking )
+Still font-relative, so it holds across the `clamp(2.5rem,5vw,5rem)` range.
+
+Why the earlier "verification" passed when it should not have: I measured the left gap with
+Range client rects (`span.left - headRange.right` = 16.78px) and compared it to the raw glyph
+16.79px. Those rects do not expose the tracking the layout actually applies, so the number
+looked right. Range-rect measurement is NOT a valid way to check letter-spaced gaps.
+
+VERIFIED: element carries `mr-[0.1933em]` (old class gone), and the compiled rule is
+`.group-hover\:mr-\[0\.1933em\]... { margin-right: 0.1933em }` inside `@media (hover: hover)`.
+NOT verified, stated plainly: the hovered pixel layout. This pane refuses ALL style mutation —
+inline styles, `setProperty(...,'important')` and an injected `!important` stylesheet each left
+`spanWidth: 0` and `computedMR: 0px` while `matches()` returned true — so hover cannot be
+simulated here at all. The value is derived, not observed.
+RESIDUAL UNCERTAINTY worth knowing: 0.1933em assumes Chrome applies letter-spacing after the
+atomic inline (the span). If it does not, the right gap ends up 0.04em wide instead of equal —
+still strictly better than before. If it now reads slightly TIGHT on the right, 0.2133em is the
+midpoint between the two models.
+
+Mobile untouched: span `display: none` on all 8 rows at 390px, `(hover: hover)` false, and the
+heading text is still character-for-character the 8 literal titles.
+
+Checks: `bunx tsc --noEmit` 0 errors in src/; `bun run build` exit 0, 35/35 static pages; biome
+IDENTICAL to HEAD.
+
+## 2026-08-27 — /home: run the "Trusted By" LogoLoop and BlogSection marquees LEFT TO RIGHT (desktop only)
+Both scrolled right-to-left. Two different drivers, so two different fixes.
+
+**BlogSection** (`home/BlogSection.tsx`) — `x.set(wrap(-loopWidth, 0, x.get() - step))` ->
+`+ step`. Desktop-only BY CONSTRUCTION: the driver lives in `DesktopAutoScroll`, which is only
+mounted inside `isDesktop && ...`; below md the section is a native scroll-snap carousel that
+never touches this value. `wrap` still bounds x to [-loopWidth, 0), so x climbs to 0 and jumps
+to -loopWidth — invisible, because the two CardTrack copies are pixel-identical.
+
+**LogoLoop** — could NOT just flip `direction="left"` to `"right"`: that single prop feeds BOTH
+drivers (the desktop rAF loop AND the mobile CSS keyframes via
+`animationDirection: targetVelocity < 0 ? "reverse" : undefined`), so it would have flipped the
+phone too. Added an opt-in `desktopDirection?: "left" | "right"` that overrides `direction` only
+at md and up, plus an `isBelowMd` state set from the media effect that already existed for
+`cssDriven` (kept separate from it — `cssDriven` also carries a reduced-motion term, and "which
+driver runs" is a different question from "which way it points"). ScrollAnimator now passes
+`desktopDirection="right"`. Default undefined = old behaviour; LogoLoop has exactly one
+consumer, so blast radius is nil. `isBelowMd` is false on the server and first client render,
+which is safe: it feeds an animation parameter, never markup.
+
+VERIFIED — mobile unchanged, OBSERVATIONALLY (not just by argument): at 390px the LogoLoop track
+carries `animation-name: logoloop-marquee` with **`animation-direction: normal`**, which plays
+the keyframe's NEGATIVE translate, i.e. still leftward. That also proves the `isBelowMd` gate
+works, since a leaked override would have produced `reverse`. BlogSection at 390px: scroller
+`overflow-x: auto` with NO inline transform on the track — the native carousel, untouched.
+At 1440px LogoLoop has `animation-name: none` and no inline animation, confirming it takes the
+rAF path where the new direction applies.
+
+NOT VERIFIED, stated plainly: the actual on-screen motion. rAF is frozen in this pane — sampled
+the LogoLoop track's translateX twice, 9s apart, and it stayed at exactly 0 (CLAUDE.md documents
+this). Desktop direction therefore rests on the sign logic: `desktopDirection="right"` ->
+multiplier -1 -> targetVelocity -50 -> offset decreases -> `translate3d(-offset)` goes POSITIVE
+-> travels right. Worth an eyeball in a real browser.
+
+Checks: `bunx tsc --noEmit` 0 errors in src/; `bun run build` exit 0, 35/35 static pages; biome
+IDENTICAL to HEAD for LogoLoop + BlogSection, ScrollAnimator clean.
+
+## 2026-08-27 — Site-wide: every self-moving carousel now travels LEFT TO RIGHT (desktop only)
+Inventoried every auto-scrolling mechanism first (embla AutoScroll, useMarqueeHalf, framer
+keyframe x-loops, useAnimationFrame, the `.marquee-track` CSS class, `repeat: Infinity`), then
+classified each by direction / desktop-visibility / hero.
+
+CHANGED (9 files, 14 insertions / 9 deletions):
+- `blog/RelatedArticles.tsx` (on /blog/[slug]) — rAF marquee `x.get() - step` -> `+ step`.
+  Desktop-only by construction: mounted inside `isDesktop && <DesktopAutoScroll/>`.
+- `*/OurTechStack.tsx` x8 — FIRST row `animate={isDesktop ? {x:["0%","-50%"]}}` ->
+  `{x:["-50%","0%"]}`. The `isDesktop ?` guard already made this desktop-only; below md the row
+  is driven by the CSS class `animate-[scroll_50s_linear_infinite]` instead, which I did not
+  touch.
+
+ALREADY LEFT-TO-RIGHT, no change needed:
+- `ui/LogoCarousel.tsx` (TechLogoCarousel, many pages) — desktop `x:["-50%","0%"]`
+- `about/OurTeamSection.tsx` — embla `direction: "backward"`, which this codebase's own Footer
+  comment documents as "rightward, entering from the left"
+- OurTechStack's SECOND row — already `["-50%","0%"]`
+- home LogoLoop + home BlogSection — done in the previous task
+
+DELIBERATELY LEFT ALONE:
+- `career/InfiniteRow` (CareerHeroSection) and `about/EdgeToEdgeCarousel` (AboutHeroSection) —
+  HERO sections, excluded by the request.
+- `layout/FooterInteractiveClocks` and `brand-strategy/AgencyStats` marquee — both `md:hidden`,
+  i.e. MOBILE-ONLY. Flipping them would have changed the mobile view.
+- `ExperimentalTestimonials` — the `useMarqueeHalf` hit is only a code COMMENT; on desktop it
+  paginates by arrows and is not self-moving.
+
+DESIGN CHANGE WORTH KNOWING: OurTechStack was a deliberate COUNTER-ROTATING pair (row 1 left,
+row 2 right) on both breakpoints. Taking the request literally makes both desktop rows travel
+right, so desktop loses that opposition while mobile keeps it. Easy to revert — one token in
+row 1 of the 8 files.
+
+VERIFIED: post-change audit greps find ZERO desktop self-movers still going left
+(`x: ["0%","-50%"]` none, `x.get() - step` none). Mobile proven untouched observationally at
+390px on /web-development: row 1 `animation-name: scroll, direction: normal` (leftward) and
+row 2 `direction: reverse` (rightward) — the original pair intact. At 1440px both rows report
+`animation-name: none`, confirming framer owns them there, which is where the edit applies.
+NOT verified: the on-screen motion — framer/rAF are frozen in this pane (established last task
+by sampling translateX twice 9s apart and getting 0 both times). Direction rests on the sign of
+the keyframes. Worth an eyeball.
+
+Checks: `bunx tsc --noEmit` 0 errors in src/; `bun run build` exit 0, 35/35 static pages; biome
+IDENTICAL to HEAD across all 9 files (1 pre-existing useExhaustiveDependencies both sides).
+
+## About hero carousel — desktop now runs left-to-right
+
+**Task:** `/about`, desktop only, mobile untouched: make the hero carousel move left to right.
+
+**Cause.** `about/EdgeToEdgeCarousel.tsx` drives its track with the global
+`scroll` keyframe (`translateX(0)` -> `translateX(-50%)`, i.e. leftward) and
+carried a single `max-md:[animation-direction:reverse]`. So MOBILE was already
+running rightward and DESKTOP was the odd one out, running leftward. This is the
+hero I deliberately excluded in the previous site-wide carousel-direction sweep
+("leave the herosections"); this task reverses that exclusion on request.
+
+**Change** — one line, one file:
+`max-md:[animation-direction:reverse]`
+-> `max-md:[animation-direction:reverse] md:[animation-direction:reverse]`
+
+The `md:` variant is spelled out rather than collapsing both into one unvariant
+`[animation-direction:reverse]`: the base utility on that element is the
+`animation` SHORTHAND, which resets `animation-direction` to normal, and two
+unvariant arbitrary properties would then be resolved by Tailwind's own sort
+order. A variant always sorts after the unvariant shorthand, so keeping both
+prefixed is what guarantees the reverse wins. The `max-md:` token is
+byte-identical to HEAD.
+
+**Not touched:** `AboutHeroSection.tsx` also has a `.marquee-track` stats
+marquee, but it is `md:hidden` — mobile-only, so not part of the desktop view.
+
+**Verification** (dev server on :3000, /about):
+- The pane does NOT advance CSS animation time (sampling `transform` 1.5s apart
+  gave delta 0). Measured instead by seeking the animation via the Web Animations
+  API — `el.getAnimations()`, setting `currentTime` — which is deterministic.
+- Desktop @1440: `animation-direction: reverse`, 65s linear infinite, running.
+  translateX across the cycle: t=0s -3330 -> 16.25s -2497 -> 32.5s -1665 ->
+  48.75s -832 -> 65s 0. Monotonically INCREASING = travels left-to-right.
+- Mobile @375: `reverse`, 65s. translateX -2865 -> -1432 -> 0, still rightward —
+  unchanged (mobile already had the reverse). The smaller span is just the
+  narrower per-breakpoint card width, pre-existing.
+- `bun run build`: exit 0, "Compiled successfully in 17.6s", 35/35 static pages.
+- biome: HEAD copy and working copy checked at the SAME path both emit exactly
+  one diagnostic, `lint/suspicious/noArrayIndexKey` (the pre-existing `key={idx}`).
+  No new violations.
+
+## Seven service pages made identical to /brand-strategy (mobile + desktop)
+
+**Task:** make digital-marketing, ai-marketing-automation, web-development,
+app-development, custom-software, ui-ux-design, and video-production exactly
+the same as brand-strategy — everything, including content.
+
+**What the divergence actually was.** The copy was ALREADY identical (all eight
+heroes say "We Build Brands That People Trust"; same FAQ, same subservices) —
+the seven were older clones of brand-strategy that never received its later
+polish: page-level `<Header dropdown />` + ShrinkOnOverlap pin/scale
+choreography, `SUBSERVICES_STICK_TOP`, mobile `max-md:` spacing passes,
+`id="faq"`, `data-no-mobile-entry`, split-image-in-headline mobile layout,
+useIsDesktop-gated carousels, etc. Their per-page components rendered Header
+INSIDE StrategyHeroSection; brand-strategy hoists it to the page (it must — the
+hero is wrapped in ShrinkOnOverlap, which would scale the navbar too).
+
+**Change.** Each of the 7 `src/app/<slug>/page.tsx` now renders the
+brand-strategy composition verbatim — importing `@/components/brand-strategy/*`
+— with the JSX body byte-identical to `brand-strategy/page.tsx` (extracted with
+sed from the source, not retyped). Only per-route metadata (title/description)
+and the function name remain page-specific; a comment in each file says to keep
+the body in step with brand-strategy's. Ran `biome format --write` on all 8 so
+the shared body is formatter-clean (brand-strategy's page had 1 format
+diagnostic; now 0 format, 2 pre-existing lint from `type Props = {}`).
+
+**Header.tsx (1 real logic fix).** `ctaBorder` applied `border border-gray-300
+hover:border-none` via a route allowlist that included `/brand-strategy` but
+not the other seven — rendered-DOM diff caught the CTA differing. Replaced the
+hard-coded `pathname.startsWith("/brand-strategy")` with the component's
+existing `isSubServiceRoute` predicate (derived from navItems), which covers
+all eight service routes and auto-covers future ones.
+
+**Deliberately NOT deleted:** the 7 per-page component directories
+(`src/components/digital-marketing/` etc., ~7×8 files) are now unreferenced —
+verified zero external imports before the change. Left in place for minimal
+diff; flagged for a separate cleanup task.
+
+**Verification:**
+- JSX bodies: `sed`-extracted `return(...)` block from each of the 7 diffs
+  empty against brand-strategy's — byte-identical.
+- Rendered DOM (dev server :3000): fetched all 8 routes, stripped scripts +
+  per-route <title>/<meta description>, normalised slugs. 3306 DOM lines each;
+  after also excluding the Services-dropdown active-item marker
+  (aria-current="page" + active-dot span — correctly different per route),
+  all 7 are line-for-line IDENTICAL to brand-strategy (3101/3101 lines).
+- Runtime, fresh loads in the pane: desktop @1440 fingerprint matches
+  (#subservices-overlap sticky top -2862px, #process-overlap classes, #faq,
+  11 sections); mobile @390 all 8 report bodyH 9006, 11 sections,
+  sub-overlap static. (First mobile measurement of brand-strategy gave 10814 —
+  invalid: resize without reload leaves breakpoint-at-mount components in
+  desktop state; re-measured on a fresh load.)
+- Console: clean tab on /web-development → zero errors. (The seed tab replays
+  a STALE hydration error referencing home/page.tsx with inline styles that no
+  longer exist in ServiceSection source — pane buffer, not current code.)
+- `bun run build`: exit 0, "Compiled successfully in 17.4s", 35/35 pages.
+- biome: 7 pages 0 diagnostics (their prior baseline); Header.tsx exactly the
+  same 2 pre-existing noArrayIndexKey as HEAD (verified by checking the HEAD
+  copy at the same path); brand-strategy page 3 -> 2 (format fixed).
+
+## TLC -> CtaSection desktop gap reduced on /about, /work, /brand-strategy
+
+**Task:** slightly reduce the gap between TechLogoCarousel and CtaSection on
+about, work, brand-strategy — desktop only, mobile untouched.
+
+**Measured first (runtime, 1440px):** perceived gap (TLC padding-bottom +
+inter-section space + Cta padding-top) was /about 128, /work 136,
+/brand-strategy 140. Each reduced by one 32px step, all via `md:`-prefixed
+overrides so <768px cannot be affected:
+
+- `about/page.tsx`: TLC wrapper gains `md:[&>section]:pb-24` (overrides the
+  component's own `md:pb-32` via the wrapper's higher-specificity `>section`
+  rule) -> 128 -> 96.
+- `work/page.tsx`: TLC wrapper `md:[&>section]:pb-24` -> `md:[&>section]:pb-16`
+  -> 136 -> 104.
+- `brand-strategy/page.tsx`: bare `<TechLogoCarousel />` wrapped in
+  `<div className="md:[&>section]:pb-24">` -> 140 -> 108. PROPAGATED to the 7
+  service-page clones (digital-marketing, ai-marketing-automation,
+  web-development, app-development, custom-software, ui-ux-design,
+  video-production) — their bodies must stay byte-identical to brand-strategy
+  per the previous task; verified identical again after the edit.
+
+**Verification:** runtime desktop @1440 fresh loads: gaps now 96/104/108
+(tlcPB computed 96px on all three). Mobile @390 fresh loads: /about + /work
+tlcPB 44px (max-md:pb-11 intact), /brand-strategy 80px (own max-md:pb-20;
+new wrapper is md-only), brand-strategy mobile bodyH 9006 = pre-change value.
+`bun run build` exit 0 (10.8s, 35/35). biome: about & brand-strategy keep
+exactly their 2 pre-existing HEAD diagnostics (verified against HEAD copy at
+same path); work + the 7 clones stay at 0.
+
+## Brand-strategy hero height +32px (desktop only)
+
+**Task:** /brand-strategy, desktop only: slightly increase the hero's height.
+
+**Why not min-height.** At 1440x900 the hero's CONTENT (992px) already exceeds
+`min-h-screen` (900px) — the box is content-driven, so raising min-height does
+nothing at common desktop sizes. The height knob is the section's own padding,
+and the page-level pin offset `md:top-[min(0px,calc(100vh-992px))]` hard-codes
+that 992px content height so the pinned hero's bottom aligns with the viewport
+bottom during the SubServices overlap. Grow one without the other and the pin
+misaligns.
+
+**Change (two coupled edits):**
+- `brand-strategy/StrategyHeroSection.tsx`: section `pb-12` -> `pb-12 md:pb-20`
+  (+32px, >=768px only; base pb-12 keeps mobile byte-identical). Component is
+  shared by all 8 service pages, so their heroes grow in step — required, the
+  7 are mandated clones of brand-strategy.
+- All 8 service `page.tsx`: pin constant `calc(100vh-992px)` ->
+  `calc(100vh-1024px)`. Bodies re-verified byte-identical after the edit.
+
+**Verification (dev :3000, fresh loads):**
+- Desktop @1440x900: heroH 992 -> 1024, computed pb 80px, sticky top -124px,
+  and top + heroH === innerHeight (bottomAlignedWhenPinned: true) — the pin
+  geometry still closes exactly.
+- Mobile @390: pb 48px (pb-12), min-height 1012.8px (=120svh of 844, its own
+  max-md:min-h-[120svh]), position static, bodyH 9006 — every value identical
+  to pre-change measurements.
+- `bun run build` exit 0 (11.0s, 35/35). biome on the hero: HEAD 0 -> mine 0.
+
+## SubServices card: black gap below the image reduced (desktop only)
+
+**Task:** /brand-strategy desktop: reduce the black space marked under the
+sub-service card image (screenshot showed the strip below the calculator image
+on the first "Brand Strategy" card).
+
+**Anatomy.** Card is `md:h-[600px]` with pt-12 (48) + pb-24 (96); image column
+is fixed `md:h-[450px]`, so the black strip below the image was
+600-48-450 = 102px. Just cutting pb would not move anything (the height is
+fixed), and just cutting height would clip the image (grid row = h - pt - pb
+must stay >= 450).
+
+**Change — height and padding cut together so the image row is preserved:**
+- `SubServiceCard.tsx`: `md:h-[600px]` -> `md:h-[560px]`; `pb-24` ->
+  `pb-24 md:pb-14`. Grid row: 600-48-96 = 456 before, 560-48-56 = 456 after —
+  image size untouched, gap below image 102 -> 62px.
+- `SubServices.tsx`: the two constants that encode card height —
+  `BASE_HEIGHT` 3330 -> 3170 (4 cards x -40) and the `1170` in STACK_HOLD ->
+  `1130` (stack height = card 560 + 3xSTEP 570). SUBSERVICES_STICK_TOP is
+  derived from BASE_HEIGHT and exported to all 8 service pages, so the page
+  pin follows automatically; no page edits.
+
+**Verification (dev :3000, fresh loads):**
+- Desktop @1440x900 before: #subservices-overlap H 3762, sticky top -2862,
+  top+H = 900 exactly; card 600, gapBelowImage 102, pb 96px.
+- Desktop after: H 3602 (-160), sticky top -2702, top+H = 900 exactly — pin
+  still closes; card 560, gapBelowImage 62, image height still 450, pb 56px.
+- Mobile @390 after: bodyH 9006 (identical to all pre-change measurements),
+  accordion card 76px collapsed, computed pb 0px (max-md:pb-0 still wins over
+  the base pb-24), both geometry spacers display:none.
+- `bun run build` exit 0 (10.2s, 35/35). biome vs HEAD at same path:
+  SubServiceCard 1 -> 1, SubServices 1 -> 1 (pre-existing).
+
+## OurTechStack lower row flipped to right-to-left (desktop)
+
+**Task:** screenshot of Our Tech Stack — the lower carousel row should move
+right to left.
+
+**Context.** The earlier site-wide direction sweep set BOTH desktop rows of the
+shared brand-strategy/OurTechStack to `x: ["-50%","0%"]` (left-to-right); this
+restores the counter-rotation with row 2 leftward, per the screenshot request.
+
+**Change (1 line).** `brand-strategy/OurTechStack.tsx` row 2 (the motion.div
+with `max-md:animate-[scroll_50s_linear_infinite_reverse]`): framer target
+`["-50%","0%"]` -> `["0%","-50%"]`. Desktop-only by construction — the
+`animate` prop is gated on `isDesktop`, mobile stays on the CSS animation.
+Shared component, so all 8 service pages get it.
+
+**Verification:** mobile @390 fresh load: rows still `scroll` normal /
+`scroll` reverse @50s — byte-same as pre-change. Desktop @1440: both rows
+`animation-name: none` (framer-driven; the pane cannot run framer's rAF loop,
+so direction is verified at source — line 100 target is `["0%","-50%"]`).
+`bun run build` exit 0 (35/35). biome vs HEAD at same path: 0 -> 0.
+
+## ServiceSection: bottom rule added under the last service (desktop only)
+
+**Task:** /home desktop: ServiceSection should draw the divider line below the
+last service too; mobile unchanged.
+
+**Change.** `home/ServiceSection.tsx`: the row divider was conditionally
+skipped on the last row (`index !== services.length - 1 && ...`). Now every row
+renders it, with `max-md:hidden` added ONLY on the last row's rule so mobile
+keeps its original look (no rule under the final row). Hover gradient
+behaviour comes along for free since it's the same element.
+
+**Verification (dev :3000, fresh loads):** desktop @1440: all 8 rows have the
+rule; last row's computed {display:block, height:1px, bg white/10}. Mobile
+@390: dividers [block x7, none] — visibleCount 7, byte-same as before.
+`bun run build` exit 0 (35/35). biome vs HEAD: 2 -> 2 (pre-existing).
+
+## ServiceSection desktop padding-bottom increased
+
+**Task:** /home desktop: increase ServiceSection's padding-bottom; mobile as is.
+
+**Change (1 token).** `home/ServiceSection.tsx` section root: `md:pb-24` ->
+`md:pb-32` (96 -> 128px), matching the session's 32px step convention. Mobile
+is governed by `max-md:pb-10` — untouched.
+
+**Verification:** runtime fresh loads — desktop @1440 computed pb 128px
+(was 96); mobile @390 pb 40px, unchanged. `bun run build` exit 0 (35/35).
+biome 2 diagnostics, same as HEAD baseline.
+
+## Home: ServiceSection -> Testimonials desktop gap reduced
+
+**Task:** /home desktop: slightly reduce the gap between ServiceSection and
+ExperimentalTestimonials; mobile untouched.
+
+**Approach.** The white half of the gap is Testimonials' own `md:pt-32`
+(128px) — but that component is shared by 10+ routes, and the black half
+(ServiceSection `md:pb-32`) was explicitly increased by the previous task, so
+neither component was touched. Instead the homepage-only ScrollAnimator inner
+wrapper (whose first child IS the testimonials section) gained
+`md:[&>section:first-child]:pt-24` — the same route-scoped `[&>section]`
+override pattern /about and /work already use. 128 -> 96px (one 32px step).
+
+**Verification:** desktop @1440 /home: testimonials computed pt 96px, svc pb
+128px — total visual gap 256 -> 224. Scope check /brand-strategy @1440:
+testimonials pt still 128px (no leak). Mobile @390 /home: pt 68px
+(max-md:pt-17) and svc pb 40px — both unchanged. `bun run build` exit 0
+(35/35). biome ScrollAnimator: 0 diagnostics (was 0).
+
+## Home: ServiceSection -> Testimonials gap back up by one step
+
+**Task:** /home desktop: slightly INCREASE the ServiceSection ->
+ExperimentalTestimonials gap — the direct reverse of the previous entry.
+
+**Change.** Removed the `md:[&>section:first-child]:pt-24` override from
+ScrollAnimator's testimonials wrapper. One 32px step up from the reduced state
+lands exactly on the component's own `md:pt-32`, so the route override is
+simply gone rather than replaced (net diff vs HEAD on that wrapper: none).
+
+**Verification:** desktop @1440 /home: testimonials pt 128px, svc pb 128px —
+total 224 -> 256. Mobile @390: pt 68 / pb 40, unchanged throughout.
+`bun run build` exit 0 (35/35). biome ScrollAnimator 0.
+
+## ProjectShowcase hover UI matched to WorkProjectShowcase (desktop)
+
+**Task:** /brand-strategy desktop: make the inside-the-card HOVER UI of
+ProjectShowcase the same as WorkProjectShowcase's cards; everything else stays.
+
+**What differed on hover.** brand-strategy showed eyebrow ("Featured Case") +
+title + description; work/ProjectCard shows title + description + TECH TAG
+chips + the animated "View Project" CTA (white sweep + double-arrow swap,
+armed 450ms into hover via ctaActive).
+
+**Change** (`brand-strategy/ProjectShowcase.tsx` only):
+- Hovered AnimatePresence block contents replaced with work/ProjectCard's
+  hover block verbatim (title/desc classes now work's: `mt-4 max-w-xl ...
+  leading-[1.5em]`); eyebrow dropped; gradient id namespaced
+  `showcase-cta-grad-<id>` to avoid colliding with work's `cta-icon-grad-<id>`.
+  Wrapper keeps this card's in-flow placement ("rest keep as it is").
+- `ctaActive` state + 450ms timer copied (CTA_ACTIVATE_DELAY), gated on
+  isHovered which is desktop-only (mouseenter guard) — never runs on touch.
+- Local projects data gained `tech` arrays taken from @/data/projects for the
+  four matching slugs (aura-skincare, nova-workspace, lumina-festival,
+  apex-analytics); Nexus Core (generic /work link) borrows finova-dashboard's
+  analytics stack. Imports: useEffect, MdArrowOutward, cn (biome-sorted).
+- Note: the card's cover-Link (z-30) sits above the CTA, so the CTA's own
+  per-element `hover:` styles can't fire — but the ctaActive timer applies the
+  identical classes on card-hover, which is the state the task targets; a
+  click anywhere (CTA included) navigates via the cover link, same outcome as
+  work's wrapping Link.
+
+**Verification:** the pane cannot synthesise hover or run framer, so the hover
+subtree is source-verified (copied verbatim) + build-verified. Runtime:
+resting SSR HTML has 0x "View Project" and 0x "Featured Case" (hover-only
+subtree, eyebrow existed nowhere else); mobile @390 bodyH 9006 — identical to
+all pre-change measurements (hover block never mounts below md); desktop @1440
+resting: 5 cards, no CTA, zero console errors. `bun run build` exit 0 (35/35).
+biome 0 diagnostics after sort fix (file was 0 at HEAD).

@@ -77,7 +77,7 @@ export default function OurTechStack() {
         <div className="relative flex w-full flex-col gap-5 overflow-hidden rounded-3xl py-16">
           <motion.div
             className="flex w-max flex-nowrap max-md:animate-[scroll_50s_linear_infinite]"
-            animate={isDesktop ? { x: ["0%", "-50%"] } : undefined}
+            animate={isDesktop ? { x: ["-50%", "0%"] } : undefined}
             transition={{
               x: {
                 repeat: Infinity,

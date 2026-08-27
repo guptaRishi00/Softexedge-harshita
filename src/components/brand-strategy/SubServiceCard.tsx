@@ -67,7 +67,7 @@ export default function Card({
       }}
     >
       <div
-        className={`relative grid min-h-[50vh] max-md:min-h-0 md:h-[600px] w-full origin-top grid-cols-1 gap-12 max-md:gap-0 overflow-hidden ${color} px-4 max-md:px-3 max-md:pt-0 md:px-10 pb-24 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16 before:absolute before:top-0 before:h-px before:bg-white/10 before:inset-x-10 max-md:before:inset-x-3 before:content-[''] ${
+        className={`relative grid min-h-[50vh] max-md:min-h-0 md:h-[560px] w-full origin-top grid-cols-1 gap-12 max-md:gap-0 overflow-hidden ${color} px-4 max-md:px-3 max-md:pt-0 md:px-10 pb-24 md:pb-14 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16 before:absolute before:top-0 before:h-px before:bg-white/10 before:inset-x-10 max-md:before:inset-x-3 before:content-[''] ${
           open ? "max-md:pb-12" : "max-md:pb-0"
         } ${
           // The rule is a `::before` at both breakpoints now, not a `border-t`.

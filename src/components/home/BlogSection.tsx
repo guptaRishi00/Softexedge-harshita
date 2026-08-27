@@ -94,7 +94,14 @@ function DesktopAutoScroll({
   useAnimationFrame((_, delta) => {
     if (!trackInView || dragging.current || !loopWidth) return;
     const step = (loopWidth / SCROLL_SECONDS) * (delta / 1000);
-    x.set(wrap(-loopWidth, 0, x.get() - step));
+    // `+ step` runs the track LEFT TO RIGHT (it used to be `- step`, i.e.
+    // rightward content travelling left). `wrap` still bounds x to
+    // [-loopWidth, 0), so x climbs to 0 and jumps back to -loopWidth; because
+    // the two CardTrack copies are identical, that jump lands on the same
+    // pixels and the seam is invisible. Desktop-only by construction — this
+    // component is only mounted inside `isDesktop &&`, so the native
+    // scroll-snap carousel below md is untouched.
+    x.set(wrap(-loopWidth, 0, x.get() + step));
   });
   return null;
 }

@@ -36,7 +36,12 @@ function DesktopAutoScroll({
   useAnimationFrame((_, delta) => {
     if (dragging.current || !loopWidth) return;
     const step = (loopWidth / SCROLL_SECONDS) * (delta / 1000);
-    x.set(wrap(-loopWidth, 0, x.get() - step));
+    // `+ step` runs the track LEFT TO RIGHT, matching home/BlogSection. `wrap`
+    // still bounds x to [-loopWidth, 0), and the track copies are identical, so
+    // the wrap lands on the same pixels. Desktop-only by construction: this
+    // component is mounted inside `isDesktop && ...`; below md the section is
+    // the native scroll-snap carousel, untouched.
+    x.set(wrap(-loopWidth, 0, x.get() + step));
   });
   return null;
 }

@@ -167,12 +167,17 @@ export default function Header({
 
   if (pathname.startsWith("/leads")) return null;
 
+  // `isSubServiceRoute` rather than a hard-coded "/brand-strategy": every
+  // Services route now renders the identical brand-strategy composition, so
+  // the CTA border has to follow all eight, not just the one that happened to
+  // be listed. Reusing the predicate also means a new sub-service picks this
+  // up from navItems automatically instead of silently missing the border.
   const ctaBorder =
     pathname.startsWith("/about") ||
     pathname.startsWith("/career") ||
     pathname.startsWith("/contact") ||
     pathname.startsWith("/blog") ||
-    pathname.startsWith("/brand-strategy")
+    isSubServiceRoute
       ? " border border-gray-300 hover:border-none"
       : "";
 
