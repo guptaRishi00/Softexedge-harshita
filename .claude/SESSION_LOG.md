@@ -21170,3 +21170,31 @@ Mobile pt stays the base `pt-7`.
 **Verification:** desktop @1440 after: gap 108, wrapper pt 52px. Mobile @390:
 wrapper pt 28px unchanged, bodyH 6985. `bun run build` exit 0 (35/35).
 biome matches HEAD baseline.
+
+## SpecularBorder blinking on brand-strategy showcase hover — fixed
+
+**Task:** /brand-strategy desktop: the rotating border on card hover blinks.
+
+**Cause.** The border's ResizeObserver handler called `renderer.setSize()` —
+which RESETS the canvas backing store to transparent — but never repainted;
+the redraw waited for the next rAF tick. Work's cards only transform on hover
+(no layout resize), but brand-strategy's showcase animates the card's WIDTH
+(flex) and the row HEIGHTS for 0.8s while the border is mounted, so the RO
+fired every frame and the alternating clear/redraw presented as blinking.
+
+**Fix.** `ui/SpecularBorder.tsx`: `applyUniforms` (and the color objects)
+hoisted above `resize()`, which now repaints synchronously at the last
+frame's angle/brightness after every `setSize` — no cleared frame is ever
+presented. `lastAngle`/`lastBright` are recorded by applyUniforms for that
+out-of-band redraw. Bonus: the reduced-motion path (no rAF loop) previously
+went permanently blank after any resize; it now survives.
+
+**Scope.** Component only mounts under `isHovered`, which is never set on
+touch — mobile cannot render it at all. Other consumer (work/ProjectCard):
+strict improvement (RO only fires there on viewport resize).
+
+**Verification:** WebGL/rAF cannot run in the pane, so the fix is
+source-verified: the only `setSize` call site is now followed by an immediate
+`applyUniforms` render. `bun run build` exit 0 (35/35). biome vs HEAD at the
+same path: 0 -> 0. Page loads with no app console errors (only dev-HMR
+websocket noise). Needs the user's hover check.

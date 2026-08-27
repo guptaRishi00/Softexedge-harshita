@@ -182,6 +182,36 @@ export default function SpecularBorder({
     fx.appendChild(gl.canvas);
 
     const sizeRef = { w: 1, h: 1 };
+
+    const lineC = new Color();
+    const lineC2 = new Color();
+    const baseC = new Color();
+
+    // Last frame's animation state, so an out-of-band repaint (resize) can
+    // redraw without waiting for the rAF loop.
+    let lastAngle = REST_ANGLE;
+    let lastBright = 0;
+
+    const applyUniforms = (angleValue: number, brightValue: number) => {
+      lastAngle = angleValue;
+      lastBright = brightValue;
+      const p = propsRef.current;
+      lineC.set(p.lineColor);
+      lineC2.set(p.lineColor2);
+      baseC.set(p.baseColor);
+      program.uniforms.uAngle.value = angleValue;
+      program.uniforms.uRadius.value =
+        Math.min(p.radius, Math.min(sizeRef.w, sizeRef.h) / 2) * dpr;
+      program.uniforms.uLineColor.value = [lineC.r, lineC.g, lineC.b];
+      program.uniforms.uLineColor2.value = [lineC2.r, lineC2.g, lineC2.b];
+      program.uniforms.uBaseColor.value = [baseC.r, baseC.g, baseC.b];
+      program.uniforms.uIntensity.value = p.intensity * brightValue;
+      program.uniforms.uShineSize.value = (p.shineSize * Math.PI) / 180;
+      program.uniforms.uShineFade.value = (p.shineFade * Math.PI) / 180;
+      program.uniforms.uThickness.value = p.thickness * dpr;
+      renderer.render({ scene: mesh });
+    };
+
     const resize = () => {
       const w = host.offsetWidth;
       const h = host.offsetHeight;
@@ -194,6 +224,16 @@ export default function SpecularBorder({
         (PAD + h / 2) * dpr,
       ];
       program.uniforms.uHalfSize.value = [(w / 2) * dpr, (h / 2) * dpr];
+      // Repaint SYNCHRONOUSLY: setSize resets the canvas backing store to
+      // transparent, and waiting for the next rAF tick to redraw shows a
+      // cleared frame. Harmless for cards that only transform on hover, but
+      // brand-strategy's showcase animates the card's WIDTH (flex) for 0.8s
+      // while this border is up — the ResizeObserver fires every frame of
+      // that, and the alternating clear/redraw read as blinking. Redrawing
+      // here, at the last frame's angle/brightness, means no cleared frame is
+      // ever presented. Also makes the reduced-motion path survive resizes,
+      // which previously blanked it for good (no rAF loop there).
+      applyUniforms(lastAngle, lastBright);
     };
     const ro = new ResizeObserver(resize);
     ro.observe(host);
@@ -218,28 +258,6 @@ export default function SpecularBorder({
       }
       const t = Math.max(0, 1 - dist / Math.max(propsRef.current.proximity, 1));
       proximityT = t * t * (3 - 2 * t);
-    };
-
-    const lineC = new Color();
-    const lineC2 = new Color();
-    const baseC = new Color();
-
-    const applyUniforms = (angleValue: number, brightValue: number) => {
-      const p = propsRef.current;
-      lineC.set(p.lineColor);
-      lineC2.set(p.lineColor2);
-      baseC.set(p.baseColor);
-      program.uniforms.uAngle.value = angleValue;
-      program.uniforms.uRadius.value =
-        Math.min(p.radius, Math.min(sizeRef.w, sizeRef.h) / 2) * dpr;
-      program.uniforms.uLineColor.value = [lineC.r, lineC.g, lineC.b];
-      program.uniforms.uLineColor2.value = [lineC2.r, lineC2.g, lineC2.b];
-      program.uniforms.uBaseColor.value = [baseC.r, baseC.g, baseC.b];
-      program.uniforms.uIntensity.value = p.intensity * brightValue;
-      program.uniforms.uShineSize.value = (p.shineSize * Math.PI) / 180;
-      program.uniforms.uShineFade.value = (p.shineFade * Math.PI) / 180;
-      program.uniforms.uThickness.value = p.thickness * dpr;
-      renderer.render({ scene: mesh });
     };
 
     if (reduced) {
