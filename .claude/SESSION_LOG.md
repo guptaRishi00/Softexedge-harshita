@@ -21157,3 +21157,16 @@ chain: measured touching geometry (900 === 900) + spec semantics + the -1px
 margin arithmetic. `bun run build` exit 0 (35/35). biome: 1 pre-existing
 diagnostic (unused premiumEase), unchanged. Needs the user's browser check on
 a hard-refreshed localhost:3000/work.
+
+## Contact: CtaSection -> Footer desktop gap reduced
+
+**Task:** /contact desktop: slightly reduce the CtaSection -> Footer gap.
+
+**Measured @1440:** 140px (Cta `md:[&>section]:pb-14` 56 + footer wrapper
+`md:pt-21` 84). Change: `contact/page.tsx` footer wrapper `md:pt-21` ->
+`md:pt-13` — one 32px step, landing at 108, same value /blog now has.
+Mobile pt stays the base `pt-7`.
+
+**Verification:** desktop @1440 after: gap 108, wrapper pt 52px. Mobile @390:
+wrapper pt 28px unchanged, bodyH 6985. `bun run build` exit 0 (35/35).
+biome matches HEAD baseline.

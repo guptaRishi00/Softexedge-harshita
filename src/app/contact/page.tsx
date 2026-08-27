@@ -80,7 +80,7 @@ export default function ContactPage({}: any) {
       <div className="relative z-10 px-3 [&>section]:py-12 max-md:[&>section]:pt-9 max-md:[&>section]:pb-9 md:[&>section]:pb-14 md:[&>section]:pt-0">
         <CtaSection />
       </div>
-      <div className="relative z-10 px-3 pt-7 pb-3 max-md:pb-4 md:pt-21">
+      <div className="relative z-10 px-3 pt-7 pb-3 max-md:pb-4 md:pt-13">
         <Footer />
       </div>
     </div>
