@@ -20452,3 +20452,36 @@ chunk errors and a page that never hydrated — I nearly misread that as an app 
 Checks: `bunx tsc --noEmit` exit 0; `bun run build` exit 0, 35/35 static pages; biome — the two
 new files clean, and resizable-navbar / Header / Herosection each IDENTICAL to their HEAD
 baselines.
+
+## 2026-08-27 — Fixed the hydration mismatch: `<title>` with array children
+Root cause of the "Hydration failed" error I flagged twice earlier but could not pin down.
+Next's own message named it: `<title>Toggle {item.name}</title>` compiles to `children` =
+["Toggle ", item.name] — an ARRAY of length 2. React can only put a single string in a
+`<title>`, so SSR and client disagreed and the whole tree was regenerated on the client.
+
+Fix: one token per file — `<title>{`Toggle ${item.name}`}</title>`, a single template-string
+child. Both copies of the nav had it:
+- `layout/Header.tsx:241` (serves /home)
+- `page/Header.tsx:249` (serves every other route)
+That pairing explains the earlier observation that the SAME error fired on /home AND on
+/brand-strategy + /web-development — one instance in each Header.
+
+Audited every `<title>` in src/ (28 of them): all others are plain string literals, so these
+two were the only array-children cases.
+
+VERIFIED on the dev server after the fix:
+- The SVG title now renders as the single string "Toggle Services" on /home,
+  /brand-strategy and /web-development.
+- `read_console_messages(onlyErrors)` returns **"No console logs"** on all three — previously
+  /home threw "Hydration failed" repeatedly and /brand-strategy + /web-development threw it
+  15+ times each.
+- /home hydrates (`hydrated: true`, React fiber keys present on a DOM node).
+
+Checks: `bunx tsc --noEmit` — 0 errors in src/; `bun run build` exit 0, 35/35 static pages;
+biome IDENTICAL to HEAD for both files (4 pre-existing `noArrayIndexKey` before and after).
+
+TOOLING TRAP (second one this session): `bun run build` first FAILED type-check with
+`.next/dev/types/routes.d.ts:73 Unknown keyword or identifier` on the text `outRoute]>` —
+a torn write, because the user's `bun dev` writes `.next/dev/types/` while the build reads the
+same directory. Nothing to do with the source. `rm -rf .next/dev/types` then rebuilding gave a
+clean exit 0. Do not chase type errors that live in `.next/` while a dev server is running.

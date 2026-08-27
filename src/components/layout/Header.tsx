@@ -238,7 +238,7 @@ export default function Header() {
                           strokeLinejoin="round"
                           className={`shrink-0 text-white/50 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
                         >
-                          <title>Toggle {item.name}</title>
+                          <title>{`Toggle ${item.name}`}</title>
                           <path d="m6 9 6 6 6-6" />
                         </svg>
                       </button>
