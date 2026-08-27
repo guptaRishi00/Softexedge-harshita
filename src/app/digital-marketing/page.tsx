@@ -33,7 +33,7 @@ export default function DigitalMarketingPage() {
       <div className="overflow-x-clip w-full">
         <Header dropdown />
         <div className="relative z-0">
-          <div className="z-0 bg-white md:sticky md:top-[min(0px,calc(100vh-1024px))]">
+          <div className="z-0 bg-white md:sticky md:top-[min(0px,calc(100vh-1056px))]">
             <ShrinkOnOverlap
               endSelector="#subservices-overlap"
               className="origin-[center_calc(100%-100vh)]"

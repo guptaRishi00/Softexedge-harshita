@@ -14,7 +14,7 @@ const isDesktopViewport = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(min-width: 48rem)").matches;
 
-export const STEP = 190;
+export const STEP = 160;
 
 const contentContainer = {
   hidden: {},
@@ -62,12 +62,12 @@ export default function Card({
       style={{
         top: "5vh",
         transform: `translateY(${i * STEP}px)`,
-        marginBottom: `max(0px, calc(22vh - ${STEP}px))`,
+        marginBottom: "0px",
         zIndex: i,
       }}
     >
       <div
-        className={`relative grid min-h-[50vh] max-md:min-h-0 md:h-[560px] w-full origin-top grid-cols-1 gap-12 max-md:gap-0 overflow-hidden ${color} px-4 max-md:px-3 max-md:pt-0 md:px-10 pb-24 md:pb-14 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16 before:absolute before:top-0 before:h-px before:bg-white/10 before:inset-x-10 max-md:before:inset-x-3 before:content-[''] ${
+        className={`relative grid min-h-[50vh] max-md:min-h-0 md:h-[500px] w-full origin-top grid-cols-1 gap-12 max-md:gap-0 overflow-hidden ${color} px-4 max-md:px-3 max-md:pt-0 md:px-10 pb-24 md:pb-10 pt-12 md:min-h-0 md:grid-cols-2 md:gap-16 before:absolute before:top-0 before:h-px before:bg-white/10 before:inset-x-10 max-md:before:inset-x-3 before:content-[''] ${
           open ? "max-md:pb-12" : "max-md:pb-0"
         } ${
           // The rule is a `::before` at both breakpoints now, not a `border-t`.
@@ -100,7 +100,7 @@ export default function Card({
             onClick={handleTitleClick}
             className="group inline-block max-md:order-1 max-md:flex max-md:w-full max-md:items-center max-md:justify-between max-md:gap-4 max-md:py-5"
           >
-            <h3 className="text-5xl font-medium tracking-tight text-white max-md:min-w-0 max-md:leading-none max-md:tracking-[-0.04em] max-sm:text-2xl md:text-6xl lg:text-7xl">
+            <h3 className="text-5xl font-medium tracking-tight text-white max-md:min-w-0 max-md:leading-none max-md:tracking-[-0.04em] max-sm:text-2xl md:text-5xl lg:text-6xl">
               {title1}
               {title1 === "E" ? "-" : " "}
               {title2}
@@ -150,7 +150,7 @@ export default function Card({
               <motion.p
                 data-no-mobile-entry
                 variants={contentItem}
-                className="max-w-xl text-lg font-light leading-[1.4em] text-zinc-300 md:text-xl"
+                className="max-w-xl text-lg font-light leading-[1.4em] text-zinc-300"
               >
                 {description}
               </motion.p>
@@ -159,7 +159,7 @@ export default function Card({
         </motion.div>
 
         <div
-          className={`relative w-full h-[350px] max-md:order-2 md:h-[450px] overflow-hidden rounded-2xl max-md:transition-[height] max-md:duration-500 max-md:ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`relative w-full h-[350px] max-md:order-2 md:h-[25rem] overflow-hidden rounded-2xl max-md:transition-[height] max-md:duration-500 max-md:ease-[cubic-bezier(0.16,1,0.3,1)] ${
             open ? "max-md:mt-6 max-md:mb-8" : "max-md:h-0"
           }`}
         >

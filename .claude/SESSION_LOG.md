@@ -21198,3 +21198,94 @@ source-verified: the only `setSize` call site is now followed by an immediate
 `applyUniforms` render. `bun run build` exit 0 (35/35). biome vs HEAD at the
 same path: 0 -> 0. Page loads with no app console errors (only dev-HMR
 websocket noise). Needs the user's hover check.
+
+## Brand-strategy hero height +32px again (desktop, second increment)
+
+**Task:** same ask as the earlier hero-height task — another slight increase.
+
+**Change:** hero `md:pb-20` -> `md:pb-28` (112px); pin constant
+`calc(100vh-1024px)` -> `calc(100vh-1056px)` on all 8 service pages (bodies
+re-verified byte-identical). Cumulative vs original: 992 -> 1056 (+64).
+
+**Verification:** desktop @1440x900: heroH 1056, pb 112px, sticky top -156px,
+top+heroH === innerHeight (closes: true). Mobile @390: heroH 1013 (120svh),
+pb 48px, bodyH 9006 — all unchanged. `bun run build` exit 0 (35/35). biome 0.
+
+## SubServices cards shrunk (desktop): box, image, fonts, below-image gap
+
+**Task:** /brand-strategy desktop: reduce SubServices card size including
+fonts and images; also reduce the space below the first card's image.
+
+**Changes (`SubServiceCard.tsx` + geometry in `SubServices.tsx`):**
+- Card box `md:h-[560px]` -> `md:h-[500px]`; desktop pb `md:pb-14` ->
+  `md:pb-10`. Grid row 456 -> 412 (>= image 400, slack 12).
+- Image `md:h-[450px]` -> `md:h-[25rem]` (400px). Spelled as rem because the
+  dev server's Tailwind scan hit the SAME flake as mb-30 earlier: DOM carried
+  md:h-[400px] but the stylesheet never gained the rule (plain .h-[400px] and
+  .md:min-h-[400px] exist from other files; grep showed 0x md:h-[400px]).
+  The rem respelling generated on the next scan and is in the build CSS.
+  Base h-[350px] untouched — it serves the mobile open-accordion state.
+- Title `md:text-6xl lg:text-7xl` -> `md:text-5xl lg:text-6xl` (72 -> 60 @lg);
+  description dropped `md:text-xl` so desktop falls to the text-lg base
+  (20 -> 18px). Mobile tokens (max-sm:text-2xl etc.) untouched.
+- Constants: BASE_HEIGHT 3170 -> 2930 (4 x -60); STACK_HOLD's stack height
+  1130 -> 1070 (500 + 3xSTEP). SUBSERVICES_STICK_TOP follows BASE_HEIGHT on
+  all 8 pages automatically.
+
+**Verification:** desktop @1440x900: card 500, image 400, gapBelowImage 52
+(was 62), title 60px, desc 18px, section 3362 (-240 = 4x60), pin closes at
+900 exactly. Mobile @390: bodyH 9006, accordion card 76px, image 0
+(collapsed), title 24px, desc 18px, pb 0 — all pre-change values.
+`bun run build` exit 0 (35/35); built CSS contains md:h-[25rem] (grep 1).
+biome 1/1 = HEAD baselines. Shared component -> all 8 service pages.
+
+## SubServices stack strip: cards now stop just below the title (desktop)
+
+**Task:** /brand-strategy desktop: a stacking card should cover the previous
+card's description completely and stop slightly below its title (screenshot
+showed a clipped description line peeking out under each stacked card).
+
+**Cause.** Stack stride STEP was 190px while (after the card shrink) the
+description begins 196px into the card and the title bottoms out at 132px —
+the 190px strip exposed everything above 190, i.e. ~one clipped description
+line.
+
+**Change.** STEP 190 -> 160 (`SubServiceCard.tsx`), first tried 140 but that
+left only 8px below the measured 132px title bottom — 160 gives 28px. Derived
+constants updated in `SubServices.tsx`: CARD_MARGIN "22vh - 190px" ->
+"22vh - 160px", BASE_HEIGHT (= header 360 + 4x500 + 3xSTEP) 2930 -> 2840,
+STACK_HOLD stack height (cardH + 3xSTEP) 1070 -> 980. SUBSERVICES_STICK_TOP
+derives from these on all 8 pages.
+
+**Verification:** desktop @1440x900: translateY strips [0,160,320,480];
+title bottom 132, desc top 196 -> strip ends 28px below title and desc fully
+covered; section 3392; pin closes at 900 exactly. Mobile @390: transforms all
+"none", margins 0px (max-md overrides), bodyH 9006 — untouched.
+`bun run build` exit 0 (35/35). biome 1/1 = HEAD baselines.
+
+## SubServices scroll pace: first/last card linger cut (desktop)
+
+**Task:** /brand-strategy desktop: first and last cards feel "so long".
+AskUserQuestion narrowed it to: they linger too long while scrolling.
+
+**Cause (measured @1440x900).** All cards are equal 500px; the linger was
+choreography: (a) in-flow card margin max(0,22vh-STEP)=38px meant a 198px
+black gap trailed every incoming card and arrival cadence was 538px of
+scroll; (b) after the 4th card pinned, the stack sat/rode for 563px of scroll
+(STACK_HOLD 113 + POST_STACK_SCROLL 450) before ProcessSection covered it.
+
+**Changes:**
+- `SubServiceCard.tsx`: inline marginBottom formula -> "0px" (arrival gap
+  drops to the 160px strip minimum; cadence 538 -> 500).
+- `SubServices.tsx`: CARD_MARGIN -> "0px" (must mirror the card margin);
+  EXTRA_TAIL 400 -> 200; POST_STACK_SCROLL 450 -> 250. Post-stack: 75px
+  static hold + 250px ride-out = 325px solo time for the last card (was
+  563+). BASE_HEIGHT unchanged (2840 — margin-independent).
+
+**Verification:** @1440x900: ovH 3040, sticky top -2140, top+H === 900
+exactly; card doc tops 1416/2076/2736/3396 (stride 660 = 500 flow + 160
+translate); margins all 0px; simulated scroll to 2900 (inside the hold):
+cards pinned at 45/205/365/525, strips 160/160/160 uniform. Mobile @390:
+transforms none, margins 0px (the max-md:!0px override already enforced
+this), bodyH 9006 — identical. `bun run build` exit 0 (35/35). biome 1/1 =
+HEAD baselines. Shared components -> all 8 service pages.
