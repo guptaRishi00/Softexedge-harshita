@@ -52,22 +52,18 @@ export default function TestimonialsRotatingWord() {
       <AnimatePresence mode="wait">
         <motion.span
           key={index}
-          initial={{ x: "-100%", opacity: 0 }}
-          animate={{ x: "0%", opacity: 1 }}
+          // Same swap BlogSection uses now: a plain fade in place — the word
+          // fades away and the next fades in from nothing. No travel.
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{
-            x: "100%",
             opacity: 0,
-            transition: { duration: 1.5, ease: "easeInOut" },
+            transition: { duration: 0.9, ease: "easeInOut" },
           }}
-          transition={{
-            type: "spring",
-            stiffness: 22,
-            damping: 20,
-            mass: 1,
-          }}
+          transition={{ duration: 1.1, ease: "easeInOut" }}
           // Static will-change keeps the compositor layer alive between the 6s
           // cycles instead of rebuilding it each time.
-          style={{ willChange: "transform, opacity" }}
+          style={{ willChange: "opacity" }}
           className="col-start-1 row-start-1 whitespace-nowrap"
         >
           {/* The gradient + `bg-clip-text` sit on a STATIC child, never on the

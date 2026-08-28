@@ -173,7 +173,7 @@ export default function ServiceSection() {
       id="services"
       ref={containerRef}
       onMouseLeave={isMobile ? undefined : handleMouseLeave}
-      className="relative w-full overflow-hidden bg-black pt-16 pb-10 max-md:pb-10 max-md:pt-20 md:pt-32 md:pb-32 text-white"
+      className="relative w-full overflow-hidden bg-black pt-16 pb-10 max-md:pb-18 max-md:pt-20 md:pt-32 md:pb-32 text-white"
     >
       <div className="w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-10 w-full pb-10 max-md:mb-5 max-md:pb-5">
@@ -334,15 +334,12 @@ export default function ServiceSection() {
                   />
                 </div>
 
-                {/* Every row draws its bottom rule on desktop, including the
-                    last — but mobile keeps its original look (no rule under
-                    the final row), so the last row's rule is max-md:hidden
-                    rather than the row being skipped outright. */}
+                {/* Every row draws its bottom rule at every breakpoint,
+                    including the last — the list reads as fully framed rows. */}
                 <div
                   className={cn(
                     "absolute bottom-0 left-0 h-[1px] w-full transition-all duration-500",
                     "bg-white/10 group-hover:bg-transparent group-hover:bg-gradient-to-r group-hover:from-[#2E5BFF] group-hover:to-[#149CCB]",
-                    index === services.length - 1 && "max-md:hidden",
                   )}
                 />
               </a>

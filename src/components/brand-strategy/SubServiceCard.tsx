@@ -60,7 +60,11 @@ export default function Card({
       ref={registerRef}
       className="sticky w-full max-md:static max-md:[transform:none]! max-md:[margin-bottom:0px]! max-md:[margin-top:0px]!"
       style={{
-        top: "5vh",
+        // 215 = the header's sticky top (-64) + its 279px box: card 1 pins
+        // at exactly the position it occupies the instant the header locks,
+        // so the two freeze together and the card never drifts toward the
+        // title. Keep in step with the header's md:-top-16 and its height.
+        top: "215px",
         transform: `translateY(${i * STEP}px)`,
         // The EXIT choreography clamps each card by its MARGIN box against
         // the shared container end — per-card differences there desync the

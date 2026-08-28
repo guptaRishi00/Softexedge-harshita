@@ -289,18 +289,17 @@ export default function BlogSection() {
                     <AnimatePresence mode="wait">
                       <motion.span
                         key={index}
-                        // Dissolve, not the old slide: the word blurs out of
-                        // existence in place and the next one condenses out of
-                        // thin air (blur + fade, no travel). mode="wait" on the
-                        // parent already sequences exit fully before enter.
-                        initial={{ opacity: 0, filter: "blur(10px)" }}
-                        animate={{ opacity: 1, filter: "blur(0px)" }}
+                        // Plain fade in place, no travel and (per request)
+                        // no blur: the word simply fades away and the next one
+                        // fades in from nothing. mode="wait" on the parent
+                        // already sequences exit fully before enter.
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         exit={{
                           opacity: 0,
-                          filter: "blur(10px)",
-                          transition: { duration: 0.45, ease: "easeInOut" },
+                          transition: { duration: 0.9, ease: "easeInOut" },
                         }}
-                        transition={{ duration: 0.55, ease: "easeInOut" }}
+                        transition={{ duration: 1.1, ease: "easeInOut" }}
                         className="col-start-1 row-start-1 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pl-3 pr-2 leading-[1.3em] text-transparent max-md:pl-0"
                       >
                         {rotatingWords[index]}

@@ -112,19 +112,15 @@ export default function ContactSection() {
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={index}
-                      initial={{ x: "-100%", opacity: 0 }}
-                      animate={{ x: "0%", opacity: 1 }}
+                      // Same swap BlogSection uses now: plain fade in
+                      // place, no travel.
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
                       exit={{
-                        x: "100%",
                         opacity: 0,
-                        transition: { duration: 1.5, ease: "easeInOut" },
+                        transition: { duration: 0.9, ease: "easeInOut" },
                       }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 22,
-                        damping: 20,
-                        mass: 1,
-                      }}
+                      transition={{ duration: 1.1, ease: "easeInOut" }}
                       className="col-start-1 row-start-1 whitespace-nowrap bg-linear-to-r pb-3 from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-2 text-transparent"
                     >
                       {rotatingWords[index]}

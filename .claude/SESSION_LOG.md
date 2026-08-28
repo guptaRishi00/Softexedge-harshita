@@ -21556,3 +21556,176 @@ real frame timing; extension not connected.
 
 **Next signal needed if prod still lags on the phone:** WHICH section is on
 screen when it happens — that localises the offender.
+
+## BlogSection word dissolve slowed (desktop)
+
+**Task:** every page, desktop: make the word's appearance/disappearance slow.
+
+**Change (2 numbers, `home/BlogSection.tsx`):** dissolve exit 0.45 -> 0.9s,
+materialise enter 0.55 -> 1.1s (easeInOut, blur+fade unchanged). Full
+swap now ~2s inside the 6s rotation interval — plenty of hold time.
+Desktop-only by the existing isDesktop branch; mobile still renders the
+static first word (and its 6s ticker is already gated off below md).
+
+**Verification:** grep confirms both durations at lines 301/303;
+`bun run build` exit 0 (35/35); biome 1 = baseline. Framer can't run in the
+pane — timing source-verified.
+
+## BlogSection word swap: blur dropped, plain fade (desktop)
+
+**Task:** every page, desktop: no blur on the word's appear/disappear.
+
+**Change (`home/BlogSection.tsx`):** the rotating word's dissolve is now a
+pure opacity fade — initial/animate/exit lost their filter values; the slowed
+timings stay (exit 0.9s, enter 1.1s, easeInOut). Only remaining "blur" match
+in the file is the comment. Mobile untouched (static-word branch).
+
+**Verification:** grep shows no filter/blur in the animation values;
+`bun run build` exit 0 (35/35); biome 1 = baseline.
+
+## Testimonials + Contact word swaps: slide -> BlogSection's fade (desktop)
+
+**Task:** every page, desktop: ExperimentalTestimonials and ContactSection get
+the same word animation BlogSection now has; sliding removed.
+
+**Changes:** `home/TestimonialsRotatingWord.tsx` (the extracted rotator
+ExperimentalTestimonials renders) and `home/ContactSection.tsx`: the
+AnimatePresence word swaps from the x -100% -> 0 spring / exit x +100% slide
+to BlogSection's plain fade (enter 1.1s / exit 0.9s, easeInOut, no travel).
+TestimonialsRotatingWord's static willChange narrowed to "opacity". Both
+components already branch on isDesktop with a static first word below md —
+mobile untouched by construction. grep: zero "-100%" left in either file.
+
+**Verification:** `bun run build` exit 0 (35/35). biome: rotator 0,
+ContactSection 1 (pre-existing at HEAD, verified). Framer can't run in the
+pane; source-verified.
+
+## SubServices cards pin earlier (desktop)
+
+**Task:** /brand-strategy desktop: make the pin a little earlier.
+
+**Change.** Card sticky top 5vh -> 10vh (`SubServiceCard.tsx`): each card
+stops 45px (@900) sooner in its travel, i.e. the pin engages earlier in the
+scroll. Two derived values tracked in `SubServices.tsx`: the activeIndex
+pinTop math (0.05 -> 0.1) and STACK_HOLD's viewport term (95vh -> 90vh =
+100vh minus the sticky top).
+
+**Verification @1440x900:** settled stack tops now 90/250/410/570 (was
+45/205/365/525), strips uniform [160,160,160] at settle AND ride-out; section
+pin still closes at 900 exactly. Mobile @390: card position "static"
+(max-md:static — inline top inert), bodyH 9006. `bun run build` exit 0
+(35/35). biome 1/1 = baselines. Shared component -> all 8 service pages.
+
+## SubServices pin moved even earlier (desktop): 10vh -> 15vh
+
+Same knob as the previous entry, one more step. Card sticky top 15vh;
+pinTop math 0.15; STACK_HOLD term 85vh. Verified @1440x900: settled tops
+135/295/455/615, strips uniform [160,160,160] at settle and ride-out, section
+pin closes at 900, last card still shows 285px at settle. Mobile @390: bodyH
+9006 (static cards). Build exit 0 (35/35); biome baselines.
+
+## SubServices pin earlier again (desktop): 15vh -> 20vh
+
+Third notch on the same knob. top 20vh; pinTop 0.2; STACK_HOLD 80vh.
+@1440x900: settled tops 180/340/500/660, strips [160,160,160] settle+ride,
+closes 900, last card visible 240px at settle. Mobile bodyH 9006. Build 0
+(35/35), biome baselines. Note: at settle the stack now starts 180px down —
+below ~25vh the last card gets tight against the fold.
+
+## SubServices pin: 20vh -> 25vh ("before the subtitle")
+
+Task said "make the pin before the subtitle"; measured that the covered
+cards' strips DON'T clip the card description at any desktop width (196 vs
+160 everywhere), so AskUserQuestion resolved it: continue the "earlier"
+direction, cards pinning at roughly the tagline's height. top 25vh; pinTop
+0.25; STACK_HOLD 75vh. @1440x900: settled tops 225/385/545/705, strips
+uniform settle+ride, closes 900, last card 195px visible at settle. Mobile
+bodyH 9006. Build 0 (35/35). NOTE: 195px at settle is close to the practical
+floor — the next notch would clip the last card's title block.
+
+## SubServices pin: settled at 8vh — "slightly below where the section starts"
+
+The follow-up clarified the real intent: the pinned stack should REST just
+below the top of the screen (and above the subtitle's height) — the previous
+"earlier" notches (up to 25vh) had moved it the wrong way. top 8vh; pinTop
+0.08; STACK_HOLD 92vh. @1440x900: settled tops 72/232/392/552, strips uniform
+settle+ride, closes 900, last card 348px visible. Mobile bodyH 9006. Build 0
+(35/35).
+
+## SubServices: header now PINS with the stack — tag/title/description stay visible
+
+**Task (finally explicit):** the pin was hiding the section's tag, title and
+description; they should remain visible above the stacking cards.
+
+**Change.** The header wrapper is now `md:sticky md:-top-16`: the negative
+top hides its own pt-22 above the viewport, parking the tag/title/tagline
+band at viewport y 24..119 while the section scrolls. Cards pin below the
+band at a FIXED 144px (was 8vh) — px because the band is px-sized and
+viewport-independent. Derived: activeIndex pinTop = 144 + j*STEP; STACK_HOLD
+folds the px pin-top into its constant (${...+144}px + CM - 100vh).
+BASE_HEIGHT untouched — sticky does not change flow height. Sticky
+containment for the header = the tall <section>, so it holds until the
+section rides out with ProcessSection.
+
+**Verification @1440x900:** at the settled stack the eyebrow is at y 24, h2
+at 60, tagline bottom 101 — all visible above card 1 at 144
+(headerVisibleAtSettle: true); cards 144/304/464/624, strips [160,160,160]
+at settle AND ride-out; section pin closes at 900. Mobile @390: header and
+cards both position:static (md-prefixed sticky + max-md:static), bodyH 9006.
+Build exit 0 (35/35); biome 2 = the two files' baselines.
+
+## SubServices: first card no longer drifts toward the pinned title
+
+**Report:** with the sticky header, card 1 kept travelling 71px toward the
+title after the header locked (header pins at scrollY 1120, card pinned at
+144px only at 1191).
+
+**Fix.** Card pin top 144 -> 215px = the header's sticky top (-64) + its
+279px box: card 1 pins at exactly the position it occupies the instant the
+header locks, so header and card freeze together. pinTop math and
+STACK_HOLD's px constant track (215). Comment in the card documents the
+coupling to md:-top-16 + header height.
+
+**Proof @1440x900:** tagline-bottom -> card-1 gap measured at scrollY 1100/
+1130/1160/1200/1500/2750: 114px at EVERY position — zero relative motion.
+Settled tops 215/375/535/695, strips [160,160,160], closes 900. Mobile @390:
+bodyH 9006. Build exit 0 (35/35); biome 2 = baselines.
+
+## SubServices: post-stack reveal extended — cards 3/4 contents now readable
+
+**Task:** after the cards stack, let the page scroll a bit so the last two
+cards' contents can be seen (they settled partly below the fold).
+
+**Mechanism.** The reveal already exists: after the stack completes, the
+cards' sticky runway ends and the whole stack rides up (distance =
+POST_STACK_SCROLL) BEFORE the section pins and ProcessSection arrives.
+At 250 the readable window was only ~190px of scroll. One constant:
+POST_STACK_SCROLL 250 -> 450 (hold auto-adjusts via STACK_HOLD to 145).
+
+**Measured @1440x900:** scripted scroll sweep found card 4's description
+visible AND uncovered from scrollY 2750 to 3500 — a 750px reveal window
+(mid-sample: card4 top 245, desc bottom 516, image bottom 693, Process top
+890). closes still 900. Mobile @390 bodyH 9006. Build exit 0 (35/35);
+biome baseline. NOTE: during the ride the strips pass over the pinned header
+band — the natural exit motion; flagged in case the user objects.
+
+## ServiceSection: last-row rule now on mobile too
+
+**Task:** the line below the last service (added desktop-only earlier) should
+show in mobile view as well — an explicit mobile change requested by the user.
+
+**Change:** `home/ServiceSection.tsx` — dropped the `max-md:hidden` condition
+from the last row's divider; every row now draws its rule at every breakpoint.
+
+**Verification:** runtime fresh loads — 8/8 dividers display:block at BOTH
+390 and 1440. Build exit 0 (35/35); biome 2 = baseline.
+
+## ServiceSection MOBILE padding-bottom increased (roles flipped this task)
+
+**Task:** /home, mobile only, desktop untouched: increase ServiceSection pb.
+
+**Change:** `max-md:pb-10` -> `max-md:pb-18` (40 -> 72px). Desktop governed by
+md:pb-32 — measured unchanged.
+
+**Verification:** @390 pb 72px; @1440 pb 128px (untouched). Build exit 0
+(35/35); biome 2 = baseline.

@@ -8,10 +8,10 @@ import Card, { STEP } from "./SubServiceCard";
 
 const BASE_HEIGHT = 2659;
 const EXTRA_TAIL = 300;
-const POST_STACK_SCROLL = 250;
+const POST_STACK_SCROLL = 450;
 
 const CARD_MARGIN = "0px";
-const STACK_HOLD = `max(0px, calc(${980 + EXTRA_TAIL - POST_STACK_SCROLL}px + ${CARD_MARGIN} - 95vh))`;
+const STACK_HOLD = `max(0px, calc(${980 + EXTRA_TAIL - POST_STACK_SCROLL + 215}px + ${CARD_MARGIN} - 100vh))`;
 
 export const SUBSERVICES_STICK_TOP = `calc(100vh - ${BASE_HEIGHT + EXTRA_TAIL}px - 4 * ${CARD_MARGIN})`;
 
@@ -89,7 +89,7 @@ export default function SubServices({ children }: { children?: ReactNode }) {
     for (let j = 0; j < services.length; j++) {
       const el = cardRefs.current[j];
       if (!el) continue;
-      const pinTop = window.innerHeight * 0.05 + j * STEP;
+      const pinTop = 215 + j * STEP;
       if (el.getBoundingClientRect().top <= pinTop + 2) active = j;
     }
     setActiveIndex((cur) => (cur === active ? cur : active));
@@ -97,7 +97,7 @@ export default function SubServices({ children }: { children?: ReactNode }) {
 
   const content = (
     <section className="relative w-full bg-black text-white">
-      <div className="mx-auto w-full px-4 max-md:px-3 max-md:pt-20 max-md:pb-12 md:px-10 pt-22 pb-24">
+      <div className="mx-auto w-full px-4 max-md:px-3 max-md:pt-20 max-md:pb-12 md:sticky md:-top-16 md:px-10 pt-22 pb-24">
         <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-500">
           What We Offer
         </span>
