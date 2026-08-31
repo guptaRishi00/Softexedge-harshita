@@ -21815,3 +21815,43 @@ last push 127d54f Aug 28 14:51 predates all of it).
 **Conclusion:** no further code change is defensible — a 4th blind tweak
 would be guessing against measurements. The gap is which build is being
 loaded. Push remains the standing unblocker.
+
+## SubServices: pin now engages exactly when the black div touches the top
+
+**Task:** /brand-strategy desktop: the pin should happen when the black div
+touches the top.
+
+**Cause.** The header pinned at `md:-top-16`, so the section's top had to
+travel 64px PAST the viewport top before the pin engaged — a visible
+overshoot before it locked.
+
+**Change (`SubServices.tsx`), overshoot removed with zero visual shift:**
+- header wrapper `md:-top-16` -> `md:top-0` (pin engages at the exact moment
+  the black div's top reaches y=0)
+- header top padding `pt-22` -> `pt-6` (88 -> 24px, DESKTOP only — mobile is
+  governed by max-md:pt-20). This compensates the removed -64 offset
+  one-for-one, so the tag/title band and the cards land where they already
+  were: eyebrow still y 24, header height now exactly 215, card 1 still 215.
+- BASE_HEIGHT 2659 -> 2595 (section flow shrank by the same 64; caught
+  empirically — `closes` read 836 before the correction, 900 after).
+
+**Verification @1440x900:** pin probe — section top +40 -> header top 40
+(not yet pinned); section top 0 -> header top 0; section top -60 -> header
+top 0. Locks exactly at the boundary, no overshoot. closes 900 exactly;
+settled stack 116/276/436/596 and ride-out both uniform [160,160,160].
+Mobile @390: header position static, padding-top 80px, bodyH 9006 —
+untouched. Build exit 0 (35/35); biome 1 = baseline.
+
+## REVERTED: "pin when the black div touches the top"
+
+User asked to revert the previous entry. All three edits rolled back in
+`SubServices.tsx`:
+- header wrapper `md:top-0` -> `md:-top-16`
+- header top padding `pt-6` -> `pt-22`
+- BASE_HEIGHT 2595 -> 2659
+
+**Verified back at pre-task values @1440x900:** header padding-top 88px,
+header height 279, header top when pinned -64, eyebrow y 24, section height
+2959, closes 900 exactly, settled stack 130/290/450/610 with uniform
+[160,160,160] strips. Mobile @390 unchanged throughout: header static,
+padding-top 80px, bodyH 9006. Build exit 0 (35/35); biome 1 = baseline.

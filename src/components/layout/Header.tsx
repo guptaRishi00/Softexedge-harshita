@@ -61,15 +61,13 @@ const navItems: NavItem[] = [
         name: "Digital Marketing & Growth",
         count: "/4 services",
         link: "/digital-marketing",
-        image:
-          "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGRpZ2l0YWwlMjBtYXJrZXRpbmd8ZW58MHx8MHx8fDA%3D%3D",
+        image: "/assets/dm2.png",
       },
       {
         name: "AI & Marketing Automation",
         count: "/4 services",
         link: "/ai-marketing-automation",
-        image:
-          "https://plus.unsplash.com/premium_photo-1683120966127-14162cdd0935?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fHNvZnR3YXJlfGVufDB8fDB8fHww",
+        image: "/assets/ai3.png",
       },
       {
         name: "Web Development",
