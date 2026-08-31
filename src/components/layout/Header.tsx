@@ -73,8 +73,7 @@ const navItems: NavItem[] = [
         name: "Web Development",
         count: "/4 services",
         link: "/web-development",
-        image:
-          "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop",
+        image: "/assets/web2.png",
       },
       {
         name: "App Development",

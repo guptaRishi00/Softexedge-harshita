@@ -21855,3 +21855,115 @@ header height 279, header top when pinned -64, eyebrow y 24, section height
 2959, closes 900 exactly, settled stack 130/290/450/610 with uniform
 [160,160,160] strips. Mobile @390 unchanged throughout: header static,
 padding-top 80px, bodyH 9006. Build exit 0 (35/35); biome 1 = baseline.
+
+## Navbar dropdown cards: ChannelCard's boxy pattern at rest (desktop)
+
+**Task:** /home desktop: the Services dropdown cards (where images appear on
+hover) should show, in their INACTIVE state, the same pattern the
+ContactSection channel cards use — in gray.
+
+**Source pattern.** `home/ChannelCard.tsx` paints a grid of small rounded
+squares; at rest (intensity 0) every cell is a flat #161616 box on the dark
+card, `grid gap-2`, aspect-square, rounded-md, grid 5% wider than the card
+and clipped.
+
+**Change (`ui/resizable-navbar.tsx`).** New module-scope
+`DROPDOWN_PATTERN_CELLS` (24 = 6 cols x 4 rows, stable string keys so no
+index-key lint) plus a pattern layer inside each dropdown card, before the
+hover image: same geometry (`grid-cols-6 gap-2`, aspect-square, rounded-md,
+`w-[110%] -left-[5%] -translate-y-4`) recoloured for these LIGHT cards —
+`bg-zinc-200/70` on zinc-50 instead of #161616 on black. It carries
+`group-hover:opacity-0` with the image's existing 500ms ease-out, so the two
+cross-fade instead of fighting for the same pixels.
+
+**Scope note:** this navbar is shared with page/Header, which also feeds
+dropdown images (8 entries), so the other pages' Services dropdown gets it
+too — consistent, and the alternative would have been divergent navbars.
+Mobile is untouched BY CONSTRUCTION: the whole desktop nav is
+`hidden ... lg:flex`.
+
+**Verification @1440 (real hover driven in the pane):** dropdown opens with
+8 cards, each with the pattern layer at opacity 1, z 0, 24 cells of 49x49px,
+8px radius, bg oklab(0.92 ... / 0.7) on the zinc-50 card. Screenshot at rest
+shows the gray grid on all 8; screenshot with card 1 hovered shows its image
+covering the pattern while the other 7 keep it. Mobile @390: 0 pattern cells
+in the DOM, desktop nav display:none. `bun run build` exit 0 (35/35). biome
+vs HEAD at same path: 10 -> 10 (all pre-existing).
+
+## Navbar dropdown pattern: ChannelCard colours + gradient mask (desktop)
+
+**Task:** same pattern as the ContactSection channel cards but KEEP THE
+COLOUR (previous entry had recoloured it gray), and add the gradient mask
+overlay.
+
+**Changes (`ui/resizable-navbar.tsx`):**
+- Cells now reproduce ChannelCard's rest state exactly: outer box #161616
+  with `p-[0.8px]`, inner box `rgb(22,22,22)` — the 0.8px inset that gives
+  the cells their hairline edge — replacing the zinc-200/70 flat boxes.
+- New `DROPDOWN_PATTERN_MASK` = ChannelCard's
+  `radial-gradient(280px circle at 85% 50%, rgba(0,0,0,1) 0%,
+  rgba(0,0,0,0.15) 100%)`, applied as WebkitMaskImage/maskImage. Parked at
+  85%/50% — the same rest position ChannelCard parks its own mask at —
+  deliberately STATIC rather than pointer-tracked: the tracked version costs
+  an offscreen composite pass per paint (documented in ChannelCard) and a
+  hover-opened nav should not pay that.
+
+**Verification @1440 (real hover in the pane):** mask computed and applied
+(maskSet true), outer/inner bg rgb(22,22,22), padding 0.8px, 24 cells per
+card. Screenshots: dropdown at rest shows the dark boxy grid fading left via
+the mask; with card 1 hovered its image takes over while the other 7 keep the
+pattern. Mobile @390: 0 pattern cells, bodyH 9885 — untouched (nav is
+`hidden ... lg:flex`). Build exit 0 (35/35); biome back to 10 = HEAD baseline
+(a stray format diagnostic from a JSX-attribute comment was fixed by moving
+that note onto the constant).
+
+**Flagged to user:** with ChannelCard's dark cells on these light zinc-50
+cards, the dark-zinc-900 card titles sit over dark boxes near the mask
+hotspot and lose contrast — worst on the middle cards. Cheap remedies if
+wanted: lower the mask's inner alpha, move the hotspot away from the title,
+or lighten the cells.
+
+## Navbar dropdown cards: black surface, white type (desktop)
+
+**Task:** same pattern + gradient mask (kept from previous entry), and make
+the cards black with white font.
+
+**Changes (`ui/resizable-navbar.tsx`), 3 class edits:**
+- card: `bg-zinc-50 border-black/5` -> `bg-black border-white/10` (the same
+  border token ChannelCard uses)
+- content wrapper: `text-zinc-900 ... group-hover:text-white` -> `text-white`
+  (the hover target became a no-op once the base is white, so it was dropped
+  rather than left dead)
+- title gradient base: `from-zinc-900 to-zinc-900` -> `from-white to-white`;
+  the brand gradient on hover is untouched
+
+This also resolves the contrast problem I flagged last task — the dark
+#161616/rgb(22,22,22) cells now sit on a black card exactly as they do in
+ChannelCard, instead of fighting dark text on a light card.
+
+**Verification @1440 (real hover):** card bg rgba(0,0,0,0.914), border
+white/10, text near-white, title gradient present, mask applied, 24 cells at
+rgb(22,22,22). Screenshots: rest shows black cards with the subtle boxy
+pattern fading through the mask and white legible titles; hovering card 1
+swaps in its image while the rest keep the pattern. Mobile @390: 0 dropdown
+cards, 0 pattern cells, bodyH 9885 — untouched. Build exit 0 (35/35); biome
+10 = HEAD baseline.
+
+**Flagged:** the dropdown PANEL is still `bg-white`, so the black cards sit
+in a white bezel. Not in scope ("cards"), easy to switch to bg-black/
+border-white/10 if the white frame is not wanted.
+
+## Navbar hover overlay darkened (desktop)
+
+**Task:** /home desktop: make the navbar overlay slightly darker.
+
+**Change (1 token).** `ui/resizable-navbar.tsx` — the full-screen backdrop
+that fades in behind the dropdown (300vh x 300vw, backdrop-blur-md, -z-10):
+`bg-black/20` -> `bg-black/35`. Desktop-only by construction: the element
+lives inside NavItems, which is `hidden ... lg:flex`.
+
+**Verification @1440 (real hover):** overlay computed
+`oklab(0 0 0 / 0.35)` with blur(12px) — alpha .20 -> .35. Screenshots before
+and after the hover show the page behind the dropdown visibly dimmer while
+the black cards and white type stay unaffected. Mobile untouched (element
+does not render below lg). Build exit 0 (35/35); biome 10 = HEAD baseline.

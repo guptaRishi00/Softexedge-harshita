@@ -223,6 +223,25 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   );
 };
 
+// Resting pattern for the Services dropdown cards: the same boxy grid
+// ChannelCard paints in ContactSection, at ITS colours — #161616 cell with a
+// 0.8px inset over rgb(22,22,22), which is exactly ChannelCard's rest state
+// (intensity 0). 24 cells = 6 columns x 4 rows, covering the 180/220px card
+// heights; the grid is deliberately wider than the card and clipped by its
+// `overflow-hidden`, as ChannelCard's is. It fades out as the hover image
+// fades in, so the two never fight for the same pixels.
+// ChannelCard's gradient mask, parked at the same 85%/50% its own rest state
+// uses. Static CSS rather than a pointer-tracked motion value: the tracked
+// version costs an offscreen composite pass per paint (see the note in
+// ChannelCard), which is not worth paying in a nav that opens on hover.
+const DROPDOWN_PATTERN_MASK =
+  "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.15) 100%)";
+
+const DROPDOWN_PATTERN_CELLS = Array.from(
+  { length: 24 },
+  (_, i) => `nav-pattern-${i}`,
+);
+
 export const NavItems = ({
   items,
   className,
@@ -246,7 +265,7 @@ export const NavItems = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="fixed left-1/2 top-1/2 h-[300vh] w-[300vw] -translate-x-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-md -z-10 pointer-events-none"
+            className="fixed left-1/2 top-1/2 h-[300vh] w-[300vw] -translate-x-1/2 -translate-y-1/2 bg-black/35 backdrop-blur-md -z-10 pointer-events-none"
           />
         )}
       </AnimatePresence>
@@ -326,8 +345,34 @@ export const NavItems = ({
                           key={`sub-${sIdx}`}
                           href={sub.link}
                           onClick={onItemClick}
-                          className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-zinc-50 border border-black/5 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
+                          className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-black border border-white/10 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
                         >
+                          <div
+                            aria-hidden
+                            className="pointer-events-none absolute inset-0 z-0 overflow-hidden transition-opacity duration-500 ease-out group-hover:opacity-0"
+                            style={{
+                              WebkitMaskImage: DROPDOWN_PATTERN_MASK,
+                              maskImage: DROPDOWN_PATTERN_MASK,
+                            }}
+                          >
+                            <div className="relative -left-[5%] grid w-[110%] -translate-y-4 grid-cols-6 gap-2">
+                              {DROPDOWN_PATTERN_CELLS.map((id) => (
+                                <div
+                                  key={id}
+                                  className="relative aspect-square w-full overflow-hidden rounded-md p-[0.8px]"
+                                  style={{ backgroundColor: "#161616" }}
+                                >
+                                  <div
+                                    className="relative z-10 h-full w-full rounded-md"
+                                    style={{
+                                      backgroundColor: "rgb(22, 22, 22)",
+                                    }}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
                           {sub.image && (
                             <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
                               <Image
@@ -342,10 +387,10 @@ export const NavItems = ({
 
                           <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/70 via-black/20 to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
 
-                          <div className="relative z-10 flex h-full flex-col justify-between text-zinc-900 transition-colors duration-400 group-hover:text-white">
+                          <div className="relative z-10 flex h-full flex-col justify-between text-white transition-colors duration-400">
                             <div className="flex justify-between items-start w-full">
                               <span className="relative inline-block max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1">
-                                <span className="relative text-xl lg:text-2xl font-bold tracking-tight bg-gradient-to-r from-zinc-900 to-zinc-900 group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
+                                <span className="relative text-xl lg:text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-white group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
                                   {sub.name}
                                 </span>
                               </span>
