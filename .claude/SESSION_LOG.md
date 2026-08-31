@@ -21993,3 +21993,23 @@ background-image `linear-gradient(... rgb(46,91,255) ...)` = #2E5BFF ->
 offsetFromCentre 0. Screenshot shows all 8 titles vertically centred in
 gradient at rest. Mobile @390: 0 dropdown cards, bodyH 9885 — untouched.
 Build exit 0 (35/35); biome 10 = HEAD baseline.
+
+## Navbar dropdown titles: smaller, white, still centred (desktop)
+
+**Task:** same cards, inactive state: keep the y-axis centring, decrease the
+font size, and make the text white.
+
+**Change (1 class, `ui/resizable-navbar.tsx`):**
+`text-2xl lg:text-3xl ... bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]
+bg-clip-text text-transparent` -> `text-xl lg:text-2xl ... text-white`.
+The gradient machinery is removed outright rather than faked with a
+white->white gradient (which is what the pre-gradient version did and is dead
+weight — a clipped background painting a flat colour). Centring from the
+previous entry is untouched: wrapper `justify-center` + the arrow held out of
+flow.
+
+**Verification @1440 (real hover):** computed font-size 24px (was 30), color
+rgb(255,255,255), background-image `none` (gradient gone), and title centre
+still exactly on card centre — offsetFromCentre 0. Screenshot shows all 8
+titles centred, white, smaller. Mobile @390: 0 dropdown cards, bodyH 9885 —
+untouched. Build exit 0 (35/35); biome 10 = HEAD baseline.

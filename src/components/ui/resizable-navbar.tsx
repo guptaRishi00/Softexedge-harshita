@@ -390,7 +390,7 @@ export const NavItems = ({
                           <div className="relative z-10 flex h-full flex-col justify-center text-white transition-colors duration-400">
                             <div className="flex w-full items-center justify-between">
                               <span className="relative inline-block max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1">
-                                <span className="relative text-2xl lg:text-3xl font-bold tracking-tight bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+                                <span className="relative text-xl lg:text-2xl font-bold tracking-tight text-white">
                                   {sub.name}
                                 </span>
                               </span>
