@@ -61,47 +61,43 @@ const navItems: NavItem[] = [
         name: "Digital Marketing & Growth",
         count: "/4 services",
         link: "/digital-marketing",
-        image: "/assets/dm2.png",
+        image: "/assets/dm4.jpg",
       },
       {
         name: "AI & Marketing Automation",
         count: "/4 services",
         link: "/ai-marketing-automation",
-        image: "/assets/ai3.png",
+        image: "/assets/ai9.jpg",
       },
       {
         name: "Web Development",
         count: "/4 services",
         link: "/web-development",
-        image: "/assets/web2.png",
+        image: "/assets/web3.jpg",
       },
       {
         name: "App Development",
         count: "/4 services",
         link: "/app-development",
-        image:
-          "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=800&auto=format&fit=crop",
+        image: "/assets/app.jpg",
       },
       {
         name: "Custom Software & SaaS",
         count: "/4 services",
         link: "/custom-software",
-        image:
-          "https://plus.unsplash.com/premium_photo-1685086785636-2a1a0e5b591f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c29mdHdhcmV8ZW58MHx8MHx8fDA%3D",
+        image: "/assets/sw.jpg",
       },
       {
         name: "Brand Strategy & Identity",
         count: "/4 services",
         link: "/brand-strategy",
-        image:
-          "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?q=80&w=800&auto=format&fit=crop",
+        image: "/assets/gd.jpg",
       },
       {
         name: "UI/UX Design",
         count: "/4 services",
         link: "/ui-ux-design",
-        image:
-          "https://images.unsplash.com/photo-1545235617-9465d2a55698?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8dWl1eHxlbnwwfHwwfHx8MA%3D%3D",
+        image: "/assets/ui.jpg",
       },
       {
         name: "Video Production",

@@ -224,9 +224,10 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
 };
 
 // Resting pattern for the Services dropdown cards: the same boxy grid
-// ChannelCard paints in ContactSection, at ITS colours — #161616 cell with a
-// 0.8px inset over rgb(22,22,22), which is exactly ChannelCard's rest state
-// (intensity 0). 24 cells = 6 columns x 4 rows, covering the 180/220px card
+// ChannelCard paints in ContactSection, MIRRORED for this white theme:
+// ChannelCard's rest cell is #161616, i.e. 22 above black, so here it is
+// #e9e9e9 with a 0.8px inset over rgb(233,233,233) — 22 below white, the same
+// contrast delta against its own surface. 24 cells = 6 columns x 4 rows, covering the 180/220px card
 // heights; the grid is deliberately wider than the card and clipped by its
 // `overflow-hidden`, as ChannelCard's is. It fades out as the hover image
 // fades in, so the two never fight for the same pixels.
@@ -345,7 +346,7 @@ export const NavItems = ({
                           key={`sub-${sIdx}`}
                           href={sub.link}
                           onClick={onItemClick}
-                          className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-black border border-white/10 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
+                          className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-white border border-zinc-200 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
                         >
                           <div
                             aria-hidden
@@ -360,12 +361,12 @@ export const NavItems = ({
                                 <div
                                   key={id}
                                   className="relative aspect-square w-full overflow-hidden rounded-md p-[0.8px]"
-                                  style={{ backgroundColor: "#161616" }}
+                                  style={{ backgroundColor: "#e9e9e9" }}
                                 >
                                   <div
                                     className="relative z-10 h-full w-full rounded-md"
                                     style={{
-                                      backgroundColor: "rgb(22, 22, 22)",
+                                      backgroundColor: "rgb(233, 233, 233)",
                                     }}
                                   />
                                 </div>
@@ -387,10 +388,10 @@ export const NavItems = ({
 
                           <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/70 via-black/20 to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
 
-                          <div className="relative z-10 flex h-full flex-col justify-center text-white transition-colors duration-400">
+                          <div className="relative z-10 flex h-full flex-col justify-center text-zinc-900 transition-colors duration-400 group-hover:text-white">
                             <div className="flex w-full items-center justify-between">
                               <span className="relative inline-block max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1">
-                                <span className="relative text-xl lg:text-2xl font-bold tracking-tight text-white">
+                                <span className="relative text-xl lg:text-2xl font-bold tracking-tight">
                                   {sub.name}
                                 </span>
                               </span>

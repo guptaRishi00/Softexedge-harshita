@@ -22013,3 +22013,52 @@ rgb(255,255,255), background-image `none` (gradient gone), and title centre
 still exactly on card centre — offsetFromCentre 0. Screenshot shows all 8
 titles centred, white, smaller. Mobile @390: 0 dropdown cards, bodyH 9885 —
 untouched. Build exit 0 (35/35); biome 10 = HEAD baseline.
+
+## Navbar dropdown cards flipped to white theme (desktop)
+
+**Task:** /home desktop: turn the dropdown cards into a white theme.
+
+**Changes (`ui/resizable-navbar.tsx`):**
+- card: `bg-black border-white/10` -> `bg-white border-black/5`
+- wrapper owns the text colour again: `text-white` -> `text-zinc-900 ...
+  group-hover:text-white`, so the title stays legible once the hover image
+  (dark) slides under it
+- title span drops its own `text-white` and INHERITS from the wrapper — one
+  colour source instead of two fighting
+- pattern cells mirrored rather than merely lightened: ChannelCard's rest
+  cell is #161616 = 22 ABOVE black, so the white theme uses #e9e9e9 /
+  rgb(233,233,233) = 22 BELOW white — the identical contrast delta against
+  its own surface, keeping the texture as subtle as the original.
+
+**Bug I caught via screenshot, not the probe.** My first pass replaced the
+OUTER cell colour but the INNER one silently didn't match (I asserted the
+other edits, not that pair), leaving `rgb(22, 22, 22)` inners inside
+#e9e9e9 outers: the render showed near-black boxes on white cards. The
+computed-style probe had sampled only the outer div and reported "correct",
+so the screenshot is what exposed it — worth remembering that a
+single-element probe can confirm a change while the composite is still wrong.
+Fixed with an asserted replace; both now read rgb(233,233,233).
+
+**Verification @1440 (real hover):** card bg rgb(255,255,255), outer AND
+inner cell rgb(233,233,233), title lab(8.3...) = zinc-900, font 24px,
+offsetFromCentre 0, mask still applied. Screenshots: rest shows white cards
+with the faint light-gray grid and dark centred titles; hovering card 1 swaps
+in its image with the title turning white. Mobile @390: 0 dropdown cards,
+bodyH 9885 — untouched. Build exit 0 (35/35); biome 10 = HEAD baseline.
+
+## Navbar dropdown cards: subtle gray border (desktop)
+
+**Task:** /home desktop: add a subtle gray border to the dropdown cards.
+
+**Change (1 token).** `ui/resizable-navbar.tsx` card: `border-black/5` ->
+`border-zinc-200`. The old 5%-black border was effectively invisible against
+the white card; zinc-200 (#e4e4e7) gives a defined but quiet edge, and sits
+just DARKER than the pattern cells (#e9e9e9) so the card outline reads ahead
+of its own texture rather than competing with it. Scoped to the cards only —
+the dropdown PANEL keeps its own `border-black/5` (verified unchanged at
+oklab(0 0 0 / 0.05)), since the task said "in cards".
+
+**Verification @1440 (real hover):** card border-color lab(90.6853 ...) =
+zinc-200, width 0.8px, bg still rgb(255,255,255); screenshot shows each of
+the 8 cards with a visible quiet outline. Mobile @390: 0 dropdown cards,
+bodyH 9885 — untouched. Build exit 0 (35/35); biome 10 = HEAD baseline.
