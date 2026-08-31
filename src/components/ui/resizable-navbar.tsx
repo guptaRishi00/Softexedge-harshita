@@ -387,16 +387,16 @@ export const NavItems = ({
 
                           <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/70 via-black/20 to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
 
-                          <div className="relative z-10 flex h-full flex-col justify-between text-white transition-colors duration-400">
-                            <div className="flex justify-between items-start w-full">
+                          <div className="relative z-10 flex h-full flex-col justify-center text-white transition-colors duration-400">
+                            <div className="flex w-full items-center justify-between">
                               <span className="relative inline-block max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1">
-                                <span className="relative text-xl lg:text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-white group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
+                                <span className="relative text-2xl lg:text-3xl font-bold tracking-tight bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
                                   {sub.name}
                                 </span>
                               </span>
                             </div>
 
-                            <div className="flex justify-start">
+                            <div className="absolute bottom-0 left-0 flex justify-start">
                               <span className="relative inline-flex opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-[#149CCB]">
                                 <svg
                                   className="relative w-6 h-6"

@@ -21967,3 +21967,29 @@ lives inside NavItems, which is `hidden ... lg:flex`.
 and after the hover show the page behind the dropdown visibly dimmer while
 the black cards and white type stay unaffected. Mobile untouched (element
 does not render below lg). Build exit 0 (35/35); biome 10 = HEAD baseline.
+
+## Navbar dropdown cards: title centred, larger, gradient at rest (desktop)
+
+**Task:** /home desktop: in the dropdown cards' inactive state, centre the
+link text on the y-axis, increase the font size, and keep it in gradient.
+
+**Changes (`ui/resizable-navbar.tsx`), all inside the dropdown card:**
+- content wrapper `justify-between` -> `justify-center`, and the title row
+  `items-start` -> `items-center`.
+- ARROW ROW lifted out of flow: `flex justify-start` ->
+  `absolute bottom-0 left-0 flex justify-start`. Load-bearing — the arrow is
+  only `opacity-0` at rest, so in flow it still contributed its row height
+  and pushed the "centred" title upward by half of it. Out of flow the title
+  centres against the true card box, and the arrow keeps its bottom-left spot
+  on hover (the wrapper is already `relative`).
+- type `text-xl lg:text-2xl` -> `text-2xl lg:text-3xl`.
+- gradient now applies at REST: `from-white to-white` ->
+  `from-[#2E5BFF] to-[#149CCB]`; the `group-hover:from/to` pair was dropped
+  because it named the same two stops and had become dead.
+
+**Verification @1440 (real hover):** computed font-size 30px (was 24),
+background-image `linear-gradient(... rgb(46,91,255) ...)` = #2E5BFF ->
+#149CCB present without hover, and title centre 269 vs card centre 270 —
+offsetFromCentre 0. Screenshot shows all 8 titles vertically centred in
+gradient at rest. Mobile @390: 0 dropdown cards, bodyH 9885 — untouched.
+Build exit 0 (35/35); biome 10 = HEAD baseline.
