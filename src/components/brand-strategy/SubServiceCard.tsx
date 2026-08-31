@@ -96,11 +96,18 @@ export default function Card({
           // the card's own `md:px-10` gutter — the same treatment StatsSection
           // uses for its dividers. Mobile keeps `inset-x-3`, matching `px-3`.
           //
-          // Below md the rules sit only BETWEEN services: every card draws its
-          // own top rule EXCEPT the first, and no card draws a bottom one — so
-          // four services show three dividers and the list has no outer edges.
-          // Desktop keeps a rule on all four, including the first, which is why
-          // the first card is silenced with `content-none` rather than by
+          // Below md the rules sit only BETWEEN services here: every card
+          // draws its own top rule EXCEPT the first. The CLOSING line under
+          // the last service is drawn by ProcessSection's own top rule
+          // instead — #process-overlap sits at z-20 with bg-black and
+          // `max-md:-mt-px`, so it paints over this section's final pixel row
+          // and any rule drawn here is occluded (measured: read as a darker
+          // line). Drawing it on the element that wins the paint is the only
+          // stable fix; z-index cannot help, the overlap is an ancestor
+          // stacking context, not a sibling — so four services show three dividers plus a
+          // closing line under the final row, mirroring ServiceSection's
+          // fully framed list. Desktop keeps a top rule on all four, which is
+          // why the first card is silenced with `content-none` rather than by
           // withholding the pseudo outright.
           i === 0 ? "max-md:before:content-none" : ""
         }`}

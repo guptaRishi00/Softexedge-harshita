@@ -61,7 +61,13 @@ export default function ProcessSection() {
   return (
     <section
       id="process"
-      className="w-full bg-black font-sans pt-20 max-md:pb-24 md:pt-20 md:pb-30"
+      // `before:` top rule, mobile only: this is the closing line under the
+      // last SubServices card. It lives here rather than on that card because
+      // this section's wrapper (#process-overlap, z-20, bg-black,
+      // max-md:-mt-px) paints over SubServices' final pixel row — a rule
+      // drawn there is occluded and reads darker than its siblings. Same
+      // token as those rules (inset-x-3, h-px, bg-white/10) so it matches.
+      className="relative w-full bg-black font-sans pt-20 max-md:pb-24 md:pt-20 md:pb-30 max-md:before:absolute max-md:before:top-0 max-md:before:inset-x-3 max-md:before:h-px max-md:before:bg-white/10 max-md:before:content-['']"
     >
       <div className="mx-auto w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-16 md:mb-35">

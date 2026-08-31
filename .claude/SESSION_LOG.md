@@ -21729,3 +21729,89 @@ md:pb-32 — measured unchanged.
 
 **Verification:** @390 pb 72px; @1440 pb 128px (untouched). Build exit 0
 (35/35); biome 2 = baseline.
+
+## SubServices mobile: closing line under the last service
+
+**Task (screenshot, mobile /brand-strategy):** the accordion list showed rules
+only BETWEEN services — add the line below the last one (E-Commerce) in
+mobile view.
+
+**Change:** `SubServiceCard.tsx` — last card (i===3) gains a mobile-only
+`after:` twin of the top rule (absolute bottom-0 inset-x-3 h-px bg-white/10).
+Comment updated: three dividers + a closing line, mirroring ServiceSection's
+framed list. Desktop untouched (after: is max-md-prefixed).
+
+**Verification @390:** rules matrix measured [i0: none/none, i1: top, i2:
+top, i3: top+BOTTOM] — exactly the intended pattern; bodyH 9006. Desktop
+@1440: last card ::after content "none". Build exit 0 (35/35); biome 1 =
+baseline. Shared component -> all 8 service pages' mobile lists.
+
+## Last-service line dispute — measured identical; verification gap was the issue
+
+**User:** "the line should be the same as the previous ones."
+
+**Measured @390 (computed pseudo-element geometry, card 4):**
+- card2 ::before  -> left 12px, right 12px, w 366.4px, h 1px, bg white/10
+- card4 ::before  -> left 12px, right 12px, w 366.4px, h 1px, bg white/10
+- card4 ::after   -> left 12px, right 12px, w 366.4px, h 1px, bg white/10
+Pixel-identical on every axis; vertical rhythm 76/76/76 then 75. No styling
+defect found — the added rule already matches the existing dividers exactly.
+
+**Real problem: what the user can actually load.** Change is local-only
+(push declined). The :3100 prod server from the mobile-lag task had DIED, so
+there was no phone-testable URL carrying it. Restarted `next start` on 3100
+against the current build and verified it serves both the class (HTML) and
+the rule (CSS): http://192.168.29.24:3100/brand-strategy
+Standing note: every task's changes are localhost-only until a push is
+requested — say so explicitly rather than assuming the user tests localhost.
+
+## Closing line under last service: occlusion root-caused, moved to ProcessSection
+
+**User:** the line below the last service is a different COLOUR than the ones
+above (mobile).
+
+**Root cause (measured, not guessed).** The colour token was already
+identical (both white/10). The rule was being OCCLUDED: #process-overlap
+carries `max-md:-mt-px` with bg-black at z-20 while #subservices-overlap is
+z-10, so ProcessSection paints over SubServices' final pixel row. Measured:
+processTop 459.2 vs card4 bottom 460.2 — the 1px rule sat exactly under it
+and survived only as a subpixel sliver, i.e. it read darker. Nudging it to
+`bottom-px` did not fix hit-testing/paint reliably, and z-index cannot help:
+the overlap is a SIBLING stacking context on an ancestor, unreachable from
+inside.
+
+**Fix.** Removed the `after:` rule from SubServiceCard (reverted) and drew
+the closing line on the element that WINS the paint: ProcessSection's own
+section gains `relative` + a mobile-only `before:` top rule using the exact
+sibling tokens (top-0, inset-x-3, h-px, bg-white/10).
+
+**Verification @390:** new ::before vs card2 ::before — identical on every
+axis (top 0, left/right 12px, w 366px, h 1px, bg oklab(.../0.1)); rule row
+hit-tests to ProcessSection's section (the top painter, so guaranteed
+visible); card4 ::after now content:none. Desktop @1440: ::before content
+"none" — untouched. Build exit 0 (35/35); biome card 1 (baseline), process 0.
+Prod server on :3100 restarted against this build for phone testing.
+
+## Closing-line colour: exhaustive measurement — code is correct, viewing target is not
+
+**User (3rd report):** last line's colour differs from the others (mobile).
+
+**Everything measurable is IDENTICAL** (probes @390, dev + prod):
+- colour token: all four rules oklab(... / 0.1) = white/10
+- geometry: left 12px, right 12px, w 366px, h 1px — same on all four
+- sub-pixel offset: frac 0.234 on ALL four rules, so antialiasing is
+  identical (ruled out the DPR theory)
+- ±70px scan around the boundary found EXACTLY ONE thin light element (the
+  rule itself) — no double-draw, no stray second line
+- occlusion: the ProcessSection placement is not covered by anything
+  (the earlier card-based `bottom-px` version WAS ~23% covered -> genuinely
+  dimmer; that version is gone)
+
+**Both local servers serve the corrected version** (checked HTML):
+:3000 dev and :3100 prod each contain `before:top-0` and zero
+`after:bottom`. The only build WITHOUT the fix is Vercel (push declined,
+last push 127d54f Aug 28 14:51 predates all of it).
+
+**Conclusion:** no further code change is defensible — a 4th blind tweak
+would be guessing against measurements. The gap is which build is being
+loaded. Push remains the standing unblocker.
