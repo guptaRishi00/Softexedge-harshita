@@ -223,26 +223,6 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   );
 };
 
-// Resting pattern for the Services dropdown cards: the same boxy grid
-// ChannelCard paints in ContactSection, MIRRORED for this white theme:
-// ChannelCard's rest cell is #161616, i.e. 22 above black, so here it is
-// #e9e9e9 with a 0.8px inset over rgb(233,233,233) — 22 below white, the same
-// contrast delta against its own surface. 24 cells = 6 columns x 4 rows, covering the 180/220px card
-// heights; the grid is deliberately wider than the card and clipped by its
-// `overflow-hidden`, as ChannelCard's is. It fades out as the hover image
-// fades in, so the two never fight for the same pixels.
-// ChannelCard's gradient mask, parked at the same 85%/50% its own rest state
-// uses. Static CSS rather than a pointer-tracked motion value: the tracked
-// version costs an offscreen composite pass per paint (see the note in
-// ChannelCard), which is not worth paying in a nav that opens on hover.
-const DROPDOWN_PATTERN_MASK =
-  "radial-gradient(280px circle at 85% 50%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.15) 100%)";
-
-const DROPDOWN_PATTERN_CELLS = Array.from(
-  { length: 24 },
-  (_, i) => `nav-pattern-${i}`,
-);
-
 export const NavItems = ({
   items,
   className,
@@ -346,34 +326,8 @@ export const NavItems = ({
                           key={`sub-${sIdx}`}
                           href={sub.link}
                           onClick={onItemClick}
-                          className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-white border border-zinc-200 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
+                          className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-linear-to-br from-white to-[#efefef] border border-zinc-200 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
                         >
-                          <div
-                            aria-hidden
-                            className="pointer-events-none absolute inset-0 z-0 overflow-hidden transition-opacity duration-500 ease-out group-hover:opacity-0"
-                            style={{
-                              WebkitMaskImage: DROPDOWN_PATTERN_MASK,
-                              maskImage: DROPDOWN_PATTERN_MASK,
-                            }}
-                          >
-                            <div className="relative -left-[5%] grid w-[110%] -translate-y-4 grid-cols-6 gap-2">
-                              {DROPDOWN_PATTERN_CELLS.map((id) => (
-                                <div
-                                  key={id}
-                                  className="relative aspect-square w-full overflow-hidden rounded-md p-[0.8px]"
-                                  style={{ backgroundColor: "#e9e9e9" }}
-                                >
-                                  <div
-                                    className="relative z-10 h-full w-full rounded-md"
-                                    style={{
-                                      backgroundColor: "rgb(233, 233, 233)",
-                                    }}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
                           {sub.image && (
                             <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
                               <Image
@@ -386,7 +340,7 @@ export const NavItems = ({
                             </div>
                           )}
 
-                          <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/70 via-black/20 to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
+                          <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-r from-black/80 via-black/35 via-70% to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
 
                           <div className="relative z-10 flex h-full flex-col justify-center text-zinc-900 transition-colors duration-400 group-hover:text-white">
                             <div className="flex w-full items-center justify-between">

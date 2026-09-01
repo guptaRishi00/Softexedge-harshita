@@ -22062,3 +22062,78 @@ oklab(0 0 0 / 0.05)), since the task said "in cards".
 zinc-200, width 0.8px, bg still rgb(255,255,255); screenshot shows each of
 the 8 cards with a visible quiet outline. Mobile @390: 0 dropdown cards,
 bodyH 9885 — untouched. Build exit 0 (35/35); biome 10 = HEAD baseline.
+
+## Navbar dropdown cards: box pattern removed, testimonials gradient added
+
+**Task:** /home desktop: remove the box pattern from the dropdown cards and
+use the gradient from the ExperimentalTestimonials cards instead.
+
+**Source.** `home/ExperimentalTestimonials.tsx` card:
+`rounded-3xl border border-zinc-200 bg-linear-to-br from-white to-[#efefef]`.
+
+**Changes (`ui/resizable-navbar.tsx`):**
+- Deleted the whole pattern layer (mask wrapper + 24-cell grid) from the
+  card.
+- Deleted the now-dead `DROPDOWN_PATTERN_CELLS` / `DROPDOWN_PATTERN_MASK`
+  constants and their comment block, rather than leaving orphaned module
+  state behind.
+- Card surface `bg-white` -> `bg-linear-to-br from-white to-[#efefef]`. The
+  border needed no change: it was already `border-zinc-200`, which is exactly
+  what the testimonials card uses, so the two now match on both axes.
+
+**Verification @1440 (real hover):** nav card and testimonial card computed
+side by side are IDENTICAL —
+backgroundImage `linear-gradient(to right bottom in oklab, rgb(255,255,255)
+0%, rgb(239,239,239) 100%)` on both, borderColor lab(90.6853 0.399202
+-1.45452) on both; `patternLayersLeft: 0`. Screenshots: rest shows clean
+gradient cards, hovering card 1 still swaps in its image with the title going
+white. Mobile @390: 0 dropdown cards, bodyH 9885 — untouched.
+`bun run build` exit 0 (35/35); biome back to 10 = HEAD baseline (deleting
+the block left a stray blank line -> one format diagnostic, fixed with
+biome format).
+
+**Note:** the dev server on :3000 had died mid-task; restarted before
+verifying (HTTP 200), so all readings above are against the current build.
+
+## Navbar dropdown: hover image gets a black gradient from the left
+
+**Task:** /home desktop: add a black gradient overlay from the left over the
+images that appear on card hover.
+
+**Change (1 class).** The card already had a hover overlay, but running
+top-to-bottom (`bg-gradient-to-b from-black/70 via-black/20`) — a holdover
+from when the title sat at the TOP of the card. Since the title is now
+vertically centred on the left, that gradient no longer covered it. Turned it
+to run from the left and deepened it slightly:
+`bg-gradient-to-r from-black/80 via-black/35 to-transparent`.
+
+Judgment call: turned the EXISTING overlay rather than stacking a second one
+— two overlays would have compounded to roughly black/90 at the top-left and
+muddied the photo. Same z-[5], same 500ms fade, so the only change is
+direction/depth.
+
+**Verification @1440 (real hover):** overlay computes
+`linear-gradient(to right, oklab(0 0 0 / 0.8) 0%, oklab(0 0 0 / 0.35) 50%,
+rgba(0,0,0,0) 100%)`, opacity 1 while hovered, z-index 5 (above the image at
+z-0, below the z-10 text). Screenshot shows the hovered card's left side
+darkened with the white title clearly legible over the photo, the right side
+of the image untouched. Mobile @390: 0 dropdown cards, bodyH 9885 —
+untouched. Build exit 0 (35/35); biome 10 = HEAD baseline.
+
+## Navbar hover overlay extended further right (desktop)
+
+**Task:** /home desktop: extend the overlay slightly more.
+
+**Change (1 class added).** The left-to-right hover overlay's mid stop moved
+from its implicit 50% to 70%: `via-black/35` -> `via-black/35 via-70%`.
+Extending the STOP rather than raising the alpha keeps the same peak darkness
+at the left edge (black/80) and the same clean fade-out at the right edge —
+only the covered width grows, which is what "extend" asks for.
+
+**Verification @1440 (real hover):** overlay computes
+`linear-gradient(to right, oklab(0 0 0 / 0.8) 0%, oklab(0 0 0 / 0.35) 70%,
+rgba(0,0,0,0) 100%)` — the 50% stop is now 70%. Screenshot shows the dark
+region reaching noticeably further across the hovered card's image.
+(Opacity sampled at 0.64 because the probe landed mid-way through the 500ms
+fade-in; it settles at 1.) Mobile @390: 0 dropdown cards, bodyH 9885 —
+untouched. Build exit 0 (35/35); biome 10 = HEAD baseline.
