@@ -22137,3 +22137,162 @@ region reaching noticeably further across the hovered card's image.
 (Opacity sampled at 0.64 because the probe landed mid-way through the 500ms
 fade-in; it settles at 1.) Mobile @390: 0 dropdown cards, bodyH 9885 —
 untouched. Build exit 0 (35/35); biome 10 = HEAD baseline.
+
+## Navbar link font size increased (homepage desktop)
+
+**Task:** /home desktop: increase the navbar link font size slightly.
+
+**Change (1 token).** `layout/Header.tsx` (the homepage header) NavItems
+className: `text-[17px]` -> `text-[19px]`. Desktop-only by construction —
+NavItems renders inside `hidden ... lg:flex`; measured display:none at 390.
+Scoped to layout/Header on purpose: `page/Header` carries its own identical
+`text-[17px]` for every OTHER route, and the task named the homepage, so the
+other pages' navs are deliberately left at 17px. Say the word to unify.
+
+**Verification:** desktop @1440 — Services/About Us/Careers/Work/Blog all
+computed 19px (were 17). Mobile @390 — the visible nav links are the separate
+mobile-menu markup at 20px (untouched), and the changed container is
+display:none.
+Height check: a first mobile reading showed 9881 vs the session's usual 9885;
+re-measured with three settled samples -> 9885/9885/9885, i.e. the 9881 was a
+mid-load sample, not a layout change. `bun run build` exit 0 (35/35); biome
+vs HEAD at same path: 2 -> 2.
+
+## Asset cleanup — STOPPED before any deletion (interrupted)
+
+`please remove the unused assets from /public/assets` was interrupted during
+the safety survey; NOTHING was deleted. What the survey established so far:
+85 files in public/assets, only 78 tracked by git — 7 are UNTRACKED
+(dm5.jpg, dm6.jpg, saas.jpg, ui2.jpg, video.jpg + 2 more), so deleting those
+would be unrecoverable. No dynamic `/assets/${...}` path building was found
+in src, so a per-filename reference grep is a sound method. Resume by
+grepping each basename across src + public, listing the unused set for
+approval, and treating the untracked 7 with extra care.
+
+## Navbar dropdown: two-word card titles forced onto two lines (desktop)
+
+**Task:** /home desktop: make "App Development", "Video Production" and
+"UI/UX Design" render on two lines.
+
+**Why a width tweak was rejected.** Measured at 1440 only "UI/UX Design" was
+single-line; the other two already wrapped. Their wrap depends on the title
+wrapper's `max-w-[70%]`, a PERCENTAGE that grows with the card — at 1920 the
+card's inner width is 290 (vs 257 at 1440), which is where those names slip
+back onto one line, matching what the user sees. A fixed-px cap cannot fix it
+either: "Development" measures 139px and "UI/UX Design" 142px, so the usable
+window is ~3px.
+
+**Change (`ui/resizable-navbar.tsx`).** New `renderCardTitle(name)` helper:
+names with exactly TWO words render one word per line via `<br />`; names
+with more words keep their natural wrapping (they already read well). Applied
+at the single title render site. Covers the three requested plus "Web
+Development", which was already two lines, so nothing moves there.
+
+**A11y detail caught by the probe:** with a bare `<br />` the title's
+textContent became "AppDevelopment" — the break had eaten the only word
+separator, degrading the accessible name and any copied text. Added an
+explicit `{" "}` before the break; it renders as trailing whitespace (no
+visual cost) and textContent is back to "App Development".
+
+**Verification (real hover):** @1440 all 8 titles lines=2 with correct spaced
+text; @1920 (cardInnerW 290 — the width that previously collapsed them) all 8
+still lines=2. Mobile @390: 0 dropdown cards, height 9885/9885/9885 settled —
+untouched. Build exit 0 (35/35); biome back to 10 = HEAD baseline (the JSX
+comment tripped one format diagnostic, fixed with biome format).
+
+## Navbar link font size 19px -> 21px (homepage desktop)
+
+**Task:** same ask again — increase the navbar link font size slightly.
+
+**Change (1 token).** `layout/Header.tsx` NavItems: `text-[19px]` ->
+`text-[21px]`. Desktop-only by construction (NavItems is inside
+`hidden ... lg:flex`; measured display:none at 390).
+
+**Dev-scan flake hit AGAIN — and this time it was a visible REGRESSION.**
+First verification read the links at 16px, i.e. SMALLER than before the edit.
+Cause: the dev server's incremental Tailwind scan never emitted
+`.text-\[21px\]` (dev CSS contained only the older 17px and 19px rules), so
+the class matched nothing and the links fell back to the inherited 16px. The
+PRODUCTION build CSS did contain the rule, proving the code was correct and
+the dev CSS was stale. Same family of flake as `mb-30` and `md:h-[400px]`
+earlier this session, but note the failure mode differs: those simply did not
+apply, whereas replacing an existing arbitrary size makes the element drop to
+a smaller inherited value — so it looks like the change went BACKWARDS.
+Fixed by killing the dev server (by PID via netstat) and restarting; the rule
+appears in dev CSS immediately after.
+Rule of thumb for this repo: when an arbitrary-value class appears not to
+apply, diff the dev CSS against the built CSS before touching the code.
+
+**Verification:** desktop @1440 — Services/About Us/Careers/Work/Blog all
+21px. Mobile @390 — desktop nav display:none, mobile menu links still 20px
+(their own markup), height 9885/9885/9885 settled. `bun run build` exit 0
+(35/35); biome 2 = HEAD baseline.
+
+## Navbar link font size reverted to the original 17px (homepage desktop)
+
+**Task:** make the navbar link font size like it was before.
+
+Read as the ORIGINAL value, not the intermediate one: this session went
+17 (HEAD) -> 19 -> 21, so "before" = 17px. `layout/Header.tsx` NavItems
+`text-[21px]` -> `text-[17px]`.
+
+**Verification:** `git diff --stat src/components/layout/Header.tsx` reports
+NO changes — the file is byte-identical to HEAD again, which is the strongest
+possible proof of "back to how it was". Runtime desktop @1440: all five links
+17px. Mobile @390: mobile-menu links still 20px (own markup), height
+9885/9885/9885 settled. `bun run build` exit 0 (35/35). No dev-scan flake this
+time — `.text-\[17px\]` was already present in the dev CSS from the original.
+
+## Navbar dropdown card titles 24px -> 26px (desktop)
+
+**Task:** /home desktop: increase the font size of the links in the Services
+dropdown cards slightly.
+
+**Changes (`ui/resizable-navbar.tsx`), 2 tokens:**
+- title `lg:text-2xl` -> `lg:text-[26px]` (24 -> 26).
+- title wrapper `max-w-[70%]` -> `max-w-[88%]`. Needed, not cosmetic: at 26px
+  the two longest names ("Digital Marketing & Growth", "Custom Software &
+  SaaS") overflowed to THREE lines inside the old cap, breaking the uniform
+  two-line card shape established earlier. Widening the cap puts them back at
+  two without touching the forced-break helper.
+
+**Two measurement lessons this task:**
+1. Checked the dev CSS BEFORE trusting the runtime reading (per the rule of
+   thumb added last task) — `text-[26px]` was present in dev AND built CSS,
+   so no flake, and the first reading was trustworthy.
+2. My follow-up grep for `max-w-[88%]` returned 0 in both dev and built CSS
+   and I restarted the dev server on the strength of it — the restart was
+   UNNECESSARY. Tailwind escapes `%` in the selector, so the rule is
+   `.max-w-\[88\%\]`; grepping the unescaped form is a guaranteed false
+   negative. Re-grepped with `max-w-\[88\%\]` -> present in both all along.
+   Corrected rule of thumb: when grepping generated CSS for arbitrary values,
+   escape `%` (and remember `[`/`]` are already escaped).
+
+**Verification @1440 (real hover):** all 8 titles fontSize 26px, lines 2,
+offCentre 0 — size raised, two-line shape and vertical centring both intact.
+Mobile @390: 0 dropdown cards, height 9885/9885/9885 settled. `bun run build`
+exit 0 (35/35); biome 10 = HEAD baseline.
+
+## Services dropdown panel: black REVERTED to white
+
+**Task:** "make the parent div black" then, immediately, "revert this task".
+
+**Important correction to my own assumption.** The tool call that applied the
+black panel came back as REJECTED ("the new_string was NOT written"), so I
+expected nothing to revert. Checking the file instead of trusting that
+message showed the panel WAS already
+`bg-black border-white/10` — the edit had landed despite the rejection
+notice. Lesson: after a rejected/interrupted tool call, verify the file
+state; the rejection message is not proof the change did not apply.
+
+**Change.** Services dropdown panel back to
+`bg-white border border-black/5 rounded-[2rem] ...` (its HEAD value); the
+other dropdown variant's panel was never touched.
+
+**Verification:** class-level diff vs HEAD for the whole file is now ONLY
+`+text-[26px] / -lg:text-2xl` and `+max-w-[88%] / -max-w-[70%]` (the previous
+task) plus the renderCardTitle helper — no bg-black/bg-white lines remain in
+the diff. Runtime @1440: panel backgroundColor rgb(255,255,255), border
+oklab(0 0 0 / 0.05), cards still on their white gradient. Screenshot shows
+the white panel restored. `bun run build` exit 0 (35/35); biome 10 = HEAD
+baseline.

@@ -223,6 +223,28 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   );
 };
 
+// Two-word service names ("App Development", "Video Production",
+// "UI/UX Design", "Web Development") are stacked one word per line so every
+// dropdown card keeps the same two-line title shape. A width cap cannot do
+// this reliably: the wrapper's cap is a PERCENTAGE, so it grows with the card
+// and these names slip back onto one line on wide screens — and the usable
+// fixed-px window is ~3px ("Development" measures 139, "UI/UX Design" 142).
+// Names with more words already wrap naturally and are left alone.
+function renderCardTitle(name: string) {
+  const words = name.split(" ");
+  if (words.length !== 2) return name;
+  return (
+    <>
+      {/* The explicit space keeps the accessible name and any copied text as
+          "App Development", not "AppDevelopment" — a <br /> alone removes the
+          only word separator. It renders as trailing whitespace before the
+          break, so it costs nothing visually. */}
+      {words[0]} <br />
+      {words[1]}
+    </>
+  );
+}
+
 export const NavItems = ({
   items,
   className,
@@ -344,9 +366,9 @@ export const NavItems = ({
 
                           <div className="relative z-10 flex h-full flex-col justify-center text-zinc-900 transition-colors duration-400 group-hover:text-white">
                             <div className="flex w-full items-center justify-between">
-                              <span className="relative inline-block max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1">
-                                <span className="relative text-xl lg:text-2xl font-bold tracking-tight">
-                                  {sub.name}
+                              <span className="relative inline-block max-w-[88%] transition-all duration-400 ease-out group-hover:translate-x-1">
+                                <span className="relative text-xl lg:text-[26px] font-bold tracking-tight">
+                                  {renderCardTitle(sub.name)}
                                 </span>
                               </span>
                             </div>

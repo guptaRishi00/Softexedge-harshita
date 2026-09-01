@@ -53,7 +53,7 @@ const navItems: NavItem[] = [
         name: "Digital Marketing & Growth",
         count: "/4 services",
         link: "/digital-marketing",
-        image: "/assets/ui.jpg",
+        image: "/assets/dm8.png",
       },
       {
         name: "AI & Marketing Automation",
@@ -65,7 +65,7 @@ const navItems: NavItem[] = [
         name: "Web Development",
         count: "/4 services",
         link: "/web-development",
-        image: "/assets/web5.jpg",
+        image: "/assets/web7.png",
       },
       {
         name: "App Development",
@@ -77,19 +77,19 @@ const navItems: NavItem[] = [
         name: "Custom Software & SaaS",
         count: "/4 services",
         link: "/custom-software",
-        image: "/assets/saas.jpg",
+        image: "/assets/saas3.jpg",
       },
       {
         name: "Brand Strategy & Identity",
         count: "/4 services",
         link: "/brand-strategy",
-        image: "/assets/gd.jpg",
+        image: "/assets/ui.jpg",
       },
       {
         name: "UI/UX Design",
         count: "/4 services",
         link: "/ui-ux-design",
-        image: "/assets/ui4.jpg",
+        image: "/assets/ui2.jpg",
       },
       {
         name: "Video Production",
