@@ -47,21 +47,13 @@ const CustomLogo = ({
 const navItems: NavItem[] = [
   {
     name: "Services",
-    // Was "/", so clicking the dropdown's own label bounced you to the site
-    // root (which then redirects to /home) instead of the services list.
-    // `/home#services` is the section this menu is about, and is the same
-    // target the footer's "Our Services" already uses.
-    // Desktop-only in effect: below lg this entry renders as the accordion
-    // BUTTON in MobileNavMenu, never as a Link, so the mobile menu is
-    // untouched. `isActive` is computed for every item but only read in the
-    // non-dropdown branch, so this value never reaches it.
     link: "/home#services",
     dropdownItems: [
       {
         name: "Digital Marketing & Growth",
         count: "/4 services",
         link: "/digital-marketing",
-        image: "/assets/dm6.jpg",
+        image: "/assets/ui.jpg",
       },
       {
         name: "AI & Marketing Automation",
@@ -73,7 +65,7 @@ const navItems: NavItem[] = [
         name: "Web Development",
         count: "/4 services",
         link: "/web-development",
-        image: "/assets/web4.jpg",
+        image: "/assets/web5.jpg",
       },
       {
         name: "App Development",
@@ -97,13 +89,13 @@ const navItems: NavItem[] = [
         name: "UI/UX Design",
         count: "/4 services",
         link: "/ui-ux-design",
-        image: "/assets/ui2.jpg",
+        image: "/assets/ui4.jpg",
       },
       {
         name: "Video Production",
         count: "/4 services",
         link: "/video-production",
-        image: "/assets/video2.jpg",
+        image: "/assets/video5.jpg",
       },
     ],
   },
