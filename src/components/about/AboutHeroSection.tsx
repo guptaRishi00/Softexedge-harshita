@@ -10,11 +10,11 @@ const cn = (...classes: (string | boolean | undefined | null)[]) => {
 };
 
 const WORK_IMAGES = [
-  "https://images.unsplash.com/photo-1780387477222-730504564368?w=800&auto=format&fit=crop&q=80",
-  "https://plus.unsplash.com/premium_photo-1773833961204-e6534b9913e3?w=800&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1779399147786-316f949446bb?w=800&auto=format&fit=crop&q=80",
-  "https://plus.unsplash.com/premium_photo-1688572454849-4348982edf7d?w=800&auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop&q=80",
+  "/assets/ap1.jpg",
+  "/assets/ap2.jpg",
+  "/assets/ap3.jpg",
+  "/assets/ap4.jpg",
+  "/assets/ap5.jpg",
 ];
 
 const stats = [
@@ -142,9 +142,7 @@ export default function AboutHeroSection() {
             drifting past would each start at a different moment and show the
             same stat with different numbers side by side. The count-up stays on
             desktop, where each stat is on screen exactly once. */}
-        <div
-          className="marquee relative z-10 w-full py-6 md:hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
-        >
+        <div className="marquee relative z-10 w-full py-6 md:hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
           <div
             className="marquee-track motion-reduce:animate-none"
             // reverse: the shared `scroll` keyframe runs 0 -> -50% (leftward),

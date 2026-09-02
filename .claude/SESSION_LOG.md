@@ -22296,3 +22296,33 @@ the diff. Runtime @1440: panel backgroundColor rgb(255,255,255), border
 oklab(0 0 0 / 0.05), cards still on their white gradient. Screenshot shows
 the white panel restored. `bun run build` exit 0 (35/35); biome 10 = HEAD
 baseline.
+
+## Get in Touch button: white hairline on hover fixed
+
+**Task:** /home desktop: a faint white line appears at the button's edges on
+hover.
+
+**Cause.** In `ui/DynamicButton.tsx` the hover gradient overlay was a SQUARE
+`absolute inset-0` rect with no radius, relying entirely on the parent's
+`overflow-hidden` to round it. The antialiased pixels along that clip let the
+button's own `bg-white` bleed through as a hairline once the overlay went
+opaque. The sheen container had a second, unrelated mismatch: `rounded-lg`
+against the button's `rounded-xl`.
+
+**Fix + a correction I had to make mid-task.** First attempt set both layers
+to `rounded-xl` — measuring showed the button actually computes 10px, not
+14px, because the navbar call site overrides with
+`className="relative px-8 py-3 rounded-lg"`. So hard-coding ANY radius just
+moves the mismatch to whichever call site overrides it. Both layers now use
+`rounded-[inherit]`, which tracks the button's real radius everywhere.
+
+**Verification @1440:** navButtonRadius 10px, layerRadii ["10px","10px"],
+allMatch true. Hover screenshot shows the gradient button with clean corners
+and no white edge. Mobile @390: button radius 10px, overlay opacity 0 at rest
+(the change is invisible without hover, and Tailwind wraps `hover:` in
+`@media (hover:hover)`), height 9885/9885/9885 settled — untouched.
+`bun run build` exit 0 (35/35); biome 1 = HEAD baseline.
+
+**Scope note:** DynamicButton is shared site-wide, so every instance gets the
+same clip-alignment correctness fix — desirable, and `rounded-[inherit]`
+adapts to each call site's own radius rather than imposing one.

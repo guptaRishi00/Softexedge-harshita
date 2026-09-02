@@ -53,8 +53,15 @@ export default function DynamicButton({
       )}
     >
       <div
+        // `rounded-[inherit]`, not a fixed radius: this overlay was a SQUARE
+        // rect relying purely on the parent's `overflow-hidden` to round it,
+        // and the antialiased pixels along that clip let the button's white
+        // background bleed through as a hairline on hover. It must match the
+        // button's ACTUAL radius, which call sites override via `className`
+        // (the navbar's Get in Touch resolves to 10px, not the base 14px), so
+        // hard-coding any value re-creates the mismatch elsewhere.
         className={cn(
-          "absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100",
+          "absolute inset-0 rounded-[inherit] opacity-0 transition-opacity group-hover:opacity-100",
           instantHover ? "duration-0" : "duration-500",
         )}
       >
@@ -73,7 +80,7 @@ export default function DynamicButton({
         />
       </div>
 
-      <div className="absolute inset-0 overflow-hidden rounded-lg">
+      <div className="absolute inset-0 overflow-hidden rounded-[inherit]">
         <div
           className={cn(
             "absolute left-[-120%] top-0 h-full w-[60%] rotate-12 bg-white/40 blur-xl transition-all group-hover:left-[140%]",
