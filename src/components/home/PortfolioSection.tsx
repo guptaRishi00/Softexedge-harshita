@@ -532,7 +532,7 @@ export default function PortfolioSection() {
               className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
             >
               <Image
-                src="/assets/collage3.png"
+                src="/assets/collage4.png"
                 alt=""
                 fill
                 sizes="100vw"
@@ -549,7 +549,13 @@ export default function PortfolioSection() {
             </p>
             <h2 className="relative text-[3.25rem] font-bold leading-[0.9] tracking-[-0.04em] max-md:text-[2.75rem] md:text-8xl lg:text-[9rem]">
               Our{" "}
-              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text text-transparent">
+              {/* `pr-3` is load-bearing, not spacing: `bg-clip-text` paints the
+                  gradient only within the element's box, and this h2's
+                  `tracking-[-0.04em]` pulls the box in until the final "s"
+                  overhangs it by ~2px at the 144px size — that sliver gets no
+                  gradient and reads as a cut letter. Same fix the other
+                  gradient headings already carry. */}
+              <span className="bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pr-3 text-transparent">
                 Projects
               </span>
             </h2>

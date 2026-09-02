@@ -22326,3 +22326,32 @@ and no white edge. Mobile @390: button radius 10px, overlay opacity 0 at rest
 **Scope note:** DynamicButton is shared site-wide, so every instance gets the
 same clip-alignment correctness fix — desirable, and `rounded-[inherit]`
 adapts to each call site's own radius rather than imposing one.
+
+## PortfolioSection "Projects": gradient text no longer clipped
+
+**Task (screenshot):** the "s" of the gradient "Projects" heading is cut.
+
+**Cause, measured not guessed.** `home/PortfolioSection.tsx` h2 carries
+`tracking-[-0.04em]`; `bg-clip-text` paints the gradient only inside the
+element's box, and the negative tracking pulls that box in until the final
+glyph's ink overhangs it. Measured at 1440 (144px type): box 496.7px, ink
+right edge 498.8px -> 2.1px of the "s" fell outside the painted area, so it
+rendered as transparent = a cut letter.
+
+**Measurement note worth keeping:** my FIRST probe reported a 42.4px overhang
+and was wrong — it compared canvas ink measured WITHOUT letter-spacing
+against the tracked box. Setting `ctx.letterSpacing` to the computed value
+gave the true 2.1px. When measuring text overhang, the canvas context must
+carry the same letter-spacing as the element or the number is meaningless.
+
+**Fix.** Added `pr-3` to the gradient span — the convention this codebase
+already uses on 18 other gradient headings (ProjectShowcase,
+WorkProjectShowcase, ExperimentalTestimonials...); this heading was the
+outlier. Padding widens the painted box without moving the glyphs, and it is
+trailing on a left-aligned heading so nothing shifts.
+
+**Verification:** desktop @1440 — paddingRight 12px, box 508.7 vs ink 498.8,
+inkBeyondBox -9.9 (inside). Mobile @390 (44px type) — inkBeyondBox -10.6,
+also inside; applied at all sizes deliberately since the clipping was present
+at every breakpoint and the repo convention is unprefixed. `bun run build`
+exit 0 (35/35); biome 2 = HEAD baseline.
