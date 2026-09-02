@@ -532,7 +532,7 @@ export default function PortfolioSection() {
               className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
             >
               <Image
-                src="/assets/collage.png"
+                src="/assets/collage3.png"
                 alt=""
                 fill
                 sizes="100vw"
