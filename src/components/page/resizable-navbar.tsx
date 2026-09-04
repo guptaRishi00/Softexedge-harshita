@@ -219,6 +219,28 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   );
 };
 
+// Two-word service names ("App Development", "Video Production",
+// "UI/UX Design", "Web Development") are stacked one word per line so every
+// dropdown card keeps the same two-line title shape. A width cap cannot do
+// this reliably: the wrapper's cap is a PERCENTAGE, so it grows with the card
+// and these names slip back onto one line on wide screens — and the usable
+// fixed-px window is ~3px ("Development" measures 139, "UI/UX Design" 142).
+// Names with more words already wrap naturally and are left alone.
+function renderCardTitle(name: string) {
+  const words = name.split(" ");
+  if (words.length !== 2) return name;
+  return (
+    <>
+      {/* The explicit space keeps the accessible name and any copied text as
+          "App Development", not "AppDevelopment" — a <br /> alone removes the
+          only word separator. It renders as trailing whitespace before the
+          break, so it costs nothing visually. */}
+      {words[0]} <br />
+      {words[1]}
+    </>
+  );
+}
+
 export const NavItems = ({
   items,
   className,
@@ -250,7 +272,7 @@ export const NavItems = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="fixed left-1/2 top-1/2 h-[300vh] w-[300vw] -translate-x-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-md -z-10 pointer-events-none"
+            className="fixed left-1/2 top-1/2 h-[300vh] w-[300vw] -translate-x-1/2 -translate-y-1/2 bg-black/35 backdrop-blur-md -z-10 pointer-events-none"
           />
         )}
       </AnimatePresence>
@@ -334,7 +356,7 @@ export const NavItems = ({
                           key={`sub-${sIdx}`}
                           href={sub.link}
                           onClick={onItemClick}
-                          className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-zinc-50 border border-black/5 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
+                          className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-linear-to-br from-white to-[#efefef] border border-zinc-200 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
                         >
                           {sub.image && (
                             <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
@@ -348,18 +370,18 @@ export const NavItems = ({
                             </div>
                           )}
 
-                          <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-b from-black/70 via-black/20 to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
+                          <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-r from-black/80 via-black/35 via-70% to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
 
-                          <div className="relative z-10 flex h-full flex-col justify-between text-zinc-900 transition-colors duration-400 group-hover:text-white">
-                            <div className="flex justify-between items-start w-full">
-                              <span className="relative inline-block max-w-[70%] transition-all duration-400 ease-out group-hover:translate-x-1">
-                                <span className="relative text-xl lg:text-2xl font-bold tracking-tight bg-gradient-to-r from-zinc-900 to-zinc-900 group-hover:from-[#2E5BFF] group-hover:to-[#149CCB] bg-clip-text text-transparent">
-                                  {sub.name}
+                          <div className="relative z-10 flex h-full flex-col justify-center text-zinc-900 transition-colors duration-400 group-hover:text-white">
+                            <div className="flex w-full items-center justify-between">
+                              <span className="relative inline-block max-w-[88%] transition-all duration-400 ease-out group-hover:translate-x-1">
+                                <span className="relative text-xl lg:text-[26px] font-bold tracking-tight">
+                                  {renderCardTitle(sub.name)}
                                 </span>
                               </span>
                             </div>
 
-                            <div className="flex justify-start">
+                            <div className="absolute bottom-0 left-0 flex justify-start">
                               <span className="relative inline-flex opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-[#149CCB]">
                                 <svg
                                   className="relative w-6 h-6"

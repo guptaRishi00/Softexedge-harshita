@@ -22373,3 +22373,23 @@ exit 0 (35/35); biome 2 = HEAD baseline.
 **Change (`CLAUDE.md`, 2 hunks):** replaced "The 8 service pages have their own copies of every section (64 files)" with the current truth (all 8 routes render `brand-strategy/*`; 7 sibling folders / 56 files are dead; `STEP` + `SUBSERVICES_STICK_TOP` are the single-source exports). Fixed the mobile-rules heading to point at the map sections that exist now. CRLF preserved, UTF-8.
 
 **Verification:** `git diff --stat CLAUDE.md` = 1 file, 6 insertions / 5 deletions; `file CLAUDE.md` still reports CRLF UTF-8. No source files touched; not committed.
+
+## Services dropdown: every page now matches /home (desktop)
+
+**Task:** make the navbar Services dropdown on all non-home pages the same as the home page.
+
+**Cause.** `/home` uses `layout/Header` + `ui/resizable-navbar` (redesigned panel: white->#efefef cards, zinc-200 border, `renderCardTitle` two-line titles, left-to-right hover scrim, arrow bottom-left, `bg-black/35` backdrop). Every other route uses `page/Header` + `page/resizable-navbar`, which still had the old panel (zinc-50 cards, gradient-text titles, top-down scrim, arrow in flow, `bg-black/20`) and Unsplash images in a different order.
+
+**Change (2 files, +48/-32).** `src/components/page/resizable-navbar.tsx`: added `renderCardTitle` (verbatim from ui/), scrim `bg-black/20` -> `bg-black/35`, card surface/border, overlay gradient, `justify-between` -> `justify-center`, title `max-w-[70%]` + gradient text -> `max-w-[88%]` + `text-xl lg:text-[26px]`, arrow wrapper -> `absolute bottom-0 left-0`. `src/components/page/Header.tsx`: `dropdownItems` replaced with `layout/Header`'s list (home order, local `/assets/*` images). Kept page/'s `onDark`/`floating`/scrim-gating logic untouched. Mobile accordion untouched. Services top-level `link` left as `/`.
+
+**Verification.** `bunx tsc --noEmit` exit 0; `bun run build` exit 0 (35/35); biome on both files = HEAD baseline (9 / 2 pre-existing errors, none on touched lines). Visual against the user's dev server on :3000 (a second `next dev` is refused for the same dir): /about hover Services -> DOM has the ui/ classes, `App <br>Development` title, `/assets/app.jpg`, home item order; card hover reveals image + white text + arrow; screenshot vs /home dropdown: identical layout. Preview-pane frame rate not measured. Map updated (Two Header components, ui table, migration list). Not committed.
+
+## Career hero: every carousel card now shows a different image
+
+**Task:** "in career page in career herosection the every image div should contain different image."
+
+**Cause.** `career/CareerHeroSection.tsx` rows were 3 items each (image, quote, video) with the image card and the video `still` sharing one photo (`col1Still` / `col2Still`), and `InfiniteRow` repeats the list 6x — so each row showed a single photo over and over.
+
+**Change (1 file, +17/-16).** Dropped the two `*Still` constants; row 1 is now 7 cards (meet2, quote, video1 with still gd.jpg, interview, h4, sw, saas), row 2 is 6 (video2 with still video4.jpg, meet, quote, video, h2, video2.jpg). All 11 paths are unique across both rows and all exist in `public/assets` (no new files, no remote hosts). Quotes, videos, speeds, layout untouched. Header comment rewritten to state the uniqueness rule (`InfiniteRow` keys cards by `src`).
+
+**Verification.** `bunx tsc --noEmit` exit 0; biome on the file: 0 diagnostics before and after; `bun run build` (see below). Visual on the user's :3000 dev server, /career: DOM dump of one marquee copy per row lists the 7 + 6 sources above with no repeats; screenshot shows varied cards in both rows. Frame rate not measured. Map: removed the "interview.jpg orphan" note, added the uniqueness rule. Not committed.

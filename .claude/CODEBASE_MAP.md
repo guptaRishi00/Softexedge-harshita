@@ -59,7 +59,7 @@ Every `src/app/**/page.tsx` is a **Server Component** (zero `"use client"` under
 - `src/components/ui/` — 16 shared primitives/effects (all live; see table below)
 - `src/components/brand-strategy/` — **the one live service-page component set** (9 files)
 - `src/components/{ai-marketing-automation,app-development,custom-software,digital-marketing,ui-ux-design,video-production,web-development}/` — **56 dead files**, byte-identical to each other (md5 verified), an older generation of brand-strategy's components. Kept "for minimal diff"; cleanup pending (open question 1).
-- `src/components/{about,blog,career,contact,work}/` — page-specific sections
+- `src/components/{about,blog,career,contact,work}/` — page-specific sections. `career/CareerHeroSection` rows are `InfiniteRow` marquees (6 copies of the item list); every image `src` and video `still` there is unique on purpose, and `InfiniteRow` keys cards by `src`, so never repeat a path within a row.
 - `src/data/` — `blog.ts` (6 posts), `projects.ts` (9 projects)
 - `src/lib/` — `utils.ts` (`cn`), `site.ts` (`SITE_URL`), `useIsDesktop.ts`, `useInfiniteCarousel.ts`, `tweenScrollLeft.ts`
 - `public/assets/` (123 files, ~114 MB, 8 mp4), `public/fonts/`, `public/noise.png`
@@ -108,7 +108,7 @@ No storage. Two static modules:
 
 ## Assets
 - `public/assets/` — 123 files, ~114 MB. Videos: `video1` 10.3 MB (about), `video2` 4.6, `video5` 3.8 (contact hero), `video6` 1.9, `video7` 1.4 (home hero, re-encoded 720p), `video3` 0.97, `video8`, `video9`. **`video7.mp4.orig` (20.9 MB) and `video3.mp4.orig` (1.9 MB) are still committed** — pre-encode backups awaiting deletion sign-off (open question A).
-- **7 untracked images** in the working tree right now: `apply.jpg, assign.jpg, interview.jpg, interview2.jpg, meet.jfif, meet2.jpg, offer.jfif` — the in-progress career Unsplash→local migration (see Repo state). `interview.jpg` is referenced by nothing.
+- **7 untracked images** in the working tree right now: `apply.jpg, assign.jpg, interview.jpg, interview2.jpg, meet.jfif, meet2.jpg, offer.jfif` — the in-progress career Unsplash→local migration (see Repo state). All 7 are now referenced (career hero + ApplicationJourney).
 - **Remote image hosts still in use:** `images.unsplash.com` (~40 live files), `plus.unsplash.com`, `i.pravatar.cc` (CtaSection avatars), `randomuser.me` (blog/about avatars). `next.config.ts` `remotePatterns` covers all four (`images.unsplash.com` listed twice, `:11` and `:23`). Any new host throws at runtime.
 - `next/image` everywhere — `grep "<img" src/` hits only a comment. New `LogoLoop` items **must** pass intrinsic `width`/`height`.
 - `public/noise.png` — 128×128 grayscale, generated Aug (was a 404 before); used by Footer + AboutTraditional as `bg-[url('/noise.png')] … max-md:hidden`.
@@ -155,7 +155,7 @@ No storage. Two static modules:
 | `DomeGallery` | `work/WorkHeroSection` | `paused` prop shares bookkeeping with its own IO pause; `desktopDirection` md+ only. Page pauses it via IO on `#work-showcase` with `rootMargin "0px 0px -1px 0px"` — the −1px is load-bearing. |
 | `CarouselDots` | Blog, Testimonials, RelatedArticles, brand-strategy Process/Showcase | Pass `loop` when the track repeats. `about/OurTeamSection` deliberately uses its own dots. |
 | `DynamicButton` | both Headers | Glow layers are `rounded-[inherit]` — never hard-code a radius (hairline bug). |
-| `resizable-navbar` (ui) | `layout/Header` | Dropdown-pill mobile mode, `renderCardTitle` two-line titles, white services panel. |
+| `resizable-navbar` (ui) | `layout/Header` | Dropdown-pill mobile mode, `renderCardTitle` two-line titles, white services panel (panel mirrored into `page/resizable-navbar` 2026-09-04 — keep the two in step). |
 | `button`, `carousel` | carousel ← OurTeamSection, FooterInteractiveClocks | Stock shadcn. `button` only reachable via `carousel`. |
 
 ## Risks & gotchas
@@ -171,7 +171,7 @@ No storage. Two static modules:
 | `layout/Header.tsx` | `ui/resizable-navbar` | **`/home` only** via `home/Herosection.tsx:7` |
 | `page/Header.tsx` (`onDark`, `dropdown` props) | `page/resizable-navbar` | **all other routes**, rendered at page level; `onDark` on `/contact`, `/work`, `/work/[slug]` |
 
-The two navbar files differ for real (diff = 419 lines): `page/` has `onDark` + `floating`, scrim only when the hovered item has a dropdown, zinc-50 cards; `ui/` has `visible`, `renderCardTitle`, white→#efefef cards, always-scrim. Shared mechanism in both: passive scroll listener + `style.translate` + 8 px direction threshold, **no `backdrop-blur` on the fixed mobile bar** (re-blurred every frame over video), `will-change` deliberately off. **Any navbar fix lands twice.**
+The two navbar files still differ in props and behaviour: `page/` has `onDark` + `floating` and shows the scrim only when the hovered item has a dropdown; `ui/` has `visible` and always-scrim. **The desktop Services dropdown panel is identical in both since 2026-09-04** (`renderCardTitle`, white→#efefef cards, `bg-black/35` scrim, arrow bottom-left), and both Headers carry the same 8 `dropdownItems` in the same order with local `/assets/*` images. Shared mechanism in both: passive scroll listener + `style.translate` + 8 px direction threshold, **no `backdrop-blur` on the fixed mobile bar** (re-blurred every frame over video), `will-change` deliberately off. **Any navbar fix lands twice.**
 
 ### Scroll-fragile code
 1. **`home/ScrollAnimator.tsx`** — three `pin:true, pinSpacing:false` + `endTrigger` pins (about→portfolio `:91`, stats→services `:115`, testimonials→contact `:140`) with scrub scale tweens, all inside one `mm.add("(min-width: 768px)")`; the `md:-mt-[100vh]` at `:222` pulls the z-20 block over the pinned portfolio. **No `invalidateOnRefresh`** on these (Portfolio's own trigger has it). Any height change in About/Portfolio/Stats/Services shifts the overlap. Depends on `.stat-inner` (StatsSection) and the z-ladder 0/10/20/30.
@@ -224,7 +224,7 @@ The in-app preview does not composite: rAF is frozen, timers ~4× slow, IO never
 
 ### Needing your call (2026-09-04)
 1. **Delete the 56 dead service component files?** (`src/components/{7 folders}/`, byte-identical, zero importers, confirmed by grep + build.) They were kept "for minimal diff" when the routes were repointed. Also `brand-strategy/AgencyStats.tsx` (unrendered) and `SubServices`' dead `children` path.
-2. **The Unsplash→local migration** — commit the career half? Continue with the rest (Header dropdown images ×8, brand-strategy SubServices/Process/Showcase/Hero ~15, blog/projects data ~20, OurTeam/OurValues avatars, DomeGallery defaults)? Delete the orphan `interview.jpg`? Rename `.jfif` → `.jpg`?
+2. **The Unsplash→local migration** — commit the career half? Continue with the rest (brand-strategy SubServices/Process/Showcase/Hero ~15, blog/projects data ~20, OurTeam/OurValues avatars, DomeGallery defaults)? Rename `.jfif` → `.jpg`?
 3. **Resume the interrupted asset cleanup** (`public/assets` has ~40 files referenced by nothing — **[?]** count not re-verified today)? Needs an approved list; 7 files are untracked so deletion is unrecoverable.
 4. `package-lock.json` alongside `bun.lock` — remove it? (**[?]** assumed stray.)
 5. `tel:+18001234567` in ContactSection — real number or placeholder?

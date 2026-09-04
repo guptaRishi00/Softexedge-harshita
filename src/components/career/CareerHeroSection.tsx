@@ -23,38 +23,39 @@ const wordVariants = {
   },
 } as const;
 
-// Shown in place of the video in the marquee's repeated copies, so only the
-// first copy holds a real <video>. Swap these for actual poster frames of the
-// videos if you want the repeats to look identical to the playing card.
-const col1Still = "/assets/meet2.jpg";
-const col2Still = "/assets/meet.jfif";
-
+// Every image src below is unique across both rows, so no photo appears twice
+// in a row's visible window. The video `still` is shown in place of the video
+// in the marquee's repeated copies (only the first copy holds a real <video>),
+// so it must be a distinct photo too, not a reuse of an image card. Swap the
+// stills for actual poster frames if you want the repeats to match the
+// playing card.
 const col1Items: CarouselItem[] = [
-  {
-    type: "image",
-    src: col1Still,
-  },
+  { type: "image", src: "/assets/meet2.jpg" },
   {
     type: "quote",
     text: "The best place I've grown — trusted with real work from day one.",
     author: "Priya Sharma",
     role: "Product Designer",
   },
-  { type: "video", src: "/assets/video1.mp4", still: col1Still },
+  { type: "video", src: "/assets/video1.mp4", still: "/assets/gd.jpg" },
+  { type: "image", src: "/assets/interview.jpg" },
+  { type: "image", src: "/assets/h4.jpg" },
+  { type: "image", src: "/assets/sw.jpg" },
+  { type: "image", src: "/assets/saas.jpg" },
 ];
 
 const col2Items: CarouselItem[] = [
-  { type: "video", src: "/assets/video2.mp4", still: col2Still },
-  {
-    type: "image",
-    src: col2Still,
-  },
+  { type: "video", src: "/assets/video2.mp4", still: "/assets/video4.jpg" },
+  { type: "image", src: "/assets/meet.jfif" },
   {
     type: "quote",
     text: "Great people, real ownership, and room to do the best work of your life.",
     author: "Arjun Mehta",
     role: "Engineering Lead",
   },
+  { type: "image", src: "/assets/video.jpg" },
+  { type: "image", src: "/assets/h2.jpg" },
+  { type: "image", src: "/assets/video2.jpg" },
 ];
 
 export default function CareerHeroSection() {
