@@ -12,15 +12,16 @@ gotchas so you don't have to re-explore.
 - **Don't create "parked" dead components** — the old `src/components/garbage/` graveyard (deleted 2026-07-24) is not a pattern to revive; unused code gets removed, not stored.
 - **Navigation is duplicated** — `layout/Header` serves `/home` only; `page/Header`
   serves every other page. Check the map before editing either.
-- **The 8 service pages have their own copies of every section** (CtaSection,
-  SubServices, ProcessSection, OurTechStack, ProjectShowcase, FaqSection,
-  StrategyHeroSection, AgencyStats — 64 files). Editing one changes ONE page;
-  a site-wide change means 8 files. Always confirm the intended scope first.
+- **All 8 service routes render `src/components/brand-strategy/*`.** The 7
+  sibling folders (`web-development/`, `app-development/`, … — 56 files) are
+  dead code with zero importers: editing them changes nothing. A service-wide
+  change is one file in `brand-strategy/`. `STEP` (SubServiceCard.tsx) and
+  `SUBSERVICES_STICK_TOP` (SubServices.tsx) are exported — change them there only.
 - **No `test` or `typecheck` script exists** — use `bunx tsc --noEmit`.
 - **Use `next/image`, never a raw `<img>`.** The migration is complete (`grep "<img" src/` is 0); new remote hosts must be added to `next.config.ts` `remotePatterns` or they throw at runtime.
 - **Every `<video>` is globally paused offscreen** by `ui/VideoViewportPause` (mounted in `layout.tsx`). Never assume an `autoPlay` video keeps running offscreen; if you drive a canvas from a video, guard the `"play"` handler with `cancelAnimationFrame` — it now fires on every resume.
 
-## Mobile rules (`/home` below `md`) — see the map's "Mobile architecture"
+## Mobile rules (`/home` below `md`) — see the map's "Conventions" and "Risks & gotchas"
 - **Carousels use NATIVE scroll-snap, never JS pointer dragging.** JS drag pays
   main-thread latency by construction; native scrolling runs on the compositor.
   `useMarqueeHalf` has one consumer left (`LogoCarousel`) — don't reach for it.

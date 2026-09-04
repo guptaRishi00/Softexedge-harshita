@@ -1,398 +1,243 @@
-# softexedge-may-2026 — Codebase Map
-_Last updated: 2026-08-07_
+# softexedge-sept-2026 — Codebase Map
+_Last updated: 2026-09-04_ (full rebuild; the previous map was dated 2026-08-07 and 98 commits stale)
 
-> ⚠️ **Mobile is now its own architecture.** Everything below `md` on `/home`
-> was rebuilt across 2026-08-06/07 for touch performance — native scroll-snap
-> carousels, suppressed entrance animations, framer off the scroll path. See
-> **"Mobile architecture"**, which supersedes the old "mobile is a plain
-> vertical stack" assumption.
+> Legend: everything here was re-read from source on 2026-09-04 unless tagged
+> **[?] INFERRED** — a reasoned guess, not confirmed. The user was asked to
+> check every [?] item; treat them as leads until then.
+>
+> ⚠️ **Two facts changed since the last map and invalidate old habits:**
+> 1. **All 8 service routes render `src/components/brand-strategy/*`.** The 7
+>    sibling folders (`web-development/`, `app-development/`, … — 56 files) are
+>    **dead code with zero importers**. Editing them changes nothing.
+> 2. **`app/home/page.tsx` is a Server Component**; the GSAP pin chain moved
+>    to `home/ScrollAnimator.tsx`.
 
 ## Identity
-Marketing/agency website for **SoftexEdge**. Frontend-only, animation-heavy
-brochure site — **no backend, API, database, or auth**. All content is
-hard-coded in `src/data/`. Focus is visual polish: scroll-driven GSAP
-animations, framer-motion, smooth scrolling, WebGL effects.
+Marketing/agency website for **SoftexEdge** (`https://softexedge.com`, `src/lib/site.ts:1`).
+Frontend-only, animation-heavy brochure site — **no backend, API, database, auth,
+env vars, or fetches**. All content is hard-coded in `src/data/` and inside
+components. Repo: `github.com/guptaRishi00/Softexedge-2026-draft-one`, branch `main`.
 
-- **Framework:** Next.js 16.2.5 (App Router) + React 19.2.4, React Compiler enabled (`next.config.ts` `reactCompiler: true`)
+- **Framework:** Next.js 16.2.5 (App Router, Turbopack) + React 19.2.4, React Compiler on (`next.config.ts` `reactCompiler: true`)
 - **Language:** TypeScript 5, `strict: true`, alias `@/*` → `./src/*`
-- **Runtime:** modern Node; project uses Bun
+- **Runtime here:** Node 22.16, Bun 1.2.16
+- **Read `node_modules/next/dist/docs/` before writing Next code** (AGENTS.md rule — this Next differs from training data)
 
 ## Stack & build
-- **Package manager:** Bun (`bun.lock` is the only lockfile). npm works; `.claude/launch.json` uses `npm run dev`.
-- **Styling:** Tailwind CSS v4 — **no `tailwind.config.*`**, configured in CSS via `@theme` in `src/app/globals.css`
-- **Lint/format:** Biome 2.2.0 (`biome.json`). Prettier + prettier-plugin-tailwindcss are installed but have no config — **dead deps**, don't use them.
-- **Animation:** framer-motion (111 files), GSAP + ScrollTrigger (11 files), Lenis
-- **WebGL:** three + @react-three/fiber + drei + postprocessing, and ogl — two stacks, both barely used
-- **Font:** Satoshi Variable, self-hosted `@font-face` in `globals.css` → `--font-sans`. **`next/font` is not used.**
+- **Package manager: Bun** (`bun.lock`). A `package-lock.json` is also committed (added ~Aug) — **[?]** stray; nobody runs npm install. `.claude/launch.json` starts dev via `npm run dev` on :3000.
+- **Styling:** Tailwind v4, CSS-first — no `tailwind.config.*`; `@theme` + `@theme inline` in `src/app/globals.css`. shadcn configured (`components.json`, style `radix-nova`, aceternity registry) but only `ui/button.tsx` + `ui/carousel.tsx` are shadcn-generated.
+- **Lint/format:** Biome 2.2.0. `prettier` + `prettier-plugin-tailwindcss` are still installed with no config — dead deps.
+- **Animation:** framer-motion 12 (114 files), GSAP 3.15 + ScrollTrigger + `@gsap/react` (6 files), Lenis 1.3 (`lenis` + `lenis/react`), embla (`ui/carousel`, footer clocks, team section).
+- **WebGL:** `ogl` only, one consumer: `ui/SpecularBorder.tsx` (loaded via `next/dynamic`, ssr:false, mounted on hover). The `three` stack is gone from `package.json`.
+- **Font:** Satoshi Variable self-hosted `@font-face` (`globals.css:5-11`) → `--font-sans`. `next/font` unused.
+- **Line endings: CRLF** throughout. `biome format --write` rewrites whole files — avoid on files you didn't author.
 
 ## Commands
 | Action | Command |
 |---|---|
-| Run dev | `bun run dev` (→ `next dev`), http://localhost:3000 |
-| Run all tests | _none — no test runner, no test files_ |
+| Run dev | `bun run dev` → http://localhost:3000 (`.claude/launch.json` name `dev`) |
+| Run all tests | _none — no runner, no test files_ |
 | Run one test | _n/a_ |
-| Lint | `bun run lint` (→ `biome check`) — **currently exits 1**; the repo has pre-existing violations (see below). Lint a single file to judge your own change. |
-| Lint + autofix | _no script_ — `bunx @biomejs/biome check --write .` |
-| Format | `bun run format` (→ `biome format --write`) |
-| Typecheck | _no script_ — `bunx tsc --noEmit` |
-| Build | `bun run build` (→ `next build`) |
-| Start (prod) | `bun run start` |
+| Lint | `bun run lint` (`biome check`) — **exits 1 on a clean checkout**: baseline 2026-09-04 = **321 errors / 47 warnings** (`biome lint src` alone: 130 / 47). Judge your change against `git show HEAD:<file>`, not the total. |
+| Format | `bun run format` (`biome format --write`) — see CRLF warning above |
+| Typecheck | _no script_ — `bunx tsc --noEmit` (**clean** 2026-09-04) |
+| Build | `bun run build` — **passes, 35/35 pages prerendered** (2026-09-04). If it fails on `.next/dev/types/routes.d.ts` while `bun dev` is running, `rm -rf .next/dev/types`. |
+| Prod server for phone testing | `bunx next start -H 0.0.0.0 -p 3100`. Kill stale ones with `netstat -ano \| grep :3100` + `Stop-Process -Id <pid> -Force` (`pkill` does not work here). |
 
 ## Bootstrap flow
-`src/app/layout.tsx` imports `globals.css`, sets `metadata` (metadataBase +
-title template + description, from `src/lib/site.ts` `SITE_URL`), applies
-`font-sans` to `<html>`, and mounts **one global component: `VideoViewportPause`**
-(`:26`). **No providers, no header, no footer, no fonts, no analytics.**
+`src/app/layout.tsx` (34 lines): `metadata` with `metadataBase(SITE_URL)` + title template `"%s | Softexedge"` (`:8-16`); `<html class="h-full antialiased font-sans">` → `<body class="min-h-full flex flex-col">` → **two global mounts**: `<VideoViewportPause/>` (`:26`) and `<IosClickRescue/>` (`:29`) → `{children}`. No providers, no header, no footer, no analytics, no fonts.
 
-Each route `page.tsx` composes section components and renders its own
-`<Footer>`. The site header is rendered *inside each page's hero component*
-(see Gotchas). GSAP plugins are registered per-file behind
-`typeof window !== "undefined"`.
+Every `src/app/**/page.tsx` is a **Server Component** (zero `"use client"` under `src/app`). Each route page composes section components and renders its own `<Footer>`. The site header is rendered **per page** — `/home` gets `layout/Header` via `home/Herosection.tsx:7`; every other route renders `page/Header` (22 importers: 13 route pages incl. `work/[slug]`, 7 dead `*/StrategyHeroSection`, `blog/BlogArticle:56`, `blog/BlogHeroSection:85`).
+
+`/home` specifically: `app/home/page.tsx:15` → `<SmoothScroll>` (Lenis, desktop only) → `<ScrollAnimator hero about portfolio stats services testimonials techCarousel contact blog footer/>` (10 ReactNode props). `home/layout.tsx` exists only to carry `metadata` for the route.
 
 ## Directory layout
-- `src/app/` — App Router routes, `layout.tsx`, `globals.css`
-- `src/components/<page>/` — page-specific sections (`home`, `about`, `blog`, `career`, `contact`, `work`)
-- `src/components/<service>/` — **8 near-identical service-page component sets** (see Duplication)
-- `src/components/ui/` — shared primitives + effects (15 files, all referenced; incl. `SpecularBorder` WebGL rim shader — 3 consumers — and `VideoViewportPause`)
-- `src/components/layout/` — Header, Footer, SmoothScroll
-- `src/components/page/` — **second** Header + its own resizable-navbar copy
-- `src/data/` — `blog.ts`, `projects.ts` (all site content)
-- `src/lib/` — `utils.ts` (`cn()`), `site.ts` (`SITE_URL = "https://softexedge.com"`, used by layout metadata + sitemap/robots), plus three mobile-motion modules added 2026-08:
-  - `useIsDesktop.ts` — exports **three** things now: `useIsDesktop()` (false on first render), `useIsMobile()` (correct on the FIRST CLIENT render — safe only for props that emit no markup, i.e. `transition`), and `NO_ENTRY = {duration:0}`
-  - `tweenScrollLeft.ts` — snap-safe rAF scroll tween (disables `scroll-snap-type` for the duration, restores to land)
-  - `useInfiniteCarousel.ts` — endless native snap carousel; also exports `slideStride()`
-- `public/assets/` (~75 files incl. 5 `.mp4`), `public/fonts/`
-
-### Component extraction (2026-07-24, committed)
-Nine long section files had their in-file subcomponents moved to sibling files
-(same folder), imported back. So a card/helper now lives in its own file — grep
-the folder, don't assume it's inline in the parent. Each parent now defines
-exactly one component. Byte-identical moves (zero UI change). New files:
-- `home/RotatingWord.tsx` (from AboutSection) · `home/ChannelCard.tsx` (from ContactSection; explicit `Channel` prop type, `Icon: LucideIcon`)
-- `blog/BlogCard.tsx` (from BlogListSection) · `blog/{ArticleBlock,ShareRail,TableOfContents,RelatedArticles}.tsx` (from the 707-line BlogArticle; `ArticleBlock` exports `slugify`, component still named `Block`)
-- `work/ProjectCard.tsx` (from WorkProjectShowcase; formerly a `TracingBorder` call site, now uses `SpecularBorder`) · `work/ProjectSection.tsx` (from ProjectDetailsContent; component still named `Section`, exports `premiumEase`) · `work/ProjectOutcomes.tsx` (NEW 2026-07-23 — post-gallery testimonial + engagement timeline; rendered between the two `<ProjectGallery>` instances on `/work/[slug]`)
-- `about/{Counter,EdgeToEdgeCarousel}.tsx` (from AboutHeroSection)
-- `brand-strategy/SubServiceCard.tsx` (from SubServices; **owns & exports `STEP=190`** — parent imports it for the pinTop math + reserve height; component still named `Card`)
-- `career/{QuoteCard,CarouselCard,InfiniteRow}.tsx` (from CareerHeroSection; `CarouselCard` owns & exports `type CarouselItem`; import chain parent→InfiniteRow→CarouselCard→QuoteCard)
-The 7 duplicated service folders were deliberately NOT extracted (would double the duplication; see open question 1).
+- `src/app/` — 17 routes + `layout.tsx`, `home/layout.tsx`, `sitemap.ts`, `robots.ts`, `globals.css`, `favicon.ico`
+- `src/components/home/` — `/home` sections + `ScrollAnimator.tsx` (GSAP pin owner)
+- `src/components/layout/` — `Header` (home nav), `Footer` + `FooterInteractiveClocks`, `SmoothScroll`
+- `src/components/page/` — `Header` (all other routes) + its own `resizable-navbar.tsx`
+- `src/components/ui/` — 16 shared primitives/effects (all live; see table below)
+- `src/components/brand-strategy/` — **the one live service-page component set** (9 files)
+- `src/components/{ai-marketing-automation,app-development,custom-software,digital-marketing,ui-ux-design,video-production,web-development}/` — **56 dead files**, byte-identical to each other (md5 verified), an older generation of brand-strategy's components. Kept "for minimal diff"; cleanup pending (open question 1).
+- `src/components/{about,blog,career,contact,work}/` — page-specific sections
+- `src/data/` — `blog.ts` (6 posts), `projects.ts` (9 projects)
+- `src/lib/` — `utils.ts` (`cn`), `site.ts` (`SITE_URL`), `useIsDesktop.ts`, `useInfiniteCarousel.ts`, `tweenScrollLeft.ts`
+- `public/assets/` (123 files, ~114 MB, 8 mp4), `public/fonts/`, `public/noise.png`
+- `deliverables/` — copywriting outputs from the workspace copy system (2026-08-05); not imported by code
+- `.claude/` — this map, `SESSION_LOG.md` (22k lines, append-only), 5 finished plan files, `launch.json`
 
 ## Surfaces
-**All 17 routes are public and static. There is no auth anywhere** — no auth
-library, no middleware, no session/cookie/token handling, no access control.
+**All 17 routes public, static, no auth anywhere.** No route handlers, API routes, server actions, `middleware.ts`/`proxy.ts`, `not-found.tsx`, `error.tsx`, `loading.tsx`, `opengraph-image`, `manifest`. Unknown-slug 404s fall to Next's default page.
 
-| Name | Type | File:Line | Auth | Purpose |
+| Route | File:Line | Auth | Metadata | Composition |
 |---|---|---|---|---|
-| Root redirect | Route | `src/app/page.tsx:3` | public | `redirect("/home")` |
-| HomePage | Route | `src/app/home/page.tsx:32` | public | Hero, LogoLoop, About, Portfolio, Stats, Services, Testimonials, Contact, Blog. **Only route using `SmoothScroll`.** |
-| AboutPage | Route | `src/app/about/page.tsx:14` | public | Hero, Traditional, OurValues, OurTeam, Testimonials, CTA, FAQ, Blog |
-| ContactPage | Route | `src/app/contact/page.tsx:12` | public | Hero (bg video), ContactSection form, Testimonials, FAQ, CTA |
-| CareerPage | Route | `src/app/career/page.tsx:11` | public | CareerHero, WhyJoinUs, OpenPositions, OurValues, Perks, OurTeam, ApplicationJourney |
-| WorkPage | Route | `src/app/work/page.tsx:10` | public | WorkHero (DomeGallery), WorkProjectShowcase, Testimonials, CTA, FAQ, Blog |
-| WorkProjectPage | Route | `src/app/work/[slug]/page.tsx:38` | public | SSG via `generateStaticParams:14`. Has `generateMetadata:23` (title/description from project). Renders `<Header onDark/>` directly. **Render order:** Hero → DetailsContent → **ProjectGallery (`galleryA`)** → **ProjectOutcomes** → **ProjectGallery (`galleryB`)** → NextProject → CTA → Footer. The page splits `project.gallery` in half (`:51-54`) into `galleryA`/`galleryB` and renders `<ProjectGallery>` **twice** (now takes an `images` prop, not `project`), with `ProjectOutcomes` between them. Unknown slug → `notFound():45` |
-| BlogPage | Route | `src/app/blog/page.tsx:7` | public | BlogHero (filter emitter), Featured, List, CTA |
-| BlogArticlePage | Route | `src/app/blog/[slug]/page.tsx:36` | public | SSG `generateStaticParams:11`, `dynamicParams=false:9`, `generateMetadata:15` |
-| BrandStrategyPage | Route | `src/app/brand-strategy/page.tsx:16` | public | **The divergent original** service page |
-| AiMarketingAutomationPage | Route | `src/app/ai-marketing-automation/page.tsx:15` | public | Service page (copy) |
-| AppDevelopmentPage | Route | `src/app/app-development/page.tsx:15` | public | Service page (copy) |
-| CustomSoftwarePage | Route | `src/app/custom-software/page.tsx:15` | public | Service page (copy) |
-| DigitalMarketingPage | Route | `src/app/digital-marketing/page.tsx:15` | public | Service page (copy) |
-| UiUxDesignPage | Route | `src/app/ui-ux-design/page.tsx:15` | public | Service page (copy) |
-| VideoProductionPage | Route | `src/app/video-production/page.tsx:15` | public | Service page (copy) |
-| WebDevelopmentPage | Route | `src/app/web-development/page.tsx:15` | public | Service page (copy) |
+| `/` | `src/app/page.tsx:3` | public | inherits | `redirect("/home")` |
+| `/home` | `src/app/home/page.tsx:15` | public | `home/layout.tsx:3` title+desc | SmoothScroll → ScrollAnimator(Herosection, AboutSection, PortfolioSection, StatsSection, ServiceSection, ExperimentalTestimonials, TechLogoCarousel, ContactSection, BlogSection, Footer). Header = `layout/Header`. |
+| `/about` | `src/app/about/page.tsx:22` | public | `:15` | Header, AboutHeroSection, AboutTraditional, OurValuesSection, OurTeamSection, ExperimentalTestimonials, TechLogoCarousel, CtaSection, FaqSection, BlogSection, Footer. 2× ShrinkOnOverlap. |
+| `/career` | `src/app/career/page.tsx:19` | public | `:13` | Header, CareerHeroSection, WhyJoinUs, OpenPositions, OurValuesSection, PerksSection, OurTeamSection, ApplicationJourney, Footer. 2× ShrinkOnOverlap. |
+| `/contact` | `src/app/contact/page.tsx:28` | public | `:13` + `viewport.themeColor` `:22` | Header **onDark**, ContactHeroSectionTwo (video5), ContactSection (form), ExperimentalTestimonials, TechLogoCarousel, ContactFaqSection, CtaSection, Footer. Inline `<style>` for iOS notch `:41`. |
+| `/blog` | `src/app/blog/page.tsx:14` | public | `:9` | BlogHeroSection (renders Header + filter emitter), BlogFeaturedSection, BlogListSection, CtaSection, Footer |
+| `/blog/[slug]` | `src/app/blog/[slug]/page.tsx:35` | public | `generateMetadata:14` — **the only route with `openGraph`** (`:26`) | SSG `generateStaticParams:10`, `dynamicParams=false:8`; BlogArticle (renders Header), CtaSection, Footer |
+| `/work` | `src/app/work/page.tsx:26` | public | `:13` + `viewport.themeColor` | Header onDark, WorkHeroSection (DomeGallery), WorkProjectShowcase, ExperimentalTestimonials, TechLogoCarousel, CtaSection, FaqSection, BlogSection, Footer. 2× ShrinkOnOverlap. |
+| `/work/[slug]` | `src/app/work/[slug]/page.tsx:38` | public | `generateMetadata:23` title+desc | SSG `generateStaticParams:14` (slug from `href.split("/").pop()`), **no `dynamicParams`** so unknown slugs hit `notFound():45` at request time. Header onDark → ProjectHero → ProjectDetailsContent → ProjectGallery(A) → ProjectOutcomes → ProjectGallery(B) → NextProject → ContactFaqSection → CtaSection → Footer |
+| `/brand-strategy` | `src/app/brand-strategy/page.tsx:27` | public | `:19` | Header dropdown, StrategyHeroSection, **SubServices** (sticky, `top: SUBSERVICES_STICK_TOP`), **ProcessSection** (sibling, `#process-overlap`), OurTechStack, ProjectShowcase, ExperimentalTestimonials, TechLogoCarousel, CtaSection, FaqSection, BlogSection, Footer. 2× ShrinkOnOverlap. |
+| `/web-development`, `/app-development`, `/ui-ux-design`, `/digital-marketing`, `/video-production`, `/custom-software`, `/ai-marketing-automation` | `src/app/<slug>/page.tsx:30` | public | `:24` title+desc per service | **JSX byte-identical to brand-strategy** (only title/description/function name differ). Each carries the comment "Keep this body in step with src/app/brand-strategy/page.tsx." |
 
-**No route handlers, no API routes, no server actions (`"use server"` appears
-nowhere), no `middleware.ts`, no `not-found.tsx`/`error.tsx`/`loading.tsx`, no
-`opengraph-image`.** Both dynamic routes call `notFound()` but fall through to
-Next's default 404 page.
-
-**SEO files DO exist** (added since the 07-24 map): `src/app/sitemap.ts` and
-`src/app/robots.ts`. Sitemap emits the 14 static routes + dynamic `blogPosts`
-slugs + `projects[].href` — but **omits `/`** (which redirects to `/home`) and
-sets no `lastModified`/`priority`. **17 route files now carry `metadata` or
-`generateMetadata`**, not just the two dynamic ones — but they are title +
-description only: **there are still no OG/twitter tags anywhere.**
+**SEO files:** `sitemap.ts` emits 14 static routes + blog slugs + `projects[].href`; **omits `/`**, no `lastModified`/`priority`. `robots.ts` allows all, points at `/sitemap.xml`. No OG/twitter tags except `/blog/[slug]`.
 
 ### Forms & external input
 | Surface | File:Line | Wired? |
 |---|---|---|
-| Contact form (name/email/phone/company/service/message) | `src/components/home/ContactSection.tsx:129` | **DEAD** — no `onSubmit`, no `action`, no state. Appears on `/home` and `/contact`. |
-| Newsletter subscribe | `src/components/layout/Footer.tsx` (in the newsletter column) | **DEAD** — no handler. Appears on **all 17 routes**. |
-| Blog category/author filter | `src/components/blog/BlogListSection.tsx:118` | Works — client-side `useState`, via window event (below) |
-| `mailto:hello@softexedge.com`, `tel:` | `src/components/home/ContactSection.tsx:20-21,28` | Real |
-| `mailto:careers@softexedge.com` | `src/components/career/OpenPositions.tsx:312` | Real — the only working apply path |
+| Contact form (name/email/phone/company/service/message) | `home/ContactSection.tsx:173` | **DEAD** — no `onSubmit`/`action`/state. On `/home` and `/contact`. |
+| Newsletter subscribe | `layout/Footer.tsx:147` | **DEAD** — `required` input, submit does nothing. On all 17 routes. |
+| Blog category/author filter | `blog/BlogHeroSection.tsx:73` → `blog/BlogListSection.tsx:19` | Works — `CustomEvent("blog:filter", {detail:{type:"category"\|"author", value}})` |
+| `mailto:hello@softexedge.com` / `tel:+18001234567` | `home/ContactSection.tsx:17,25`; CtaSection `:164,167` | Real (**[?]** the phone number looks like a placeholder) |
+| `mailto:careers@softexedge.com?subject=…` | `career/OpenPositions.tsx:301` | Real — the only working apply path |
+| Share to X / LinkedIn / copy link | `blog/ShareRail.tsx:56,70` | Real |
+| "Visit Live Site" | `work/ProjectDetailsContent.tsx:92` | **DEAD** `href="#"` — `Project` has no URL field |
+| Footer socials, Privacy Policy | `layout/Footer.tsx` | **DEAD** `href="#"` |
 
-**The site has zero working lead capture.** Both real forms are decorative.
+**The site has zero working lead capture.**
 
 ## Data
-No storage/API. Two static modules in `src/data/`:
-- **`blog.ts`** — `blogPosts` (6 posts), `categories`, types `BlogPost`/`ContentBlock` (discriminated union on `type`: heading/paragraph/quote/list/callout/image), `Author`; helpers `getPostBySlug:570`, `getRelatedPosts:575`. Consumed by `/blog/[slug]`, `BlogHeroSection`, `BlogFeaturedSection`, `BlogListSection`, `BlogArticle`.
-- **`projects.ts`** — `projects` (**9**), `Project`, `getProjectBySlug`. Consumed by `/work/[slug]`, `WorkProjectShowcase`. Slugs: aura-skincare, finova-dashboard, orbit-crm, lumina-festival, nova-workspace, zephyr-mobility, cake-commerce, apex-analytics, brand-elevate.
-
-**No env vars anywhere** (`process.env` is read nowhere in `src/` or config).
-**No `fetch`/`axios`/XHR anywhere.**
+No storage. Two static modules:
+- **`src/data/blog.ts`** — `categories:2`, `Author:13`, `ContentBlock:19` (heading/paragraph/quote/list/callout/image), `BlogPost:27`, `blogPosts:48` (6 posts; `google-io-2026` is the only `featured`), `getPostBySlug:565`, `getRelatedPosts:569`. Avatars via `portrait()` helper → `randomuser.me`. `PostCategory:11` is an unused export.
+- **`src/data/projects.ts`** — `categories:1`, `Project:12` (`id,title,subtitle,description,tech[],year,image,video?,category,type,href,featured?,gallery?`), `projects:28` (**9** objects, ids 1,2,10,3,4,5,6,7,8 — non-sequential), `getProjectBySlug:232` matches `href.endsWith("/"+slug)` — **no `slug` field**. `WorkProjectShowcase` now reads this file (the old duplicate list is gone).
+- **`home/PortfolioSection.tsx:28`** keeps its **own** 5-entry `projects` list for the homepage panels — a separate source from `data/projects.ts` by design (comment `:41`).
+- **`/work/[slug]` fabricates content**: `ProjectOutcomes.tsx:9-25` (phases + testimonial) and `ProjectDetailsContent.tsx:13-17` (results "140% / 2.4× / 98") are hard-coded and identical for all 9 projects.
 
 ## Assets
-- `public/assets/` — **54 files, ~80 MB**. Videos are `video1,2,3,5,6,7,8,9.mp4` — **there is no `hero.mp4` and no `video4.mp4`** (the old map was wrong here).
-- **Two videos were re-encoded 2026-08-07 for mobile** (same duration/framerate, audio dropped — every consumer is `muted`):
-  - `video7.mp4` (homepage hero) 3840x2160 HEVC 20 MB → **1280x720 H.264, 1.32 MB**. The 4K HEVC source forced *software* decode on phones with no HEVC hardware path; it was the single biggest cause of the "phone gets hot" report.
-  - `video3.mp4` (portfolio panel) 1920x1080 → **1280x720, 0.93 MB**
-- ⚠️ **`video7.mp4.orig` (19.96 MB) and `video3.mp4.orig` (1.9 MB) are COMMITTED.** They are my pre-encode backups, kept for sign-off and never removed — `video7.mp4.orig` is now the largest file in the repo. **Safe to delete once the re-encodes are approved.**
-- Next largest: `video1.mp4` 9.8 MB (About page), `video2.mp4` 4.4 MB, `video5.mp4` 3.6 MB, and two images over 2.6 MB (`project-dashboard-…jpg`, `d3.png`).
-- Imagery is **remote-heavy**: ~60 files reference `images.unsplash.com`.
-- **`next/image` migration is COMPLETE (uncommitted, 2026-07-31): `grep "<img" src/` returns 0.** Every raw `<img>` became `next/image` with `fill`+`sizes` (container already `relative`) or explicit `width`/`height`. This is the bulk of the current 73-file diff and was applied uniformly across all 8 service folders. `ProjectShowcase` files now use `const MotionImage = motion.create(Image)` in place of `motion.img`.
-- `next.config.ts` `remotePatterns`: `images.unsplash.com` (**listed twice**, :11 and :22), `plus.unsplash.com`, `randomuser.me`, and **`i.pravatar.cc`** (added for the 8 CtaSection avatar strips). Any other remote host will throw at runtime.
-- Font: `public/fonts/Satoshi-Variable.woff2` via `@font-face` in `globals.css:6-13`.
+- `public/assets/` — 123 files, ~114 MB. Videos: `video1` 10.3 MB (about), `video2` 4.6, `video5` 3.8 (contact hero), `video6` 1.9, `video7` 1.4 (home hero, re-encoded 720p), `video3` 0.97, `video8`, `video9`. **`video7.mp4.orig` (20.9 MB) and `video3.mp4.orig` (1.9 MB) are still committed** — pre-encode backups awaiting deletion sign-off (open question A).
+- **7 untracked images** in the working tree right now: `apply.jpg, assign.jpg, interview.jpg, interview2.jpg, meet.jfif, meet2.jpg, offer.jfif` — the in-progress career Unsplash→local migration (see Repo state). `interview.jpg` is referenced by nothing.
+- **Remote image hosts still in use:** `images.unsplash.com` (~40 live files), `plus.unsplash.com`, `i.pravatar.cc` (CtaSection avatars), `randomuser.me` (blog/about avatars). `next.config.ts` `remotePatterns` covers all four (`images.unsplash.com` listed twice, `:11` and `:23`). Any new host throws at runtime.
+- `next/image` everywhere — `grep "<img" src/` hits only a comment. New `LogoLoop` items **must** pass intrinsic `width`/`height`.
+- `public/noise.png` — 128×128 grayscale, generated Aug (was a 404 before); used by Footer + AboutTraditional as `bg-[url('/noise.png')] … max-md:hidden`.
+- Home hero mobile substitute: `/assets/astro.webp` (`Herosection.tsx:200-221`, `unoptimized`), not a poster; desktop video has `preload="none"` and is played by an effect gated on `matchMedia`, **not `autoPlay`** — mobile cold load fetches zero mp4.
 
 ## External services
-**None wired.** No SDK keys, no analytics/GTM/pixel, no `<iframe>`, no
-`next/script`, no form backend, no CMS.
+**None wired.** No SDK keys, analytics, pixels, `next/script`, iframes, form backend, CMS. `process.env` is read nowhere.
 
 ## Conventions
-- Most sections are `"use client"` (animation-heavy).
-- Tailwind v4 utilities; merge with `cn()` from `@/lib/utils`.
-- `@/` alias for `src/`; each route page assembles sections + its own `Footer`.
-- GSAP registered behind `typeof window !== "undefined"`; animations via `useGSAP`.
-- **Responsive idiom:** mobile fixes are *additive* — smaller base/`sm:` values with the desktop value re-asserted at `md:`/`lg:` so desktop stays pixel-identical. `max-md:*` is the idiom for mobile-only overrides.
-- **`bun run lint` fails on a clean checkout.** Pre-existing violations exist across the repo (e.g. `home/PortfolioSection.tsx` alone has `noImgElement`, two `noUnusedVariables`, `noArrayIndexKey`, `noStaticElementInteractions`). So a non-zero exit does **not** mean you broke something — diff your file's issues against `git show HEAD:<path>` to see whether any are yours. Also note the working tree is **CRLF**, so `biome format --write` will rewrite whole files; avoid it on files you didn't author.
-- **Biome rules that bite:** `noArrayIndexKey` (pre-key lists, see `Footer` brandLetters), `noUnusedImports`/`noUnusedVariables` (removing JSX must remove its state/imports), `a11y/useMediaCaption` (7 components use `<video>` — needs a `biome-ignore`), `useExhaustiveDependencies`.
+- Sections are `"use client"` (133 files); route pages are server components that only compose.
+- `cn()` from `@/lib/utils`; `@/` alias.
+- **Responsive idiom:** desktop values are the base; mobile overrides are `max-md:*` (or smaller base re-asserted at `md:`). Every task is stated "(desktop only)" / "(mobile only)" and must be enforced *by construction* (breakpoint prefixes or an `isDesktop` branch) and proven by measuring the other breakpoint.
+- **Hydration-safe viewport hooks** (`src/lib/useIsDesktop.ts`): `useIsDesktop()` is `false` on server AND first client render — safe for markup branches. `useIsMobile()` reads matchMedia during the first client render — **only for non-markup props** (e.g. `transition={isMobile ? NO_ENTRY : …}`).
+- **Entrance animations are off below md via CSS**, not JS: `globals.css:301-308` `[data-no-mobile-entry]{opacity:1!important;transform:none!important;…}`. 104 usages. Tag any new framer entrance element with `data-no-mobile-entry` + `transition={isMobile ? NO_ENTRY : …}`.
+- **Carousels are native scroll-snap** (`snap-x snap-mandatory overflow-x-auto .no-scrollbar`) + `lib/useInfiniteCarousel` (3 runs, wraps at the extremes only) + `ui/CarouselDots` (`loop` prop when the track repeats). Never JS pointer-drag on mobile. Two accepted exceptions: BlogSection desktop drag, footer clocks (embla).
+- **Never gate on an async flag** (IntersectionObserver, `transitionend`, pending-rAF). Poll `getBoundingClientRect()` synchronously at tick time; use timers, cancel-and-rearm rAF; IO paths fail **open**.
+- **`will-change` must be breakpoint-scoped** (`md:will-change-transform`) when the transform is desktop-only.
+- Stable keys: prebuild `{char,id}` arrays at module scope instead of index keys (Footer brand letters, ChannelCard cells, CarouselDots).
+- **Biome rules that bite:** `noArrayIndexKey`, `noUnusedImports/Variables`, `a11y/useMediaCaption` (needs `biome-ignore` on `<video>`), `useExhaustiveDependencies`.
+- Comments explain *why* (measured numbers, rejected alternatives); do not add narrating comments.
+- `SESSION_LOG.md`: append at EOF, `## Title (desktop only|mobile only)`, then **Task / Cause / Change / Verification** with build exit + page count and biome delta vs HEAD.
 
 ## Where to add a thing
-- **New page:** `src/app/<route>/page.tsx` + a folder under `src/components/`
-- **New service page:** copy an existing service folder — that is the established (if unfortunate) pattern
-- **New section:** `src/components/<pageName>/`, import into the route page
-- **Reusable effect/UI:** `src/components/ui/`
-- **Nav/footer change:** read the Header gotcha below first
+- **New page:** `src/app/<route>/page.tsx` (server component, export `metadata`) + `src/components/<route>/`; render `<Header dropdown/>` from `page/Header` at page level and `<Footer/>` last; add the route to `sitemap.ts:8-23` and, if a service, to both navbars' `dropdownItems` (`layout/Header.tsx:51-102`, `page/Header.tsx:42-121`).
+- **New service page:** copy `src/app/web-development/page.tsx`, change `metadata` + function name. **Do not copy a component folder** — all services render `brand-strategy/*`. Content is currently hard-coded inside those components, so a new service shows brand-strategy's copy until the components are parameterised (open question 1).
+- **New `/home` section:** add a prop to `ScrollAnimator` (`home/ScrollAnimator.tsx:43-54`) and a wrapper div in its tree; pass it from `app/home/page.tsx`. Check the pin chain first.
+- **Reusable effect/UI:** `src/components/ui/`.
+- **Nav change:** edit **both** `layout/Header.tsx` + `ui/resizable-navbar.tsx` (home) **and** `page/Header.tsx` + `page/resizable-navbar.tsx` (everything else).
+- **Blog post / project:** append to `src/data/blog.ts` / `src/data/projects.ts` (`href` must be `/work/<slug>`).
+- **Shrink-on-overlap wrapper:** `<ShrinkOnOverlap endSelector="#next-section-id">` — the id must exist at mount or it silently no-ops.
+
+## Shared `ui/` reference (all 16 files live)
+| File | Consumers | Contract / gotcha |
+|---|---|---|
+| `IosClickRescue` | `app/layout.tsx:29` | Capture-phase pointer listeners re-dispatch taps iOS Safari drops (~1 in 3 when the page mutates during the synthetic hover pass). Fields get synchronous `focus()` in `pointerup`; links/buttons get `el.click()` after 120 ms unless a native click arrived. Anything that `stopPropagation()`s at capture before `document` breaks its detection. |
+| `VideoViewportPause` | `app/layout.tsx:26` | IO (`rootMargin 200px`) + MutationObserver on body; pauses offscreen `<video>`, resumes only ones it paused (WeakSet). **`play` fires on every re-entry** — canvas-from-video code must `cancel()` before scheduling (`Herosection.tsx:130-133`). |
+| `ShrinkOnOverlap` | 13 route pages | GSAP scrub: wrapped block scales to `scale=0.85,y=40` between its own bottom and `endSelector`'s top; desktop only. `endSelector` resolved once by `document.querySelector` → renamed id = silent no-op. Route ids it depends on: `#about-traditional #our-team #why-join-us #our-team-career #contact-overlap #blog-list #work-showcase #work-testimonials #subservices-overlap #process-overlap`. |
+| `TechLogoCarousel` | 12 route pages | Server component; 11 `react-icons/si` logos → `LogoCarousel`. |
+| `LogoCarousel` | `TechLogoCarousel` only | Desktop framer `x:["-50%","0%"]`; mobile `useMarqueeHalf` (WAAPI, holds `will-change` for the hook lifetime). `useMarqueeHalf` has no other consumer (ExperimentalTestimonials mentions it in a stale comment only). |
+| `LogoLoop` | `home/ScrollAnimator.tsx:182` | Desktop rAF loop gated by IO; below md hands off to CSS keyframe `logoloop-marquee` via `--logoloop-seq`. Items **require `width`/`height`**. |
+| `SpotlightGrid` | 8 `*/CtaSection` (7 dead) + `blog/BlogHeroSection` | Props `columns=10 rows=8 speed maskRadius travel sweep scatter plus sweepTrail cellClassName …`. Paints cells imperatively via refs; `setSweepHead` only on whole-cell steps; IO-gated rAF; 30 fps cap below md. Child order glow→core is load-bearing. `sweepCol*/Row*` are cell coordinates. |
+| `TracingBorder` | 7 **dead** `*/ProjectShowcase` | SVG comet→corner-glow; `gradientId` interpolates into 6 document-global SVG ids. Effectively unused by live routes. |
+| `SpecularBorder` | `blog/BlogCard:157`, `brand-strategy/ProjectShowcase:535`, `work/ProjectCard:267` | `ogl` WebGL rim; loaded `next/dynamic` ssr:false, mounted only while hovered. Resize repaints synchronously (blink fix). Reduced-motion → one static frame, no loop. |
+| `DomeGallery` | `work/WorkHeroSection` | `paused` prop shares bookkeeping with its own IO pause; `desktopDirection` md+ only. Page pauses it via IO on `#work-showcase` with `rootMargin "0px 0px -1px 0px"` — the −1px is load-bearing. |
+| `CarouselDots` | Blog, Testimonials, RelatedArticles, brand-strategy Process/Showcase | Pass `loop` when the track repeats. `about/OurTeamSection` deliberately uses its own dots. |
+| `DynamicButton` | both Headers | Glow layers are `rounded-[inherit]` — never hard-code a radius (hairline bug). |
+| `resizable-navbar` (ui) | `layout/Header` | Dropdown-pill mobile mode, `renderCardTitle` two-line titles, white services panel. |
+| `button`, `carousel` | carousel ← OurTeamSection, FooterInteractiveClocks | Stock shadcn. `button` only reachable via `carousel`. |
 
 ## Risks & gotchas
 
-### Duplication — the dominant structural fact
-**8 service folders × 8 components = 64 files, ~8 real implementations.**
-Verified byte-identical by md5 across the 7 copies (ai-marketing-automation,
-app-development, custom-software, digital-marketing, ui-ux-design,
-video-production, web-development):
-
-| Component | Identical across | Diverges |
-|---|---|---|
-| `AgencyStats`, `StrategyHeroSection` | all **8** incl. brand-strategy | — |
-| `SubServices`, `ProcessSection`, `OurTechStack`, `ProjectShowcase`, `FaqSection`, `CtaSection` | the **7** copies | `brand-strategy/*` |
-
-Editing one service page's section changes **only** that page. A site-wide
-change to these means editing 8 files.
-
-Page composition also differs in one real way:
-- `brand-strategy/page.tsx:21-22` — `<SubServices />` then `<ProcessSection />` as **siblings** (no overlap)
-- the other 7 — `<SubServices><ProcessSection /></SubServices>` **nested** (ProcessSection scrolls over the pinned last card)
+### Dead code you will trip over
+- **56 dead service component files** (7 folders). They still compile, still lint, still get grepped. `AgencyStats` is unused even in brand-strategy. `SubServices`' `children` prop + `z-40` wrapper are dead (ProcessSection is a sibling on every route).
+- Dead bits inside live files: `ContactSection.tsx:48` `GRID_COLUMNS`; `StatsSection.tsx:30` `isMobile` (always false inside a min-768 matchMedia); `blog.ts:11` `PostCategory`; empty spacer `blog/page.tsx:35`; `{/* hello */}` leftovers `ScrollAnimator.tsx:73,255`.
+- Loose types: `contact/page.tsx:28` `({}: any)`; `type Props = {}` in about/brand-strategy pages.
 
 ### Two Header components — edit the right one
-| File | Navbar dep | Used by |
+| File | Navbar | Used by |
 |---|---|---|
-| `layout/Header.tsx` | `ui/resizable-navbar` | **`/home` only**, via `home/Herosection.tsx:4` |
-| `page/Header.tsx` | `page/resizable-navbar` | **everything else** — 15 hero components + `work/[slug]/page.tsx:3` directly |
+| `layout/Header.tsx` | `ui/resizable-navbar` | **`/home` only** via `home/Herosection.tsx:7` |
+| `page/Header.tsx` (`onDark`, `dropdown` props) | `page/resizable-navbar` | **all other routes**, rendered at page level; `onDark` on `/contact`, `/work`, `/work/[slug]` |
 
-`page/resizable-navbar.tsx` and `ui/resizable-navbar.tsx` are a near-duplicate
-pair — **so any navbar fix must be applied twice.** (The 2026-08-07 scroll-path
-rewrite had to land in both; the `page/` copy still had an *unguarded*
-`setIsHidden` firing every frame, so fixing only the homepage would have left
-15 routes slow.) `ui/resizable-navbar` additionally carries an opt-in
-`dropdown` mode used ONLY by `layout/Header`: below `lg` the bar shrinks to a
-floating pill and the menu opens as an inline dropdown inside that same surface.
-`page/Header` never opts in and keeps the original full-screen overlay. `page/Header.tsx` takes `onDark` for light links over dark heroes.
-**There is no header in `layout.tsx`** — the site nav is nested inside hero
-components, so a nav change means editing both Headers.
+The two navbar files differ for real (diff = 419 lines): `page/` has `onDark` + `floating`, scrim only when the hovered item has a dropdown, zinc-50 cards; `ui/` has `visible`, `renderCardTitle`, white→#efefef cards, always-scrim. Shared mechanism in both: passive scroll listener + `style.translate` + 8 px direction threshold, **no `backdrop-blur` on the fixed mobile bar** (re-blurred every frame over video), `will-change` deliberately off. **Any navbar fix lands twice.**
 
-### Two conflicting Lenis integrations
-- `layout/SmoothScroll.tsx:21-49` — `new Lenis()` wired into ScrollTrigger + GSAP ticker. Used by `/home` only.
-- `<ReactLenis root>` inside **all 8 `*/SubServices.tsx`** — a *section component* seizing global scroll, on pages with no SmoothScroll wrapper and no ScrollTrigger sync.
-
-### Scroll-fragile code (touch with care)
-1. `app/home/page.tsx:71-142` + `home/PortfolioSection.tsx:143` — a hand-tuned chain of `pinSpacing:false` pins joined by `endTrigger`, plus a magic `md:-mt-[100vh]` documented at `app/home/page.tsx:92-95`. Any height change in About/Portfolio/Stats/Service breaks the overlap. All inside `matchMedia("(min-width: 768px)")` — mobile takes a different path.
-2. `*/SubServices.tsx` — sticky card stack driven by `useScroll` + `useMotionValueEvent`. Cards share one sticky line (`top: 5vh`) and get their staircase from `translateY(i * STEP)`, so `top + height` is equal for all and they release together. **A transform reserves no layout space** — hence the explicit reserve div after the stack. The tracker's `useScroll` offset must stay unsaturated while cards are still pinning (`["start start","end start"]`, not `"end end"`). **`STEP=190` is shared by the parent (pinTop math + reserve height) and the card** — in brand-strategy it lives in `SubServiceCard.tsx` (extracted, exported; parent imports it); the 7 service copies still inline both. Change `STEP` in one place only.
-3. `home/PortfolioSection.tsx` also carries **snap-to-panel** and **auto-advance** on the same pinned trigger. Both deliberately stop at `st.start + totalWidth` (the end of the horizontal phase) and never enter the trailing hold, which belongs to the Stats overlap. Auto-advance moves the **page scroll** via `st.scroll()`, not the track — animating the track would desync the scrub, the snap and the panel reveals. Any wheel/touch/pointer/key input cancels it.
-4. `home/ServiceSection.tsx:111` / `home/PortfolioSection.tsx:119` — cursor followers on pinned sections; `mouseleave` never fires during scroll, so hiding is manual (ticker-polled).
-5. `blog/BlogArticle.tsx:40` — document-level `useScroll` progress bar, ignores Lenis.
+### Scroll-fragile code
+1. **`home/ScrollAnimator.tsx`** — three `pin:true, pinSpacing:false` + `endTrigger` pins (about→portfolio `:91`, stats→services `:115`, testimonials→contact `:140`) with scrub scale tweens, all inside one `mm.add("(min-width: 768px)")`; the `md:-mt-[100vh]` at `:222` pulls the z-20 block over the pinned portfolio. **No `invalidateOnRefresh`** on these (Portfolio's own trigger has it). Any height change in About/Portfolio/Stats/Services shifts the overlap. Depends on `.stat-inner` (StatsSection) and the z-ladder 0/10/20/30.
+2. **`home/PortfolioSection.tsx`** — desktop pinned horizontal scrub (`end: totalWidth + innerHeight` hold, custom snap quantised to the x-phase only, 6 s auto-advance via `st.scroll()` cancelled by any input). Panel count = `querySelectorAll(".project-panel")` (title slide has no `projects[]` entry). Mobile: native snap + compositor-transform autoplay (`MOBILE_FIRST_SLIDE_MS 10000`, `MOBILE_AUTOPLAY_MS 5000`, `MOBILE_SLIDE_MS 600`), timers not `transitionend`.
+3. **`brand-strategy/SubServices.tsx` + `SubServiceCard.tsx`** — sticky card stack. `STEP=160` exported from `SubServiceCard.tsx:17` and imported by the parent (**one place**). Card pin `top: 215px` = header sticky `-top-16` (−64) + 279 px header box, so header and card 1 freeze together. Card 1 has `+40px marginBottom`, card 2 `marginTop:-100px`; **all other margins must stay uniform** — sticky containment clamps by the margin box and any per-card difference desyncs the 160 px strips (learned by reverting twice). Constants `BASE_HEIGHT 2659`, `EXTRA_TAIL 300`, `POST_STACK_SCROLL 450`; `SUBSERVICES_STICK_TOP` is exported and applied by every service page as inline `top`. `useScroll` offset `["start start","end start"]` — not `"end end"`. Wraps content in `<ReactLenis root>` **on desktop only** — the section owns page-global smooth scroll on all 8 service routes.
+4. **Route-level magic sticky tops** with no comments: `/about` `md:top-[calc(100vh-1104px)]`/`994px`, `/career` `1200px`/`1216px`, `/blog` `856px`, `/work` `4096px`, `/contact` `-56px`, services `min(0px,calc(100vh-1056px))`. Plus `-mb-[Nvh]`/`pb-[Nvh]` pin-spacer pairs and three `-mt-px` seam fixes in `career/page.tsx:42-60`. Change a section's height → re-measure these.
+5. Route-level `[&>section]` gap rules on about/contact/work outrank component padding (same comment in all three) — keep in step.
+6. **Closing line under the last SubServices card** lives in `brand-strategy/ProcessSection.tsx:58-71` (`max-md:before:`), not on the card — `#process-overlap` (`bg-black max-md:-mt-px z-20`) occludes the card's last pixel row.
 
 ### Cross-component couplings
-- **`blog:filter` window event** — dispatched `blog/BlogHeroSection.tsx:80`, listened `blog/BlogListSection.tsx:34`. Untyped, stringly-keyed, no shared constant, no props relationship.
-- **`createPortal`** — `home/ServiceSection.tsx:263` mounts the cursor pill outside the pinned subtree to escape the GSAP transform.
-- **`TracingBorder` `gradientId`** — a *global SVG id namespace* shared by 7 call sites (the 7 service `ProjectShowcase` copies; blog/work/brand-strategy migrated to `SpecularBorder`); collisions silently break the gradient.
-- **`SpotlightGrid`** (`ui/SpotlightGrid.tsx`) — 9 consumers. Props: `speed`, `glowColor`, `glowVia`, `maskRadius`, `travel`, and **sweep mode**: `sweep`, `sweepColStart/ColEnd/RowStart/RowEnd` (inclusive cell rectangle), plus three sweep-only modifiers added 2026-07-22 — `scatter` (visit region cells in a seeded-shuffle order instead of row-major, so the glow reads as random not a line; still a bijection = every cell lights once per cycle), `sweepTrail` (how many cells stay lit behind the head = density; default `SWEEP_TRAIL`=4), and `plus` (light each cell as a plus — centre at full strength, its 4 orthogonal neighbours at `PLUS_ARM`=0.35). In `sweep` mode the reveal mask is dropped and the glow steps one box at a time; `maskRadius`/`travel` are ignored. **Grid shape is now props** (added 2026-08-07): `columns` (default 10), `rows` (default 8) and `cellClassName` (default `"rounded-2xl"`) — defaults reproduce the old fixed 10×8 exactly, so every pre-existing call site is byte-identical. `sweepColEnd`/`sweepRowEnd` became optional and resolve internally (a destructuring default cannot reference a later parameter). **`sweepCol*`/`sweepRow*` are CELL COORDINATES — rescale them if you change `columns`/`rows`,** or the sweep plays in the wrong region. `home/PortfolioSection` uses `columns={5} rows={8}`, everyone else the default. `brand-strategy/CtaSection` and `blog/BlogHeroSection` BOTH use `sweep scatter plus sweepTrail={6} speed={0.15}` (differing only in `sweepColStart` — 2 vs 1, a per-scrim region choice); the other 7 CtaSections use the mask. rAF-driven — motion is not observable in the frozen preview pane (verify sweep/scatter/plus logic by simulating it in node, as the 07-22 log entries did). **PERF (2026-07-24):** the sweep branch quantises its React state update — `setSweepHead` only fires when the head crosses into a new cell (~1×/sec), not every frame; a CSS `transition` sized to one cell-step (`1000/(speed*SWEEP_CELLS_PER_SEC)`) on the glow `opacity` + inner-cell `background-color` bridges the gap. Do NOT restore a per-frame `setSweepHead` — that re-rendered all 80 cells 60×/sec (~400 `centreAt` calls in plus mode) and was the "laggy" complaint. The `intensity>0 ? transparent` tile switch was also removed (any lit cell lost its tile → holes); tile is now always `#121212`.
+- `blog:filter` window event (BlogHeroSection → BlogListSection), stringly typed, no shared constant.
+- `ShrinkOnOverlap` `endSelector` ids listed above.
+- `createPortal` cursor pill in `home/ServiceSection.tsx` (`dependencies:[mounted]` on `useGSAP`).
+- SVG id namespaces: `showcase-cta-grad-${id}`, `subservice-arrow-${i}`, `#icon-gradient` (ContactFaqSection, rendered on `/contact` and `/work/[slug]`) — collide if a component mounts twice on a page.
+- `--logoloop-seq` CSS var written by LogoLoop JS, read by `globals.css:92`.
+- `--spotlight-cols` etc. CSS vars override SpotlightGrid shape per breakpoint (`brand-strategy/CtaSection.tsx:22`).
 
-### Global side-effects & shared contracts (added 2026-07-31)
-- **`ui/VideoViewportPause` is mounted in `layout.tsx` and affects EVERY `<video>` on every route.** One `IntersectionObserver` (`rootMargin: "200px"`) + a `MutationObserver` on `document.body` (so it catches later-mounted / `AnimatePresence` videos). It pauses offscreen videos and resumes **only the ones it paused** (WeakSet guard). Consequence: **any code assuming an `autoPlay` video keeps running offscreen is now wrong.** `home/Herosection.tsx` was patched for exactly this — `"play"` now fires on every resume, so its canvas `startLoop` must `cancelAnimationFrame` first or RAF loops accumulate. Any future canvas-from-video code must do the same.
-- **`ui/LogoLoop` `LogoItem.width`/`height` are now REQUIRED** (`srcSet` removed). Every call site must pass intrinsic dimensions; `fill` is unusable there because the marquee measures the sequence width.
-- **`career/CarouselCard` `CarouselItem` gained optional `still`** — a `type:"video"` item without a `still` silently regresses to 6 concurrent decoders (only the first marquee copy renders a real `<video>`).
-- **`ui/SpecularBorder`** — OGL/WebGL rounded-rect specular rim, pointer-driven, honors `prefers-reduced-motion`; absolutely-positioned `aria-hidden` overlay at `z-30`. 3 consumers: `blog/BlogCard`, `brand-strategy/ProjectShowcase`, `work/ProjectCard`.
+### Lenis, twice
+- `layout/SmoothScroll.tsx` — `/home` only, desktop only, wired into GSAP ticker + ScrollTrigger.
+- `<ReactLenis root>` in `brand-strategy/SubServices.tsx:163` — every service route, desktop only, no ScrollTrigger sync (ShrinkOnOverlap on those pages runs off native scroll events **[?]** — not verified against Lenis).
 
-### Content / correctness defects
-- ~~`layout.tsx` description "Generated by create next app"~~ — **FIXED**: real title template + description + `metadataBase`. Remaining SEO gap is OG/twitter tags and the sitemap's missing `/`.
-- **Placeholder email `hello@youragency.com` — 16 occurrences across all 8 `*/CtaSection.tsx`.** Reachable on every service page plus `/about`, `/blog`, `/blog/[slug]`, `/contact`, `/work`, `/work/[slug]`. The real address is `hello@softexedge.com`.
-- **SEO, current state:** 17 route files carry metadata, sitemap + robots exist. Still missing: **OG/twitter tags anywhere**, `/` in the sitemap, `lastModified`/`priority`.
-- `projects.ts` has **no `slug` field**; `getProjectBySlug:218` matches via `p.href.endsWith("/" + slug)` — fragile.
-- `WorkProjectShowcase.tsx:23` keeps its own project list alongside `data/projects.ts` — two sources for the same 8 projects.
-- Loose types: `type Props = {}`, `ContactPage({}: any)`.
+### iOS / mobile
+- `globals.css:46-79`: `touch-action: manipulation` on controls, `cursor:pointer` on body for coarse pointers, hover-pause only under `(hover:hover)` — all iOS tap-loss mitigations that **were not sufficient**; `IosClickRescue` is the real fix.
+- `backdrop-filter` over a playing video re-blurs every frame. Static blur on an image is fine.
+- `ProjectShowcase`/`BlogCard`/`ProjectCard` hover flags are gated by `isDesktop`/`matchMedia` so the first tap isn't swallowed as hover.
+- `.jfif` assets (`meet.jfif`, `offer.jfif`) — **[?]** `next/image` should serve them as JPEG, but a CDN sending `application/octet-stream` would make the optimizer bail; renaming to `.jpg` removes the doubt.
 
-### Dead weight
-- **Dead source files removed 2026-07-24** (47 files: `garbage/` ×25, `shared/ConnectButton*` ×3, 15 unused `ui/` effects, `3d-globe-demo`, `about/AboutOverview`, `career/CareerValues`, `work/WorkHeader`). Verified by import-reachability BFS from all `src/app` entries + before/after HTML snapshots of all 29 routes (identical visible markup). `src` is now ~156 tracked files, all reachable.
-- **Unused deps still installed** (not removed — lockfile change needs sign-off): `prettier` + `prettier-plugin-tailwindcss` (no config), legacy `@studio-freight/lenis` (live code uses `lenis`), and — after the dead-file removal — the entire `three` stack (`three`, `@react-three/fiber`, `@react-three/drei`, `postprocessing`, `@types/three`): **zero imports in live src** (verified 2026-07-24). `ogl` IS still used, by **`ui/Particles.tsx` and `ui/SpecularBorder.tsx`** (two consumers, not one).
+### Verifying motion in the preview pane
+The in-app preview does not composite: rAF is frozen, timers ~4× slow, IO never fires, framer/GSAP never advance. Verify **structurally** (computed styles, `playState`, `scrollLeft` after a timeout, arithmetic from source) and say plainly when frame rate was not measured. The user verifies visuals from screenshots and a phone against a **prod build** (dev ships ~22× more JS).
 
-## Mobile architecture (rebuilt 2026-08-06/07) — read before touching `/home`
+### Traps that bit more than once (from the log)
+- **Dev-CSS Tailwind scan flake**: a new arbitrary class (`mb-30`, `text-[21px]`) can be absent from dev CSS while present in the build — diff dev vs built CSS before blaming code. Escape `%` when grepping CSS.
+- Stale `next start` servers survive `pkill` and serve old chunks.
+- Heredocs from python/perl write Windows-codepage bytes; em dashes become 0x97 and Turbopack dies ("failed to convert rope into string"). Use explicit UTF-8.
+- `grep -r` times out on node_modules — use `git grep`.
+- A rejected/interrupted Edit may still have landed — check the file.
+- Resizing the pane without reloading leaves breakpoint-at-mount components in desktop state.
+- The user's "it's not fixed" has three times been a stale build/Vercel lag; confirm which URL they're viewing.
 
-Mobile is no longer "desktop minus animation". It has its own implementations,
-and the two breakpoints are kept apart deliberately: **every change below was
-verified to leave desktop byte-identical.**
+### Perf baselines (prod `/home`, 2026-08-27)
+307 KB JS / 11 requests. Prerendered-HTML sizes used as no-UI-change fingerprints: home 323,818 · about 448,535 · career 470,606 chars. Desktop `bodyScrollHeight` 17,137; mobile /home `bodyH` 9,885; /brand-strategy mobile 9,006. `next/dynamic` wrappers around sections **cost** 4 renders per component — reverted; don't reintroduce.
 
-### Carousels: native scroll, never JS drag
-`/home` has four carousels. Three are **native scroll-snap** containers
-(`overflow-x-auto` + `snap-x snap-mandatory` + `overscroll-x-contain` +
-`.no-scrollbar`): PortfolioSection, ExperimentalTestimonials, BlogSection.
-**This is the rule the mobile work converged on** — JS `pointermove` dragging
-pays main-thread latency by construction; native scrolling runs on the
-compositor and cannot be blocked by script. Testimonials and Blog were
-originally JS-dragged via `useMarqueeHalf` and were the standing "laggy drag"
-complaint until they were converted.
-
-- `useMarqueeHalf` (`ui/LogoCarousel.tsx`) now has **exactly one consumer**:
-  `LogoCarousel` itself (the LogoLoop marquee). Its `step()`/`autoplay` params
-  survive but are unused. Do not reintroduce it for a draggable carousel.
-- **Infinite loop** = `lib/useInfiniteCarousel.ts`: the track renders 3 runs of
-  the list, scrolling starts in run 2, and when the position comes within one
-  slide of either true end `scrollLeft` jumps exactly one run. Runs are
-  pixel-identical so the jump is invisible. **It wraps at the EXTREMES, never
-  mid-track** — assigning `scrollLeft` during an iOS momentum fling kills the
-  fling. Slides need `data-slide` (that is what `slideStride()` measures).
-- **Desktop still needs exactly 2 runs** for its framer marquee wrap; mobile
-  needs 3. Extra runs are therefore CSS-hidden per breakpoint
-  (`max-md:hidden` / `md:hidden`), never conditionally rendered — SSR markup
-  stays identical at both widths.
-- **Pagination is `ui/CarouselDots.tsx`**, not arrows (arrows were removed
-  2026-08-07). Pass `loop` when the track repeats, or the dots sweep several
-  times per lap.
-- **PortfolioSection autoplay** advances by transitioning a `transform` on an
-  inner wrapper (`md:contents`, so desktop is unaffected) and *then* commits the
-  distance to `scrollLeft` in the same style flush — a compositor slide, not
-  per-frame `scrollLeft` writes. Timing: **slide 0 holds 10s, all others 5s**
-  (`MOBILE_FIRST_SLIDE_MS` / `MOBILE_AUTOPLAY_MS`), index read from `scrollLeft`
-  at tick time.
-- Panel 0 is a **text-only "Our Projects" title slide** (`projects` has 9
-  entries but the track has 10 panels on desktop). Anything counting panels must
-  use `querySelectorAll(".project-panel")`, not `projects.length`.
-
-### Entrance animations are OFF below md — and it is done in CSS
-`globals.css` carries `@media not (min-width: 48rem) { [data-no-mobile-entry] {
-opacity:1 !important; transform:none !important; translate:none !important;
-filter:none !important } }`, and 23 framer elements across Herosection,
-ServiceSection, ExperimentalTestimonials, ContactSection, BlogSection and Footer
-carry `data-no-mobile-entry`.
-
-**Why CSS and not a JS gate:** gating `initial` on a viewport hook desyncs SSR
-from the first client render (the server cannot know the viewport). The CSS rule
-also applies *before hydration*, so content is visible in the first paint rather
-than sitting at `opacity:0` until React boots. framer writes `initial` as an
-INLINE style, hence `!important`. The inline `opacity:0` is deliberately left in
-place and simply overridden. **A `transition`-only gate is NOT enough** — that
-makes the animation instant but the element still starts hidden and pops in on
-scroll.
-
-### Recurring failure mode: async flags latch
-Three separate mobile features died in this codebase because a flag set by an
-async callback (IntersectionObserver, `transitionend`, a "one pending rAF"
-guard) never arrived and latched shut. **The house pattern is a synchronous
-check at tick time** — `getBoundingClientRect()` inside the interval that
-already runs (`AboutImageStack`, PortfolioSection autoplay, the SpotlightGrid
-in-view gate), or cancel-and-rearm rather than a pending-flag
-(`CarouselDots`, `useInfiniteCarousel`). Timers, never `transitionend`.
-
-### Compositor hygiene (each of these was a measured regression)
-- **`will-change` must be breakpoint-scoped.** `md:will-change-transform` on the
-  two GSAP wrappers in `app/home/page.tsx` and on `.stat-inner`: those elements
-  are only ever transformed by ScrollTrigger inside `min-width:768px`, so on a
-  phone they were holding ~1.06M CSS px of GPU texture for nothing. Promoted
-  layer area went 1,526,970 → 469,004 px (−69%).
-- **A PAUSED WAAPI animation drops off the compositor.** When the marquees were
-  paused for arrow-only control, their ~2600px tracks had no layer at rest and
-  every touch re-rasterised them under the finger. `useMarqueeHalf` now holds
-  `will-change: transform` for the hook's lifetime on draggable tracks.
-- **`backdrop-filter` over a playing video re-blurs on every video frame**, not
-  just when the blurred element moves. The mobile navbar is `backdrop-blur-md`
-  (12px), not `2xl` (40px), for exactly this reason — and `PortfolioSection`'s
-  tech-tag chips drop `backdrop-blur` entirely below md (19 of them sat inside a
-  horizontal scroller).
-- **framer is off the navbar scroll path** (both copies, 2026-08-07): a passive
-  listener + a direct `el.style.translate` write + a CSS transition replaced
-  `useScroll`/`useMotionValueEvent` and a spring. The old `setIsHidden` state
-  re-rendered Navbar on every scroll *direction change*, and each render re-runs
-  its `cloneElement` pass over the whole ~50-element nav subtree. Cost per scroll
-  step: `/home` 2.03 → 0.58 ms, `/about` 1.29 → 0.40 ms.
-- `BlogSection`'s desktop marquee driver lives in a `DesktopAutoScroll` child
-  that only mounts on desktop — `useAnimationFrame` cannot be called
-  conditionally, and unconditionally it kept framer's frame loop alive on mobile
-  for a callback that early-returned.
-- `SpotlightGrid` on the portfolio title slide is mounted only while the slide is
-  near the viewport (polled rect read), because it drives a permanent rAF loop
-  and is not otherwise on `/home`.
-
-### ⚠️ Verifying motion in the preview pane
-**The preview pane does not composite: rAF is frozen (measured 0 frames in
-4530 ms) and timers are throttled ~4×** (6 ticks where 22 were expected). So:
-CSS transitions never advance, framer animations never run, IntersectionObserver
-callbacks are never delivered, and autoplay looks "stalled" when it is healthy.
-`setInterval`/`setTimeout` DO fire (slowly). Verify motion **structurally**
-(computed styles, class/attribute state, `playState`, scrollLeft after a
-`setTimeout`) and say plainly that frame rate was not measured. Shimming
-`requestAnimationFrame` onto `setTimeout` works for code you control but **not**
-for framer, which captures the real rAF at module load.
-
-### Mobile gotchas (carried forward, still applicable)
-- **`Herosection` needs a min-height at every breakpoint** (`min-h-[100svh] lg:min-h-[96.5vh]`) — all children are absolutely positioned, so dropping the base value makes the hero 0px below `lg`.
-- **`w-full` + horizontal margins overflows** — margin-box exceeds the parent by 2×margin. Fix with `max-md:w-auto` (see `StatsSection` `.stat-inner`).
-- **Cursor pills leak on touch** — the hide is `gsap.set(cursor,{scale:0})` inside the desktop matchMedia gate, so on touch it never runs. Both pills carry `hidden md:flex` / `invisible opacity-0`; keep that guard on any new hover cursor.
-- **Hover-only reveals are invisible on touch** — add `max-md:*` overrides (see `ServiceSection` thumbnails).
-
-### Repo state
-Git repo on `main`. **Every commit is titled "first commit"** (6+ of them) —
-there is no usable history for `git log`/`git blame`. No CI, no tests, no PR
-workflow.
-
-**As of 2026-08-07 the tree is CLEAN** — `git status --porcelain` returns 0
-files. The 73-file batch the previous map warned about was committed, along with
-five more commits on 2026-08-07. `bun run build` succeeds and prerenders 35/35
-pages. The two untracked-but-imported files that used to break the build
-(`ui/VideoViewportPause.tsx`, `public/assets/flexible*.png`) are tracked.
-
-**Baselines to diff your own work against:** `bunx tsc --noEmit` is clean;
-`bunx biome lint src` reports **188 pre-existing diagnostics** — a non-zero exit
-does not mean you broke something.
-
-### Testing against a phone
-`bun run dev` and `next start` behave very differently on a device: dev ships
-**~22× more JavaScript** (measured 21,735 KB across 29 scripts vs 987 KB across
-11). Mobile performance findings are meaningless against `bun run dev` — test a
-production build. `.claude/launch.json` starts the dev server on :3000; a
-LAN-reachable prod server is `bunx next start -H 0.0.0.0 -p 3100`.
+## Repo state (2026-09-04)
+- Branch `main`, remote `guptaRishi00/Softexedge-2026-draft-one`. **Every one of 100+ commits is titled "first commit"** — no usable history; `SESSION_LOG.md` is the only changelog. Last push 2026-08-28 (`127d54f`); Vercel lags localhost.
+- **Working tree is dirty**: `M src/components/career/ApplicationJourney.tsx`, `M src/components/career/CareerHeroSection.tsx` (6 Unsplash URLs → local `/assets/*`), `M bun.lock` (**line endings only**, no content change), 7 untracked images. This is the start of a Unsplash→local asset migration; career is done, nothing else is, and it is **not logged**.
+- Baselines: `bunx tsc --noEmit` clean · `bun run build` 35/35 · `bun run lint` 321 errors / 47 warnings.
+- Nothing is committed or pushed unless the user asks.
 
 ## Open questions
 
-### New / needing your call (2026-08-07)
-A. **Delete `public/assets/video7.mp4.orig` (19.96 MB) and `video3.mp4.orig`
-   (1.9 MB)?** They are pre-re-encode backups I kept for sign-off and they got
-   committed. `video7.mp4.orig` is now the largest file in the repo. Deleting
-   them is safe once you're happy with the re-encoded videos.
-B. **Deduplicate the two navbar files?** They are near-identical and the last
-   fix had to be written twice. Flagged repeatedly; still not done because it is
-   a cross-route refactor.
-C. **`video1.mp4` is 9.8 MB / 1920×1080** on `/about`, and two images exceed
-   2.6 MB. Same treatment as video3/7?
-D. **Is the mobile carousel behaviour final?** Blog + Testimonials are now
-   infinite native scrollers with dot pagination and no arrows; Portfolio holds
-   slide 0 for 10s and the rest for 5s. Several of these reversed across the
-   session, so worth confirming the end state is what you want.
+### Needing your call (2026-09-04)
+1. **Delete the 56 dead service component files?** (`src/components/{7 folders}/`, byte-identical, zero importers, confirmed by grep + build.) They were kept "for minimal diff" when the routes were repointed. Also `brand-strategy/AgencyStats.tsx` (unrendered) and `SubServices`' dead `children` path.
+2. **The Unsplash→local migration** — commit the career half? Continue with the rest (Header dropdown images ×8, brand-strategy SubServices/Process/Showcase/Hero ~15, blog/projects data ~20, OurTeam/OurValues avatars, DomeGallery defaults)? Delete the orphan `interview.jpg`? Rename `.jfif` → `.jpg`?
+3. **Resume the interrupted asset cleanup** (`public/assets` has ~40 files referenced by nothing — **[?]** count not re-verified today)? Needs an approved list; 7 files are untracked so deletion is unrecoverable.
+4. `package-lock.json` alongside `bun.lock` — remove it? (**[?]** assumed stray.)
+5. `tel:+18001234567` in ContactSection — real number or placeholder?
 
-### Carried forward
-1. **Is the duplication intentional?** 64 near-identical service files is the single biggest maintenance cost. Should the 7 copies collapse into one parameterised set (content in `src/data/services.ts`), keeping brand-strategy separate?
-2. **Should the dead forms be wired?** Contact + newsletter are decorative; the site currently has no lead capture. Needs a form service or an API route.
-3. **`hello@youragency.com`** — replace with `hello@softexedge.com` across the 8 CtaSections? (Looks like an oversight, not a decision.)
-4. ~~Is `garbage/` + the unused `ui/` effects intentionally kept~~ — resolved 2026-07-24: user asked for removal; all 47 dead files deleted. Remaining: may we also uninstall the dead deps (three stack, prettier, @studio-freight/lenis)?
-5. **Should nav be unified** into one Header in `layout.tsx` instead of two nested in hero components?
-6. **SEO** — largely resolved (metadata on 17 routes, sitemap, robots, `SITE_URL`). Remaining: add OG/twitter tags, add `/` to the sitemap, confirm `https://softexedge.com` is the real production domain.
-7. **The 73-file uncommitted batch** — should it be committed (after `git add`ing the two untracked deps) and verified with a build? Nothing in it has been build-checked.
-8. `.claude/` holds **five** finished plan files (`plan.md`, `plan-perf-round2.md`, `plan-subservices-overlap.md`, `plan-tracingborder-handoff.md`, `plan-work-slug-content.md`) and a `SESSION_LOG.md` that has grown a lot across the 08-06/07 mobile work — prune/rotate?
+### Carried forward, still unresolved
+- A. Delete `video7.mp4.orig` (20.9 MB) + `video3.mp4.orig`.
+- B. Dedupe the two navbar files (every fix lands twice).
+- C. Re-encode `video1.mp4` (10.3 MB, `/about`) like video7 — blocked: no ffmpeg on this machine.
+- Wire the dead forms (contact, newsletter) — site has no lead capture.
+- Uninstall `prettier` + `prettier-plugin-tailwindcss`.
+- Unify nav into one Header in `layout.tsx`.
+- SEO: OG/twitter tags site-wide, `/` in sitemap, `lastModified`; confirm `softexedge.com` is the production domain.
+- Commit hygiene: real commit messages; push.
+- Prune `.claude/plan*.md` (all 5 are finished or superseded) and rotate the 1.6 MB `SESSION_LOG.md`.
+- Never answered: is the Safari being tested macOS or iPadOS (log line ~20,248)?
+- Parameterise the service content (`src/data/services.ts`) so the 7 non-brand-strategy routes stop showing brand-strategy's copy — **[?]** the routes currently render identical service *content* under different titles; confirm that is known/intended for now.

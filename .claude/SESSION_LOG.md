@@ -22355,3 +22355,21 @@ inkBeyondBox -9.9 (inside). Mobile @390 (44px type) — inkBeyondBox -10.6,
 also inside; applied at all sizes deliberately since the clipping was present
 at every breakpoint and the repo convention is unprefixed. `bun run build`
 exit 0 (35/35); biome 2 = HEAD baseline.
+
+## /onboard: codebase map rebuilt (2026-09-04)
+
+**Task:** `/onboard` from the `Desktop\claude` workspace. Previous map dated 2026-08-07, 98 commits stale.
+
+**Change (`.claude/CODEBASE_MAP.md`, full rewrite):** six read-only explorers over app/, home+layout+lib, ui+page, the 8 service folders (md5), content pages+data, and this log. Headline findings recorded: all 8 service routes render `brand-strategy/*` (56 sibling files dead, zero importers); `app/home/page.tsx` is a Server Component with pins in `home/ScrollAnimator.tsx`; `IosClickRescue` + `VideoViewportPause` are the only global mounts; STEP=160 / pin 215px end state of the SubServices saga; both navbars still separate; forms still dead. Inferred items tagged [?] for the user to check.
+
+**Verification:** `bunx tsc --noEmit` exit 0; `bun run build` exit 0 (35/35); `bun run lint` 321 errors / 47 warnings (pre-existing baseline). Working tree untouched: career image swap + 7 untracked images + CRLF-only `bun.lock` diff were already present and are documented in the map, not committed.
+
+**Not done (awaiting go-ahead):** `CLAUDE.md` hard rule about "8 service pages have their own copies" is stale and needs replacing; proposed text handed to the user.
+
+## /task: CLAUDE.md hard rules brought in line with the rebuilt map (2026-09-04)
+
+**Task:** user directed the analysis at softexedge-sept-2026 (not the workspace). Analysis itself was already complete in the /onboard map; the remaining item was the stale CLAUDE.md rule.
+
+**Change (`CLAUDE.md`, 2 hunks):** replaced "The 8 service pages have their own copies of every section (64 files)" with the current truth (all 8 routes render `brand-strategy/*`; 7 sibling folders / 56 files are dead; `STEP` + `SUBSERVICES_STICK_TOP` are the single-source exports). Fixed the mobile-rules heading to point at the map sections that exist now. CRLF preserved, UTF-8.
+
+**Verification:** `git diff --stat CLAUDE.md` = 1 file, 6 insertions / 5 deletions; `file CLAUDE.md` still reports CRLF UTF-8. No source files touched; not committed.

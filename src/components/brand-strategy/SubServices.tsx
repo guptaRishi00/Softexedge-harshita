@@ -24,8 +24,7 @@ const services = [
     link: "/brand-strategy",
     color: "bg-black",
     tags: ["Market Research", "Positioning", "Visual Identity", "Messaging"],
-    image:
-      "https://plus.unsplash.com/premium_photo-1779749660854-baa8b5457d06?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwzOXx8fGVufDB8fHx8fA%3D%3D",
+    image: "/assets/bs4.jfif",
   },
   {
     title1: "Digital",
@@ -35,8 +34,7 @@ const services = [
     link: "/custom-software",
     color: "bg-black",
     tags: ["Web Apps", "SaaS Platforms", "Architecture", "API Integration"],
-    image:
-      "https://images.unsplash.com/photo-1779896412280-cff477924a69?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw1MHx8fGVufDB8fHx8fA%3D%3D",
+    image: "/assets/dp.jfif",
   },
   {
     title1: "UI/UX",
@@ -46,8 +44,7 @@ const services = [
     link: "/ui-ux-design",
     color: "bg-black",
     tags: ["User Research", "Wireframing", "Prototyping", "Interaction Design"],
-    image:
-      "https://images.unsplash.com/photo-1773332585754-f1436987743b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw4NXx8fGVufDB8fHx8fA%3D%3D",
+    image: "/assets/ui5.jfif",
   },
   {
     title1: "E",
@@ -57,8 +54,7 @@ const services = [
     link: "/web-development",
     color: "bg-black",
     tags: ["Shopify Plus", "Custom Storefronts", "CRO", "Payment Gateways"],
-    image:
-      "https://images.unsplash.com/photo-1688561808434-886a6dd97b8c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZSUyMGNvbW1lcmNlfGVufDB8fDB8fHww",
+    image: "/assets/ec.jfif",
   },
 ];
 

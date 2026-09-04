@@ -18,32 +18,28 @@ const steps: Step[] = [
     title: "Apply",
     description:
       "Submit your application with your resume and portfolio. We review every profile carefully.",
-    image:
-      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&auto=format&fit=crop&q=60",
+    image: "/assets/apply.jpg",
   },
   {
     number: "02",
     title: "Interview",
     description:
       "Let's talk about your journey, mindset, and how you approach creative problem solving.",
-    image:
-      "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&auto=format&fit=crop&q=60",
+    image: "/assets/interview2.jpg",
   },
   {
     number: "03",
     title: "Assignment",
     description:
       "Show us how you approach real-world challenges through a take-home project.",
-    image:
-      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&auto=format&fit=crop&q=60",
+    image: "/assets/assign.jpg",
   },
   {
     number: "04",
     title: "Offer",
     description:
       "Welcome aboard! We'll share the offer, onboarding details, and get you set up for success.",
-    image:
-      "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1200&auto=format&fit=crop&q=60",
+    image: "/assets/offer.jfif",
   },
 ];
 

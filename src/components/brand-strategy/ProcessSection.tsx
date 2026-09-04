@@ -13,8 +13,7 @@ const processSteps = [
     title: "Discovery",
     description:
       "Deep-dive into your brand's DNA and technical requirements to define the blueprint.",
-    image:
-      "https://images.unsplash.com/photo-1773332598451-8a0a59941912?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwcm9maWxlLXBhZ2V8MjV8fHxlbnwwfHx8fHw%3D",
+    image: "/assets/discovery2.jpg",
   },
   {
     id: "02",
@@ -29,16 +28,14 @@ const processSteps = [
     title: "Development",
     description:
       "High-performance engineering using Next.js and Tailwind for optimized delivery.",
-    image:
-      "https://images.unsplash.com/photo-1773332598413-a6d5279d1ae8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwcm9maWxlLXBhZ2V8MTl8fHxlbnwwfHx8fHw%3D",
+    image: "/assets/development.jpg",
   },
   {
     id: "04",
     title: "Deployment",
     description:
       "Rigorous testing followed by global CDN deployment for maximum speed.",
-    image:
-      "https://images.unsplash.com/photo-1773332611514-238856b76198?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwcm9maWxlLXBhZ2V8OXx8fGVufDB8fHx8fA%3D%3D",
+    image: "/assets/deployment.jpg",
   },
 ];
 
