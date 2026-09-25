@@ -25,11 +25,11 @@ components. Repo: `github.com/guptaRishi00/Softexedge-2026-draft-one`, branch `m
 
 ## Stack & build
 - **Package manager: Bun** (`bun.lock`). A `package-lock.json` is also committed (added ~Aug) — **[?]** stray; nobody runs npm install. `.claude/launch.json` starts dev via `npm run dev` on :3000.
-- **Styling:** Tailwind v4, CSS-first — no `tailwind.config.*`; `@theme` + `@theme inline` in `src/app/globals.css`. shadcn configured (`components.json`, style `radix-nova`, aceternity registry) but only `ui/button.tsx` + `ui/carousel.tsx` are shadcn-generated.
+- **Styling:** Tailwind v4, CSS-first — no `tailwind.config.*`; `@theme` + `@theme inline` in `src/app/globals.css`. **`experimental.inlineCss` was tried and rejected 2026-09-25**: it removes the render-blocking CSS request but pushes the document from 43 KB to 125 KB transfer, and mobile FCP/LCP each got ~200 ms *worse* under simulated 4G. Don't re-add it. `tw-animate-css` is still in `package.json` but no longer imported (zero usages). shadcn configured (`components.json`, style `radix-nova`, aceternity registry) but only `ui/button.tsx` + `ui/carousel.tsx` are shadcn-generated.
 - **Lint/format:** Biome 2.2.0. `prettier` + `prettier-plugin-tailwindcss` are still installed with no config — dead deps.
 - **Animation:** framer-motion 12 (114 files), GSAP 3.15 + ScrollTrigger + `@gsap/react` (6 files), Lenis 1.3 (`lenis` + `lenis/react`), embla (`ui/carousel`, footer clocks, team section).
 - **WebGL:** `ogl` only, one consumer: `ui/SpecularBorder.tsx` (loaded via `next/dynamic`, ssr:false, mounted on hover). The `three` stack is gone from `package.json`.
-- **Font:** Satoshi Variable self-hosted `@font-face` (`globals.css:5-11`) → `--font-sans`. `next/font` unused.
+- **Font:** Satoshi Variable via `next/font/local` in `app/layout.tsx` (preloaded, metric-matched fallback), exposed as `--font-satoshi` → `--font-sans` in `globals.css`. The old `@font-face` is gone (2026-09-25).
 - **Line endings: CRLF** throughout. `biome format --write` rewrites whole files — avoid on files you didn't author.
 
 ## Commands
@@ -110,9 +110,9 @@ No storage. Two static modules:
 - `public/assets/` — 123 files, ~114 MB. Videos: `video1` 10.3 MB (about), `video2` 4.6, `video5` 3.8 (contact hero), `video6` 1.9, `video7` 1.4 (home hero, re-encoded 720p), `video3` 0.97, `video8`, `video9`. **`video7.mp4.orig` (20.9 MB) and `video3.mp4.orig` (1.9 MB) are still committed** — pre-encode backups awaiting deletion sign-off (open question A).
 - **7 untracked images** in the working tree right now: `apply.jpg, assign.jpg, interview.jpg, interview2.jpg, meet.jfif, meet2.jpg, offer.jfif` — the in-progress career Unsplash→local migration (see Repo state). All 7 are now referenced (career hero + ApplicationJourney).
 - **Remote image hosts still in use:** `images.unsplash.com` (~40 live files), `plus.unsplash.com`, `i.pravatar.cc` (CtaSection avatars), `randomuser.me` (blog/about avatars). `next.config.ts` `remotePatterns` covers all four (`images.unsplash.com` listed twice, `:11` and `:23`). Any new host throws at runtime.
-- `next/image` everywhere — `grep "<img" src/` hits only a comment. New `LogoLoop` items **must** pass intrinsic `width`/`height`.
+- `next/image` everywhere — `grep "<img" src/` hits only a comment. New `LogoLoop` items **must** pass intrinsic `width`/`height`. `next.config.ts` `images.formats` = AVIF then WebP (2026-09-25).
 - `public/noise.png` — 128×128 grayscale, generated Aug (was a 404 before); used by Footer + AboutTraditional as `bg-[url('/noise.png')] … max-md:hidden`.
-- Home hero mobile substitute: `/assets/astro.webp` (`Herosection.tsx:200-221`, `unoptimized`), not a poster; desktop video has `preload="none"` and is played by an effect gated on `matchMedia`, **not `autoPlay`** — mobile cold load fetches zero mp4.
+- Home hero mobile substitute: `/assets/astro.webp` (`Herosection.tsx:200-221`, `unoptimized`, `fetchPriority="high"`; re-encoded 28 KB → 5.7 KB at q60 — it is blurred 6px + tinted, max pixel delta after blur 4/255), not a poster; desktop video has `preload="none"` and is played by an effect gated on `matchMedia`, **not `autoPlay`** — mobile cold load fetches zero mp4.
 
 ## External services
 **None wired.** No SDK keys, analytics, pixels, `next/script`, iframes, form backend, CMS. `process.env` is read nowhere.
@@ -148,12 +148,12 @@ No storage. Two static modules:
 | `ShrinkOnOverlap` | 13 route pages | GSAP scrub: wrapped block scales to `scale=0.85,y=40` between its own bottom and `endSelector`'s top; desktop only. `endSelector` resolved once by `document.querySelector` → renamed id = silent no-op. Route ids it depends on: `#about-traditional #our-team #why-join-us #our-team-career #contact-overlap #blog-list #work-showcase #work-testimonials #subservices-overlap #process-overlap`. |
 | `TechLogoCarousel` | 12 route pages | Server component; 11 `react-icons/si` logos → `LogoCarousel`. |
 | `LogoCarousel` | `TechLogoCarousel` only | Desktop framer `x:["-50%","0%"]`; mobile `useMarqueeHalf` (WAAPI, holds `will-change` for the hook lifetime). `useMarqueeHalf` has no other consumer (ExperimentalTestimonials mentions it in a stale comment only). |
-| `LogoLoop` | `home/ScrollAnimator.tsx:182` | Desktop rAF loop gated by IO; below md hands off to CSS keyframe `logoloop-marquee` via `--logoloop-seq`. Items **require `width`/`height`**. |
+| `LogoLoop` | `home/ScrollAnimator.tsx:182` | Desktop rAF loop gated by IO; below md hands off to CSS keyframe `logoloop-marquee` via `--logoloop-seq`. Items **require `width`/`height`**. **Measures its container to pick a copy count (+2 headroom) via ResizeObserver — never mount it in a shrink-to-fit box** (column flex `items-start`, `w-max`, inline): the copies widen the box, the box re-measures, +2 copies per frame forever (found 2026-09-25: 2,129 → 7,919 DOM nodes in 4 s on phones). The hero wrapper is `max-sm:self-stretch` for exactly this reason. |
 | `SpotlightGrid` | 8 `*/CtaSection` (7 dead) + `blog/BlogHeroSection` | Props `columns=10 rows=8 speed maskRadius travel sweep scatter plus sweepTrail cellClassName …`. Paints cells imperatively via refs; `setSweepHead` only on whole-cell steps; IO-gated rAF; 30 fps cap below md. Child order glow→core is load-bearing. `sweepCol*/Row*` are cell coordinates. |
 | `TracingBorder` | 7 **dead** `*/ProjectShowcase` | SVG comet→corner-glow; `gradientId` interpolates into 6 document-global SVG ids. Effectively unused by live routes. |
 | `SpecularBorder` | `blog/BlogCard:157`, `brand-strategy/ProjectShowcase:535`, `work/ProjectCard:267` | `ogl` WebGL rim; loaded `next/dynamic` ssr:false, mounted only while hovered. Resize repaints synchronously (blink fix). Reduced-motion → one static frame, no loop. |
 | `DomeGallery` | `work/WorkHeroSection` | `paused` prop shares bookkeeping with its own IO pause; `desktopDirection` md+ only. Page pauses it via IO on `#work-showcase` with `rootMargin "0px 0px -1px 0px"` — the −1px is load-bearing. |
-| `CarouselDots` | Blog, Testimonials, RelatedArticles, brand-strategy Process/Showcase | Pass `loop` when the track repeats. `about/OurTeamSection` deliberately uses its own dots. |
+| `CarouselDots` | Blog, Testimonials, RelatedArticles, brand-strategy Process/Showcase | Pass `loop` when the track repeats. The 6 px dot is a `<span>` inside a 44 px-tall button with padding cancelled by negative margins (touch target without changing the row). `about/OurTeamSection` and `OurValuesSection` still use their own 6 px buttons (not fixed). |
 | `DynamicButton` | both Headers | Glow layers are `rounded-[inherit]` — never hard-code a radius (hairline bug). |
 | `resizable-navbar` (ui) | `layout/Header` | Dropdown-pill mobile mode, `renderCardTitle` two-line titles, white services panel (panel mirrored into `page/resizable-navbar` 2026-09-04 — keep the two in step). |
 | `button`, `carousel` | carousel ← OurTeamSection, FooterInteractiveClocks | Stock shadcn. `button` only reachable via `carousel`. |
@@ -211,7 +211,10 @@ The in-app preview does not composite: rAF is frozen, timers ~4× slow, IO never
 - Resizing the pane without reloading leaves breakpoint-at-mount components in desktop state.
 - The user's "it's not fixed" has three times been a stale build/Vercel lag; confirm which URL they're viewing.
 
-### Perf baselines (prod `/home`, 2026-08-27)
+### Perf baselines (prod `/home`)
+**Lighthouse mobile, local, simulated throttling, 2026-09-25 — see SESSION_LOG for before/after.** Baseline before that day's fixes: perf 59, LCP 5.0 s, TBT 500 ms, main-thread 11.8 s, DOM growing without bound (LogoLoop loop). The listed polyfills (`Array.prototype.at`, `Object.hasOwn`, …, ~13 KB) live in Next's own vendor chunk and are not removable by `browserslist`.
+
+(2026-08-27)
 307 KB JS / 11 requests. Prerendered-HTML sizes used as no-UI-change fingerprints: home 323,818 · about 448,535 · career 470,606 chars. Desktop `bodyScrollHeight` 17,137; mobile /home `bodyH` 9,885; /brand-strategy mobile 9,006. `next/dynamic` wrappers around sections **cost** 4 renders per component — reverted; don't reintroduce.
 
 ## Repo state (2026-09-04)

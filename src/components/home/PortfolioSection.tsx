@@ -532,10 +532,13 @@ export default function PortfolioSection() {
               className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
             >
               <Image
-                src="/assets/collage4.png"
+                src="/assets/collage4.webp"
                 alt=""
                 fill
                 sizes="100vw"
+                // Sits under a black->transparent scrim; 65 is indistinguishable
+                // from the default 75 there and ~30% smaller.
+                quality={65}
                 className="object-cover"
               />
               {/* Scrim: the copy is white and left-aligned, so the darkening

@@ -33,6 +33,7 @@ gotchas so you don't have to re-explore.
   `transitionend`, a "one pending rAF" guard). Three features have latched shut
   that way. Use a synchronous check at tick time, or cancel-and-rearm; prefer
   timers to `transitionend`.
+- **Never let a component measure a box whose size depends on that component's own output.** `LogoLoop` sizes its copy count from its container; in a shrink-to-fit parent (column flex + `items-start`, `w-max`) that is a ResizeObserver feedback loop that adds DOM every frame until the tab dies. Pin the parent (`self-stretch`/`w-full`) instead.
 - **`will-change` must be breakpoint-scoped** (`md:will-change-transform`) when
   the transform itself is desktop-only — otherwise phones hold GPU texture for
   layers that never move.

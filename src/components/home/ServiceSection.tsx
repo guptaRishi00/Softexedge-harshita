@@ -185,7 +185,7 @@ export default function ServiceSection() {
             transition={
               isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
             }
-            className="mb-6 text-xs lg:text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-8"
+            className="mb-6 text-xs lg:text-sm uppercase tracking-[0.3em] text-zinc-400 font-medium max-md:mb-8"
           >
             What We Offer
           </motion.p>

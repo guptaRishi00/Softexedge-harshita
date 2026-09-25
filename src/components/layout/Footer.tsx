@@ -48,9 +48,9 @@ const footerLinkGroups = [
 ];
 
 const socialLinks = [
-  { icon: <FaFacebookF size={14} />, href: "#" },
-  { icon: <AiFillInstagram size={14} />, href: "#" },
-  { icon: <FaLinkedinIn size={14} />, href: "#" },
+  { icon: <FaFacebookF size={14} />, href: "#", label: "Facebook" },
+  { icon: <AiFillInstagram size={14} />, href: "#", label: "Instagram" },
+  { icon: <FaLinkedinIn size={14} />, href: "#", label: "LinkedIn" },
 ];
 
 const brandLetters = "Softexedge"
@@ -111,7 +111,7 @@ export default function Footer() {
                 }
                 className="flex flex-col gap-2.5"
               >
-                <p className="mb-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500">
+                <p className="mb-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-400">
                   {title}
                 </p>
                 {links.map((link) => (
@@ -186,6 +186,7 @@ export default function Footer() {
                 <a
                   key={i}
                   href={social.href}
+                  aria-label={social.label}
                   className="group flex items-center justify-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-black transition-colors hover:bg-gray-200"
                 >
                   {social.icon}
@@ -268,7 +269,7 @@ export default function Footer() {
                 ? NO_ENTRY
                 : { duration: 0.6, ease: premiumEase, delay: 0.05 }
             }
-            className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/40 max-md:order-5 max-md:items-center max-md:pb-4 max-md:text-center md:flex-row md:items-end"
+            className="flex flex-col items-start justify-between gap-4 text-sm font-medium text-white/50 max-md:order-5 max-md:items-center max-md:pb-4 max-md:text-center md:flex-row md:items-end"
           >
             <p className="tracking-wide">© Made By Softexedge</p>
 

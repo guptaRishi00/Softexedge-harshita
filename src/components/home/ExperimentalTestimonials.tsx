@@ -295,9 +295,9 @@ export default function ExperimentalTestimonials() {
                     {item.initials}
                   </div>
                   <div>
-                    <h4 className="text-lg font-bold text-zinc-900 max-md:text-base">
+                    <h3 className="text-lg font-bold text-zinc-900 max-md:text-base">
                       {item.name}
-                    </h4>
+                    </h3>
                     <p className="mt-1 text-xs font-bold uppercase tracking-wider text-zinc-500 max-md:text-xs md:text-sm">
                       {item.role}
                     </p>

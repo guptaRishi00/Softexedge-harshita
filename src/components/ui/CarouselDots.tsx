@@ -115,17 +115,25 @@ export default function CarouselDots({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       {ids.map((id, i) => (
+        // The visible dot stays 6px tall; the button around it is the touch
+        // target (44px tall, dot width + 18px). Negative margins cancel the
+        // padding in the flow so the row's height and dot spacing are
+        // unchanged -- adjacent hit areas overlap, which is fine for taps.
         <button
           key={id}
           type="button"
           aria-label={`Go to slide ${i + 1}`}
           onClick={() => jump(i)}
-          className={`h-1.5 rounded-full transition-all duration-300 ${
-            i === active
-              ? "w-6 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
-              : "w-1.5 bg-zinc-300"
-          }`}
-        />
+          className="-mx-[9px] -my-[19px] flex h-11 items-center px-[9px]"
+        >
+          <span
+            className={`block h-1.5 rounded-full transition-all duration-300 ${
+              i === active
+                ? "w-6 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
+                : "w-1.5 bg-zinc-300"
+            }`}
+          />
+        </button>
       ))}
     </div>
   );

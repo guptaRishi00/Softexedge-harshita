@@ -89,7 +89,7 @@ export default function ContactSection() {
               transition={
                 isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
               }
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-6 max-md:text-xs"
+              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-400 font-medium max-md:mb-6 max-md:text-xs"
             >
               Get in touch
             </motion.div>

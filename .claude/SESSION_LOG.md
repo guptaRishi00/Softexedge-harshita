@@ -22393,3 +22393,24 @@ exit 0 (35/35); biome 2 = HEAD baseline.
 **Change (1 file, +17/-16).** Dropped the two `*Still` constants; row 1 is now 7 cards (meet2, quote, video1 with still gd.jpg, interview, h4, sw, saas), row 2 is 6 (video2 with still video4.jpg, meet, quote, video, h2, video2.jpg). All 11 paths are unique across both rows and all exist in `public/assets` (no new files, no remote hosts). Quotes, videos, speeds, layout untouched. Header comment rewritten to state the uniqueness rule (`InfiniteRow` keys cards by `src`).
 
 **Verification.** `bunx tsc --noEmit` exit 0; biome on the file: 0 diagnostics before and after; `bun run build` (see below). Visual on the user's :3000 dev server, /career: DOM dump of one marquee copy per row lists the 7 + 6 sources above with no repeats; screenshot shows varied cards in both rows. Frame rate not measured. Map: removed the "interview.jpg orphan" note, added the uniqueness rule. Not committed.
+
+## Mobile performance report: measured, fixed what reproduced, one runaway DOM leak found (2026-09-25)
+
+**Task:** `Downloads/mobile-performance-optimization-report.md` — fix the listed issues. Method: Lighthouse mobile (simulated throttling, `bunx lighthouse` against `next start :3100`) before and after, plus a saved trace to attribute main-thread work.
+
+**Baseline (prod /home, mobile):** perf 59, a11y 88, FCP 3.1 s, LCP 5.0 s, TBT 505 ms, main-thread 11.8 s. Four of the report's items did NOT reproduce on this build (image formats, responsive sizes, render-blocking CSS, legacy JS all scored clean); it was measured on an older deploy.
+
+**Root cause of the main-thread cost — a ResizeObserver feedback loop (`home/ScrollAnimator.tsx` "Trusted By" strip).** Below `sm` the section is `flex-col items-start`, so the `LogoLoop` wrapper was content-sized (measured 1888 px wide on a 375 px phone). `LogoLoop` sets its copy count from that width (+2 headroom), the copies widen the wrapper, the observer fires again: +2 copies every frame for as long as the page is open. Trace: DOM 2,129 -> 7,919 nodes in 3.9 s, one MutationObserver + React commit + full style/layout/paint per frame. Fix: `max-sm:-mx-6 max-sm:self-stretch` on the wrapper (strip still runs edge to edge). Verified at 375 px: wrapper 0..375, 3 copies, DOM flat at 1,558 over 2.5 s.
+
+**Other changes (design-preserving):**
+- `app/layout.tsx` + `globals.css`: Satoshi via `next/font/local` (`--font-satoshi`), `@font-face` removed -> `<link rel=preload as=font>` in head, metric-matched fallback. `tw-animate-css` import dropped (0 usages; dep still installed).
+- `next.config.ts`: `images.formats` AVIF then WebP. `experimental.inlineCss` was tried: document 43 KB -> 125 KB transfer, FCP/LCP each ~200 ms worse -> reverted.
+- `Herosection.tsx`: `fetchPriority="high"` on the mobile hero image (Next forwards it to its preload; lcp-discovery now passes). `astro.webp` re-encoded q60: 28 KB -> 5.7 KB, max pixel delta after the 6px blur 4/255.
+- `PortfolioSection.tsx`: `collage4.png` (2.36 MB PNG master) -> `collage4.webp` q85 (256 KB) + `quality={65}` (under a scrim). PNG removed from git.
+- A11y: `CarouselDots` dot is now a span inside a 44 px-tall button (padding cancelled by negative margins, row unchanged); Footer socials get `aria-label`; Footer group titles zinc-500 -> zinc-400 and legal line + clocks white/40 -> white/50 (on black: 4.26 / 3.65 -> 8.3 / 5.3 : 1); ServiceSection + ContactSection eyebrows zinc-500 -> zinc-400 (black sections); Testimonials author `h4` -> `h3` (heading order); Simple Icons in TechLogoCarousel + hero strip get `aria-hidden` (they ship `role="img"`).
+
+**Result (same harness):** perf 59 -> 81, a11y 88 -> 97, FCP 3.1 -> 1.4 s, LCP 5.0 -> 4.3 s, Speed Index 5.5 -> 2.2 s, TBT 505 -> 228 ms, TTI 6.8 -> 4.7 s, main-thread 11.8 -> 3.5 s, DOM 6,456 (mid-growth) -> 1,529 stable. `bunx tsc --noEmit` exit 0; `bun run build` 35/35; biome per changed file = HEAD.
+
+**Not fixed, with reasons:** unused JS 115 KiB = React/Next vendor + framer + the 44 KB gsap chunk (all gsap use is behind `min-width:768px`; lazy-loading it means restructuring 5 scroll-fragile files -- next candidate). Legacy-JS 13 KiB = Next's own polyfill-module inside its vendor chunk, not removable via browserslist. `target-size`: 4 inner dots still flagged -- adjacent hit areas overlap because dots sit 14 px apart; passing needs a wider visual gap. `h5.jpg` 96 KB at 750 w (10 KB "waste") left as is. LCP 4.3 s is now almost all element render delay (framework JS + first layout) -- the remaining lever is JS volume, not images. Not committed.
+
+**Flag:** `public/assets/usbvault.json` (untracked, Sep 7) contains a token and would be served publicly from `/assets/` if it were ever added; not touched.

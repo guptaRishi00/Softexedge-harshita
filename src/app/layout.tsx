@@ -1,9 +1,21 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
 import IosClickRescue from "@/components/ui/IosClickRescue";
 import VideoViewportPause from "@/components/ui/VideoViewportPause";
 import { cn } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
+
+// Loaded here rather than via @font-face in globals.css so Next emits a
+// <link rel="preload"> for the woff2 (it used to be discovered only after the
+// stylesheet was parsed) and a metric-matched fallback for the swap period.
+// The variable is what globals.css's --font-sans points at.
+const satoshi = localFont({
+  src: "../../public/fonts/Satoshi-Variable.woff2",
+  weight: "100 900",
+  display: "swap",
+  variable: "--font-satoshi",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -21,7 +33,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "antialiased", "font-sans")}>
+    <html
+      lang="en"
+      className={cn(satoshi.variable, "h-full", "antialiased", "font-sans")}
+    >
       <body className="min-h-full flex flex-col">
         <VideoViewportPause />
         {/* Touch devices only: re-dispatches the click iOS withholds when the

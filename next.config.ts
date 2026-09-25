@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   images: {
+    // AVIF is ~20-30% smaller than WebP at the same quality; the optimizer
+    // still falls back to WebP for browsers that don't accept it.
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",

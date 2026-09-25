@@ -204,6 +204,7 @@ export default function Herosection({}: any) {
             aria-hidden
             fill
             priority
+            fetchPriority="high"
             // `unoptimized`: the optimizer was picking a 96px-wide candidate
             // from a source that is only 213px to begin with, which upscaled
             // to ~4x across the hero and looked pixelated. The original file

@@ -53,15 +53,15 @@ export default function ScrollAnimator({
   footer: ReactNode;
 }) {
   const techLogos = [
-    { node: <SiReact />, title: "React", href: "https://react.dev" },
-    { node: <SiNextdotjs />, title: "Next.js", href: "https://nextjs.org" },
+    { node: <SiReact aria-hidden />, title: "React", href: "https://react.dev" },
+    { node: <SiNextdotjs aria-hidden />, title: "Next.js", href: "https://nextjs.org" },
     {
-      node: <SiTypescript />,
+      node: <SiTypescript aria-hidden />,
       title: "TypeScript",
       href: "https://www.typescriptlang.org",
     },
     {
-      node: <SiTailwindcss />,
+      node: <SiTailwindcss aria-hidden />,
       title: "Tailwind CSS",
       href: "https://tailwindcss.com",
     },
@@ -178,7 +178,14 @@ export default function ScrollAnimator({
         </div>
         <div className="hidden h-6 w-px bg-black/10 md:block" />
 
-        <div className="relative min-w-0 flex-1 overflow-hidden max-sm:-ml-6">
+        {/* Below sm the section is a column with items-start, which sizes this
+            wrapper to its CONTENT. LogoLoop measures the wrapper to decide how
+            many logo copies it needs and adds two more, the wrapper grows to fit
+            them, the ResizeObserver fires again -- +2 copies every frame for as
+            long as the page is open (measured: 2,129 -> 7,919 DOM nodes in 4s).
+            self-stretch pins the wrapper to the section width; -mr-6 mirrors
+            -ml-6 so the strip still runs edge to edge. */}
+        <div className="relative min-w-0 flex-1 overflow-hidden max-sm:-mx-6 max-sm:self-stretch">
           <LogoLoop
             logos={techLogos}
             speed={50}

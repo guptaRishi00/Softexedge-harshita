@@ -102,7 +102,7 @@ function OfficeClock({ city, timeZone }: { city: string; timeZone: string }) {
           {city}
         </span>
       </div>
-      <div className="tabular-nums text-white/40">
+      <div className="tabular-nums text-white/50">
         <LocalTime timeZone={timeZone} />
       </div>
     </div>
