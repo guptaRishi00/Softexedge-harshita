@@ -47,7 +47,7 @@ components. Repo: `github.com/guptaRishi00/Softexedge-2026-draft-one`, branch `m
 ## Bootstrap flow
 `src/app/layout.tsx` (34 lines): `metadata` with `metadataBase(SITE_URL)` + title template `"%s | Softexedge"` (`:8-16`); `<html class="h-full antialiased font-sans">` → `<body class="min-h-full flex flex-col">` → **two global mounts**: `<VideoViewportPause/>` (`:26`) and `<IosClickRescue/>` (`:29`) → `{children}`. No providers, no header, no footer, no analytics, no fonts.
 
-Every `src/app/**/page.tsx` is a **Server Component** (zero `"use client"` under `src/app`). Each route page composes section components and renders its own `<Footer>`. The site header is rendered **per page** — `/home` gets `layout/Header` via `home/Herosection.tsx:7`; every other route renders `page/Header` (22 importers: 13 route pages incl. `work/[slug]`, 7 dead `*/StrategyHeroSection`, `blog/BlogArticle:56`, `blog/BlogHeroSection:85`).
+Every `src/app/**/page.tsx` is a **Server Component** (zero `"use client"` under `src/app`). Each route page composes section components and renders its own `<Footer>`. Every page has exactly one `<main>` landmark: the route file's root element for `/blog`, the 8 service pages and `/work/[slug]`; a hero component (`AboutHeroSection`, `WorkHeroSection`, `BlogArticle`, `ScrollAnimator`) for the rest — don't add a second. The site header is rendered **per page** — `/home` gets `layout/Header` via `home/Herosection.tsx:7`; every other route renders `page/Header` (22 importers: 13 route pages incl. `work/[slug]`, 7 dead `*/StrategyHeroSection`, `blog/BlogArticle:56`, `blog/BlogHeroSection:85`).
 
 `/home` specifically: `app/home/page.tsx:15` → `<SmoothScroll>` (Lenis, desktop only) → `<ScrollAnimator hero about portfolio stats services testimonials techCarousel contact blog footer/>` (10 ReactNode props). `home/layout.tsx` exists only to carry `metadata` for the route.
 
@@ -56,7 +56,7 @@ Every `src/app/**/page.tsx` is a **Server Component** (zero `"use client"` under
 - `src/components/home/` — `/home` sections + `ScrollAnimator.tsx` (GSAP pin owner)
 - `src/components/layout/` — `Header` (home nav), `Footer` + `FooterInteractiveClocks`, `SmoothScroll`
 - `src/components/page/` — `Header` (all other routes) + its own `resizable-navbar.tsx`
-- `src/components/ui/` — 16 shared primitives/effects (all live; see table below)
+- `src/components/ui/` — 17 shared primitives/effects (all live; see table below)
 - `src/components/brand-strategy/` — **the one live service-page component set** (9 files)
 - `src/components/{ai-marketing-automation,app-development,custom-software,digital-marketing,ui-ux-design,video-production,web-development}/` — **56 dead files**, byte-identical to each other (md5 verified), an older generation of brand-strategy's components. Kept "for minimal diff"; cleanup pending (open question 1).
 - `src/components/{about,blog,career,contact,work}/` — page-specific sections. `career/CareerHeroSection` rows are `InfiniteRow` marquees (6 copies of the item list); every image `src` and video `still` there is unique on purpose, and `InfiniteRow` keys cards by `src`, so never repeat a path within a row.
@@ -144,6 +144,7 @@ No storage. Two static modules:
 | File | Consumers | Contract / gotcha |
 |---|---|---|
 | `IosClickRescue` | `app/layout.tsx:29` | Capture-phase pointer listeners re-dispatch taps iOS Safari drops (~1 in 3 when the page mutates during the synthetic hover pass). Fields get synchronous `focus()` in `pointerup`; links/buttons get `el.click()` after 120 ms unless a native click arrived. Anything that `stopPropagation()`s at capture before `document` breaks its detection. |
+| `DesktopAutoplayVideo` | `career/CarouselCard`, `about/AboutTraditional`, `contact/ContactHeroSectionTwo` | `<video preload="none" loop muted playsInline>` that calls `play()` only at `min-width:768px`. **Phones never download the mp4**; they show the `poster` (`/assets/video1-poster.jpg`, `video5-poster.jpg`, or the career `still`). Use this, never bare `autoPlay`, for any new decorative video — `/about` was pulling 8.9 MB and `/career` 14.5 MB of mp4 on mobile before it. `home/Herosection` keeps its own copy (canvas coupling). |
 | `VideoViewportPause` | `app/layout.tsx:26` | IO (`rootMargin 200px`) + MutationObserver on body; pauses offscreen `<video>`, resumes only ones it paused (WeakSet). **`play` fires on every re-entry** — canvas-from-video code must `cancel()` before scheduling (`Herosection.tsx:130-133`). |
 | `ShrinkOnOverlap` | 13 route pages | GSAP scrub: wrapped block scales to `scale=0.85,y=40` between its own bottom and `endSelector`'s top; desktop only. `endSelector` resolved once by `document.querySelector` → renamed id = silent no-op. Route ids it depends on: `#about-traditional #our-team #why-join-us #our-team-career #contact-overlap #blog-list #work-showcase #work-testimonials #subservices-overlap #process-overlap`. |
 | `TechLogoCarousel` | 12 route pages | Server component; 11 `react-icons/si` logos → `LogoCarousel`. |
@@ -153,7 +154,7 @@ No storage. Two static modules:
 | `TracingBorder` | 7 **dead** `*/ProjectShowcase` | SVG comet→corner-glow; `gradientId` interpolates into 6 document-global SVG ids. Effectively unused by live routes. |
 | `SpecularBorder` | `blog/BlogCard:157`, `brand-strategy/ProjectShowcase:535`, `work/ProjectCard:267` | `ogl` WebGL rim; loaded `next/dynamic` ssr:false, mounted only while hovered. Resize repaints synchronously (blink fix). Reduced-motion → one static frame, no loop. |
 | `DomeGallery` | `work/WorkHeroSection` | `paused` prop shares bookkeeping with its own IO pause; `desktopDirection` md+ only. Page pauses it via IO on `#work-showcase` with `rootMargin "0px 0px -1px 0px"` — the −1px is load-bearing. |
-| `CarouselDots` | Blog, Testimonials, RelatedArticles, brand-strategy Process/Showcase | Pass `loop` when the track repeats. The 6 px dot is a `<span>` inside a 44 px-tall button with padding cancelled by negative margins (touch target without changing the row). `about/OurTeamSection` and `OurValuesSection` still use their own 6 px buttons (not fixed). |
+| `CarouselDots` | Blog, Testimonials, RelatedArticles, brand-strategy Process/Showcase | Pass `loop` when the track repeats. The 6 px dot is a `<span>` inside a 44 px-tall button with padding cancelled by negative margins (touch target without changing the row); `about/OurTeamSection` and `OurValuesSection` use the same pattern on their own dots. Inner dots still fail Lighthouse target-size (14 px apart → hit areas overlap); passing needs a wider visual gap. |
 | `DynamicButton` | both Headers | Glow layers are `rounded-[inherit]` — never hard-code a radius (hairline bug). |
 | `resizable-navbar` (ui) | `layout/Header` | Dropdown-pill mobile mode, `renderCardTitle` two-line titles, white services panel (panel mirrored into `page/resizable-navbar` 2026-09-04 — keep the two in step). |
 | `button`, `carousel` | carousel ← OurTeamSection, FooterInteractiveClocks | Stock shadcn. `button` only reachable via `carousel`. |
@@ -164,6 +165,7 @@ No storage. Two static modules:
 - **56 dead service component files** (7 folders). They still compile, still lint, still get grepped. `AgencyStats` is unused even in brand-strategy. `SubServices`' `children` prop + `z-40` wrapper are dead (ProcessSection is a sibling on every route).
 - Dead bits inside live files: `ContactSection.tsx:48` `GRID_COLUMNS`; `StatsSection.tsx:30` `isMobile` (always false inside a min-768 matchMedia); `blog.ts:11` `PostCategory`; empty spacer `blog/page.tsx:35`; `{/* hello */}` leftovers `ScrollAnimator.tsx:73,255`.
 - Loose types: `contact/page.tsx:28` `({}: any)`; `type Props = {}` in about/brand-strategy pages.
+- **Contrast rule of thumb** (all measured by Lighthouse): on black use `zinc-400` (8.3:1), never `zinc-500` (4.26:1); on white use `zinc-600` (7:1), never `zinc-400` (2.5:1) or `zinc-500` (4.35:1); muted white on black is `white/50` (5.3:1), not `white/40` (3.65:1). Eyebrow labels on black sections now follow this.
 
 ### Two Header components — edit the right one
 | File | Navbar | Used by |

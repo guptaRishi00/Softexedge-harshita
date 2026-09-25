@@ -68,7 +68,7 @@ export default function ProcessSection() {
     >
       <div className="mx-auto w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-16 md:mb-35">
-          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-500">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-400">
             How We Work
           </span>
 

@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 export default function WebDevelopmentPage() {
   return (
-    <div>
+    <main>
       <div className="overflow-x-clip w-full">
         <Header dropdown />
         <div className="relative z-0">
@@ -79,6 +79,6 @@ export default function WebDevelopmentPage() {
           <Footer />
         </div>
       </div>
-    </div>
+    </main>
   );
 }

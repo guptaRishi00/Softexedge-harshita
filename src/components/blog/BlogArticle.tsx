@@ -214,7 +214,7 @@ export default function BlogArticle({
                 className="h-18 w-18 shrink-0 rounded-2xl object-cover"
               />
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-600">
                   Written by
                 </span>
                 <span className="text-xl font-bold text-zinc-900">

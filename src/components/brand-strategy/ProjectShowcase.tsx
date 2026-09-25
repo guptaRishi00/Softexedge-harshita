@@ -150,7 +150,7 @@ export default function ProjectShowcase() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase, delay: 0 }}
-            className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-500"
+            className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-400"
           >
             Selected Work
           </motion.span>
@@ -264,6 +264,7 @@ export default function ProjectShowcase() {
                         project={project}
                         hoveredId={hoveredId}
                         setHoveredId={setHoveredId}
+                        focusable={run === 0}
                       />
                     </div>
                   ))}
@@ -281,7 +282,11 @@ function ProjectCard({
   project,
   hoveredId,
   setHoveredId,
+  // false for the duplicate runs of the mobile loop: those copies are
+  // aria-hidden, and a hidden subtree must not contain a tab stop.
+  focusable = true,
 }: {
+  focusable?: boolean;
   project: {
     id: number;
     title: string;
@@ -542,6 +547,7 @@ function ProjectCard({
           interactive inside the card to shadow. */}
       <Link
         href={project.href}
+        tabIndex={focusable ? undefined : -1}
         className="absolute inset-0 z-30 rounded-[20px]"
         aria-label={`View ${project.title}`}
       />

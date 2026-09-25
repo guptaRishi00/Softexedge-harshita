@@ -54,7 +54,7 @@ export default async function ProjectPage(props: {
   const galleryB = gallery.slice(galleryMid);
 
   return (
-    <div className="relative bg-black">
+    <main className="relative bg-black">
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header onDark dropdown />
       </div>
@@ -76,6 +76,6 @@ export default async function ProjectPage(props: {
       <div className="px-3 pt-7 pb-3 max-md:-mt-px max-md:pb-4 md:pt-24 bg-white">
         <Footer />
       </div>
-    </div>
+    </main>
   );
 }

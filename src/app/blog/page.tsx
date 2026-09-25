@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function BlogPage() {
   return (
-    <div className="">
+    <main className="">
       <BlogHeroSection />
 
       <div className="relative z-0">
@@ -36,6 +36,6 @@ export default function BlogPage() {
       <div className="px-3 pt-7 pb-3 max-md:pb-4 md:pt-19">
         <Footer />
       </div>
-    </div>
+    </main>
   );
 }

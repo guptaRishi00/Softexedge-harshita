@@ -130,7 +130,7 @@ export default function OurValuesSection() {
             className="w-full lg:w-7/12 flex flex-col justify-center py-6 lg:py-12"
           >
             <div className="mb-8 max-md:mb-6">
-              <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs">
+              <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-400 max-md:text-xs">
                 Our Culture
               </span>
             </div>
@@ -274,12 +274,16 @@ export default function OurValuesSection() {
                     type="button"
                     aria-label={`Show quote ${i + 1}`}
                     onClick={() => goTo(i, i > quoteIndex ? 1 : -1)}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === quoteIndex
+                    className="-mx-[9px] -my-[19px] flex h-11 items-center px-[9px]"
+                  >
+                    <span
+                      className={`block h-1.5 rounded-full transition-all duration-300 ${
+                        i === quoteIndex
                         ? "w-6 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
                         : "w-1.5 bg-white/20 hover:bg-white/40"
-                    }`}
-                  />
+                      }`}
+                    />
+                  </button>
                 ))}
               </div>
             </div>
@@ -390,9 +394,9 @@ export default function OurValuesSection() {
                         />
                       </div>
                       <div className="flex flex-col">
-                        <h4 className="text-lg font-bold text-white">
+                        <h3 className="text-lg font-bold text-white">
                           {quotes[quoteIndex].name}
-                        </h4>
+                        </h3>
                         <p className="text-sm font-medium uppercase tracking-wide text-zinc-500">
                           {quotes[quoteIndex].role}
                         </p>
@@ -440,12 +444,16 @@ export default function OurValuesSection() {
                     type="button"
                     aria-label={`Show quote ${i + 1}`}
                     onClick={() => goTo(i, i > quoteIndex ? 1 : -1)}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === quoteIndex
+                    className="-mx-[9px] -my-[19px] flex h-11 items-center px-[9px]"
+                  >
+                    <span
+                      className={`block h-1.5 rounded-full transition-all duration-300 ${
+                        i === quoteIndex
                         ? "w-6 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
                         : "w-1.5 bg-white/20"
-                    }`}
-                  />
+                      }`}
+                    />
+                  </button>
                 ))}
               </div>
             </div>

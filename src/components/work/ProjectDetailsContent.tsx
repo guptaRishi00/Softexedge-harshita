@@ -35,9 +35,9 @@ export default function ProjectDetailsContent({
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, ease: premiumEase }}
               >
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/40">
+                <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/50">
                   Client
-                </h3>
+                </h2>
                 <p className="text-xl font-medium text-white leading-[1.2em]">
                   {project.title}
                 </p>
@@ -50,9 +50,9 @@ export default function ProjectDetailsContent({
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.1, ease: premiumEase }}
               >
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/40">
+                <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/50">
                   Services
-                </h3>
+                </h2>
                 <p className="text-xl font-medium text-white leading-[1.2em]">
                   {project.category}
                 </p>
@@ -65,9 +65,9 @@ export default function ProjectDetailsContent({
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.2, ease: premiumEase }}
               >
-                <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/40">
+                <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-white/50">
                   Tech Stack
-                </h3>
+                </h2>
                 <div className="flex flex-wrap gap-2">
                   {project.tech.map((tech) => (
                     <span

@@ -126,7 +126,7 @@ export default function Block({ block }: { block: ContentBlock }) {
             />
           </div>
           {block.caption && (
-            <figcaption className="mt-3 text-center text-sm font-medium text-zinc-400">
+            <figcaption className="mt-3 text-center text-sm font-medium text-zinc-600">
               {block.caption}
             </figcaption>
           )}

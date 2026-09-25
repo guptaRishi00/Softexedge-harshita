@@ -26,7 +26,7 @@ type Props = {};
 
 export default function BrandStrategyPage({}: Props) {
   return (
-    <div>
+    <main>
       <div className="overflow-x-clip w-full">
         <Header dropdown />
         <div className="relative z-0">
@@ -76,6 +76,6 @@ export default function BrandStrategyPage({}: Props) {
           <Footer />
         </div>
       </div>
-    </div>
+    </main>
   );
 }

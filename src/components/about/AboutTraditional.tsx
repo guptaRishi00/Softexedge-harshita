@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import DesktopAutoplayVideo from "@/components/ui/DesktopAutoplayVideo";
 
 export default function AboutTraditional() {
   return (
@@ -61,12 +62,9 @@ export default function AboutTraditional() {
             // 16/9.
             className="group relative aspect-video max-md:aspect-[4/5] w-full overflow-hidden rounded-2xl bg-zinc-900"
           >
-            <video
+            <DesktopAutoplayVideo
               src="/assets/video1.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
+              poster="/assets/video1-poster.jpg"
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
             />
 

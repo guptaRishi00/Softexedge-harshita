@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import DesktopAutoplayVideo from "@/components/ui/DesktopAutoplayVideo";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
@@ -30,12 +31,9 @@ export default function ContactHeroSectionTwo() {
 
   return (
     <section className="relative flex min-h-screen w-full flex-col overflow-hidden bg-black font-sans selection:bg-[#2E5BFF]/20">
-      <video
+      <DesktopAutoplayVideo
         src="/assets/video5.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
+        poster="/assets/video5-poster.jpg"
         className="absolute inset-0 z-0 h-full w-full object-cover"
       />
 

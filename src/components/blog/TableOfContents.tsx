@@ -60,7 +60,7 @@ export default function TableOfContents({
       transition={{ duration: 0.6, ease: premiumEase }}
       className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-[#FAFAFA] p-8 md:p-10"
     >
-      <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">
+      <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-600">
         On this page
       </span>
       <ul className="flex flex-col gap-3.5">

@@ -126,7 +126,7 @@ export default function OpenPositions() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, ease: premiumEase }}
-            className="mb-8 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:mb-6 max-md:text-xs"
+            className="mb-8 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.3em] text-zinc-400 max-md:mb-6 max-md:text-xs"
           >
             Open Positions
           </motion.div>

@@ -43,7 +43,7 @@ export default function OurTechStack() {
     <section className="relative w-full overflow-hidden bg-black pt-0 text-white max-md:-mt-px max-md:pb-4">
       <div className="mx-auto w-full md:pb-25">
         <div className="mx-auto mb-19 px-4 max-md:mb-8 max-md:px-3 md:px-10">
-          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-500">
+          <span className="mb-5 block ml-[3px] text-xs font-medium uppercase tracking-[0.25em] text-white/60 max-md:tracking-[0.3em] max-md:text-zinc-400">
             Our Toolkit
           </span>
 

@@ -19,7 +19,7 @@ gotchas so you don't have to re-explore.
   `SUBSERVICES_STICK_TOP` (SubServices.tsx) are exported — change them there only.
 - **No `test` or `typecheck` script exists** — use `bunx tsc --noEmit`.
 - **Use `next/image`, never a raw `<img>`.** The migration is complete (`grep "<img" src/` is 0); new remote hosts must be added to `next.config.ts` `remotePatterns` or they throw at runtime.
-- **Every `<video>` is globally paused offscreen** by `ui/VideoViewportPause` (mounted in `layout.tsx`). Never assume an `autoPlay` video keeps running offscreen; if you drive a canvas from a video, guard the `"play"` handler with `cancelAnimationFrame` — it now fires on every resume.
+- **Decorative video goes through `ui/DesktopAutoplayVideo`, never bare `autoPlay`** — phones must not download mp4s (they show the `poster`). Every `<video>` is globally paused offscreen by `ui/VideoViewportPause` (mounted in `layout.tsx`). Never assume an `autoPlay` video keeps running offscreen; if you drive a canvas from a video, guard the `"play"` handler with `cancelAnimationFrame` — it now fires on every resume.
 
 ## Mobile rules (`/home` below `md`) — see the map's "Conventions" and "Risks & gotchas"
 - **Carousels use NATIVE scroll-snap, never JS pointer dragging.** JS drag pays

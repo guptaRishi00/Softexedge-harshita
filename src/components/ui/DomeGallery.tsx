@@ -264,6 +264,10 @@ export default function DomeGallery({
                 alt={copy === 0 ? card.alt : ""}
                 fill
                 sizes="300px"
+                // The first copy of the real image set is on screen at load and
+                // one of them is the page's LCP; lazy-loading it cost 2.2 s of
+                // "resource load delay" on /work. Every repeat stays lazy.
+                loading={copy === 0 && i < images.length ? "eager" : "lazy"}
                 draggable={false}
                 className="h-full w-full object-cover"
                 style={{ filter: grayscale ? "grayscale(1)" : undefined }}

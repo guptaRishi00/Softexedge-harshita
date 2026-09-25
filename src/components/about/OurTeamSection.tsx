@@ -214,12 +214,16 @@ export default function OurTeamSection() {
                   aria-label={`Show ${member.name}`}
                   aria-current={i === selected}
                   onClick={() => scrollToMember(i)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === selected
+                  className="-mx-[9px] -my-[19px] flex h-11 items-center px-[9px]"
+                >
+                  <span
+                    className={`block h-1.5 rounded-full transition-all duration-300 ${
+                      i === selected
                       ? "w-6 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB]"
                       : "w-1.5 bg-zinc-300"
-                  }`}
-                />
+                    }`}
+                  />
+                </button>
               ))}
             </div>
           </div>

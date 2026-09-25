@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import DesktopAutoplayVideo from "@/components/ui/DesktopAutoplayVideo";
 import QuoteCard from "./QuoteCard";
 
 export type CarouselItem =
@@ -47,12 +48,9 @@ export default function CarouselCard({
             className={IMAGE_CLASS}
           />
         ) : (
-          <video
+          <DesktopAutoplayVideo
             src={item.src}
-            autoPlay
-            loop
-            muted
-            playsInline
+            poster={item.still}
             className="w-full h-full object-cover pointer-events-none"
           />
         ))}
