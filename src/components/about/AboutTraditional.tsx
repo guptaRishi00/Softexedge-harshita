@@ -18,7 +18,7 @@ export default function AboutTraditional() {
           className="flex flex-col items-center text-center max-w-5xl z-10 px-4 max-md:items-start max-md:px-3 max-md:text-left md:px-10"
         >
           <div className="mb-8 inline-flex items-center justify-center rounded-full max-md:mb-6">
-            <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:text-xs">
+            <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-400 max-md:text-xs">
               Who We Are
             </span>
           </div>

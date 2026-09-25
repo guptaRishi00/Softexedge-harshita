@@ -22414,3 +22414,25 @@ exit 0 (35/35); biome 2 = HEAD baseline.
 **Not fixed, with reasons:** unused JS 115 KiB = React/Next vendor + framer + the 44 KB gsap chunk (all gsap use is behind `min-width:768px`; lazy-loading it means restructuring 5 scroll-fragile files -- next candidate). Legacy-JS 13 KiB = Next's own polyfill-module inside its vendor chunk, not removable via browserslist. `target-size`: 4 inner dots still flagged -- adjacent hit areas overlap because dots sit 14 px apart; passing needs a wider visual gap. `h5.jpg` 96 KB at 750 w (10 KB "waste") left as is. LCP 4.3 s is now almost all element render delay (framework JS + first layout) -- the remaining lever is JS volume, not images. Not committed.
 
 **Flag:** `public/assets/usbvault.json` (untracked, Sep 7) contains a token and would be served publicly from `/assets/` if it were ever added; not touched.
+
+## Other pages: same measurement pass, videos were the bandwidth hog, a11y to 96-100 (2026-09-25)
+
+**Task:** "there are issues in other pages also fix them" (follow-up to the mobile-performance report). Lighthouse mobile on /about /career /contact /blog /blog/[slug] /work /work/[slug] /brand-strategy (the 7 other service routes render brand-strategy's JSX), plus traces for the three slowest.
+
+**Findings.** No runaway loops elsewhere (DOM flat in every trace). Main-thread cost on /about, /work, /career is React hydration of big client trees (2.4-3.3 s script in the vendor chunk under 4x throttle) plus continuous animation (DomeGallery commits every frame on /work; embla/framer on /about) -- design-level, left alone. The bandwidth problem was plain `autoPlay` video: **/about downloaded 8.9 MB (video1), /career 14.5 MB (video1 + video2), /contact 3.7 MB (video5) on a phone**, starving the LCP image (/about LCP resource load 1.9 s). /work's LCP was a `loading="lazy"` DomeGallery image (2.2 s load delay).
+
+**Changes.**
+- NEW `ui/DesktopAutoplayVideo.tsx`: `preload="none"` + `play()` only at `min-width:768px`; phones show the `poster`. Used by `career/CarouselCard` (poster = the card's `still`), `about/AboutTraditional` (`/assets/video1-poster.jpg`, ffmpeg frame @1s, 1280w, 116 KB) and `contact/ContactHeroSectionTwo` (`/assets/video5-poster.jpg`, 56 KB). Desktop unchanged; verified in real headless Chrome via CDP: desktop videos playing (t=2.4/10.3/8.2 s), mobile zero mp4 requests. Visible mobile change: a still frame instead of a playing clip in those three places (same treatment /home's hero already had).
+- `ui/DomeGallery.tsx`: first copy of the real image set `loading="eager"` (LCP), repeats stay lazy.
+- A11y: contrast on black `zinc-500 -> zinc-400` (brand-strategy SubServices/ProcessSection/OurTechStack/ProjectShowcase eyebrows' `max-md:` colour; career WhyJoinUs/PerksSection/OpenPositions; about OurValuesSection + AboutTraditional); on white `zinc-400 -> zinc-600` (blog figcaption, article/ShareRail/TableOfContents labels); work slug labels `white/40 -> white/50` and `h3 -> h2` (followed the h1). Stat numbers `h4 -> p` (AboutHeroSection, AgencyStats); OurValuesSection author `h4 -> h3`. One `<main>` per page: root element of `/blog`, the 8 service pages, `/work/[slug]` (others already had one in a hero). brand-strategy ProjectShowcase local `ProjectCard` gets `focusable` (tabIndex -1 in the aria-hidden loop runs). OurValuesSection x2 + OurTeamSection dots: same 44 px span-in-button pattern as CarouselDots.
+
+**Result (Lighthouse mobile, same harness; two runs each because host noise was +/-20 points -- /home scored 60 then 84 on identical code while the dev server on :3000 was recompiling):**
+- /about perf 41 -> 76-77, a11y 90 -> 96, TBT 1448 -> ~120 ms, main 13.8 -> ~5.7 s, mp4 8.9 MB -> 0
+- /career perf 49 -> 67-74, a11y 90 -> 96, TBT 1445 -> ~135 ms, mp4 14.5 MB -> 0
+- /contact perf 76 -> 85-88, TBT 281 -> ~170 ms, mp4 3.7 MB -> 0
+- /home perf 59 -> 84 (run 2), a11y 88 -> 97
+- /blog a11y 98 -> 100, /work/[slug] 93 -> 100, /brand-strategy 84 -> 96, /blog/[slug] 92 -> 96 (perf on those measured only in the noisy batch; not claimed).
+- Remaining a11y everywhere: `target-size` on inner carousel dots only (14 px apart, hit areas overlap; needs a wider visual gap).
+`bunx tsc --noEmit` exit 0; `bun run build` 35/35; biome per changed file = HEAD. Not committed.
+
+**Not fixed:** /work main-thread (DomeGallery per-frame commits, 4,405 nodes) and /career DOM (InfiniteRow 6 copies x 2 rows, 2,900 nodes) -- both are the sections' mechanisms. video1.mp4 (10 MB) / video2 (4.5 MB) still full size for desktop; re-encode like video7 is still open question C.
