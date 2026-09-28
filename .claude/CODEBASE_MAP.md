@@ -183,6 +183,9 @@ The two navbar files still differ in props and behaviour: `page/` has `onDark` +
 5. Route-level `[&>section]` gap rules on about/contact/work outrank component padding (same comment in all three) — keep in step.
 6. **Closing line under the last SubServices card** lives in `brand-strategy/ProcessSection.tsx:58-71` (`max-md:before:`), not on the card — `#process-overlap` (`bg-black max-md:-mt-px z-20`) occludes the card's last pixel row.
 
+### iPhone notch colour (theme-color)
+Two parts, both needed: `viewport.themeColor` tints the browser chrome, and a route-scoped `<style>{`@media (max-width:767px){html{background-color:#000}}`}</style>` darkens the canvas iOS paints behind the notch and in the overscroll gutters (html is otherwise transparent and body is white). Root `app/layout.tsx` sets a fixed `#ffffff` default, deliberately **not** a `prefers-color-scheme` pair (no dark theme exists, so that would put a black notch over white pages on dark-mode iPhones). Dark-topped routes override with `#000000` + the style tag: `/contact`, `/work`, `/work/[slug]`. Every other route starts white. Verified 2026-09-28: one `theme-color` per prerendered page, and the style tag unmounts on client navigation (no black canvas leaks onto `/about`). **A new page whose top is dark needs both parts.**
+
 ### Cross-component couplings
 - `blog:filter` window event (BlogHeroSection → BlogListSection), stringly typed, no shared constant.
 - `ShrinkOnOverlap` `endSelector` ids listed above.

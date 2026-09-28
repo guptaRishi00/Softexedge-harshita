@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import CtaSection from "@/components/brand-strategy/CtaSection";
 import ContactFaqSection from "@/components/contact/ContactFaqSection";
@@ -19,6 +19,14 @@ export async function generateStaticParams() {
     };
   });
 }
+
+// The case-study hero is #0a0a0a on a bg-black page, so the notch must be
+// dark too. Same two-part treatment as /work and /contact: theme-color tints
+// the browser chrome, the style tag below darkens the canvas that iOS paints
+// behind the notch and in the overscroll gutters.
+export const viewport: Viewport = {
+  themeColor: "#000000",
+};
 
 export async function generateMetadata({
   params,
@@ -55,6 +63,9 @@ export default async function ProjectPage(props: {
 
   return (
     <main className="relative bg-black">
+      {/* Canvas half of the notch fix; see the comment in contact/page.tsx.
+          Mobile only, route-scoped, removed on client navigation away. */}
+      <style>{`@media (max-width:767px){html{background-color:#000}}`}</style>
       <div className="absolute left-0 top-0 z-50 w-full">
         <Header onDark dropdown />
       </div>

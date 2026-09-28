@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import IosClickRescue from "@/components/ui/IosClickRescue";
@@ -16,6 +16,15 @@ const satoshi = localFont({
   display: "swap",
   variable: "--font-satoshi",
 });
+
+// Default notch / browser-chrome colour for every route that doesn't set its
+// own. A fixed white, NOT a prefers-color-scheme pair: the site has no dark
+// theme, so a scheme-keyed default would paint a black notch above white pages
+// on every dark-mode iPhone. Dark-topped routes (/contact, /work, /work/[slug])
+// override this with their own `viewport` export.
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -22436,3 +22436,13 @@ exit 0 (35/35); biome 2 = HEAD baseline.
 `bunx tsc --noEmit` exit 0; `bun run build` 35/35; biome per changed file = HEAD. Not committed.
 
 **Not fixed:** /work main-thread (DomeGallery per-frame commits, 4,405 nodes) and /career DOM (InfiniteRow 6 copies x 2 rows, 2,900 nodes) -- both are the sections' mechanisms. video1.mp4 (10 MB) / video2 (4.5 MB) still full size for desktop; re-encode like video7 is still open question C.
+
+## iPhone notch colour: project pages fixed, explicit white default (2026-09-28)
+
+**Task:** apply `Downloads/notch-background-guide.md` (per-route `viewport.themeColor`, optional global default).
+
+**Audit.** `/contact` and `/work` already set `#000000` plus the canvas style tag. Every other route has a white top except **`/work/[slug]`**: `bg-black` page, `#0a0a0a` hero, no `theme-color` and white canvas, so iPhones showed a white notch above a dark case study. No root default existed.
+
+**Change (2 files).** `app/layout.tsx`: `viewport = { themeColor: "#ffffff" }`. Deviates from the guide's optional example on purpose: its `prefers-color-scheme` pair would paint a black notch over white pages on dark-mode iPhones, and this site has no dark theme. `app/work/[slug]/page.tsx`: `viewport = { themeColor: "#000000" }` plus the same mobile-only `html{background-color:#000}` style tag as /work and /contact. The guide's claim that `theme-color` alone sets the notch is incomplete for this codebase; the canvas half is what the /contact comment documents.
+
+**Verification.** `bunx tsc --noEmit` exit 0; biome clean before and after on both files; `bun run build` 35/35. Prerendered HTML: one `theme-color` per route, `#000000` on /contact, /work, /work/aura-skincare, /work/finova-dashboard, `#ffffff` on the other eight checked (home, about, career, blog, blog slug, brand-strategy, web-development, ui-ux-design). Live at 375 px on `next start`: /work/aura-skincare html bg `rgb(0,0,0)`, hero `rgb(10,10,10)`; /about html transparent over white body. Client-side nav project page -> /about (same document): html bg back to transparent, theme-color `#ffffff`, zero leftover style tags. Not tested on a physical iPhone. Not committed.
