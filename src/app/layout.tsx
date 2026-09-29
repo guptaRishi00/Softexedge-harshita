@@ -17,13 +17,15 @@ const satoshi = localFont({
   variable: "--font-satoshi",
 });
 
-// Default notch / browser-chrome colour for every route that doesn't set its
-// own. A fixed white, NOT a prefers-color-scheme pair: the site has no dark
-// theme, so a scheme-keyed default would paint a black notch above white pages
-// on every dark-mode iPhone. Dark-topped routes (/contact, /work, /work/[slug])
-// override this with their own `viewport` export.
+// Notch / browser-chrome colour for every route: solid black, site-wide.
+// Deliberately one fixed colour and NOT a prefers-color-scheme pair -- a
+// scheme-keyed value lets a Light Mode iPhone paint a white/grey notch over
+// this site's dark design. theme-color is only half of it: newer iOS Safari
+// paints the notch from the page canvas, which globals.css also sets to black
+// on phones. Pages whose top is white (/about, /career, /blog, the service
+// pages) therefore get a black notch too; that is the intended look.
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#000000",
 };
 
 export const metadata: Metadata = {

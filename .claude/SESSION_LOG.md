@@ -22446,3 +22446,15 @@ exit 0 (35/35); biome 2 = HEAD baseline.
 **Change (2 files).** `app/layout.tsx`: `viewport = { themeColor: "#ffffff" }`. Deviates from the guide's optional example on purpose: its `prefers-color-scheme` pair would paint a black notch over white pages on dark-mode iPhones, and this site has no dark theme. `app/work/[slug]/page.tsx`: `viewport = { themeColor: "#000000" }` plus the same mobile-only `html{background-color:#000}` style tag as /work and /contact. The guide's claim that `theme-color` alone sets the notch is incomplete for this codebase; the canvas half is what the /contact comment documents.
 
 **Verification.** `bunx tsc --noEmit` exit 0; biome clean before and after on both files; `bun run build` 35/35. Prerendered HTML: one `theme-color` per route, `#000000` on /contact, /work, /work/aura-skincare, /work/finova-dashboard, `#ffffff` on the other eight checked (home, about, career, blog, blog slug, brand-strategy, web-development, ui-ux-design). Live at 375 px on `next start`: /work/aura-skincare html bg `rgb(0,0,0)`, hero `rgb(10,10,10)`; /about html transparent over white body. Client-side nav project page -> /about (same document): html bg back to transparent, theme-color `#ffffff`, zero leftover style tags. Not tested on a physical iPhone. Not committed.
+
+## Notch: site-wide black per the user's "dark-only site" guide, pushed to main (2026-09-29)
+
+**Task:** apply `Downloads/notch-background-guide (1).md` and push to main. The guide's fix: a single fixed black `themeColor` in the root layout (no light/dark media pair), for a site meant to read as dark.
+
+**Before (measured, 375 px, prod build).** Root default was `#ffffff` (my 09-28 change), so every white-topped route had a white notch; /contact, /work, /work/[slug] had black. The dark heroes are grey at the top edge on first load (/work/aura-skincare `rgb(123,124,124)`, /contact `rgb(106,108,103)`), which is where a "grey notch" reads.
+
+**Change (2 files).** `app/layout.tsx`: `themeColor "#ffffff" -> "#000000"`, comment rewritten. `app/globals.css`: `@media (max-width:767px) { html { background-color:#000 } }` after the base layer -- the canvas half, which newer iOS Safari uses instead of theme-color; body stays white so content is unchanged. Route-level black exports/style tags on /contact, /work, /work/[slug] left in place (now redundant, harmless).
+
+**Tradeoff stated to the user:** white-topped pages (/about, /career, /blog, services, home gutter) now show a black notch; that is the guide's intended "dark-only" look.
+
+**Verification.** `bunx tsc --noEmit` 0; biome = HEAD on both files; `bun run build` 35/35; prerendered `theme-color` `#000000` on all 10 probed routes; phone html bg `rgb(0,0,0)` everywhere, body `lab(100 0 0)`; top-strip pixels before/after identical on every route; desktop 1440 html bg unchanged (transparent). Not tested on a physical iPhone.

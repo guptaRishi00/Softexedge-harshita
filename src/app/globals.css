@@ -242,6 +242,18 @@ html.lenis body {
     @apply font-sans;
   }
 }
+
+/* Notch colour, canvas half (the theme-color half is in app/layout.tsx).
+   <html> is otherwise transparent, so the canvas behind the notch and in the
+   overscroll gutters propagates from <body>, which is white. Black <html>
+   paints that canvas black while <body> still paints its own box white, so no
+   content changes colour. Phones only: desktop sees the canvas only in
+   rubber-band overscroll and stays as it was. */
+@media (max-width: 767px) {
+  html {
+    background-color: #000;
+  }
+}
 body {
   font-family: var(--font-sans);
 }
