@@ -18,6 +18,10 @@ const satoshi = localFont({
 });
 
 // Notch / browser-chrome colour for every route: solid white, site-wide.
+// This is only half of the notch colour. globals.css still paints the <html>
+// canvas black below 768px, and newer iOS Safari takes the notch colour from
+// that canvas, so phones can still show a black notch. Change the two
+// together. /contact, /work and /work/[slug] also override this to black.
 export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
