@@ -22458,3 +22458,139 @@ exit 0 (35/35); biome 2 = HEAD baseline.
 **Tradeoff stated to the user:** white-topped pages (/about, /career, /blog, services, home gutter) now show a black notch; that is the guide's intended "dark-only" look.
 
 **Verification.** `bunx tsc --noEmit` 0; biome = HEAD on both files; `bun run build` 35/35; prerendered `theme-color` `#000000` on all 10 probed routes; phone html bg `rgb(0,0,0)` everywhere, body `lab(100 0 0)`; top-strip pixels before/after identical on every route; desktop 1440 html bg unchanged (transparent). Not tested on a physical iPhone.
+
+## Pull from main, comment on the notch coupling, push (2026-10-01)
+
+**Task:** pull from main, add a comment in the code, push to main.
+
+**Pull.** Fast-forward `ccf88a2` -> `9b12beb` (SudeepAcharjee, "Added"): `app/layout.tsx` root `themeColor` `#000000` -> `#ffffff`, and my explanatory comment replaced by a one-liner.
+
+**Comment added** (`app/layout.tsx`, 4 lines under Sudeep's): the white theme-color is only half of the notch colour. `globals.css` still paints the `<html>` canvas black below 768px (newer iOS Safari takes the notch from the canvas), and `/contact`, `/work`, `/work/[slug]` still force black, so phones can still show a black notch. No behaviour change.
+
+**Verification.** tsc 0; biome clean on the file; CRLF kept. Re-fetched before committing (0/0). Commit `5afc9f3`, pushed `9b12beb..5afc9f3`, local == origin/main.
+
+**Open for the user:** the notch is now inconsistent. Either drop the black canvas rule in globals.css (white notch everywhere except the three dark routes) or restore black theme-color. Not changed. This log entry itself is not committed.
+
+## New /duplicate route: home header + hero only (2026-10-14)
+
+**Task:** new page "duplicate", a copy of the home page with only the header and hero section.
+
+**Change (1 new file).** `src/app/duplicate/page.tsx` (Server Component, CRLF): renders `home/Herosection`, which already contains the homepage `layout/Header`, inside the same `<main className="w-full bg-white">` + `lg:px-3 lg:pt-3 px-3 pt-4` wrapper ScrollAnimator gives the hero on /home. No SmoothScroll, ScrollAnimator or Footer (nothing below the hero to pin or smooth-scroll). Metadata: title "Duplicate", home description, `robots: { index: false, follow: true }` because it repeats /home. Not added to `sitemap.ts`.
+
+**Verification.** Pulled first: already level with origin/main. tsc 0; `biome lint` clean (the CRLF format diff is the repo-wide baseline; `home/layout.tsx` fails the same check). `bun run build` 36/36, `/duplicate` static. `next start`: 200, `<meta name="robots" content="noindex, follow">`, 1 h1, 0 footer; /home still 200. At 1440 the hero box is 12,12 x 869 tall, same as /home (width 1416 vs 1401 = /home's scrollbar); page height = viewport. At 375: header + hero only, no horizontal overflow. Not committed.
+
+## "Duplicate" added to both navbars (2026-10-14)
+
+**Task:** add the new /duplicate page to the navbar links.
+
+**Change (2 files, +4 each).** `{ name: "Duplicate", link: "/duplicate" }` appended after Blog in `navItems` of `layout/Header.tsx` (homepage) and `page/Header.tsx` (all other routes). Each array drives both the desktop bar and the mobile menu, so no other edit was needed. Active-state dot and `aria-current` come for free from the existing `pathname.startsWith(item.link)` logic.
+
+**Verification.** Pulled first (level). tsc 0; biome per file = HEAD (2 pre-existing errors each). `bun run build` 36/36. On `next start`, headless Chrome (profile removed after): /home and /about at 1024/1280/1440 show all six links on one row, no horizontal overflow, link group centred (gap to logo = gap to Get in Touch: 59/187/267 px home, 58/186/266 about; tightest is 1024). At 375 both mobile menus list Duplicate as a 302x56 row under Blog. Screenshots reviewed. Not committed.
+
+## /duplicate hero redesigned: white, three-line headline, rotating gradient word (2026-10-14)
+
+**Task:** new hero on /duplicate (header stays): no video, white background, three-line title, last line's word keeps changing in a gradient. Reference image: centred heavy uppercase three-line lockup.
+
+**Change.** NEW `components/duplicate/DuplicateHero.tsx` (client): white `min-h-[100svh]` section, centred uppercase `font-black` h1 "We Build / Digital / <word>", `leading-[0.92] tracking-[-0.035em] text-[clamp(2.5rem,11vw,8.5rem)]`. Word cycles every 2.6 s: Businesses, Brands, Products, Platforms, in the brand gradient `#2E5BFF -> #149CCB`. `app/duplicate/page.tsx` now renders `page/Header dropdown` + DuplicateHero (Herosection removed).
+- **Header deviation, stated to the user:** the home `layout/Header` has white links and a white logo for the dark video and would be invisible on white; `page/Header` is the same navbar for light pages (same links incl. Duplicate, same CTA, blue logo), as /about uses.
+- Motion: framer roll (old word up/out, new word in from below, 0.6 s) overlapping in one clipped grid cell. **First cut used `mode="wait"` and the line went fully blank ~1 s every cycle (caught in screenshots); fixed.** Invisible copies of every word size the cell, so the line never re-centres. Gradient on a static child of the moving span (repo rule). Reduced motion: static first word, no timer. h1 has one stable sr-only sentence; visual lines aria-hidden so the swap isn't re-announced.
+
+**Verification.** tsc 0, biome lint clean, build 36/36 (`/duplicate` static). Headless Chrome on `next start`, profiles removed: 3 lines at 375/768/1024/1440/1920 (font 41/84/113/136/136 px), 0 horizontal overflow, 0 videos, nav links rgb(0,0,0) on desktop, blue logo. Rotation sequence Businesses→Brands→Products→Platforms→Businesses with the slot fixed at 792 px; sampled every 50 ms over 2 cycles, line 3 never below 0.6 opacity. Reduced motion: stays "Businesses". Settled + mid-swap screenshots reviewed. Not committed.
+
+## /duplicate hero: title smaller and a little lower (2026-10-14)
+
+**Task:** reduce the title size and move it down slightly. Literal scope: only those two values.
+
+**Change (`components/duplicate/DuplicateHero.tsx`, 2 classes).** Title `text-[clamp(2.5rem,11vw,8.5rem)]` -> `text-[clamp(2.25rem,9vw,6.75rem)]` (about 20% smaller everywhere); section `pt-24` -> `pt-40` (bottom padding unchanged), which lowers the vertically centred title by 32 px.
+
+**Verification.** tsc 0, biome lint clean, build 36/36. Headless Chrome on `next start` (profiles removed), before -> after: font 41->36 / 84->69 / 113->92 / 136->108 / 136->108 px at 375/768/1024/1440/1920; title centre at 1440 466->498 px (+32). Still 3 lines at every width, 0 horizontal overflow; rotation intact (slot fixed at 629 px, line never below 0.58 opacity); reduced motion static. Screenshot at 1440 reviewed. Not committed.
+
+## /duplicate: About-style Get in Touch + hero title on the shared size scale (2026-10-14)
+
+**Task:** make the Get in Touch button on /duplicate like /about's, and make the title the same size as the other hero titles.
+
+**Change (2 files).** `page/Header.tsx`: `pathname.startsWith("/duplicate")` added to the `ctaBorder` route list, which is what gives /about, /career, /contact, /blog and service pages the 1px grey outline on Get in Touch. `DuplicateHero.tsx`: title size `text-[clamp(2.25rem,9vw,6.75rem)]` -> `text-[2.5rem] sm:text-6xl md:text-7xl lg:text-[6rem]`, the exact scale /about and /career use. Size only: weight, uppercase and leading untouched.
+
+**Verification.** tsc 0; biome on page/Header = HEAD (2 pre-existing errors), DuplicateHero clean; build 36/36. Headless Chrome on `next start` (profile removed), /about vs /duplicate h1 font-size: 40/40, 60/60, 72/72, 96/96, 96/96 px at 375/640/768/1024/1440; CTA border at 1024 and 1440 identical on both (`1px solid`, gray-300). /duplicate still 3 lines, 0 horizontal overflow at every width. Screenshots of both pages at 1440 reviewed. Not committed.
+
+## /duplicate: logo intro before the hero (2026-10-14)
+
+**Task:** from a 2.5 s screen recording (a Metalab-style page): before the content loads, the logo appears, expands, disappears, then the content loads. The clip itself only showed the tail (a logo-shaped 3D star already filling the screen, then the page chrome fading in at ~0.6 s); frames were extracted with ffmpeg to read it.
+
+**Change.**
+- NEW `public/assets/logo-mark.webp` (768x768, 17.7 KB): the square S badge cropped from `logoBlue.png` by alpha bounds (no icon-only logo existed).
+- NEW `components/duplicate/DuplicateIntro.tsx`: fixed white layer (`z-[200]`, aria-hidden, pointer-events none) holding the mark (next/image, priority, unoptimized so the 768 px source stays sharp while scaled up).
+- `app/duplicate/page.tsx`: renders the intro, and wraps Header + hero in `.dup-reveal` (opacity only; a transform would capture the fixed navbar).
+- `app/globals.css`: `dup-intro-mark` / `dup-intro-out` / `dup-reveal` keyframes + classes + reduced-motion block (intro `display:none`, no reveal). Pure CSS, so it runs from first paint, before hydration, and a JS failure can't leave the page hidden.
+- **First timing ghosted** (the layer and mark were half-faded over the half-faded title at 1.2 s, seen in frozen-frame screenshots); re-sequenced so the mark fully fills the screen and fades before the layer dissolves and the page fades in.
+
+**Verification.** tsc 0; biome clean on new files, globals.css 5 warnings = before; build 36/36. Headless Chrome, animations paused and seeked: 0.2 s mark 0.95x fading in, 0.5-0.8 s ~1x hold, 1.0 s 3.3x, 1.15 s 14.8x (screen navy), 1.28 s 26x at 0.11 opacity, 1.45 s layer 0.16 / page 0.45, 2.0 s layer hidden / page 1. Real time at 2.5 s: layer `visibility:hidden`, click at "About Us" hits the link, title point not covered, h1 still 96 px, 0 overflow; 375 px same; reduced motion at 300 ms: layer `display:none`, page opacity 1. Console: 0 errors/warnings. Profile removed. Not committed.
+
+## /duplicate intro slowed 2x (2026-10-14)
+
+**Task:** "make the animation slow" (the logo intro just added).
+
+**Change (`globals.css`, timing only).** Every duration and delay doubled so the shape is unchanged: `dup-intro-mark` 1.3 -> 2.6 s; `dup-intro-out` 0.3 s @1.25 -> 0.6 s @2.5; `dup-reveal` 0.5 s @1.3 -> 1 s @2.6. Page fully visible at ~3.6 s (was ~1.8 s). Comment updated.
+
+**Verification.** biome 5 warnings = before; build 36/36. Frozen-frame probe at 0.4/1.0/1.6/2.0/2.3/2.56/2.9/4.0 s returns the exact values the previous run had at half those times (e.g. mark 14.8x at 2.3 s vs 1.15 s), so the slow-down is uniform. Real time at 4.2 s: layer hidden, clicks reach the nav, h1 96 px, 0 overflow; 375 px same; reduced motion skips it; 0 console messages; profile removed. Not committed.
+
+## /duplicate: scroll-grown showreel section below the hero (2026-10-14)
+
+**Task:** add a video section below the hero that animates like a 6 s screen recording (DEPT-style site). Frames extracted with ffmpeg: a video card sits small and centred under the hero, grows to full-bleed as the page scrolls, and shrinks again on scroll-up; a label top-left and a pause button centre.
+
+**Change.**
+- NEW `components/duplicate/DuplicateVideoSection.tsx` (client): full-height black card, `video6.mp4` (city/billboard reel, 1280x720, 1.9 MB, previously unused), top gradient, label (logo-mark + "SoftexEdge Showreel - 2026"), centred lucide Pause/Play button with aria-label synced to the element's play/pause events (VideoViewportPause also toggles it).
+- NEW `public/assets/video6-poster.jpg` (ffmpeg frame @1.5 s, 1280w, 126 KB).
+- `globals.css`: `dup-video-grow` (`scale: .34` -> 1), `.dup-video-card` with `animation-timeline: view(); animation-range: cover 0% cover 50%; transform-origin: 50% 0`, wrapped in reduced-motion no-preference + `@supports ((animation-timeline: view()) and (animation-range: entry))`, per the modern-web-guidance "scroll-entry-exit-effects" guide (compositor-only, progressive enhancement, no JS fallback for a decorative effect).
+- `app/duplicate/page.tsx`: section rendered after the hero, inside `.dup-reveal`.
+- Biome flagged `noAriaHiddenOnFocusable` on the `<video>`; fixed with `tabIndex={-1}`.
+
+**Verification.** tsc 0; biome clean on new files, globals.css 5 warnings = before; build 36/36. Headless Chrome on `next start` (autoplay allowed, profile removed), after the 3.6 s intro: card width 34/50/67/83/100% of the viewport at 0/25/50/75/100% of the scroll range (exactly linear), top edge anchored; reverse at 25% back to 50%; desktop video playing and looping, 1 mp4 request; button pause/resume with labels swapping; 0 horizontal overflow. 375 px: 0 mp4 requests until the button is tapped, then playing (1 request). Reduced motion: no animation, card 100% at rest. Console clean. Screenshots reviewed.
+
+**Note:** `npx modern-web-guidance` warned the local skill copy (2026_05_16) is out of date (latest 2026_10_12); told the user. Not committed.
+
+## /duplicate showreel: hold small, then grow; padded and rounded (2026-10-14)
+
+**Task:** the video should first stay small and only expand as you scroll; at full size not edge to edge, with padding and border radius.
+
+**Change.** `DuplicateVideoSection.tsx`: section `.dup-reel` > `.dup-reel-stage` (`h-[100svh] p-3 md:p-6`) > card `h-full w-full rounded-[20px]` (20 px = the home hero card's radius). `globals.css` block rewritten: `.dup-reel { height: 200svh; view-timeline: --dup-reel block }`, `.dup-reel-stage { position: sticky; top: 0 }`, `.dup-video-card` animated on the named timeline over `contain 0% contain 85%` (was the card's own `view()` over `cover 0-50%`, which started growing as soon as it appeared). Still inside the `@supports` + reduced-motion gates; outside them the section is one screen with the full-size padded card.
+
+**Verification.** tsc 0, biome clean (globals 5 warnings = before), build 36/36. Headless Chrome at 1440x900 (section top 900, height 1800): scroll 0/300/600/900 -> card 473x290 constant while rising, centred at 900 (305 above/below); 1125/1350/1575 -> 743/1014/1284 wide (linear); 1665 and 1800 -> 1392x852 with 24 px on all four sides, radius 20 px; reverse at 1125 -> 743. Desktop video plays, button toggles; 375 px: 0 mp4 requests before tap, plays after; reduced motion: card 97% wide (padded), no animation; 0 overflow; console clean; profile removed. Screenshots reviewed. Not committed.
+
+## /duplicate: portfolio as stacking cards below the showreel (2026-10-14)
+
+**Task:** add the homepage PortfolioSection below the video on /duplicate, but as stacking cards instead of the pinned horizontal scroll.
+
+**Change.**
+- NEW `src/data/portfolio.ts` (`portfolioProjects`): the 5-project array moved verbatim out of `home/PortfolioSection.tsx`, which now does `import { portfolioProjects as projects } from "@/data/portfolio"` (1 line in, 72 out, body untouched). Shared module instead of a copy, and so /duplicate doesn't import PortfolioSection's GSAP module.
+- NEW `components/duplicate/DuplicatePortfolio.tsx` (server component): heading (eyebrow, "Our Projects" with gradient, count line) + `<ol class="dup-stack">` of rounded `#0a0a0a` cards: full-card Link (sr-only "View <title>"), image (next/image fill) or Nova's video via `DesktopAutoplayVideo` (NEW `video3-poster.jpg`), bottom scrim, "01 / LOGISTICS" line, title, description, tech chips (blur md+ only, as home), "View project" pill.
+- `globals.css`: `.dup-stack` grid (rows = card height, gap 2rem, bottom padding n*offset, `view-timeline: --dup-stack`), `.dup-stack-card` sticky `top: var(--pad)` + `padding-top: i * 1.25rem`, card height `100svh - 2*pad - (n-1)*offset`; inside `@supports` + no-preference reduced motion, `dup-stack-shrink` to `1 - (n-1-i)*0.04` on the list's timeline over `exit-crossing i/n .. (i+1)/n`.
+
+**Verification.** tsc 0; new files lint-clean; PortfolioSection 2 errors = HEAD; globals 5 warnings = before; build 36/36. Home: prerendered markup with scripts/links stripped is identical to the pre-change build; the only raw diff is the RSC build id. Headless Chrome 1440x900 (list top 3081, card 1392x772): cards pin at 24/44/64/84/104 px; card 1 scales 1 -> 0.926 -> 0.847 -> 0.84 while card 2 slides over, final scales 0.84/0.88/0.92/0.96/1.00; links /work, /work/finova-dashboard, /work/lumina-festival, /work/nova-workspace, /work/zephyr-mobility; 0 overflow. 375: stacked at 12/32/52 px with shrink, 0 video3 requests (phone rule), 0 overflow. Reduced motion: stack still pins, no animation. Console clean; profile removed. Screenshots reviewed. Not committed.
+
+## /duplicate: video growth redone to the user's spec; "stacking broken" was a stale dev server (2026-10-14)
+
+**Task:** user: the video's scroll animation was wrong, and the cards did not stack on scroll.
+
+**Diagnosis (measured on the user's own dev server :3000, not just prod).**
+- Stacking: the dev server's served CSS contained NO `.dup-stack*` rules (prod build did), so on the user's screen the cards were plain static 407 px blocks. Cause: Turbopack served `globals.css` one edit behind and only recompiled with a browser tab connected; `touch` didn't help. Prod had been stacking correctly all along.
+- Video: behaved as built, but the build misread the request. "First the video stays small and it expands as we scroll" = visible small under the title at load, growing from the first scroll (like the reference). The previous version hid it below the fold, held it small while it rose, then grew it only once centred.
+
+**Change.** `globals.css` showreel block rewritten: `.dup-reel { --dup-reel-start: .55 (md+: .34); height: 140svh; margin-top: -25svh; view-timeline: --dup-reel }`, card `transform-origin: 50% 0`, `animation-range: entry 25svh entry 100%` (starts at scroll 0, ends as the stage pins). `DuplicateVideoSection.tsx`: comments updated, section `bg-white` removed (it now overlaps the hero's empty bottom). A comment-only CSS tweak was used to push the dev server to the current CSS. Stack code unchanged.
+
+**Verification.** tsc 0; biome clean (globals 5 warnings = before); build 36/36. User's dev :3000 AND prod :3100 identical: 1440x900 card 473x290 @699 at load (visible under the title) -> 703/933/1162 -> 1392x852 @24 at scroll 675, holds to 1035, then scrolls on; stack cards pin 24/44/64/84/104 one by one. 375: 193x433 @621 at load -> 351x788 @12; stack 12/32/52/72. Reduced motion: no animation, full-size card, stack still pins. 0 overflow everywhere. Screenshots of the dev server reviewed. Not committed.
+
+## /duplicate: hero alone on load, video starts below the fold (2026-10-14)
+
+**Task:** "the video animation is good but the herosection should be h-screen and nothing should be in view initially".
+
+**Finding.** The hero was already exactly one screen (`min-h-[100svh]`, measured 900 at 900 vh); the video peeked in only because `.dup-reel` was pulled up `-25svh`. Hero untouched.
+
+**Change.** `globals.css` showreel block: removed `margin-top: -25svh`, `animation-range` `entry 25svh` -> `entry 0%` (same growth, now starting at the fold); comments updated. `DuplicateVideoSection.tsx`: comments only, plus removed an unused `next/image` import Biome flagged.
+
+**Verification (user's dev server :3000, after the known stale-CSS nudge: served CSS lacked the change until a browser visit + one more edit).** 1440x900: reel top 900, card top 924 at scroll 0 (out of view; screenshot shows header + title only), grows 473 -> 703 -> 933 -> 1162 -> 1392 px at 0/225/450/675/900, pinned to 1260; stack still pins 24/44/64/84/104. 375x812: reel top 812, card top 824 at load -> 351x788 @12. Reduced motion: static, full-size card below the fold. overflowX 0; tsc 0; biome lint clean (format diffs are CRLF checkout-only, same on untouched about/page.tsx); CDP profiles 0. Not committed.
+
+
+## Pushed the /duplicate page to main (2026-10-14)
+
+User asked to push. origin/main fetched first (no new upstream commits); `bun run build` 36/36. One commit with the /duplicate page (hero, logo intro, showreel, stacking portfolio), the Duplicate nav links, the shared `data/portfolio.ts`, poster/logo-mark assets, and map/log updates.

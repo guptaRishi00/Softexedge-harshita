@@ -112,6 +112,10 @@ const navItems: NavItem[] = [
     name: "Blog",
     link: "/blog",
   },
+  {
+    name: "Duplicate",
+    link: "/duplicate",
+  },
 ];
 
 export default function Header({
@@ -171,6 +175,7 @@ export default function Header({
     pathname.startsWith("/career") ||
     pathname.startsWith("/contact") ||
     pathname.startsWith("/blog") ||
+    pathname.startsWith("/duplicate") ||
     isSubServiceRoute
       ? " border border-gray-300 hover:border-none"
       : "";

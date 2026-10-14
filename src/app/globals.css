@@ -258,6 +258,171 @@ body {
   font-family: var(--font-sans);
 }
 
+/* /duplicate intro (components/duplicate/DuplicateIntro.tsx). Strictly
+   sequential so nothing ghosts over the page: 0-0.7s the mark fades/scales
+   in, holds to 1.2s, then accelerates (ease-in) to 12x, filling the screen,
+   and fades out while still growing to 28x by 2.6s. Only then does the white
+   layer dissolve (2.5-3.1s) and the page fade in (2.6-3.6s). Transform
+   and opacity only; `visibility: hidden` at the end so the layer never blocks
+   clicks or screen readers. */
+@keyframes dup-intro-mark {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  27% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: linear;
+  }
+  46% {
+    opacity: 1;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
+  }
+  86% {
+    opacity: 1;
+    transform: scale(12);
+    animation-timing-function: linear;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(28);
+  }
+}
+
+@keyframes dup-intro-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes dup-reveal {
+  from {
+    opacity: 0;
+  }
+}
+
+.dup-intro {
+  animation: dup-intro-out 0.6s ease-out 2.5s both;
+}
+
+.dup-intro-mark {
+  animation: dup-intro-mark 2.6s both;
+}
+
+.dup-reveal {
+  animation: dup-reveal 1s ease-out 2.6s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dup-intro {
+    display: none;
+  }
+
+  .dup-reveal {
+    animation: none;
+  }
+}
+
+/* /duplicate showreel (components/duplicate/DuplicateVideoSection.tsx).
+   The hero fills the first screen on its own (nothing else in view at load);
+   from the first scroll the card rises in small and grows continuously until
+   it fills the screen (minus the stage padding), then holds briefly (40svh).
+   - the animation runs on the section's view timeline from `entry 0%`
+     (section top at the fold = scroll 0, since the hero is one screen) to
+     `entry 100%` (section top at viewport top, exactly when the sticky stage
+     pins); the card scales from its top edge;
+   - the section is 140svh, so the full-size card holds for 40svh pinned.
+   No support or reduced motion = one-screen section, full-size card (still padded and rounded). */
+@media (prefers-reduced-motion: no-preference) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes dup-video-grow {
+      from {
+        scale: var(--dup-reel-start);
+      }
+    }
+
+    .dup-reel {
+      --dup-reel-start: 0.55;
+      height: 140svh;
+      view-timeline: --dup-reel block;
+    }
+
+    .dup-reel-stage {
+      position: sticky;
+      top: 0;
+    }
+
+    .dup-video-card {
+      transform-origin: 50% 0%;
+      animation: dup-video-grow linear both;
+      animation-timeline: --dup-reel;
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+
+@media (min-width: 48rem) and (prefers-reduced-motion: no-preference) {
+  .dup-reel {
+    --dup-reel-start: 0.34;
+  }
+}
+
+/* /duplicate stacking portfolio (components/duplicate/DuplicatePortfolio.tsx).
+   Base (every browser): one grid of cards, each `position: sticky` so the
+   next slides up over it; card i sits i * --card-offset lower so the earlier
+   cards' top edges peek out, and the list's bottom padding leaves room for
+   the last card to settle. Enhancement: while card i+1 travels over card i,
+   card i shrinks (deeper cards shrink more), driven by the LIST's view
+   timeline over its exit-crossing range, sliced 1/n per card. Pattern from
+   the scroll-driven "stacking cards" demo. --n / --i are set inline. */
+.dup-stack {
+  --pad: 0.75rem;
+  --card-offset: 1.25rem;
+  --card-h: calc(100svh - 2 * var(--pad) - (var(--n) - 1) * var(--card-offset));
+  display: grid;
+  grid-template-rows: repeat(var(--n), var(--card-h));
+  gap: 2rem;
+  padding-bottom: calc(var(--n) * var(--card-offset));
+  view-timeline: --dup-stack block;
+}
+
+@media (min-width: 48rem) {
+  .dup-stack {
+    --pad: 1.5rem;
+  }
+}
+
+.dup-stack-card {
+  position: sticky;
+  top: var(--pad);
+  padding-top: calc(var(--i) * var(--card-offset));
+}
+
+.dup-stack-card-inner {
+  height: var(--card-h);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    @keyframes dup-stack-shrink {
+      to {
+        scale: calc(1 - (var(--n) - 1 - var(--i)) * 0.04);
+      }
+    }
+
+    .dup-stack-card-inner {
+      transform-origin: 50% 0%;
+      animation: dup-stack-shrink linear forwards;
+      animation-timeline: --dup-stack;
+      animation-range: exit-crossing calc(var(--i) / var(--n) * 100%)
+        exit-crossing calc((var(--i) + 1) / var(--n) * 100%);
+    }
+  }
+}
+
 @keyframes star-movement-top {
   0% {
     transform: translate(0%, 0%);
