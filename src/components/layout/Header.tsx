@@ -117,10 +117,6 @@ const navItems: NavItem[] = [
     name: "Blog",
     link: "/blog",
   },
-  {
-    name: "Duplicate",
-    link: "/duplicate",
-  },
 ];
 
 export default function Header() {

@@ -1,7 +1,5 @@
-// Homepage portfolio panels (home/PortfolioSection) and the /duplicate
-// stacking cards (duplicate/DuplicatePortfolio). Moved here unchanged from
-// PortfolioSection so both can share it without the duplicate page pulling
-// in PortfolioSection's GSAP module. Distinct from `data/projects.ts`.
+// Homepage portfolio panels (home/PortfolioSection), kept out of that GSAP
+// module as plain data. Distinct from `data/projects.ts`.
 export const portfolioProjects = [
   {
     id: 1,

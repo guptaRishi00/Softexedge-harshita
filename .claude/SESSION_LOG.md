@@ -22594,3 +22594,15 @@ exit 0 (35/35); biome 2 = HEAD baseline.
 ## Pushed the /duplicate page to main (2026-10-14)
 
 User asked to push. origin/main fetched first (no new upstream commits); `bun run build` 36/36. One commit with the /duplicate page (hero, logo intro, showreel, stacking portfolio), the Duplicate nav links, the shared `data/portfolio.ts`, poster/logo-mark assets, and map/log updates.
+
+## Moved /duplicate out into its own Next.js project (2026-10-14)
+
+**Task:** remove the duplicate page from softexedge-sept-2026, create a new Next.js project with that page as its home page, and copy all the assets across.
+
+**Change (this repo).** Deleted `src/app/duplicate/`, `src/components/duplicate/` (4 files), the three `/duplicate` blocks in `globals.css` (-165 lines, exactly what `0caad33` added), the "Duplicate" nav item in `layout/Header` and `page/Header`, `/duplicate` in `page/Header`'s `ctaBorder` list, and the three page-only assets `0caad33` added (`logo-mark.webp`, `video3-poster.jpg`, `video6-poster.jpg`; `git rm`, recoverable). `data/portfolio.ts` stays (home uses it); its comment no longer mentions /duplicate. `.next/dev/types` + `.next/types` had to be cleared: their validator still imported the deleted route (map's known trap).
+
+**New project `C:/Users/sanky/Desktop/softexedge-duplicate`.** Same stack versions (Next 16.2.5, React 19.2.4, Tailwind v4, Biome 2.2.0, React Compiler, Bun) with only the deps the page imports (framer-motion, lucide-react, @tabler/icons-react, react-icons, clsx, tailwind-merge). `src/app/page.tsx` = the old page (title falls back to the site default, still noindex); copied verbatim: the 4 duplicate components, `page/Header` + `page/resizable-navbar`, `ui/{DynamicButton,DesktopAutoplayVideo,VideoViewportPause,IosClickRescue}`, `lib/{utils,site}`, `data/portfolio.ts`, `layout.tsx`, favicon, configs. Adapted: Header drops the Duplicate link and gives `/` the CTA border; `globals.css` minus blocks for components it doesn't have (marquee, LogoLoop, Lenis, star-movement, no-scrollbar, mobile-entry, `shadcn/tailwind.css`). `public/` copied whole (113 MB, `diff -rq` identical). `git init`, nothing committed. Launch entries: workspace `softexedge-duplicate-dev` and the project's own `dev`, both :3500.
+
+**Verification.** This repo: `bunx tsc --noEmit` 0; `bun run build` 35/35 (was 36/36); biome on both Headers + portfolio.ts = HEAD counts (2/2/0); globals.css 5 warnings = before; `git grep` for dup-/duplicate/removed asset names in src = 0. New project: tsc 0; build OK, `/` static; biome 12 errors, all inherited from the copied navbar files (same counts as here), new page + duplicate components clean. Dev server at 1440x900: hero 900 px, reel top 900, 5 stack cards, portfolio images + both posters/mp4s 200, Satoshi font, no horizontal overflow, console clean; screenshots of hero and first stack card reviewed (intro/reveal animations were finished via JS, the pane doesn't advance them). Not committed.
+
+**Open:** in the new project the nav links (/about, /career, /work, /blog, /contact, 8 services) and the portfolio card links (/work/*) point at routes that only exist here, so they 404 there.
