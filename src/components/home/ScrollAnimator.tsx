@@ -39,6 +39,7 @@ export default function ScrollAnimator({
   techCarousel,
   contact,
   blog,
+  faq,
   footer,
 }: {
   hero: ReactNode;
@@ -50,6 +51,7 @@ export default function ScrollAnimator({
   techCarousel: ReactNode;
   contact: ReactNode;
   blog: ReactNode;
+  faq: ReactNode;
   footer: ReactNode;
 }) {
   const techLogos = [
@@ -263,6 +265,14 @@ export default function ScrollAnimator({
           </div>
 
           <div className="[&>section]:pt-16 md:[&>section]:pt-30">{blog}</div>
+
+          {/* BlogSection's own bottom padding is the gap above the FAQ, so
+              the FAQ starts at pt-0; its bottom padding repeats BlogSection's
+              (pb-10 / max-md pb-16 / md pb-32) so the gap to the footer is
+              what it was before the FAQ was added. */}
+          <div className="[&>section]:pt-0 [&>section]:pb-10 max-md:[&>section]:pb-16 md:[&>section]:pt-0 md:[&>section]:pb-32">
+            {faq}
+          </div>
         </div>
       </div>
 

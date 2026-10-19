@@ -230,15 +230,6 @@ export default function ServiceSection() {
 
         <div className="group/list flex w-full flex-col">
           {services.map((service, index) => {
-            // The hover image opens BETWEEN two words of the title
-            // ("AI & Marketing [image] Automation"), so the line has to be
-            // split rather than prefixed. Splitting before the LAST word puts
-            // it there for every entry in this list, and lands on the natural
-            // midpoint of the two-word titles ("Web [image] Development").
-            const words = service.title.split(" ");
-            const titleHead = words.slice(0, -1).join(" ");
-            const titleTail = words[words.length - 1];
-
             return (
               <a
                 key={index}
@@ -258,39 +249,23 @@ export default function ServiceSection() {
                       "text-white group-hover/list:text-white/20 group-hover:!text-white",
                     )}
                   >
-                    {titleHead}{" "}
-                    {/* `inline-block` + `align-middle` so it sits in the line box
-                      between the two words instead of leading the row. Its
-                      HEIGHT is unconditional (only the width animates), which is
-                      what keeps the line box — and therefore every row below —
-                      from moving on hover; that was already true when this sat
-                      in the flex row, and it stays true here.
-                      Exactly ONE literal space is emitted, before the span —
-                      the gap after it comes from `mr`, and JSX strips the
-                      newline between `</span>` and the tail word. Two spaces
-                      (one each side) would collapse to one visually, but would
-                      leave a double space in `textContent`, which is what gets
-                      copied and read aloud. So below md, where this is
-                      `display: none`, the heading is character-for-character
-                      the title it has always been.
-                      That asymmetry is why `mr` is an em and not a px step: the
-                      LEFT gap is a space GLYPH, so it scales with the font,
-                      while the heading is `clamp(2.5rem,5vw,5rem)` — a fixed
-                      `mr-8` (32px) matched it at no width at all.
-                      The value is `0.1933em`, NOT Satoshi's raw space of
-                      0.2333em, because this h3 also carries
-                      `tracking-[-0.04em]`. Letter-spacing is added after every
-                      character, so the space is delivered 0.04em narrower than
-                      the glyph measures — but a MARGIN is immune to tracking.
-                      Authoring the margin at the raw space width therefore left
-                      the right gap 0.04em (2.88px at the 72px size) wider than
-                      the left, which is visible. Pre-shrinking it by the same
-                      tracking puts both sides on the same effective width at
-                      every size in the clamp range. */}
+                    {service.title}
+                    {/* The hover image opens AFTER the title ("Web Development
+                      [image]"). `inline-block` + `align-middle` so it sits in
+                      the title's line box. Its HEIGHT is unconditional (only
+                      the width animates), which is what keeps the line box --
+                      and therefore every row below -- from moving on hover.
+                      No space glyph is emitted before it: the gap is the
+                      left margin, so `textContent` (what gets copied and read
+                      aloud) stays exactly the title, and below md, where this
+                      is `display: none`, nothing changes. `0.1933em` matches a
+                      word space in this h3 (Satoshi's 0.2333em space minus the
+                      `tracking-[-0.04em]`, which a margin is immune to), so the
+                      gap reads as one space at every size in the clamp range. */}
                     <span
                       className={cn(
                         "relative inline-block h-[50px] align-middle overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
-                        "w-0 group-hover:mr-[0.1933em] group-hover:w-[80px] group-hover:opacity-100 md:group-hover:w-[150px]",
+                        "w-0 group-hover:ml-[0.1933em] group-hover:w-[80px] group-hover:opacity-100 md:group-hover:w-[150px]",
 
                         "max-md:hidden",
                       )}
@@ -305,7 +280,6 @@ export default function ServiceSection() {
                         className="absolute inset-0 h-full w-full scale-110 object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
                       />
                     </span>
-                    {titleTail}
                   </h3>
                 </div>
 

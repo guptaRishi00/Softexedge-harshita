@@ -22606,3 +22606,60 @@ User asked to push. origin/main fetched first (no new upstream commits); `bun ru
 **Verification.** This repo: `bunx tsc --noEmit` 0; `bun run build` 35/35 (was 36/36); biome on both Headers + portfolio.ts = HEAD counts (2/2/0); globals.css 5 warnings = before; `git grep` for dup-/duplicate/removed asset names in src = 0. New project: tsc 0; build OK, `/` static; biome 12 errors, all inherited from the copied navbar files (same counts as here), new page + duplicate components clean. Dev server at 1440x900: hero 900 px, reel top 900, 5 stack cards, portfolio images + both posters/mp4s 200, Satoshi font, no horizontal overflow, console clean; screenshots of hero and first stack card reviewed (intro/reveal animations were finished via JS, the pane doesn't advance them). Not committed.
 
 **Open:** in the new project the nav links (/about, /career, /work, /blog, /contact, 8 services) and the portfolio card links (/work/*) point at routes that only exist here, so they 404 there.
+
+## Header: white hover pill removed, link labels get a staggered text roll (2026-10-19)
+
+**Task:** remove the white container that appears on header-link hover; on hover the link text should roll (user's reference: a screen recording + the Skiper58 `TextRoll` framer snippet). First attempt went to softexedge-duplicate by mistake (reverted there) and used a 3D rotateY spin / per-letter cube; the user's reference is a 2D slide-up roll.
+
+**Change.**
+- NEW `components/ui/RollingText.tsx`: sr-only full label + two aria-hidden rows of per-letter spans (`--i` index).
+- `globals.css` (end): `.roll-text` 1.3em one-line clip (descenders safe); row 2 absolutely stacked, letters parked `translate 0 100%`; on `.group:hover`/`:focus-visible` row 1 letters -> -100%, row 2 -> 0; `0.3s ease-in-out`, delay `--i * 35ms` (TextRoll's STAGGER). Inside `prefers-reduced-motion: no-preference`. CSS instead of framer `whileHover` so the whole link is the target.
+- `ui/resizable-navbar.tsx` (home) and `page/resizable-navbar.tsx` (other routes): removed the `layoutId="hovered"` white `motion.div` and the colour overrides that existed for it (`hovered ? text-black`, home `hover:text-black`), chevron keeps `rotate-180` without forced black; label = `<RollingText text={item.name} />`.
+
+**Verification.** tsc 0; biome: navbars 18 errors + 1 warning = HEAD baseline (import order fixed), RollingText clean, globals 5 warnings = before. User's dev server :3000 (served CSS was stale again; browser visit + a comment edit pushed it). 1440x900 CDP: /about "About Us" rest rows 0/22 px (box 22), hover +72 ms first letter -2 last 0, +262 ms -21/0, +425 ms -22/-14, +588 ms fully swapped -22/0; leave reverses to 0/22. /home "Work" (ui navbar) same, text stays white. No white pill element on either page, no console errors. Screenshots reviewed. CDP profiles 0. Not committed.
+
+## Services dropdown redesigned: link index left, hover-swapped image right (2026-10-19)
+
+**Task:** "change the services dropdown to new design, simple yet classy (awesome-design-md, taste-skill): links on the left, hovering a link changes the image on the right".
+
+**Design read:** agency mega-menu, Apple-gallery restraint (awesome-design-md `apple`: photography-first, ink text, one accent, flat), taste dials ~6/4/2. White panel `rounded-[2rem] p-3` (unchanged outer shape), image `rounded-[1.25rem]` (outer radius minus padding), brand blue `#2E5BFF` only on the active arrow. Dropped the identical "/4 services" counts (noise).
+
+**Change.**
+- NEW `components/ui/ServicesMenu.tsx` (client): 8 links (22px medium, -0.02em) -- active `zinc-900` + Tabler `IconArrowRight` sliding in, others `zinc-500` (AA on white; zinc-400 was ~2.5:1); hover or focus sets the active index (default first). Right: all 8 `next/image fill` stacked, active `opacity-100 scale-100`, others `opacity-0 scale-[1.04]`, 700 ms expo-out; image column `aria-hidden` (decorative, link text carries meaning). `motion-reduce:transition-none`.
+- Both `ui/` and `page/resizable-navbar.tsx`: the `dropdownItems` card-grid branch -> `<ServicesMenu items onItemClick/>`; panel width `w-[90vw] max-w-[1400px]` -> `w-[min(92vw,1000px)]`; removed now-unused `renderCardTitle` + its comment and the `next/image` import. Mobile menus untouched.
+
+**Verification.** tsc 0; biome: ServicesMenu clean, navbars 14 errors + 1 warning (down from 18: the removed grid's own). User's dev server :3000, 1440x900 CDP: /about (page navbar) and /home (ui navbar) panel 995-1000 x 444-446, radius 32px, 8 links / 8 images all loaded; hover link 1/4/7 -> visible image [1]/[4]/[7], active link ink, others zinc-500; leaving closes the panel; overflowX 0; no new console errors (remaining: framer "non-static position" and an image-quality note from collage4.webp, both pre-existing). Screenshots reviewed. CDP profiles 0. Not committed.
+
+## Portfolio title slide: CtaSection's animated grid instead of the collage (2026-10-19)
+
+**Task:** "in PortfolioSection in the first slide (Our Projects) change its background to that grid background used in ctasection".
+
+**Change (`home/PortfolioSection.tsx` only).** The title slide's `collage4.webp` + left scrim -> CtaSection's backdrop (`brand-strategy/CtaSection`, the one every route uses): `bg-black` layer with `<SpotlightGrid speed={0.15} sweep scatter plus sweepTrail={6} sweepColStart={2} sweepRowStart={2} sweepRowEnd={5} />`, the same `max-md:[--spotlight-cols:5] [--spotlight-sweep-col-start:3] [&_.grid]:gap-2 [&_.grid]:-translate-x-[10px]` re-shape, and its two scrims (left `from-black via-black/90` max-w-3xl, bottom h-48 at 50% / 10% mobile). No mount gating this time (an older mobile-only version gated it with an IO): SpotlightGrid now pauses its own rAF off-screen (`SpotlightGrid.tsx:280`). Copy untouched.
+
+**Verification.** tsc 0; biome 3 errors = HEAD's same 3 (organizeImports, noStaticElementInteractions, noArrayIndexKey). User's dev server :3000 /home, scrolled to #portfolio: 1440x900 panel 1440x900, layer rgb(0,0,0), 80 cells / 10 columns, glow opacities change over 1.8 s (animating), collage gone; 390x844 80 cells / 5 columns, animating; overflowX 0; no console errors (the collage4 `quality 65` warning is gone with it). Screenshots reviewed. CDP profiles 0. Not committed.
+
+## Portfolio pin: 2x scroll speed + "Skip projects" button (2026-10-19)
+
+**Task:** the desktop horizontal-scroll portfolio feels like a block; without changing the design, make it faster and add a skip (options 1 + 2 of the advice given just before).
+
+**Change (`home/PortfolioSection.tsx` only, desktop / md+).**
+- `SCROLL_SPEED = 2`: `travelPx = totalWidth / 2` drives the horizontal tween; pin `end` (both ScrollTriggers), `xPhase`, timeline duration and the auto-advance target/duration all use `travelPx`. Hold (`innerHeight`) unchanged: it is StatsSection's `md:-mt-[100vh]` slide-over room (ScrollAnimator).
+- "Skip projects" `<button>` (Tabler `IconArrowDown`), `absolute bottom-6 right-6 lg:bottom-12 lg:right-20 z-30 hidden md:flex`, styled like the tech chips (border-white/20, bg-black/20, blur, uppercase tracking-widest), first in the section's DOM so keyboard users reach it before the project links. Click -> `skipRef` (set by the GSAP setup) tweens a proxy to `st.end` over 1.2 s power2.inOut via `st.scroll()` in the auto-advance's `autoTween` slot (so wheel/touch/key cancels it like auto-advance); reduced motion jumps instantly. Then focus moves to the next section (`(sec.closest(".pin-spacer") ?? sec).parentElement.nextElementSibling`, tabIndex -1, preventScroll); the first attempt used `parentElement` and missed because GSAP wraps the pinned section in `.pin-spacer`.
+
+**Verification.** tsc 0; biome 3 errors = HEAD's same 3. User's dev server :3000 /home 1440x900 CDP: pin-spacer 5400 px (900 + 4500; was 900 + 8100); reduced motion + 15 real wheel notches (1440 px) -> track x -2880 (2 panels, ratio 2); skip instant (RM) -> scrollY 6528 = pin end, track -7200, stats top 0, focus on stats; normal motion glide +300/+700/+1500 ms -> stats top 3496/885/0; keyboard Enter on the focused button -> same end + focus; hovering the button leaves the "View Project" cursor pill hidden; no console errors. (Instant scrollTo jumps of 1000+ px get thrown to the ends by snap's velocity inertia: probe artefact, real wheel input snaps correctly.) Screenshot reviewed: button sits on the chip baseline. CDP profiles 0. Not committed.
+
+## Our Services: hover image moved to the end of the title (2026-10-19)
+
+**Task:** "in Our Services section move the hover image effect to last".
+
+**Change (`home/ServiceSection.tsx` only).** The hover image used to open between the last two words ("AI & Marketing [image] Automation", via a `titleHead`/`titleTail` split). Now the h3 renders `{service.title}` then the image span, so it opens after the title; split + its comment removed. Gap is `group-hover:ml-[0.1933em]` (was `mr`), no space glyph emitted, so `textContent` is exactly the title. Image size, timing, mobile (`max-md:hidden`) unchanged.
+
+**Verification.** tsc 0; biome 2 errors = HEAD's same 2. User's dev server :3000 /home 1440x900 CDP: all 8 h3 textContents exactly the titles; row 2 at rest text 40-839, image width 0; hovered image 853-1003 (150 px, 14 px gap = 0.1933em at 72 px) after the text; row tops 104/300/.../1476 identical before and after hover; no console errors. Screenshot reviewed. CDP profiles 0. Not committed.
+
+## Home: FAQ section below the blog (2026-10-19)
+
+**Task:** "add a faq section in homepage below the blogsection".
+
+**Change.** Reused the site-wide `brand-strategy/FaqSection` (same component /about, /work and the service pages render; "Let's Clear Things Up", 5 agency questions). `home/ScrollAnimator.tsx`: new `faq` slot rendered after the blog wrapper, inside the same container, wrapper `[&>section]:pt-0 pb-10 max-md:pb-16 md:pt-0 md:pb-32` -- BlogSection's own bottom padding is the gap above it, and the FAQ's bottom padding repeats BlogSection's so the gap to the footer is unchanged. `app/home/page.tsx`: `faq={<FaqSection />}`.
+
+**Verification.** tsc 0; biome: the 2 organizeImports findings are HEAD's own. User's dev server :3000 /home CDP: order contact -> blog ("Thoughts & Insights") -> #faq -> footer at 1440x900 and 390x844; FAQ padding 0/128 px desktop, 0/64 px mobile; heading visible (opacity 1); 5 questions; clicking the first opens its answer; overflowX 0; no console errors. Screenshot reviewed. CDP profiles 0. Not committed. Noted, not changed: the footer "FAQs" link still targets `/brand-strategy#faq`; the shared FaqSection's question buttons have no `aria-expanded` (pre-existing).

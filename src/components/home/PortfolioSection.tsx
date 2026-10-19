@@ -3,10 +3,12 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { IconArrowDown } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useIsDesktop } from "@/lib/useIsDesktop";
+import SpotlightGrid from "@/components/ui/SpotlightGrid";
 import { portfolioProjects as projects } from "@/data/portfolio";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +17,14 @@ if (typeof window !== "undefined") {
 }
 
 const AUTO_ADVANCE_SECONDS = 6;
+// Desktop: px of horizontal travel per px of page scroll while pinned. At 1
+// the pin was ~8,100 px at 1440x900 (5 x 1440 px of travel + the 900 px hold),
+// which read as being stuck; 2 halves the travel part. The hold is untouched:
+// it is the room StatsSection's `md:-mt-[100vh]` uses to slide over the last
+// panel (ScrollAnimator).
+const SCROLL_SPEED = 2;
+// The "Skip projects" button's glide to the end of the pin.
+const SKIP_SECONDS = 1.2;
 // Mobile carousel: one slide every 4.5s, each slide taking 600ms, and autoplay
 // resuming 1.5s after the finger lifts.
 const MOBILE_AUTOPLAY_MS = 5000;
@@ -34,6 +44,8 @@ export default function PortfolioSection() {
   // Mobile slide surface: the autoplay transition translates this inner
   // wrapper on the compositor, then commits the distance to scrollLeft.
   const panelsRef = useRef<HTMLDivElement>(null);
+  // Set by the desktop GSAP setup (it owns the ScrollTrigger); null elsewhere.
+  const skipRef = useRef<(() => void) | null>(null);
   const isDesktop = useIsDesktop();
 
   // Owns panel-video playback outright: they start here, not from `autoPlay`.
@@ -286,13 +298,15 @@ export default function PortfolioSection() {
           const panelCount = track.querySelectorAll(".project-panel").length;
           const totalWidth = track.scrollWidth - window.innerWidth;
           const holdPx = window.innerHeight;
-          const xPhase = totalWidth / (totalWidth + holdPx);
+          // Page-scroll distance that drives the horizontal travel.
+          const travelPx = totalWidth / SCROLL_SPEED;
+          const xPhase = travelPx / (travelPx + holdPx);
           const scrollTween = gsap
             .timeline({
               scrollTrigger: {
                 trigger: containerRef.current,
                 start: "top top",
-                end: () => `+=${totalWidth + holdPx}`,
+                end: () => `+=${travelPx + holdPx}`,
                 pin: true,
                 scrub: 1,
                 anticipatePin: 1,
@@ -315,7 +329,7 @@ export default function PortfolioSection() {
               x: () => -totalWidth,
               ease: "none",
               force3D: true,
-              duration: totalWidth,
+              duration: travelPx,
             })
             .to({}, { duration: holdPx });
 
@@ -333,13 +347,13 @@ export default function PortfolioSection() {
               return;
             }
             const from = st.scroll();
-            const to = st.start + totalWidth;
+            const to = st.start + travelPx;
             if (from >= to) return;
 
             const proxy = { y: from };
             autoTween = gsap.to(proxy, {
               y: to,
-              duration: ((to - from) / totalWidth) * AUTO_ADVANCE_SECONDS,
+              duration: ((to - from) / travelPx) * AUTO_ADVANCE_SECONDS,
               ease: "none",
               onUpdate: () => st.scroll(proxy.y),
               onComplete: stopAuto,
@@ -351,10 +365,36 @@ export default function PortfolioSection() {
             window.addEventListener(evt, stopAuto, { passive: true });
           }
 
+          // Skip: glide to the end of the pin (StatsSection fully over the
+          // last panel). Same mechanism as the auto-advance -- a proxy tween
+          // driving st.scroll(), which already cooperates with Lenis -- and
+          // the same slot, so any wheel/touch/key input cancels it.
+          skipRef.current = () => {
+            if (!st) return;
+            stopAuto();
+            const to = st.end;
+            const from = st.scroll();
+            const reduce = window.matchMedia(
+              "(prefers-reduced-motion: reduce)",
+            ).matches;
+            if (reduce || from >= to) {
+              st.scroll(to);
+              return;
+            }
+            const proxy = { y: from };
+            autoTween = gsap.to(proxy, {
+              y: to,
+              duration: SKIP_SECONDS,
+              ease: "power2.inOut",
+              onUpdate: () => st.scroll(proxy.y),
+              onComplete: stopAuto,
+            });
+          };
+
           ScrollTrigger.create({
             trigger: containerRef.current,
             start: "top top",
-            end: () => `+=${totalWidth + holdPx}`,
+            end: () => `+=${travelPx + holdPx}`,
             onEnter: startAuto,
             onLeave: stopAuto,
             onLeaveBack: stopAuto,
@@ -362,6 +402,7 @@ export default function PortfolioSection() {
 
           cleanupAuto = () => {
             stopAuto();
+            skipRef.current = null;
             for (const evt of interrupts) {
               window.removeEventListener(evt, stopAuto);
             }
@@ -431,6 +472,31 @@ export default function PortfolioSection() {
       // section directly, as it did before the carousel.
       className="relative h-auto w-full overflow-hidden bg-[#0a0a0a] text-white md:h-screen"
     >
+      {/* Desktop only (phones get a native swipe carousel, nothing pinned).
+          First in DOM order so keyboard users reach it before the project
+          links. Focus then moves to the section after the portfolio
+          (ScrollAnimator's stats holder) so Tab continues from there instead
+          of jumping back into the covered panels. */}
+      <button
+        type="button"
+        onClick={() => {
+          skipRef.current?.();
+          // While pinned, GSAP wraps the section in a .pin-spacer, so step out
+          // of that first.
+          const sec = containerRef.current;
+          const next = (sec?.closest(".pin-spacer") ?? sec)?.parentElement
+            ?.nextElementSibling as HTMLElement | null;
+          if (next) {
+            next.tabIndex = -1;
+            next.focus({ preventScroll: true });
+          }
+        }}
+        className="absolute right-6 bottom-6 z-30 hidden items-center gap-2 rounded-md border border-white/20 bg-black/20 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white/90 backdrop-blur-md transition-colors hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:flex lg:right-20 lg:bottom-12"
+      >
+        Skip projects
+        <IconArrowDown aria-hidden="true" size={14} stroke={2} />
+      </button>
+
       <div
         ref={trackRef}
         // Both breakpoints lay out in a row now; below `md` this element is
@@ -449,31 +515,31 @@ export default function PortfolioSection() {
             panel 0 — which the reveal loop already leaves static. Pure text on
             the section's own #0a0a0a: no image to decode, nothing animating. */}
           <div className="project-panel relative isolate flex h-[70svh] w-full shrink-0 flex-col justify-center overflow-hidden p-8 max-md:snap-center max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20">
-            {/* Backdrop for the title slide, both breakpoints. A static image
-                needs none of the viewport gating the animated grid required —
-                it has no rAF loop to idle, and next/image handles its own
-                loading. `-z-10` is scoped by the panel's own `isolate`, so it
-                sits above the section background and behind the copy; without
-                that isolation a negative z-index would escape this panel and
-                paint behind the section's #0a0a0a. */}
+            {/* Backdrop for the title slide, both breakpoints: CtaSection's
+                animated grid (brand-strategy/CtaSection), same SpotlightGrid
+                props, same max-md 5-column re-shape and same two scrims, on
+                black. SpotlightGrid pauses its own rAF loop off-screen (its
+                IntersectionObserver), so no mount gating is needed here.
+                `-z-10` is scoped by the panel's own `isolate`, so it sits above
+                the section background and behind the copy; without that
+                isolation a negative z-index would escape this panel and paint
+                behind the section's #0a0a0a. */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+              className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-black max-md:[--spotlight-cols:5] max-md:[--spotlight-sweep-col-start:3] max-md:[&_.grid]:gap-2 max-md:[&_.grid]:-translate-x-[10px]"
             >
-              <Image
-                src="/assets/collage4.webp"
-                alt=""
-                fill
-                sizes="100vw"
-                // Sits under a black->transparent scrim; 65 is indistinguishable
-                // from the default 75 there and ~30% smaller.
-                quality={65}
-                className="object-cover"
+              <SpotlightGrid
+                speed={0.15}
+                sweep
+                scatter
+                plus
+                sweepTrail={6}
+                sweepColStart={2}
+                sweepRowStart={2}
+                sweepRowEnd={5}
               />
-              {/* Scrim: the copy is white and left-aligned, so the darkening
-                  runs left-to-right — solid black behind the type, clearing to
-                  nothing on the right where the collage can read on its own. */}
-              <div className="absolute inset-0 bg-linear-to-r from-black to-transparent" />
+              <div className="absolute inset-y-0 left-0 z-[5] w-full max-w-3xl bg-linear-to-r from-black via-black/90 to-transparent max-md:from-black/90 max-md:from-50% max-md:via-black/10 max-md:via-85%" />
+              <div className="absolute inset-x-0 bottom-0 z-[5] h-48 bg-linear-to-t from-black via-black/95 to-transparent opacity-50 max-md:opacity-10" />
             </div>
 
             <p className="relative mb-6 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:mb-4 max-md:text-xs">

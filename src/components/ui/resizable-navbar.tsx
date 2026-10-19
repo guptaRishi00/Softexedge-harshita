@@ -2,9 +2,10 @@
 
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
+import RollingText from "@/components/ui/RollingText";
+import ServicesMenu from "@/components/ui/ServicesMenu";
 import { cn } from "@/lib/utils";
 
 // Travel a single direction must accumulate before the bar is allowed to
@@ -223,27 +224,6 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
   );
 };
 
-// Two-word service names ("App Development", "Video Production",
-// "UI/UX Design", "Web Development") are stacked one word per line so every
-// dropdown card keeps the same two-line title shape. A width cap cannot do
-// this reliably: the wrapper's cap is a PERCENTAGE, so it grows with the card
-// and these names slip back onto one line on wide screens — and the usable
-// fixed-px window is ~3px ("Development" measures 139, "UI/UX Design" 142).
-// Names with more words already wrap naturally and are left alone.
-function renderCardTitle(name: string) {
-  const words = name.split(" ");
-  if (words.length !== 2) return name;
-  return (
-    <>
-      {/* The explicit space keeps the accessible name and any copied text as
-          "App Development", not "AppDevelopment" — a <br /> alone removes the
-          only word separator. It renders as trailing whitespace before the
-          break, so it costs nothing visually. */}
-      {words[0]} <br />
-      {words[1]}
-    </>
-  );
-}
 
 export const NavItems = ({
   items,
@@ -289,18 +269,13 @@ export const NavItems = ({
               onClick={onItemClick}
               className={cn(
                 "relative px-4 py-2 transition-colors flex items-center gap-1 group",
-                hovered === idx ? "text-black" : "text-white hover:text-black",
+                "text-white",
               )}
               href={item.link}
             >
-              {hovered === idx && (
-                <motion.div
-                  layoutId="hovered"
-                  className="absolute inset-0 h-full w-full rounded-lg bg-white shadow-[0_4px_6px_-1px_rgb(0_0_0_/_0.1),0_2px_4px_-2px_rgb(0_0_0_/_0.1),0_-4px_6px_-1px_rgb(0_0_0_/_0.1),0_-2px_4px_-2px_rgb(0_0_0_/_0.1)]"
-                />
-              )}
-
-              <span className="relative z-20">{item.name}</span>
+              <span className="relative z-20">
+                <RollingText text={item.name} />
+              </span>
 
               {hasDropdown && (
                 <svg
@@ -315,7 +290,7 @@ export const NavItems = ({
                   strokeLinejoin="round"
                   className={cn(
                     "relative z-20 transition-transform duration-200",
-                    hovered === idx && "rotate-180 text-black",
+                    hovered === idx && "rotate-180",
                   )}
                 >
                   <path d="m6 9 6 6 6-6" />
@@ -333,7 +308,7 @@ export const NavItems = ({
                   className={cn(
                     "absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 z-[110]",
                     item.dropdownItems
-                      ? "w-[90vw] max-w-[1400px]"
+                      ? "w-[min(92vw,1000px)]"
                       : item.sections
                         ? item.sections.length > 1
                           ? "w-[650px]"
@@ -342,58 +317,10 @@ export const NavItems = ({
                   )}
                 >
                   {item.dropdownItems ? (
-                    <div className="bg-white border border-black/5 rounded-[2rem] overflow-hidden p-3 shadow-[0_40px_100px_rgba(0,0,0,0.15)] grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {item.dropdownItems.map((sub, sIdx) => (
-                        <Link
-                          key={`sub-${sIdx}`}
-                          href={sub.link}
-                          onClick={onItemClick}
-                          className="group relative h-[180px] lg:h-[220px] overflow-hidden rounded-[1.5rem] bg-linear-to-br from-white to-[#efefef] border border-zinc-200 px-6 py-6 transition-all duration-500 hover:bg-transparent hover:shadow-xl"
-                        >
-                          {sub.image && (
-                            <div className="absolute inset-0 z-0 opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100">
-                              <Image
-                                src={sub.image}
-                                alt={sub.name}
-                                fill
-                                sizes="(max-width: 768px) 50vw, 25vw"
-                                className="h-full w-full object-cover  scale-105 transition-transform duration-700 ease-out group-hover:scale-100"
-                              />
-                            </div>
-                          )}
-
-                          <div className="pointer-events-none absolute inset-0 z-[5] bg-gradient-to-r from-black/80 via-black/35 via-70% to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100" />
-
-                          <div className="relative z-10 flex h-full flex-col justify-center text-zinc-900 transition-colors duration-400 group-hover:text-white">
-                            <div className="flex w-full items-center justify-between">
-                              <span className="relative inline-block max-w-[88%] transition-all duration-400 ease-out group-hover:translate-x-1">
-                                <span className="relative text-xl lg:text-[26px] font-bold tracking-tight">
-                                  {renderCardTitle(sub.name)}
-                                </span>
-                              </span>
-                            </div>
-
-                            <div className="absolute bottom-0 left-0 flex justify-start">
-                              <span className="relative inline-flex opacity-0 -translate-x-4 transition-all duration-400 ease-out group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-[#149CCB]">
-                                <svg
-                                  className="relative w-6 h-6"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                                  />
-                                </svg>
-                              </span>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
+                    <ServicesMenu
+                      items={item.dropdownItems}
+                      onItemClick={onItemClick}
+                    />
                   ) : (
                     <div className="bg-white border border-black/5 rounded-2xl overflow-hidden p-6 shadow-2xl">
                       {item.sections ? (

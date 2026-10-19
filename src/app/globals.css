@@ -312,3 +312,52 @@ body {
     filter: none !important;
   }
 }
+
+/* Header nav labels (ui/RollingText.tsx, both resizable-navbars): staggered
+   text roll. The label is clipped to one line; on hover or keyboard focus of
+   the link each letter of the visible row slides up out of the clip while the
+   matching letter of a second row (stacked on top, parked one line below)
+   slides in, 35 ms apart left to right, 0.3 s ease-in-out each. The line box
+   is 1.3em so descenders (the "p" in Duplicate) are not clipped. Reduced
+   motion: no roll (static label). */
+.roll-text {
+  --roll-h: 1.3em;
+  position: relative;
+  display: inline-block;
+  height: var(--roll-h);
+  line-height: var(--roll-h);
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.roll-letters {
+  display: flex;
+}
+
+.roll-letters--next {
+  position: absolute;
+  inset: 0;
+}
+
+.roll-char {
+  display: inline-block;
+  white-space: pre;
+  transition: translate 0.3s ease-in-out;
+  transition-delay: calc(var(--i, 0) * 35ms);
+}
+
+.roll-letters--next .roll-char {
+  translate: 0 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .group:hover .roll-char,
+  .group:focus-visible .roll-char {
+    translate: 0 -100%;
+  }
+
+  .group:hover .roll-letters--next .roll-char,
+  .group:focus-visible .roll-letters--next .roll-char {
+    translate: 0 0;
+  }
+}
