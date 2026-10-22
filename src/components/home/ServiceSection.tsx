@@ -249,23 +249,10 @@ export default function ServiceSection() {
                       "text-white group-hover/list:text-white/20 group-hover:!text-white",
                     )}
                   >
-                    {service.title}
-                    {/* The hover image opens AFTER the title ("Web Development
-                      [image]"). `inline-block` + `align-middle` so it sits in
-                      the title's line box. Its HEIGHT is unconditional (only
-                      the width animates), which is what keeps the line box --
-                      and therefore every row below -- from moving on hover.
-                      No space glyph is emitted before it: the gap is the
-                      left margin, so `textContent` (what gets copied and read
-                      aloud) stays exactly the title, and below md, where this
-                      is `display: none`, nothing changes. `0.1933em` matches a
-                      word space in this h3 (Satoshi's 0.2333em space minus the
-                      `tracking-[-0.04em]`, which a margin is immune to), so the
-                      gap reads as one space at every size in the clamp range. */}
                     <span
                       className={cn(
                         "relative inline-block h-[50px] align-middle overflow-hidden rounded-2xl opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[100px]",
-                        "w-0 group-hover:ml-[0.1933em] group-hover:w-[80px] group-hover:opacity-100 md:group-hover:w-[150px]",
+                        "w-0 group-hover:mr-[0.1933em] group-hover:w-[80px] group-hover:opacity-100 md:group-hover:w-[150px]",
 
                         "max-md:hidden",
                       )}
@@ -280,6 +267,7 @@ export default function ServiceSection() {
                         className="absolute inset-0 h-full w-full scale-110 object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-100"
                       />
                     </span>
+                    {service.title}
                   </h3>
                 </div>
 

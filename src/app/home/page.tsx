@@ -2,7 +2,6 @@ import Herosection from "@/components/home/Herosection";
 import AboutSection from "@/components/home/AboutSection";
 import BlogSection from "@/components/home/BlogSection";
 import ContactSection from "@/components/home/ContactSection";
-import FaqSection from "@/components/brand-strategy/FaqSection";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import PortfolioSection from "@/components/home/PortfolioSection";
 import ServiceSection from "@/components/home/ServiceSection";
@@ -26,7 +25,6 @@ export default function HomePage() {
         techCarousel={<TechLogoCarousel />}
         contact={<ContactSection />}
         blog={<BlogSection />}
-        faq={<FaqSection />}
         footer={<Footer />}
       />
     </SmoothScroll>

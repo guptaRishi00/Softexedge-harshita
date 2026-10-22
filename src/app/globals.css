@@ -313,13 +313,9 @@ body {
   }
 }
 
-/* Header nav labels (ui/RollingText.tsx, both resizable-navbars): staggered
-   text roll. The label is clipped to one line; on hover or keyboard focus of
-   the link each letter of the visible row slides up out of the clip while the
-   matching letter of a second row (stacked on top, parked one line below)
-   slides in, 35 ms apart left to right, 0.3 s ease-in-out each. The line box
-   is 1.3em so descenders (the "p" in Duplicate) are not clipped. Reduced
-   motion: no roll (static label). */
+/* Header nav labels (ui/RollingText.tsx, both resizable-navbars): roll as a
+   single word on hover or keyboard focus. The line box is 1.3em so descenders
+   are not clipped. Reduced motion: no roll (static label). */
 .roll-text {
   --roll-h: 1.3em;
   position: relative;
@@ -328,36 +324,37 @@ body {
   line-height: var(--roll-h);
   overflow: hidden;
   vertical-align: top;
+  perspective: 420px;
+  perspective-origin: left center;
 }
 
 .roll-letters {
-  display: flex;
+  display: block;
+  white-space: pre;
+  transform-origin: left center;
+  rotate: y 0deg;
+  transition:
+    translate 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+    rotate 0.34s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .roll-letters--next {
   position: absolute;
   inset: 0;
-}
-
-.roll-char {
-  display: inline-block;
-  white-space: pre;
-  transition: translate 0.3s ease-in-out;
-  transition-delay: calc(var(--i, 0) * 35ms);
-}
-
-.roll-letters--next .roll-char {
   translate: 0 100%;
+  rotate: y 7deg;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .group:hover .roll-char,
-  .group:focus-visible .roll-char {
+  .group:hover .roll-letters,
+  .group:focus-visible .roll-letters {
     translate: 0 -100%;
+    rotate: y -7deg;
   }
 
-  .group:hover .roll-letters--next .roll-char,
-  .group:focus-visible .roll-letters--next .roll-char {
+  .group:hover .roll-letters--next,
+  .group:focus-visible .roll-letters--next {
     translate: 0 0;
+    rotate: y 0deg;
   }
 }

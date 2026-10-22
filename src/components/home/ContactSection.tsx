@@ -52,6 +52,44 @@ export default function ContactSection() {
   // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
   const isMobile = useIsMobile();
   const [index, setIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const [formStep, setFormStep] = useState<1 | 2>(1);
+  const [scheduledDateTime, setScheduledDateTime] = useState({
+    date: "",
+    time: "",
+  });
+
+  const dateOptions = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() + index + 1);
+    const value = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    return {
+      value,
+      weekday: date.toLocaleDateString("en-US", { weekday: "short" }),
+      day: date.getDate(),
+      month: date.toLocaleDateString("en-US", { month: "short" }),
+    };
+  });
+
+  const timeOptions = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM"];
+  const timeZone = mounted
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : "Local time";
+  const selectedDateLabel = scheduledDateTime.date
+    ? new Date(`${scheduledDateTime.date}T12:00:00`).toLocaleDateString(
+        "en-US",
+        { weekday: "long", month: "long", day: "numeric" },
+      )
+    : "";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // No tick below md: `index` only feeds the desktop AnimatePresence branch
@@ -170,136 +208,285 @@ export default function ContactSection() {
             className="lg:col-span-7"
           >
             <div className="h-full overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950 transition-transform duration-300 hover:border-white/20 max-md:rounded-3xl">
-              <form className="flex h-full flex-col justify-between gap-8 p-8 max-md:gap-8 max-md:p-5 sm:p-10 md:p-12">
-                <div className="grid grid-cols-1 gap-6 max-md:gap-6 md:grid-cols-2 md:gap-8">
-                  <div className="flex flex-col gap-3 max-md:gap-3.5">
-                    <label
-                      htmlFor="name"
-                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
-                    >
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      className={inputClass}
-                      required
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-3 max-md:gap-3.5">
-                    <label
-                      htmlFor="email"
-                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      className={inputClass}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 max-md:gap-6 md:grid-cols-2 md:gap-8">
-                  <div className="flex flex-col gap-3 max-md:gap-3.5">
-                    <label
-                      htmlFor="phone"
-                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
-                    >
-                      Phone Number
-                    </label>
-                    <input type="tel" id="phone" className={inputClass} />
-                  </div>
-
-                  <div className="flex flex-col gap-3 max-md:gap-3.5">
-                    <label
-                      htmlFor="company"
-                      className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
-                    >
-                      Company
-                    </label>
-                    <input type="text" id="company" className={inputClass} />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 max-md:gap-3.5">
-                  <label
-                    htmlFor="service"
-                    className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+              <AnimatePresence mode="wait" initial={false}>
+                {formStep === 1 ? (
+                  <motion.div
+                    key="schedule"
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 16 }}
+                    transition={{ duration: 0.25, ease: premiumEase }}
+                    className="flex min-h-[580px] flex-col p-8 max-md:min-h-0 max-md:p-5 sm:p-10 md:p-12"
                   >
-                    What can we help you with?
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="service"
-                      defaultValue=""
-                      className={`${inputClass} appearance-none pr-12 [&>option]:bg-zinc-900 [&>option]:text-white cursor-pointer`}
-                    >
-                      <option value="" disabled className="text-zinc-500">
-                        Select a service
-                      </option>
-                      <option value="design">Product Design</option>
-                      <option value="engineering">Software Engineering</option>
-                      <option value="marketing">Digital Marketing</option>
-                      <option value="other">Other Inquiry</option>
-                    </select>
-                    <div className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <title>Select dropdown chevron</title>
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
+                    <div className="mb-8">
+                      <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-zinc-500">
+                        Step 1 of 2
+                      </p>
+                      <h3 className="text-3xl font-semibold tracking-tight text-white max-md:text-2xl">
+                        Pick a time to talk
+                        <span className="text-[#2F85EA]">.</span>
+                      </h3>
+                      <p className="mt-3 text-sm text-zinc-400">
+                        Choose a day and a time that works for you.
+                      </p>
                     </div>
-                  </div>
-                </div>
 
-                <div className="flex flex-col gap-3 max-md:gap-3.5">
-                  <label
-                    htmlFor="message"
-                    className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
-                  >
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    rows={4}
-                    className={`${inputClass} resize-none`}
-                    required
-                  />
-                </div>
+                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">
+                      Select a day
+                    </p>
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+                      {mounted &&
+                        dateOptions.map((option) => {
+                          const selected =
+                            scheduledDateTime.date === option.value;
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              aria-pressed={selected}
+                              onClick={() =>
+                                setScheduledDateTime({
+                                  date: option.value,
+                                  time: "",
+                                })
+                              }
+                              className={`flex min-h-[76px] flex-col items-center justify-center rounded-xl border px-2 py-3 transition-colors ${
+                                selected
+                                    ? "border-white bg-white text-black"
+                                  : "border-white/10 bg-white/[0.03] text-zinc-400 hover:border-white/25 hover:text-white"
+                              }`}
+                            >
+                              <span className="text-xs">{option.weekday}</span>
+                              <span className="mt-1 text-xl font-semibold leading-none">
+                                {option.day}
+                              </span>
+                              <span className="mt-1 text-[10px] uppercase tracking-wider text-zinc-500">
+                                {option.month}
+                              </span>
+                            </button>
+                          );
+                        })}
+                    </div>
 
-                <div className="pt-4 max-md:pt-0">
-                  <button
-                    type="submit"
-                    // Below md the button rests in the desktop hover state —
-                    // gradient fill + white label — because touch has no hover,
-                    // so the resting state has to carry it.
-                    // max-md:bg-transparent: the gradient overlay is a clipped
-                    // child, so its antialiased edge blended against the
-                    // button's own bg-white and drew a white fringe around the
-                    // rounded corners. With the overlay always opaque here the
-                    // white underneath has no purpose.
-                    className="group relative cursor-pointer inline-flex w-full overflow-hidden items-center justify-center gap-3 rounded-2xl bg-white px-8 py-5 text-lg font-bold text-black transition-colors focus:outline-none focus:ring-4 focus:ring-white/20 hover:text-white max-md:rounded-xl max-md:bg-transparent max-md:py-4 max-md:text-base max-md:text-white"
+                    <p className="mb-3 mt-8 text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">
+                      Available times
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {timeOptions.map((time) => {
+                        const selected = scheduledDateTime.time === time;
+                        return (
+                          <button
+                            key={time}
+                            type="button"
+                            disabled={!scheduledDateTime.date}
+                            aria-pressed={selected}
+                            onClick={() =>
+                              setScheduledDateTime((current) => ({
+                                ...current,
+                                time,
+                              }))
+                            }
+                            className={`rounded-full border px-4 py-2.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${
+                              selected
+                                  ? "border-white bg-white text-black"
+                                : "border-white/10 text-zinc-400 hover:border-white/25 hover:text-white"
+                            }`}
+                          >
+                            {time}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-auto flex flex-col gap-5 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between max-md:mt-8">
+                      <p className="text-sm text-zinc-500">{timeZone}</p>
+                      <button
+                        type="button"
+                        disabled={
+                          !scheduledDateTime.date || !scheduledDateTime.time
+                        }
+                        onClick={() => setFormStep(2)}
+                        className="w-full rounded-full bg-gradient-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35 sm:w-auto"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="details"
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -16 }}
+                    transition={{ duration: 0.25, ease: premiumEase }}
+                    className="p-8 max-md:p-5 sm:p-10 md:p-12"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#2E5BFF] to-[#149CCB] opacity-0 transition-opacity duration-300 max-md:opacity-100 group-hover:opacity-100" />
-                    <span className="relative z-10 transition-colors duration-300">
-                      Send Message
-                    </span>
-                  </button>
-                </div>
-              </form>
+                    <button
+                      type="button"
+                      onClick={() => setFormStep(1)}
+                      className="mb-6 text-sm font-medium text-zinc-400 transition-colors hover:text-white"
+                    >
+                      ← Back to schedule
+                    </button>
+                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-zinc-500">
+                      Step 2 of 2
+                    </p>
+                    <h3 className="text-3xl font-semibold tracking-tight text-white max-md:text-2xl">
+                      Your details
+                      <span className="text-[#2F85EA]">.</span>
+                    </h3>
+                    <p className="mb-8 mt-3 text-sm text-zinc-400">
+                      {selectedDateLabel} at {scheduledDateTime.time} ·{" "}
+                      {timeZone}
+                    </p>
+
+                    <form className="flex flex-col gap-6">
+                      <div className="grid grid-cols-1 gap-6 max-md:gap-6 md:grid-cols-2 md:gap-8">
+                        <div className="flex flex-col gap-3 max-md:gap-3.5">
+                          <label
+                            htmlFor="name"
+                            className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                          >
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            id="name"
+                            className={inputClass}
+                            required
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-3 max-md:gap-3.5">
+                          <label
+                            htmlFor="email"
+                            className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                          >
+                            Email Address
+                          </label>
+                          <input
+                            type="email"
+                            id="email"
+                            className={inputClass}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-6 max-md:gap-6 md:grid-cols-2 md:gap-8">
+                        <div className="flex flex-col gap-3 max-md:gap-3.5">
+                          <label
+                            htmlFor="phone"
+                            className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                          >
+                            Phone Number
+                          </label>
+                          <input
+                            type="tel"
+                            id="phone"
+                            className={inputClass}
+                            required
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-3 max-md:gap-3.5">
+                          <label
+                            htmlFor="company"
+                            className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                          >
+                            Company
+                          </label>
+                          <input
+                            type="text"
+                            id="company"
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-3 max-md:gap-3.5">
+                        <label
+                          htmlFor="website"
+                          className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                        >
+                          Website{" "}
+                          <span className="normal-case tracking-normal text-zinc-600">
+                            (optional)
+                          </span>
+                        </label>
+                        <input type="url" id="website" className={inputClass} />
+                      </div>
+
+                      <div className="flex flex-col gap-3 max-md:gap-3.5">
+                        <label
+                          htmlFor="service"
+                          className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                        >
+                          What can we help you with?
+                        </label>
+                        <div className="relative">
+                          <select
+                            id="service"
+                            defaultValue=""
+                            className={`${inputClass} appearance-none pr-12 [&>option]:bg-zinc-900 [&>option]:text-white cursor-pointer`}
+                          >
+                            <option value="" disabled className="text-zinc-500">
+                              Select a service
+                            </option>
+                            <option value="design">Product Design</option>
+                            <option value="engineering">
+                              Software Engineering
+                            </option>
+                            <option value="marketing">Digital Marketing</option>
+                            <option value="other">Other Inquiry</option>
+                          </select>
+                          <div className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <title>Select dropdown chevron</title>
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-3 max-md:gap-3.5">
+                        <label
+                          htmlFor="message"
+                          className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                        >
+                          Message
+                        </label>
+                        <textarea
+                          id="message"
+                          rows={4}
+                          className={`${inputClass} resize-none`}
+                          required
+                        />
+                      </div>
+
+                      <div className="pt-2">
+                        <button
+                          type="submit"
+                          className="group relative inline-flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-white px-8 py-4 text-base font-bold text-black transition-colors hover:text-white max-md:bg-gradient-to-r max-md:from-[#3445E7] max-md:via-[#2F85EA] max-md:to-[#07D6F3] max-md:text-white"
+                        >
+                          <span className="absolute inset-0 bg-gradient-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                          <span className="relative z-10">Send Message</span>
+                        </button>
+                      </div>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         </div>
