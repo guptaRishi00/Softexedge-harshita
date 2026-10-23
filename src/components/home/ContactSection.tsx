@@ -2,8 +2,9 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ChevronDown, Mail, MapPin, Phone } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NO_ENTRY, useIsDesktop, useIsMobile } from "@/lib/useIsDesktop";
+import DynamicButton from "../ui/DynamicButton";
 import ChannelCard from "./ChannelCard";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
@@ -54,8 +55,9 @@ const microLabelClass =
 const labelClass = `pl-1 ${microLabelClass} max-md:text-[0.65rem]`;
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2E5BFF]";
-// Continue + Send: white rounded-xl; the brand gradient (an overlay span, see
-// PrimaryButtonFill) fades in on hover and the label turns white. Below md
+// Send (Continue is the header's DynamicButton): white rounded-xl; the brand
+// gradient (an overlay span, see PrimaryButtonFill) fades in on hover and the
+// label turns white. Below md
 // there is no hover, so the gradient is the resting state there. A disabled
 // button stays white and does not light up.
 const primaryButtonClass = `${focusRing} group relative inline-flex cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-white px-8 py-4 text-base font-bold text-black transition-colors enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-35 max-md:bg-linear-to-r max-md:from-[#2E5BFF] max-md:to-[#149CCB] max-md:text-white`;
@@ -71,13 +73,22 @@ function PrimaryButtonFill() {
 
 const GRID_COLUMNS = 8;
 
-export default function ContactSection() {
+export default function ContactSection({
+  showEyebrow = true,
+}: {
+  /** The small uppercase label above the title. The home page turns it off. */
+  showEyebrow?: boolean;
+}) {
   const isDesktop = useIsDesktop();
   // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
   const isMobile = useIsMobile();
   const [index, setIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [formStep, setFormStep] = useState<1 | 2>(1);
+  // Step 2 keeps step 1's height: measured when Continue is pressed, then
+  // used as step 2's min-height (its message box grows to fill the rest).
+  const scheduleRef = useRef<HTMLDivElement>(null);
+  const [stepHeight, setStepHeight] = useState<number>();
   const [scheduledDateTime, setScheduledDateTime] = useState({
     date: "",
     time: "",
@@ -143,18 +154,20 @@ export default function ContactSection() {
             }
             className="flex flex-col lg:col-span-5 lg:pr-8"
           >
-            <motion.div
-              data-no-mobile-entry
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={
-                isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
-              }
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-400 font-medium max-md:mb-6 max-md:text-xs"
-            >
-              Get in touch
-            </motion.div>
+            {showEyebrow && (
+              <motion.div
+                data-no-mobile-entry
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={
+                  isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
+                }
+                className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-400 font-medium max-md:mb-6 max-md:text-xs"
+              >
+                Get in touch
+              </motion.div>
+            )}
 
             <motion.h2
               data-no-mobile-entry
@@ -235,6 +248,7 @@ export default function ContactSection() {
               <AnimatePresence mode="wait" initial={false}>
                 {formStep === 1 ? (
                   <motion.div
+                    ref={scheduleRef}
                     key="schedule"
                     initial={{ opacity: 0, x: -16 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -242,18 +256,18 @@ export default function ContactSection() {
                     transition={{ duration: 0.25, ease: premiumEase }}
                     className="flex h-full min-h-[580px] flex-col p-8 max-md:min-h-0 max-md:p-5 sm:p-10 md:p-12"
                   >
-                    <div className="mb-8">
+                    <div className="mb-10 max-md:mb-8">
                       <p className={`mb-3 ${microLabelClass}`}>Step 1 of 2</p>
                       <h3 className="text-3xl font-semibold tracking-tight text-white max-md:text-2xl">
                         Pick a time to talk
                         <span className="text-[#2E5BFF]">.</span>
                       </h3>
-                      <p className="mt-3 text-sm text-zinc-400">
+                      <p className="mt-3 text-base text-zinc-300">
                         Choose a day and a time that works for you.
                       </p>
                     </div>
 
-                    <p className={`mb-3 ${microLabelClass}`}>Select a day</p>
+                    <p className={`mb-4 ${microLabelClass}`}>Select a day</p>
                     <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
                       {mounted &&
                         dateOptions.map((option) => {
@@ -272,15 +286,17 @@ export default function ContactSection() {
                               }
                               className={`flex min-h-[76px] flex-col items-center justify-center rounded-xl border px-2 py-3 transition-colors ${focusRing} ${
                                 selected
-                                    ? "border-white bg-white text-black"
+                                  ? "border-white bg-white text-black"
                                   : "border-white/10 bg-white/[0.03] text-zinc-400 hover:border-white/25 hover:text-white"
                               }`}
                             >
-                              <span className="text-xs">{option.weekday}</span>
+                              <span className="text-xs font-medium">
+                                {option.weekday}
+                              </span>
                               <span className="mt-1 text-xl font-semibold leading-none">
                                 {option.day}
                               </span>
-                              <span className="mt-1 text-[10px] uppercase tracking-wider text-zinc-500">
+                              <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-zinc-500">
                                 {option.month}
                               </span>
                             </button>
@@ -288,7 +304,7 @@ export default function ContactSection() {
                         })}
                     </div>
 
-                    <p className={`mb-3 mt-8 ${microLabelClass}`}>
+                    <p className={`mb-4 mt-10 ${microLabelClass}`}>
                       Available times
                     </p>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -308,7 +324,7 @@ export default function ContactSection() {
                             }
                             className={`rounded-full border px-4 py-2.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${focusRing} ${
                               selected
-                                  ? "border-white bg-white text-black"
+                                ? "border-white bg-white text-black"
                                 : "border-white/10 text-zinc-400 hover:border-white/25 hover:text-white"
                             }`}
                           >
@@ -319,18 +335,21 @@ export default function ContactSection() {
                     </div>
 
                     <div className="mt-auto flex flex-col gap-5 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between max-md:mt-8">
-                      <p className="text-sm text-zinc-500">{timeZone}</p>
-                      <button
-                        type="button"
+                      <p className="text-sm text-zinc-400">{timeZone}</p>
+                      {/* Same button as the header's "Get in Touch". */}
+                      <DynamicButton
+                        text="Continue"
                         disabled={
                           !scheduledDateTime.date || !scheduledDateTime.time
                         }
-                        onClick={() => setFormStep(2)}
-                        className={`${primaryButtonClass} w-full sm:w-auto`}
-                      >
-                        <PrimaryButtonFill />
-                        <span className="relative z-10">Continue</span>
-                      </button>
+                        onClick={() => {
+                          setStepHeight(scheduleRef.current?.offsetHeight);
+                          setFormStep(2);
+                        }}
+                        className="relative w-full justify-center rounded-lg px-8 py-3 sm:w-fit"
+                        showIcon={false}
+                        instantHover
+                      />
                     </div>
                   </motion.div>
                 ) : (
@@ -340,33 +359,40 @@ export default function ContactSection() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -16 }}
                     transition={{ duration: 0.25, ease: premiumEase }}
-                    className="p-8 max-md:p-5 sm:p-10 md:p-12"
+                    // Same box as step 1: h-full + min-h 580 on desktop, and
+                    // step 1's measured height as the floor at every size.
+                    // The message box grows to fill it, so the card does not
+                    // change height between the steps.
+                    style={{ minHeight: stepHeight }}
+                    className="flex h-full min-h-[580px] flex-col p-8 max-md:min-h-0 max-md:p-5 sm:p-10 md:p-12"
                   >
-                    <button
-                      type="button"
-                      onClick={() => setFormStep(1)}
-                      className={`mb-6 inline-flex items-center gap-2 rounded-md text-sm font-medium text-zinc-400 transition-colors hover:text-white ${focusRing}`}
-                    >
-                      <ArrowLeft aria-hidden="true" className="size-4" />
-                      Back to schedule
-                    </button>
-                    <p className={`mb-3 ${microLabelClass}`}>Step 2 of 2</p>
+                    {/* The back link shares the step label's line, which buys
+                        the room for the roomier spacing below while step 2
+                        still fits step 1's height. */}
+                    <div className="mb-3 flex items-center justify-between gap-4">
+                      <p className={microLabelClass}>Step 2 of 2</p>
+                      <button
+                        type="button"
+                        onClick={() => setFormStep(1)}
+                        className={`inline-flex items-center gap-2 rounded-md text-sm font-medium text-zinc-400 transition-colors hover:text-white ${focusRing}`}
+                      >
+                        <ArrowLeft aria-hidden="true" className="size-4" />
+                        Back to schedule
+                      </button>
+                    </div>
                     <h3 className="text-3xl font-semibold tracking-tight text-white max-md:text-2xl">
                       Your details
                       <span className="text-[#2E5BFF]">.</span>
                     </h3>
-                    <p className="mb-8 mt-3 text-sm text-zinc-400">
+                    <p className="mb-8 mt-3 text-base text-zinc-300">
                       {selectedDateLabel} at {scheduledDateTime.time} ·{" "}
                       {timeZone}
                     </p>
 
-                    <form className="flex flex-col gap-6">
+                    <form className="flex flex-1 flex-col gap-6">
                       <div className="grid grid-cols-1 gap-6 max-md:gap-6 md:grid-cols-2 md:gap-8">
                         <div className="flex flex-col gap-3 max-md:gap-3.5">
-                          <label
-                            htmlFor="name"
-                            className={labelClass}
-                          >
+                          <label htmlFor="name" className={labelClass}>
                             Full Name
                           </label>
                           <input
@@ -379,28 +405,7 @@ export default function ContactSection() {
                         </div>
 
                         <div className="flex flex-col gap-3 max-md:gap-3.5">
-                          <label
-                            htmlFor="email"
-                            className={labelClass}
-                          >
-                            Email Address
-                          </label>
-                          <input
-                            type="email"
-                            id="email"
-                            autoComplete="email"
-                            className={inputClass}
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-6 max-md:gap-6 md:grid-cols-2 md:gap-8">
-                        <div className="flex flex-col gap-3 max-md:gap-3.5">
-                          <label
-                            htmlFor="phone"
-                            className={labelClass}
-                          >
+                          <label htmlFor="phone" className={labelClass}>
                             Phone Number
                           </label>
                           <input
@@ -411,50 +416,10 @@ export default function ContactSection() {
                             required
                           />
                         </div>
-
-                        <div className="flex flex-col gap-3 max-md:gap-3.5">
-                          <label
-                            htmlFor="company"
-                            className={labelClass}
-                          >
-                            Company{" "}
-                            <span className="normal-case tracking-normal text-zinc-500">
-                              (optional)
-                            </span>
-                          </label>
-                          <input
-                            type="text"
-                            id="company"
-                            autoComplete="organization"
-                            className={inputClass}
-                          />
-                        </div>
                       </div>
 
                       <div className="flex flex-col gap-3 max-md:gap-3.5">
-                        <label
-                          htmlFor="website"
-                          className={labelClass}
-                        >
-                          Website{" "}
-                          <span className="normal-case tracking-normal text-zinc-500">
-                            (optional)
-                          </span>
-                        </label>
-                        <input
-                          type="url"
-                          id="website"
-                          autoComplete="url"
-                          placeholder="https://"
-                          className={inputClass}
-                        />
-                      </div>
-
-                      <div className="flex flex-col gap-3 max-md:gap-3.5">
-                        <label
-                          htmlFor="service"
-                          className={labelClass}
-                        >
+                        <label htmlFor="service" className={labelClass}>
                           What can we help you with?
                         </label>
                         <div className="relative">
@@ -466,12 +431,17 @@ export default function ContactSection() {
                             <option value="" disabled className="text-zinc-500">
                               Select a service
                             </option>
-                            <option value="design">Product Design</option>
-                            <option value="engineering">
-                              Software Engineering
+                            <option value="software">
+                              Software & product engineering
                             </option>
-                            <option value="marketing">Digital Marketing</option>
-                            <option value="other">Other Inquiry</option>
+                            <option value="marketing">
+                              Digital marketing & growth
+                            </option>
+                            <option value="branding">
+                              Brand strategy & identity
+                            </option>
+                            <option value="ai">AI & automation</option>
+                            <option value="other">Something else</option>
                           </select>
                           <ChevronDown
                             aria-hidden="true"
@@ -480,23 +450,20 @@ export default function ContactSection() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-3 max-md:gap-3.5">
-                        <label
-                          htmlFor="message"
-                          className={labelClass}
-                        >
+                      <div className="flex flex-1 flex-col gap-3 max-md:gap-3.5">
+                        <label htmlFor="message" className={labelClass}>
                           Message
                         </label>
                         <textarea
                           id="message"
                           rows={4}
                           placeholder="A few lines on the project, goals and timeline"
-                          className={`${inputClass} resize-none`}
+                          className={`${inputClass} min-h-24 flex-1 basis-0 resize-none`}
                           required
                         />
                       </div>
 
-                      <div className="pt-2">
+                      <div>
                         <button
                           type="submit"
                           className={`${primaryButtonClass} w-full`}

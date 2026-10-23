@@ -106,7 +106,12 @@ function DesktopAutoScroll({
   return null;
 }
 
-export default function BlogSection() {
+export default function BlogSection({
+  showEyebrow = true,
+}: {
+  /** The small uppercase label above the title. The home page turns it off. */
+  showEyebrow?: boolean;
+}) {
   const isDesktop = useIsDesktop();
   // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
   const isMobile = useIsMobile();
@@ -256,18 +261,20 @@ export default function BlogSection() {
       )}
       <div className="mx-auto w-full ">
         <div className="mb-12 w-full px-4 max-md:mb-8 max-md:px-3 md:mb-20 md:px-10">
-          <motion.p
-            data-no-mobile-entry
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={
-              isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
-            }
-            className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-6 max-md:text-xs"
-          >
-            Latest Insights
-          </motion.p>
+          {showEyebrow && (
+            <motion.p
+              data-no-mobile-entry
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={
+                isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
+              }
+              className="mb-3 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:mb-6 max-md:text-xs"
+            >
+              Latest Insights
+            </motion.p>
+          )}
 
           <div className="flex w-full flex-col items-start justify-between gap-8 max-md:gap-8 md:flex-row md:items-center">
             <motion.div

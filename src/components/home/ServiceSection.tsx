@@ -12,36 +12,20 @@ import { cn } from "@/lib/utils";
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
+// The four main services, in this order (2026-10-23). The other service
+// pages (web, app, UI/UX, video) still exist; they are just not listed here.
 const services = [
+  {
+    title: "Software & Product Engineering",
+    image:
+      "https://plus.unsplash.com/premium_photo-1685086785636-2a1a0e5b591f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c29mdHdhcmV8ZW58MHx8MHx8fDA%3D",
+    href: "/custom-software",
+  },
   {
     title: "Digital Marketing & Growth",
     image:
       "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGRpZ2l0YWwlMjBtYXJrZXRpbmd8ZW58MHx8MHx8fDA%3D",
     href: "/digital-marketing",
-  },
-  {
-    title: "AI & Marketing Automation",
-    image:
-      "https://plus.unsplash.com/premium_photo-1683120966127-14162cdd0935?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fHNvZnR3YXJlfGVufDB8fDB8fHww",
-    href: "/ai-marketing-automation",
-  },
-  {
-    title: "Web Development",
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop",
-    href: "/web-development",
-  },
-  {
-    title: "App Development",
-    image:
-      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=800&auto=format&fit=crop",
-    href: "/app-development",
-  },
-  {
-    title: "Custom Software & SaaS",
-    image:
-      "https://plus.unsplash.com/premium_photo-1685086785636-2a1a0e5b591f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8c29mdHdhcmV8ZW58MHx8MHx8fDA%3D",
-    href: "/custom-software",
   },
   {
     title: "Brand Strategy & Identity",
@@ -50,16 +34,10 @@ const services = [
     href: "/brand-strategy",
   },
   {
-    title: "UI/UX Design",
+    title: "AI & Automation",
     image:
-      "https://images.unsplash.com/photo-1545235617-9465d2a55698?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8dWl1eHxlbnwwfHwwfHx8MA%3D%3D",
-    href: "/ui-ux-design",
-  },
-  {
-    title: "Video Production",
-    image:
-      "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=800&auto=format&fit=crop",
-    href: "/video-production",
+      "https://plus.unsplash.com/premium_photo-1683120966127-14162cdd0935?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fHNvZnR3YXJlfGVufDB8fDB8fHww",
+    href: "/ai-marketing-automation",
   },
 ];
 
@@ -183,21 +161,8 @@ export default function ServiceSection() {
     >
       <div className="w-full px-4 max-md:px-3 md:px-10">
         <div className="mb-10 w-full pb-10 max-md:mb-5 max-md:pb-5">
-          <motion.p
-            data-no-mobile-entry
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={
-              isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
-            }
-            className="mb-6 text-xs lg:text-sm uppercase tracking-[0.3em] text-zinc-400 font-medium max-md:mb-8"
-          >
-            What We Offer
-          </motion.p>
-
           {/* flex-col-reverse puts the description above the title; on mobile the
-              order should read tag -> title -> description, i.e. natural DOM order. */}
+              order should read title -> description, i.e. natural DOM order. */}
           <div className="flex w-full flex-col-reverse items-start justify-between gap-8 max-md:flex-col max-md:gap-10 md:flex-row md:items-center">
             <motion.h2
               data-no-mobile-entry

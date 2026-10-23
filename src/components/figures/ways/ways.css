@@ -1,0 +1,173 @@
+/* Comparison-card figures (WaysFigure). Scoped to .ways-figure; the kit
+   tokens come from components/iso/iso.css. The usual way is light, on the
+   card's #fafafa cap; the Softexedge way keeps the kit's dark tokens on the
+   featured card's #131313 cap. The paper (the fill that hides what is behind
+   each solid) must match the cap. */
+.ways-figure {
+  --ways-brand: #149ccb;
+  width: 100%;
+  background: var(--anatomy-paper);
+}
+.iso.ways-figure[data-theme="light"] {
+  --ways-brand: #2e5bff;
+  --anatomy-paper: #fafafa;
+  --anatomy-card: #fafafa;
+}
+
+.ways-glass {
+  fill: #f1f4fb;
+  stroke: none;
+}
+.iso.ways-figure:not([data-theme]) .ways-glass {
+  fill: #18202a;
+}
+.ways-hole {
+  fill: var(--anatomy-hi);
+  opacity: 0.55;
+}
+.ways-screw {
+  fill: var(--anatomy-dot);
+  opacity: 0.45;
+}
+.ways-dome {
+  fill: var(--anatomy-shade-0);
+}
+.ways-pivot {
+  fill: var(--anatomy-hi);
+}
+.ways-figure .ways-needle {
+  stroke-width: 1.1;
+}
+
+/* Blinking parts: lit for one short beat, then fading back. */
+.ways-cap {
+  fill: var(--anatomy-shade-1);
+  transition: fill 0.5s ease-out;
+}
+.ways-led {
+  fill: var(--anatomy-lo);
+  transition: fill 0.6s ease-out;
+}
+[data-part="cap"][data-on] .ways-cap,
+.ways-led[data-on] {
+  transition: none;
+}
+.ways-figure[data-way="usual"] [data-part="cap"][data-on] .ways-cap,
+.ways-figure[data-way="usual"] .ways-led[data-on] {
+  fill: var(--anatomy-hi);
+}
+.ways-figure[data-way="ours"] [data-part="cap"][data-on] .ways-cap,
+.ways-figure[data-way="ours"] .ways-led[data-on] {
+  fill: var(--ways-brand);
+}
+.ways-figure [data-part="lamp"] .iso-top {
+  transition: fill 0.6s ease-out;
+}
+.ways-figure [data-part="lamp"][data-on] .iso-top {
+  fill: var(--ways-brand);
+  transition: none;
+}
+
+/* The shared bus: brand-coloured, its dashes flowing while the figure runs. */
+.ways-bus .iso-line {
+  stroke: var(--ways-brand);
+  stroke-width: 0.9;
+  stroke-dasharray: 3 3;
+}
+.ways-bus .iso-wire-end {
+  stroke: var(--ways-brand);
+}
+.ways-stage[data-running] .ways-bus .iso-line {
+  animation: iso-flow 1.6s linear infinite;
+}
+
+/* Legend tour (AboutSection writes data-active="0|1|2" on the card frame).
+   The lit row reads at full strength; in both figures the parts tagged with
+   another row tone down. Only line, dot and light colours change, never
+   opacity, so every solid stays opaque and nothing behind shows through.
+   The colours are registered so the change cross-fades. */
+@property --anatomy-hi {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #d4d4d4;
+}
+@property --anatomy-mid {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #6a6a6a;
+}
+@property --anatomy-lo {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #3e3e3e;
+}
+@property --anatomy-dot {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #e6e6e6;
+}
+@property --anatomy-lit-top {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #262626;
+}
+@property --ways-brand {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #149ccb;
+}
+.iso.ways-figure[data-theme="light"] {
+  --ways-dim-hi: #c9c9cd;
+  --ways-dim-mid: #d9d9dc;
+  --ways-dim-lo: #e2e2e4;
+  --ways-dim-brand: #c4cdf2;
+  --ways-dim-lit: #ffffff;
+}
+.iso.ways-figure:not([data-theme]) {
+  --ways-dim-hi: #3c3c3c;
+  --ways-dim-mid: #2f2f2f;
+  --ways-dim-lo: #282828;
+  --ways-dim-brand: #1d4a5a;
+  --ways-dim-lit: #242424;
+}
+.ways-figure [data-row] {
+  transition:
+    --anatomy-hi 0.6s ease,
+    --anatomy-mid 0.6s ease,
+    --anatomy-lo 0.6s ease,
+    --anatomy-dot 0.6s ease,
+    --anatomy-lit-top 0.6s ease,
+    --ways-brand 0.6s ease;
+}
+[data-active="0"] .ways-figure [data-row]:not([data-row="0"]),
+[data-active="1"] .ways-figure [data-row]:not([data-row="1"]),
+[data-active="2"] .ways-figure [data-row]:not([data-row="2"]) {
+  --anatomy-hi: var(--ways-dim-hi);
+  --anatomy-mid: var(--ways-dim-mid);
+  --anatomy-lo: var(--ways-dim-lo);
+  --anatomy-dot: var(--ways-dim-hi);
+  --anatomy-lit-top: var(--ways-dim-lit);
+  --ways-brand: var(--ways-dim-brand);
+}
+.ways-legend li {
+  transition: opacity 0.6s ease;
+}
+[data-active] .ways-legend li {
+  opacity: 0.55;
+}
+[data-active="0"] .ways-legend li[data-row="0"],
+[data-active="1"] .ways-legend li[data-row="1"],
+[data-active="2"] .ways-legend li[data-row="2"] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ways-cap,
+  .ways-led,
+  .ways-figure [data-part="lamp"] .iso-top {
+    transition: none;
+  }
+  .ways-stage[data-running] .ways-bus .iso-line {
+    animation: none;
+  }
+}

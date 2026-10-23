@@ -22727,3 +22727,106 @@ User asked to push. `git fetch`: main == origin/main (nothing new upstream since
 ## Pushed the 2026-10-23 work to main
 
 User asked to push. `git fetch`: main == origin/main (nothing new upstream). Clean build of the working tree in a temporary git worktree (`bun install --frozen-lockfile`, `bun run build`: compiled, 35/35 static pages, /home static), so the user's dev server's `.next` was untouched; worktree deleted with a long-path Remove-Item and pruned. One commit: Services dropdown links use the header roll; portfolio auto-scroll removed; contact form refined (brand gradient, labels, focus, autocomplete, footer at the card bottom, white buttons with hover gradient); cursor pills no longer float over the next section; About visual = isometric dashboard figure (vendored anatomy kit, Biome-excluded) with the photo stack kept as AboutPhotoStack; map/log.
+
+## Homepage "Trusted By" logo strip hidden (2026-10-23)
+
+**Task:** "in homepage hide the logo carousel for now, later I might ask to add it again". Asked which one (home has two): the user picked the "Trusted By" strip under the hero (`LogoLoop`), not `TechLogoCarousel` below the testimonials.
+
+**Change.** `home/ScrollAnimator.tsx`: module flag `SHOW_TRUSTED_BY = false` (`:21`, commented) wraps the whole `<section>` (`{SHOW_TRUSTED_BY && (...)}`); nothing deleted, so restoring is flipping it to `true`. Biome re-indented the wrapped block (whitespace-only otherwise; `git diff -w` = 6 added lines). First work in the new `Desktop\softexedge-october-harshita-2026` checkout.
+
+**Verification.** `bunx tsc --noEmit` exit 0. Biome on the file: one `organizeImports` error, identical on HEAD's copy. User's dev server :3000 (confirmed it runs from this checkout) `/home`: 0 "Trusted By" elements, hero bottom = next block top (753 px), the only "Technology partners" list left is TechLogoCarousel's; no console errors. Map: LogoLoop row line ref updated and marked hidden.
+
+## About pin flash as it locks (2026-10-23)
+
+**Task:** "the pin of AboutSection is flickering, fix it". User detail (asked): it flashes **the moment it sticks**, in **Brave**.
+
+**Investigation.** Headless Edge CDP probe on the user's dev server :3000 /home, 1440x900, sampling the pinned wrapper every animation frame: before the fix the pin was already frame-exact under slow wheel, fast wheel, PageDown and scrolling back up (top -0.5 px throughout the hold: the spacer sits at 880.5; position flips exactly at 881 and 1845; scale scrub 1 -> 0.85 smooth). Screencast frames showed no blank frame either. So no geometry jump in headless: the flash is real-GPU compositing. When the wrapper switches to `position: fixed`, Chromium builds a new layer for it and repaints the 1440x964 About (SVG figure, framer's leftover inline `filter: blur(0px)` on `#about`), which can show for a frame as a flash.
+
+**Tried and reverted: `anticipatePin: 1`.** With Lenis driving the scroll it pinned About early, snapping it up 40 px (slow wheel) to 157 px (fast) before it reached the top, and left it pinned briefly past the release on the way up. That's worse, so it was removed.
+
+**Change.** `home/ScrollAnimator.tsx` About wrapper (`aboutContainerRef`) gets `md:will-change-transform` (+ comment), so the layer already exists before the pin engages and locking only moves it. Desktop-only per the breakpoint-scoped will-change rule.
+
+**Verification.** `bunx tsc --noEmit` exit 0; Biome: only HEAD's organizeImports error. Re-probe after the change: computed will-change `transform` at 1440; pin still exact in all four scroll modes (top -0.5, flips at 881/1845, nothing early). 390x844: will-change `auto`, 0 pin-spacers. **Not verified:** the Brave flash itself. Headless can't show it, so the user needs to confirm in Brave. Map: pin line refs refreshed (:104/:128/:153, `-mt` :249), and the fix plus the anticipatePin warning recorded. Probe scripts live in the session scratchpad; every run closed Edge and removed its `%TEMP%\cdp-*` profile (count 0 after each).
+
+## About pin: "sticks, then shifts and scales down suddenly" (2026-10-23)
+
+**Task:** follow-up to the flash fix. User: "first the section sticks and then it shifts and scales down suddenly and it feels like something broke, fix it".
+
+**Cause (measured).** CDP probe logging the About `h1` position every frame (headless Edge, then a real headful Brave with GPU and occlusion throttling off): the headline rose 1 px per px of scroll, froze at 165 px the instant the pin engaged (scroll 881), then crept back DOWN to 178 px and 97 px sideways. The scale+`y: 40` scrub started at the pin, before Portfolio had entered (it enters at 945 at 1440x900, 239 px later at 1366x650), so About moved backwards with no visible cause.
+
+**Tried and dropped:** starting the pin at `bottom bottom` (like Stats/Testimonials). Fine at 900 tall, but at 1366x650 it held About with the headline at y=-77 (off-screen), because About is far taller than short windows.
+
+**Change.** `home/ScrollAnimator.tsx`: About pin unchanged (`top top`). Its scale scrub now triggers on Portfolio (`top bottom` → `top top`) and drops `y: 40`, so About holds still until Portfolio appears and then recedes (`scale` 1 → 0.85, origin-top, so content only drifts up). Comment explains why. The earlier `md:will-change-transform` on the wrapper stays.
+
+**Verification.** tsc exit 0; Biome only HEAD's organizeImports. Headless probe: 1440x900 headline 162.5 → 139.9 px while pinned, largest downward step 0; 1366x650 still at scale 1 until Portfolio enters, then 0.986 → 0.859, headline 164 → 141; 1920x1080 245 → 210. Real Brave 1440x900: engages at 882, headline 163.5, scale 1 at engage → 0.856 when Portfolio reaches the top, largest downward step 0. Every run closed the browser and deleted its `%TEMP%\cdp-*` profile (one stalled Brave run was closed via CDP and its profile removed by hand). Map: pin line refs + this note.
+
+## Home: section-title eyebrows removed (2026-10-23)
+
+**Task:** "in homepage remove eyebrow from every section's title".
+
+**Inventory** (live DOM, /home 1440x900): six section eyebrows: About "About The Studio", Portfolio title slide "Portfolio", Services "What We Offer", Testimonials "Testimonials", Contact "Get in touch", Blog "Latest Insights". Left alone: the per-project category tags on portfolio panels (LOGISTICS, ENTERPRISE …), which are card labels, not section titles. The map claimed a FAQ section on /home; it was added in b3be40d and removed in 9f4068b, so it isn't there (map fixed).
+
+**Change.** Home-only components: eyebrow element deleted in `AboutSection`, `PortfolioSection`, `ServiceSection`, plus the two code comments that described the order as "tag -> title". Shared components (`ExperimentalTestimonials` on 12 routes, `BlogSection` on 11, `ContactSection` on /contact): new `showEyebrow?: boolean` prop (default `true`) wrapping the eyebrow; `app/home/page.tsx` passes `showEyebrow={false}`, so other pages are unchanged. First pass ran `biome format --write`, which also reflowed unrelated form labels in ContactSection (that file isn't formatted on HEAD), so I restored the six files and re-applied only the eyebrow edits, already formatted.
+
+**Verification.** `bunx tsc --noEmit` exit 0. Biome on LF copies of the 7 edited files = exactly HEAD's findings (working-copy "format" hits are CRLF only, from `core.autocrlf=true`). Dev server :3000: server HTML for /home has 0 of the six labels, /about still has Testimonials + Latest Insights, /contact still has Get in touch + Testimonials. Rendered /home: all six titles present, none with a preceding sibling, and no console errors.
+
+## About section redesigned: centred "Why us?" + comparison cards (2026-10-23)
+
+**Task:** "redesign the AboutSection like this and keep it center aligned and flex col and also keep the button", with a reference screenshot: "Why us?" / "Because good ideas deserve better execution." / one-line pitch / two cards, "The usual way" vs "The Softexedge way".
+
+**Change.** `home/AboutSection.tsx` rewritten as one centred `flex-col`: "Why us?" (semibold, zinc-500; not an uppercase eyebrow), h2 headline with the existing word-stagger reveal and "better execution." in the brand gradient, the pitch paragraph, a bordered frame holding the two cards (grid, 2 cols from md, stacked below; card text left-aligned for scanning), then the unchanged Connect With Us button. Card copy lives in module-scope `HEADLINE`/`COMPARISON` arrays keyed by text (so HEAD's noArrayIndexKey finding is gone). Judgment call: the reference's green card became a brand-cyan tint (`#149CCB` 6% bg, 30% border; label `#0B7AA3` ≈ 4.6:1, title `#0B4F6C`) to stay on-brand. Removed: the right-hand visual column, the `visual` prop, RotatingWord and the 6 s ticker. `app/home/page.tsx` no longer imports DashboardFigure. Heading level h1 → h2 (the hero holds the page h1).
+
+**Kept, now unimported:** `AboutPhotoStack.tsx`, `AboutImageStack.tsx`, `RotatingWord.tsx`, `figures/dashboard/*` (+ the `iso` kit). Not deleted, because the user asked earlier to keep the photo stack safe. The user decides whether to remove them.
+
+**Verification.** `bunx tsc --noEmit` exit 0; Biome clean on AboutSection; page.tsx only HEAD's organizeImports. Headless Edge screenshots on the user's dev server :3000: 1440x900 centred column, cards side by side, button centred; 390x844 cards stacked, button centred before Portfolio. Pin probe 1440x900: About pins at 881, holds still (scale 1) until Portfolio enters at ~1203, then 1 → 0.853, headline never moves down. About section is now 872 px (pin wrapper 1222 incl. the 30vh slide-over padding).
+
+## About comparison cards redesigned with anatomy figures (2026-10-23)
+
+**Task:** "redesign the two cards in AboutSection using anatomy-skill, awesome-design-md and taste-skill".
+
+**Design read.** About section of an agency landing page; the comparison is the message. Vercel spec (awesome-design-md) for chrome: hairline ring + stacked soft shadows, the featured card polarity-flipped to dark (#131313), 16 px cards in a 24 px `zinc-50` frame. Taste: brand accent only (#2E5BFF / #149CCB), no new eyebrows (the card labels stay; they are the existing card content), no em-dashes, motion must mean something. All six card strings unchanged.
+
+**Figures (anatomy skill, Figure tier, kit in `components/iso`).** New `src/components/figures/ways/`: `geometry.ts` (server-built SVG strings; one camera for both, each centred in its own frame), `frame.ts` (meter constants, `needleOf`, rest readings), `WaysLive.tsx` (client loop), `WaysFigure.tsx` (server wrapper), `ways.css`. The concept: the same three instruments, loudspeaker = marketing, panel meter = business, tower unit = tech. Usual: each on its own small plate, cables out to plugs lying loose on the floor (speaker and server plugs point at each other across a gap: "connecting the dots"); needle wanders, cap and five LEDs blink on unrelated clocks. Ours (dark): bolted by tabs to one base plate (feet, groove, corner screws, label plate, ruler strip), chained by a brand-cyan flowing bus to a lamp (the one lit part); one 1.6 s beat lights cap, all LEDs and the lamp together; needle holds 0.78 with a small lift per beat. Stops offscreen (useInView) and under reduced motion. Not done: pointer/keyboard interaction (idle tour only), and the kit's `lines.mjs`/audit scripts (not vendored here; no pipes or round parts to audit).
+
+**Pin fix this forced.** The cards made About 1133 px tall, so the old `top top` hold left the cards' copy and the button below the fold for good at 1440x900. `ScrollAnimator` now triggers the About pin on the section itself and holds at `bottom bottom` while it is taller than the window (`top top` otherwise). Map note updated (it previously warned against `bottom bottom`).
+
+**Verification.** `bunx tsc --noEmit` exit 0; Biome clean on `figures/ways/*` and AboutSection (page.tsx/ScrollAnimator organizeImports = HEAD's). Headless Edge on the user's dev server :3000: 2x close-ups of both figures read; 1440 cards side by side; 390 cards stacked, button after. Motion, 4 s / 241 frames: usual needle 218 poses, at least 12 LED patterns; ours LEDs only 11111/00000, cap + lamp in step on every frame (0 out of step). Reduced motion: 1 needle pose, no lights. Pin probe: button bottom during the hold 860/900 (1440x900), 610/650 (1366x650), 1040/1080 (1920x1080); headline never moves down at any size. Every run closed Edge and removed its `%TEMP%\cdp-*` profile.
+
+## About: pin held block fits the user's window + figures explained by a legend tour (2026-10-23)
+
+**Task:** "in AboutSection the pin starts before whole content is in the view, fix it. And also the diagram doesn't explain anything, add some points or content so the viewer can understand."
+
+**Pin.** User's screen is 1920x1080 at 125% (Brave page area ~1536 x 650-710 CSS px). Could not reproduce a lock with content below the fold at 1536x710, in headless Edge or in real Brave: the button sat at 670/710 and content was fully faded in. The dev server was confirmed to serve the new pin code. Asked what they saw ("no preference"), so I fixed the plausible case: the held block (cards + button, ~620-640 px) was taller than shorter windows, so the figures' tops were cut when it locked. Fixes: figure frames 480x270 -> 480x230 (pad 14), cards frame mt-14 -> mt-12, button mt-12 -> mt-10; pin start now `bottom bottom+=(padding-bottom - 16)` so the button is held 16 px above the window's bottom. Result (probe): 1536x650 cards top 15 / button 634; 1536x710 75 / 694; 1440x900 265 / 884; 1920x1080 About fits, `top top`, headline in view. Headline never moves down at any size.
+
+**Explaining the figures.** No new rows: each existing point became a legend row naming its part (usual: Speaker / Server / Meter + cables; ours: One plate / Meter + speaker / Server + lamp). geometry.ts wraps parts in `<g data-row="n">` in painter's order. AboutSection tours rows every 2.6 s (framer `useInView` 0.4 + `useReducedMotion`; writes `data-active` on the frame, no re-render). ways.css: the lit row stays at full strength, the others drop to opacity .55. Non-lit parts tone their line, dot, light and brand colours down via `@property`-registered `--anatomy-*` / `--ways-brand`, which cross-fade over 0.6 s. Solids stay opaque. Probe over three steps: active 1 -> 2 -> 0, legend opacities and part `--anatomy-hi` values switch exactly per row. Screenshots at 1536x710 and 390x844.
+
+**Verification.** `bunx tsc --noEmit` exit 0; Biome clean on AboutSection and figures/ways (ScrollAnimator organizeImports = HEAD's). Every headless/Brave run closed the browser and removed its `%TEMP%\cdp-*` profile.
+
+## Home sections reordered; blog hidden (2026-10-23)
+
+**Task:** "shuffle the sections: hero, about, stats, then services, then PortfolioSection and testimonials, then contact; comment out (hide) the blog section for now".
+
+**Change.** `home/ScrollAnimator.tsx` render order is now hero → About → [Stats + Services block, z-10] → Portfolio (z-10) → [Testimonials + TechLogoCarousel + Contact block, z-20, `md:-mt-[100vh]`] → footer. Pins rewired: About is held until the Stats block's top reaches the top, and its scale scrub now follows Stats entering (was Portfolio). Stats → Services and Testimonials → Contact pins unchanged. The `-mt-[100vh]` moved to the Testimonials block, so it now uses Portfolio's `+ innerHeight` hold as its slide-over room (Stats used to). Shadows moved with their roles: Stats gets the light top shadow it needs over white About, and the heavy one goes to Testimonials over dark Portfolio. Unused `portfolioRef` removed. `blog` prop is optional and rendered only when given; `app/home/page.tsx` comments out the BlogSection import and prop, with a restore note.
+
+**Verification.** `bunx tsc --noEmit` exit 0; Biome only HEAD's organizeImports (page.tsx, ScrollAnimator). Headless Edge on the user's dev server: full-page wheel scroll logging the section under the top, middle and bottom of the viewport each frame: 1440x900 hero → about → stats → services → portfolio → testimonials → contact → footer, each handoff an overlap with no gap; 390x844 same order. No "Thoughts & Perspectives" heading anywhere; `<main>`'s last child is the footer.
+
+## Contact form, footer gap and the four main services (2026-10-23)
+
+**Task:** bigger gap between Contact and the footer; day/month labels font-medium; less padding on Continue; Step 2 = full name, phone, "What can we help you with?", message and button, same height as Step 1; options Tech / Digital Marketing / Branding / AI (rephrased), and the same four in the Services section ("these are the main services"). Asked how to show them in Services: user chose **only the four**.
+
+**Change.**
+- `home/ServiceSection.tsx`: `services` is now four rows in the user's order: Software & Product Engineering (/custom-software), Digital Marketing & Growth, Brand Strategy & Identity, AI & Automation (/ai-marketing-automation). Images reused; the other four pages still exist.
+- `home/ContactSection.tsx` (also on /contact): weekday + month spans `font-medium`; Continue gets `cn(primaryButtonClass, "w-full px-6 py-3 sm:w-auto")` (Send keeps px-8 py-4); step 2 drops Email, Company and Website, with name + phone in one row, then the select (Software & product engineering, Digital marketing & growth, Brand strategy & identity, AI & automation, Something else), message, Send. Step 2 is `flex h-full min-h-[580px] flex-col` + `style={{ minHeight: stepHeight }}`, where stepHeight is step 1's offsetHeight stored on Continue. The form and message group flex-1, textarea `min-h-24 flex-1 basis-0`, spacing tightened (gap-5, mb-4/mb-6, no pt-2) so step 2 fits inside step 1's height.
+- `home/ScrollAnimator.tsx`: Testimonials/Contact block `pb-16 md:pb-24` = white gap above the footer.
+
+**Verification.** `bunx tsc --noEmit` exit 0; Biome findings identical to HEAD's (ContactSection `GRID_COLUMNS` unused, ServiceSection a11y + index key, ScrollAnimator organizeImports). Headless Edge on the user's dev server :3000/home, clicking day → time → Continue: weekday/month weight 500; Continue padding 12px 24px (Send 16px 32px); form card 679 px on both steps at 1440x900 and 1536x710, 719 px on both at 390x844 (message box fills: 109 / 124 px); step 2 labels exactly Full Name, Phone Number, What can we help you with?, Message; options as above; Contact bottom to footer top 108 px desktop / 72 px phone (was ~12 px); Services titles = the four. Screenshot of step 2 at 1440.
+
+## Contact: Continue = header's Get in Touch; roomier steps, readable descriptions (2026-10-23)
+
+**Task:** "make the continue button like the get in touch button in the header; in step 1 and step 2 increase the space between the elements slightly and make the descriptions slightly bigger and readable".
+
+**Change.**
+- `ui/DynamicButton.tsx`: two explicit branches, `<Link>` with `href` and otherwise `<button type="button">`, plus an optional `disabled` prop (`disabled:pointer-events-none disabled:opacity-35`). The old single polymorphic tag gave a link-less button `href=""` (React warning "An empty string was passed to the href attribute", hit as soon as Continue used it). Both Headers pass `href`, so they are unchanged.
+- `home/ContactSection.tsx`: Continue is now `<DynamicButton text="Continue" ... className="relative w-full justify-center rounded-lg px-8 py-3 sm:w-fit" showIcon={false} instantHover />`, the header's props. The `cn` import is gone. Step 1: header block mb-10 (mb-8 on phones), "Select a day" mb-4, "Available times" mt-10 mb-4, description text-base zinc-300 (was sm zinc-400), timezone zinc-400. Step 2: description text-base zinc-300, mb-8; form gap-6. The back link moved onto the "Step 2 of 2" line (justify-between) so step 2 still fits step 1's measured height.
+
+**Verification.** `bunx tsc --noEmit` exit 0; Biome findings = HEAD's (ContactSection `GRID_COLUMNS`, DynamicButton index keys). Headless Edge on :3000/home through day → time → Continue: Continue has the header classes, 124x44 px, disabled until both are picked; both descriptions 16 px zinc-300; card height step 1 = step 2 = 679 px (1440x900, 1536x710) and 735 px (390x844), message box 117 / 124 px; no console errors or exceptions in the run after the DynamicButton fix (the run before it logged the empty-href warning). Header Get in Touch still `<a href="/contact">` with px-8 py-3 rounded-lg. Screenshots of both steps at 1440.

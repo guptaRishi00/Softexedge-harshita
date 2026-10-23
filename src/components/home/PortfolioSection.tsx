@@ -268,9 +268,6 @@ export default function PortfolioSection() {
             the section's own #0a0a0a: no image to decode, nothing animating. */}
           <div className="project-panel relative isolate flex h-[70svh] w-full shrink-0 flex-col justify-center overflow-hidden bg-linear-to-br from-[#171717] via-[#0a0a0a] to-black p-8 max-md:snap-center max-md:px-3 md:h-screen md:w-screen md:p-16 lg:px-20">
 
-            <p className="relative mb-6 text-sm font-medium uppercase tracking-[0.3em] text-zinc-500 max-md:mb-4 max-md:text-xs">
-              Portfolio
-            </p>
             <h2 className="relative text-[3.25rem] font-bold leading-[0.9] tracking-[-0.04em] max-md:text-[2.75rem] md:text-8xl lg:text-[9rem]">
               Our{" "}
               {/* `pr-3` is load-bearing, not spacing: `bg-clip-text` paints the

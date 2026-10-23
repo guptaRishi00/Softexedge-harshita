@@ -1,12 +1,15 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
+import {
+  motion,
+  useInView,
+  useReducedMotion,
+  type Variants,
+} from "framer-motion";
 import Link from "next/link";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import { useIsDesktop } from "@/lib/useIsDesktop";
-import AboutPhotoStack from "./AboutPhotoStack";
-import RotatingWord from "./RotatingWord";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
 const exitEase = [0.32, 0, 0.67, 0] as const;
@@ -58,28 +61,80 @@ const textReveal: Variants = {
   },
 };
 
+// Keyed by the word itself (all unique), so no index keys.
+const HEADLINE = [
+  { word: "Because", accent: false },
+  { word: "good", accent: false },
+  { word: "ideas", accent: false },
+  { word: "deserve", accent: false },
+  { word: "better", accent: true },
+  { word: "execution.", accent: true },
+];
+
+const COMPARISON = [
+  {
+    label: "The usual way",
+    title: "A little all over the place.",
+    // Each point names the part of the figure that shows it (geometry.ts tags
+    // those parts with the same row index).
+    points: [
+      { part: "Speaker", text: "Marketing says one thing." },
+      { part: "Server", text: "Tech does another." },
+      {
+        part: "Meter + cables",
+        text: "And somehow, you're connecting the dots.",
+      },
+    ],
+    way: "usual",
+  },
+  {
+    label: "The Softexedge way",
+    title: "Okay, now we're talking.",
+    points: [
+      { part: "One plate", text: "One shared vision." },
+      { part: "Meter + speaker", text: "Business meets marketing." },
+      { part: "Server + lamp", text: "Tech brings it all to life." },
+    ],
+    way: "ours",
+  },
+] as const;
+
+/** Seconds each row (and its part in both figures) stays highlighted. */
+const TOUR_STEP = 2.6;
+
 /**
- * `visual` fills the right-hand column. The home page passes the analytics
- * console figure (components/figures/dashboard). Without it the section falls
- * back to the original rotating photo stack (AboutPhotoStack), so restoring
- * the photos is just dropping the prop in app/home/page.tsx.
+ * `figures` are the two comparison-card drawings (components/figures/ways),
+ * built on the server and passed in by app/home/page.tsx.
  */
-export default function AboutSection({ visual }: { visual?: ReactNode }) {
-  const [frontIndex, setFrontIndex] = useState(0);
+export default function AboutSection({
+  figures,
+}: {
+  figures?: Record<"usual" | "ours", ReactNode>;
+}) {
   const isDesktop = useIsDesktop();
+  const frame = useRef<HTMLDivElement>(null);
+  const frameInView = useInView(frame, { amount: 0.4 });
+  const reduceMotion = useReducedMotion();
+  const tour = Boolean(figures) && frameInView && !reduceMotion;
 
-  // Desktop only: this index drives the rotating headline word and, when the
-  // photo stack is shown, its cards (below `md` the stack and RotatingWord
-  // own their own ticks). Ticking it on mobile re-rendered the whole section
-  // every 6s to change one word.
+  // Legend tour: every TOUR_STEP seconds the next row lights, with the parts
+  // it names in both figures; the rest tone down (ways.css). Written as an
+  // attribute on the frame, so the section never re-renders for it.
   useEffect(() => {
-    if (!isDesktop) return;
-    const interval = setInterval(() => {
-      setFrontIndex((prev) => prev + 1);
-    }, 6000);
-
-    return () => clearInterval(interval);
-  }, [isDesktop]);
+    const el = frame.current;
+    if (!el) return;
+    if (!tour) {
+      delete el.dataset.active;
+      return;
+    }
+    let step = 0;
+    el.dataset.active = "0";
+    const id = window.setInterval(() => {
+      step = (step + 1) % 3;
+      el.dataset.active = String(step);
+    }, TOUR_STEP * 1000);
+    return () => window.clearInterval(id);
+  }, [tour]);
 
   return (
     <motion.section
@@ -91,123 +146,150 @@ export default function AboutSection({ visual }: { visual?: ReactNode }) {
       viewport={{ once: true, amount: 0.2 }}
       className="relative overflow-hidden bg-white px-4 py-10 text-zinc-900 before:absolute before:inset-0 max-md:px-3 max-md:pb-14 max-md:pt-8 md:px-10 lg:mb-20"
     >
-      <div className="relative z-10 mx-auto">
-        <div className="grid items-center gap-16 max-md:gap-8 lg:grid-cols-[1fr_0.9fr]">
-          {/* Below md the two grid items swap via `order` so the image leads and
-              the copy follows. The copy column is already tag -> title ->
-              description -> button, so nothing inside it needs reordering. */}
-          <div className="relative mt-20 max-md:order-2 max-md:mt-0 max-md:bg-white">
-            <motion.p
-              variants={textReveal}
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium pl-[5px] max-md:mb-9 max-md:text-xs"
-            >
-              About The Studio
-            </motion.p>
+      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center text-center md:pt-20">
+        <motion.p
+          variants={textReveal}
+          className="text-xl font-semibold tracking-tight text-zinc-500 max-md:text-lg md:text-2xl"
+        >
+          Why us?
+        </motion.p>
 
-            <motion.h1
-              variants={wordContainer}
-              className="flex max-w-5xl flex-wrap items-baseline gap-x-4 gap-y-2 text-3xl font-bold leading-[0.9em] max-md:text-[2.125rem] tracking-[-0.04em] max-md:gap-x-2.5 max-md:gap-y-0.5 max-md:leading-[0.8em] md:text-6xl lg:text-[3.5rem]"
+        <motion.h2
+          variants={wordContainer}
+          className="mt-5 flex max-w-4xl flex-wrap items-baseline justify-center gap-x-4 gap-y-2 text-[2.125rem] font-bold leading-[0.95em] tracking-[-0.04em] max-md:mt-4 max-md:gap-x-2.5 max-md:gap-y-1 md:text-6xl lg:text-[4rem]"
+        >
+          {HEADLINE.map(({ word, accent }) => (
+            <motion.span
+              key={word}
+              variants={wordAnimation}
+              className={
+                accent
+                  ? "block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pb-2 text-transparent"
+                  : "block"
+              }
             >
-              <motion.span variants={wordAnimation} className="block">
-                We build
-              </motion.span>
+              {word}
+            </motion.span>
+          ))}
+        </motion.h2>
 
-              <motion.span
-                variants={wordAnimation}
-                className="block bg-linear-to-r from-[#2E5BFF] to-[#149CCB] bg-clip-text pb-3 text-transparent"
+        <motion.p
+          variants={textReveal}
+          className="mt-8 max-w-2xl text-xl leading-[1.35em] text-zinc-600 max-md:mt-6 max-md:text-lg"
+        >
+          We help you figure out what software to build, how to market it to the
+          right people, and how to bring it all together under one roof.
+        </motion.p>
+
+        {/* The two "ways" read as one comparison, so they share a frame. Card
+            copy stays left-aligned for scanning; only the column is centred.
+            Chrome follows a Vercel-style system: hairline ring + stacked soft
+            shadows, the featured (Softexedge) card polarity-flipped to dark.
+            Each card leads with its figure, the same three instruments drawn
+            scattered (usual) and bolted to one plate (ours). */}
+        <motion.div
+          ref={frame}
+          variants={textReveal}
+          className="mt-12 grid w-full grid-cols-1 gap-2 rounded-3xl bg-zinc-50 p-2 text-left shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)] max-md:mt-10 md:grid-cols-2"
+        >
+          {COMPARISON.map(({ label, title, points, way }) => {
+            const ours = way === "ours";
+            return (
+              <div
+                key={label}
+                className={
+                  ours
+                    ? "flex flex-col overflow-hidden rounded-2xl bg-[#131313] shadow-[0_0_0_1px_rgba(0,0,0,0.9),0_2px_2px_rgba(0,0,0,0.04),0_8px_16px_-4px_rgba(0,0,0,0.16)]"
+                    : "flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.08),0_2px_2px_rgba(0,0,0,0.04),0_8px_8px_-8px_rgba(0,0,0,0.04)]"
+                }
               >
-                the product
-              </motion.span>
-
-              {"and the demand that fills it, for"
-                .split(" ")
-                .map((word, index) => (
-                  <motion.span
-                    key={index}
-                    variants={wordAnimation}
-                    className="block"
+                {figures && (
+                  <div
+                    className={
+                      ours
+                        ? "border-b border-white/[0.08] px-3 pt-3"
+                        : "border-b border-black/[0.06] bg-[#fafafa] px-3 pt-3"
+                    }
                   >
-                    {word}
-                  </motion.span>
-                ))}
-
-              <motion.span variants={wordAnimation} className="block">
-                <RotatingWord
-                  words={["founders", "startups", "brands", "challengers"]}
-                  activeIndex={frontIndex}
-                />
-              </motion.span>
-            </motion.h1>
-
-            <motion.div
-              variants={textReveal}
-              className="mt-10 max-w-2xl space-y-6 max-md:mt-8 max-md:space-y-6"
-            >
-              <p className="text-xl leading-[1.25em] text-zinc-600 font-regular max-md:text-lg">
-                Most agencies hand over a design file and wish you luck. We stay
-                on it — the brand, the build, the launch, and the marketing that
-                follows — so one team is accountable when the numbers come in
-              </p>
-              <div className="flex flex-wrap gap-4 pt-3">
-                {/* Below md only the gradient arrow is pinned from the desktop
-                    hover state — touch has no hover, so the resting state must
-                    carry it. The hover state's left inset is deliberately NOT
-                    pinned: it pushed the label 16px right of the body copy
-                    above, so the base `pl-0` governs here and the label lines
-                    up with the paragraph's left edge. */}
-                <Link
-                  href="/contact"
-                  className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-3.5 hover:pr-3.5 max-md:gap-4 max-md:border-0 max-md:pr-3"
-                >
-                  <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
-                    Connect With Us
-                  </span>
-
-                  <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-10 max-md:w-10 max-md:rounded-lg">
-                    <svg width="0" height="0" className="absolute">
-                      <title>Connect arrow gradient</title>
-                      <defs>
-                        <linearGradient
-                          id="about-connect-icon-grad"
-                          x1="0%"
-                          y1="0%"
-                          x2="100%"
-                          y2="0%"
-                        >
-                          <stop stopColor="#2E5BFF" offset="0%" />
-                          <stop stopColor="#149CCB" offset="100%" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-
-                    <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
-                    <MdArrowOutward
-                      className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
-                      style={{ fill: "url(#about-connect-icon-grad)" }}
-                    />
+                    {figures[way]}
                   </div>
-                </Link>
+                )}
+                <div className="p-7 max-md:p-5">
+                  <p
+                    className={`text-xs font-medium uppercase tracking-[0.14em] ${ours ? "text-[#5CC6EE]" : "text-zinc-500"}`}
+                  >
+                    {label}
+                  </p>
+                  <h3
+                    className={`mt-3 text-2xl font-semibold tracking-tight max-md:text-xl ${ours ? "text-zinc-50" : "text-zinc-900"}`}
+                  >
+                    {title}
+                  </h3>
+                  {/* A legend: each point beside the part of the figure that
+                      shows it. The tour lights one row at a time. */}
+                  <ul className="ways-legend mt-5 space-y-2.5 max-md:mt-4">
+                    {points.map(({ part, text }, index) => (
+                      <li
+                        key={text}
+                        data-row={index}
+                        className="grid grid-cols-[8.5rem_1fr] items-baseline gap-3 max-md:grid-cols-[6.75rem_1fr]"
+                      >
+                        <span
+                          className={`text-sm font-medium ${ours ? "text-zinc-400" : "text-zinc-500"}`}
+                        >
+                          {part}
+                        </span>
+                        <span
+                          className={`text-[1.0625rem] max-md:text-base ${ours ? "text-zinc-200" : "text-zinc-700"}`}
+                        >
+                          {text}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </motion.div>
-          </div>
+            );
+          })}
+        </motion.div>
 
-          <motion.div
-            initial={isDesktop ? { opacity: 0, scale: 0.95, y: 40 } : false}
-            whileInView={isDesktop ? { opacity: 1, scale: 1, y: 0 } : undefined}
-            transition={{ duration: 1.2, ease: premiumEase }}
-            viewport={{ once: false }}
-            // max-md:mb-8 stacks on top of the grid's 32px row-gap (the image
-            // leads on mobile via order-1, so its bottom margin is the space
-            // before the copy). Margin rather than a bigger gap keeps the
-            // 768-1023 band — where the grid is still one column but the copy
-            // comes first — exactly as it was.
-            className="relative flex items-center justify-center pt-10 max-md:order-1 max-md:mb-8 max-md:pt-0"
+        <motion.div variants={textReveal} className="mt-10 max-md:mt-8">
+          {/* Below md only the gradient arrow is pinned from the desktop hover
+              state — touch has no hover, so the resting state must carry it.
+              The hover state's left inset is not pinned either. */}
+          <Link
+            href="/contact"
+            className="group flex h-16 w-fit cursor-pointer items-center justify-between gap-5 rounded-xl border border-transparent bg-white pl-0 pr-2.5 transition-all duration-300 hover:border-black hover:pl-3.5 hover:pr-3.5 max-md:gap-4 max-md:border-0 max-md:pr-3"
           >
-            {visual ?? (
-              <AboutPhotoStack frontIndex={frontIndex} isDesktop={isDesktop} />
-            )}
-          </motion.div>
-        </div>
+            <span className="text-lg font-bold tracking-tight text-black transition-colors duration-300">
+              Connect With Us
+            </span>
+
+            <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-black text-white max-md:h-10 max-md:w-10 max-md:rounded-lg">
+              <svg width="0" height="0" className="absolute">
+                <title>Connect arrow gradient</title>
+                <defs>
+                  <linearGradient
+                    id="about-connect-icon-grad"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <stop stopColor="#2E5BFF" offset="0%" />
+                    <stop stopColor="#149CCB" offset="100%" />
+                  </linearGradient>
+                </defs>
+              </svg>
+
+              <MdArrowOutward className="absolute z-10 h-5 w-5 transition-transform duration-300 max-md:-translate-y-8 max-md:translate-x-8 group-hover:-translate-y-8 group-hover:translate-x-8" />
+              <MdArrowOutward
+                className="absolute z-10 h-5 w-5 -translate-x-8 translate-y-8 transition-transform duration-300 max-md:translate-x-0 max-md:translate-y-0 group-hover:translate-x-0 group-hover:translate-y-0"
+                style={{ fill: "url(#about-connect-icon-grad)" }}
+              />
+            </div>
+          </Link>
+        </motion.div>
       </div>
     </motion.section>
   );

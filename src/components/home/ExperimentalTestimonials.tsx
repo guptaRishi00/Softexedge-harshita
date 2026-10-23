@@ -48,7 +48,12 @@ const duplicatedTestimonials = [
 
 const premiumEase = [0.16, 1, 0.3, 1] as const;
 
-export default function ExperimentalTestimonials() {
+export default function ExperimentalTestimonials({
+  showEyebrow = true,
+}: {
+  /** The small uppercase label above the title. The home page turns it off. */
+  showEyebrow?: boolean;
+}) {
   const isDesktop = useIsDesktop();
   // Entry animations are desktop-only; below md they land instantly (NO_ENTRY).
   const isMobile = useIsMobile();
@@ -102,18 +107,20 @@ export default function ExperimentalTestimonials() {
           className="flex w-full shrink-0 flex-col justify-between lg:w-1/3"
         >
           <div>
-            <motion.p
-              data-no-mobile-entry
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={
-                isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
-              }
-              className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:text-xs"
-            >
-              Testimonials
-            </motion.p>
+            {showEyebrow && (
+              <motion.p
+                data-no-mobile-entry
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={
+                  isMobile ? NO_ENTRY : { duration: 0.6, ease: premiumEase }
+                }
+                className="mb-6 text-sm uppercase tracking-[0.3em] text-zinc-500 font-medium max-md:text-xs"
+              >
+                Testimonials
+              </motion.p>
+            )}
             <motion.h2
               data-no-mobile-entry
               initial={{ opacity: 0, y: 20 }}

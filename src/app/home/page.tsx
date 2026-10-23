@@ -1,8 +1,9 @@
 import Herosection from "@/components/home/Herosection";
 import AboutSection from "@/components/home/AboutSection";
-import BlogSection from "@/components/home/BlogSection";
+// Blog hidden on the home page for now; restore with the `blog` prop below.
+// import BlogSection from "@/components/home/BlogSection";
 import ContactSection from "@/components/home/ContactSection";
-import DashboardFigure from "@/components/figures/dashboard/DashboardFigure";
+import WaysFigure from "@/components/figures/ways/WaysFigure";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import PortfolioSection from "@/components/home/PortfolioSection";
 import ServiceSection from "@/components/home/ServiceSection";
@@ -18,15 +19,21 @@ export default function HomePage() {
     <SmoothScroll>
       <ScrollAnimator
         hero={<Herosection />}
-        // Remove `visual` to bring back the original rotating photo stack.
-        about={<AboutSection visual={<DashboardFigure />} />}
+        about={
+          <AboutSection
+            figures={{
+              usual: <WaysFigure way="usual" />,
+              ours: <WaysFigure way="ours" />,
+            }}
+          />
+        }
         portfolio={<PortfolioSection />}
         stats={<StatsSection />}
         services={<ServiceSection />}
-        testimonials={<ExperimentalTestimonials />}
+        testimonials={<ExperimentalTestimonials showEyebrow={false} />}
         techCarousel={<TechLogoCarousel />}
-        contact={<ContactSection />}
-        blog={<BlogSection />}
+        contact={<ContactSection showEyebrow={false} />}
+        // blog={<BlogSection showEyebrow={false} />}
         footer={<Footer />}
       />
     </SmoothScroll>

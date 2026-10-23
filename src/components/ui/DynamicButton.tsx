@@ -20,6 +20,8 @@ interface DynamicButtonProps {
   };
 
   onClick?: () => void;
+  /** Button form only (no `href`): greys it out and blocks the hover fill. */
+  disabled?: boolean;
 }
 
 export default function DynamicButton({
@@ -38,20 +40,18 @@ export default function DynamicButton({
   },
 
   onClick,
+  disabled,
 }: DynamicButtonProps) {
-  const Component = href ? Link : "button";
+  const classes = cn(
+    "group relative flex w-fit cursor-pointer hover:border-transparent items-center gap-3 overflow-hidden rounded-xl bg-white px-6 py-4 text-sm font-medium text-black transition-all",
+    // pointer-events-none also keeps the gradient and sheen from playing.
+    "disabled:pointer-events-none disabled:opacity-35",
+    instantHover && "duration-0",
+    className,
+  );
 
-  return (
-    <Component
-      href={href || ""}
-      target={href ? target : undefined}
-      onClick={onClick}
-      className={cn(
-        "group relative flex w-fit cursor-pointer hover:border-transparent items-center gap-3 overflow-hidden rounded-xl bg-white px-6 py-4 text-sm font-medium text-black transition-all",
-        instantHover && "duration-0",
-        className,
-      )}
-    >
+  const content = (
+    <>
       <div
         // `rounded-[inherit]`, not a fixed radius: this overlay was a SQUARE
         // rect relying purely on the parent's `overflow-hidden` to round it,
@@ -144,6 +144,24 @@ export default function DynamicButton({
           />
         </span>
       )}
-    </Component>
+    </>
+  );
+
+  // A link when given `href`, otherwise a plain button (which can be
+  // disabled). Two branches rather than one polymorphic tag, so a <button>
+  // never receives Link's props (it used to get href="").
+  return href ? (
+    <Link href={href} target={target} onClick={onClick} className={classes}>
+      {content}
+    </Link>
+  ) : (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={classes}
+    >
+      {content}
+    </button>
   );
 }
