@@ -1,12 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion, type Variants } from "framer-motion";
-import Image from "next/image";
+import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { MdArrowOutward } from "react-icons/md";
 import { useIsDesktop } from "@/lib/useIsDesktop";
-import AboutImageStack from "./AboutImageStack";
+import AboutPhotoStack from "./AboutPhotoStack";
 import RotatingWord from "./RotatingWord";
 
 const premiumEase = [0.22, 1, 0.36, 1] as const;
@@ -59,28 +58,20 @@ const textReveal: Variants = {
   },
 };
 
-const initialCards = [
-  {
-    id: 1,
-    url: "/assets/h3.jpg",
-  },
-  {
-    id: 2,
-    url: "/assets/h6.jpg",
-  },
-  {
-    id: 3,
-    url: "/assets/h5.jpg",
-  },
-];
-
-export default function AboutSection() {
+/**
+ * `visual` fills the right-hand column. The home page passes the analytics
+ * console figure (components/figures/dashboard). Without it the section falls
+ * back to the original rotating photo stack (AboutPhotoStack), so restoring
+ * the photos is just dropping the prop in app/home/page.tsx.
+ */
+export default function AboutSection({ visual }: { visual?: ReactNode }) {
   const [frontIndex, setFrontIndex] = useState(0);
   const isDesktop = useIsDesktop();
 
-  // Desktop only: this index drives the card stack, which below `md` is a
-  // static image. Ticking it on mobile re-rendered the whole section every 6s
-  // to change one word — RotatingWord now owns its own tick there.
+  // Desktop only: this index drives the rotating headline word and, when the
+  // photo stack is shown, its cards (below `md` the stack and RotatingWord
+  // own their own ticks). Ticking it on mobile re-rendered the whole section
+  // every 6s to change one word.
   useEffect(() => {
     if (!isDesktop) return;
     const interval = setInterval(() => {
@@ -89,15 +80,6 @@ export default function AboutSection() {
 
     return () => clearInterval(interval);
   }, [isDesktop]);
-
-  const visibleCards = [0, 1, 2].map((offset) => {
-    const card = initialCards[(frontIndex + offset) % initialCards.length];
-    return {
-      ...card,
-      offset,
-      uniqueId: frontIndex + offset,
-    };
-  });
 
   return (
     <motion.section
@@ -221,87 +203,9 @@ export default function AboutSection() {
             // comes first — exactly as it was.
             className="relative flex items-center justify-center pt-10 max-md:order-1 max-md:mb-8 max-md:pt-0"
           >
-            <motion.div
-              animate={isDesktop ? { rotate: 360 } : undefined}
-              transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
-              className="absolute h-[320px] w-[320px] md:h-[520px] md:w-[520px] rounded-full border border-black/10"
-            />
-            <motion.div
-              animate={isDesktop ? { rotate: -360 } : undefined}
-              transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-              className="absolute h-[260px] w-[260px] md:h-[420px] md:w-[420px] rounded-full border border-black/[0.06]"
-            />
-
-            <div className="relative w-full max-w-[600px]">
-              <div className="perspective-[1200px] relative h-[420px] w-full md:h-[560px]">
-                {isDesktop ? (
-                  <AnimatePresence>
-                    {visibleCards.map((card) => (
-                      <motion.div
-                        key={card.uniqueId}
-                        initial={{
-                          y: -30,
-                          scale: 0.85,
-                          opacity: 0,
-                        }}
-                        animate={{
-                          y: card.offset * -25,
-                          scale: 1 - card.offset * 0.05,
-                          opacity: 1 - card.offset * 0.15,
-                          zIndex: 10 - card.offset,
-                          x: 0,
-                          rotateZ: 0,
-                        }}
-                        exit={{
-                          x: 1000,
-                          y: 400,
-                          rotateZ: 90,
-                          opacity: 1,
-                          scale: 1,
-                          zIndex: 50,
-                          transition: { duration: 1.1, ease: exitEase },
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 60,
-                          damping: 20,
-                          mass: 1,
-                        }}
-                        className="absolute inset-0 origin-bottom-right overflow-hidden rounded-[28px] bg-white will-change-transform"
-                      >
-                        <Image
-                          src={card.url}
-                          alt="Creative Studio"
-                          fill
-                          sizes="(max-width: 768px) 100vw, 600px"
-                          className="h-full w-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                ) : (
-                  // Below md the stack is CSS-transition driven and owns its own
-                  // tick, so it never re-renders this section. Desktop keeps the
-                  // framer/AnimatePresence version above, untouched.
-                  <AboutImageStack images={initialCards.map((c) => c.url)} />
-                )}
-              </div>
-
-              <motion.div
-                animate={
-                  isDesktop
-                    ? { opacity: [0.15, 0.4, 0.15], scale: [1, 1.05, 1] }
-                    : undefined
-                }
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="pointer-events-none absolute -left-20 top-10 h-60 w-60 rounded-full bg-blue-200/30 blur-3xl max-md:hidden"
-              />
-            </div>
+            {visual ?? (
+              <AboutPhotoStack frontIndex={frontIndex} isDesktop={isDesktop} />
+            )}
           </motion.div>
         </div>
       </div>

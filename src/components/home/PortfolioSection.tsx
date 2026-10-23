@@ -14,38 +14,24 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const AUTO_ADVANCE_SECONDS = 6;
 // Desktop: px of horizontal travel per px of page scroll while pinned. At 1
 // the pin was ~8,100 px at 1440x900 (5 x 1440 px of travel + the 900 px hold),
 // which read as being stuck; 2 halves the travel part. The hold is untouched:
 // it is the room StatsSection's `md:-mt-[100vh]` uses to slide over the last
 // panel (ScrollAnimator).
 const SCROLL_SPEED = 2;
-// Mobile carousel: one slide every 4.5s, each slide taking 600ms, and autoplay
-// resuming 1.5s after the finger lifts.
-const MOBILE_AUTOPLAY_MS = 5000;
-// The title slide holds longer than the case studies — it is the one panel the
-// reader is meant to actually read before the carousel starts moving.
-const MOBILE_FIRST_SLIDE_MS = 10000;
-const MOBILE_RESUME_MS = 1500;
-const MOBILE_SLIDE_MS = 600;
-// A held pointer expires after this, so a missing pointerup can never stall it.
-const MOBILE_STUCK_POINTER_MS = 5000;
 
 
 export default function PortfolioSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
-  // Mobile slide surface: the autoplay transition translates this inner
-  // wrapper on the compositor, then commits the distance to scrollLeft.
-  const panelsRef = useRef<HTMLDivElement>(null);
   const isDesktop = useIsDesktop();
 
   // Owns panel-video playback outright: they start here, not from `autoPlay`.
   //
-  // The initial decision is a SYNCHRONOUS on-screen check — the same idiom the
-  // carousel autoplay below already uses — rather than the observer's first
+  // The initial decision is a SYNCHRONOUS on-screen check rather than the
+  // observer's first
   // callback. That ordering is the fix. These panels are offscreen at mount,
   // so the observer's one and only callback fired "not intersecting" while
   // `pause()` was still a no-op on a video that had not started yet; `autoPlay`
@@ -90,169 +76,12 @@ export default function PortfolioSection() {
     return () => io.disconnect();
   }, []);
 
-  // Mobile autoplay. Dragging is NOT implemented in JS: below `md` the track is
-  // a native scroll-snap container, so the browser owns the drag, the momentum
-  // and the snapping — nothing runs per frame while the user is in control.
-  useEffect(() => {
-    if (isDesktop) return;
-    const track = trackRef.current;
-    if (!track) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    // Every gate below is a synchronous check made at tick time, never a flag
-    // set by an async callback. The previous version gated on an
-    // IntersectionObserver `visible` flag and a setTimeout-cleared `paused`
-    // flag; if either callback failed to arrive — a missed IO delivery, a
-    // `pointerdown` whose `pointerup`/`pointercancel` never came — the flag
-    // latched and autoplay was dead permanently with no way back.
-    let pointerDown = false;
-    let lastInteraction = 0;
-    // When the current slide settled. The interval still fires every
-    // MOBILE_AUTOPLAY_MS; this is what lets slide 0 sit for two ticks while
-    // every other slide advances on the first.
-    let lastAdvance = performance.now();
-
-    const panels = panelsRef.current;
-    if (!panels) return;
-
-    let sliding = false;
-    let slideTimer = 0;
-
-    // The slide runs as a CSS transform transition on the panels wrapper, not
-    // as per-frame scrollLeft writes. scrollLeft can only be driven from the
-    // main thread, so the old rAF tween stuttered whenever anything else ran
-    // during its 600ms window; a transform transition is composited and cannot
-    // be blocked by script. When it finishes (or is interrupted), the visual
-    // offset is committed to scrollLeft in the same style flush that clears
-    // the transform — the swap is invisible. `behavior: "smooth"` remains off
-    // the table: it is ignored outright in some mobile browsers and fights
-    // `scroll-snap-type: mandatory` in others.
-    // On completion the intent is known — commit the slide's own distance
-    // rather than a measured matrix, so a throttled or coalesced transition
-    // (background tab, busy compositor) still lands exactly one page. Only an
-    // INTERRUPTION needs to measure where the transition actually got to.
-    const commit = (px: number) => {
-      panels.style.transition = "none";
-      panels.style.transform = "";
-      panels.style.willChange = "";
-      if (px) track.scrollLeft += px;
-      // flush so the cleared transition cannot animate the reset
-      void panels.offsetWidth;
-      panels.style.transition = "";
-    };
-
-    let slideDistance = 0;
-
-    const animateTo = (to: number) => {
-      const distance = to - track.scrollLeft;
-      if (Math.abs(distance) < 1) return;
-      slideDistance = distance;
-
-      const snapBefore = track.style.scrollSnapType;
-      track.style.scrollSnapType = "none";
-      sliding = true;
-      panels.style.willChange = "transform";
-      panels.style.transition = `transform ${MOBILE_SLIDE_MS}ms cubic-bezier(0.65, 0, 0.35, 1)`;
-      panels.style.transform = `translate3d(${-distance}px, 0, 0)`;
-
-      // setTimeout, not transitionend: the timer fires even if the event is
-      // lost, so a missed transition can never wedge `sliding` shut.
-      slideTimer = window.setTimeout(() => {
-        sliding = false;
-        commit(slideDistance);
-        track.style.scrollSnapType = snapBefore;
-      }, MOBILE_SLIDE_MS + 60);
-    };
-
-    const stopTween = () => {
-      if (!sliding) return;
-      window.clearTimeout(slideTimer);
-      sliding = false;
-      // interrupted mid-flight: commit however far the transition got
-      const m = new DOMMatrixReadOnly(getComputedStyle(panels).transform).m41;
-      commit(-m);
-      track.style.scrollSnapType = "";
-    };
-
-    // Measured fresh each tick rather than tracked by an observer, so it can
-    // never be stale. One layout read every 4.5s is nothing.
-    const isOnScreen = () => {
-      const rect = track.getBoundingClientRect();
-      return rect.bottom > 0 && rect.top < window.innerHeight;
-    };
-
-    const advance = () => {
-      const now = performance.now();
-      if (sliding) return;
-      // A pointerdown whose up/cancel never arrived must not stall autoplay
-      // for good, so the held state expires on its own.
-      if (pointerDown && now - lastInteraction < MOBILE_STUCK_POINTER_MS)
-        return;
-      if (now - lastInteraction < MOBILE_RESUME_MS) {
-        // Restart the dwell once the reader stops interfering, rather than
-        // firing the moment the resume window lapses.
-        lastAdvance = now;
-        return;
-      }
-      if (!isOnScreen()) {
-        // Same for scrolling past: the slide gets its full hold from the
-        // moment it is actually on screen.
-        lastAdvance = now;
-        return;
-      }
-
-      const page = track.clientWidth;
-      // Index read from scrollLeft at tick time — synchronous, so it cannot go
-      // stale the way a tracked counter would after a drag or a dot tap.
-      const index = page > 0 ? Math.round(track.scrollLeft / page) : 0;
-      const hold = index === 0 ? MOBILE_FIRST_SLIDE_MS : MOBILE_AUTOPLAY_MS;
-      // 50ms tolerance: setInterval drifts, and an elapsed of 9998 against a
-      // 10000 hold would otherwise cost a whole extra tick.
-      if (now - lastAdvance < hold - 50) return;
-
-      lastAdvance = now;
-      const atEnd = track.scrollLeft >= track.scrollWidth - page - 1;
-      animateTo(atEnd ? 0 : track.scrollLeft + page);
-    };
-    const tick = setInterval(advance, MOBILE_AUTOPLAY_MS);
-
-    // Pause only while the finger is actually down, plus a short settle — NOT
-    // for a fixed spell after any touch. The previous version paused for
-    // seconds on every `touchstart`, including the incidental touches of
-    // scrolling the PAGE past the carousel, so on a phone it could sit still
-    // for ~10s after each swipe and looked like it never moved at all.
-    const hold = () => {
-      stopTween();
-      pointerDown = true;
-      lastInteraction = performance.now();
-    };
-    const release = () => {
-      pointerDown = false;
-      lastInteraction = performance.now();
-    };
-    // wheel has no matching "up", so hold+release act as a debounce there
-    const holdEvents = ["pointerdown", "wheel"] as const;
-    const releaseEvents = ["pointerup", "pointercancel", "wheel"] as const;
-    for (const evt of holdEvents) {
-      track.addEventListener(evt, hold, { passive: true });
-    }
-    for (const evt of releaseEvents) {
-      track.addEventListener(evt, release, { passive: true });
-    }
-
-    return () => {
-      clearInterval(tick);
-      stopTween();
-      for (const evt of holdEvents) track.removeEventListener(evt, hold);
-      for (const evt of releaseEvents) track.removeEventListener(evt, release);
-    };
-  }, [isDesktop]);
-
   const { contextSafe } = useGSAP(
     () => {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 768px)", () => {
         let moveCursor: (e: MouseEvent) => void = () => {};
+        let guardTick: () => void = () => {};
         const cursor = cursorRef.current;
 
         if (cursor) {
@@ -274,15 +103,44 @@ export default function PortfolioSection() {
             force3D: true,
           });
 
+          let lastX = -1;
+          let lastY = -1;
           moveCursor = (e: MouseEvent) => {
+            lastX = e.clientX;
+            lastY = e.clientY;
             xTo(e.clientX);
             yTo(e.clientY);
           };
 
+          // The pill only hides on a link's mouseleave, which never fires
+          // while the pointer is still and the PAGE moves under it: the pin
+          // scrolls panels sideways and then StatsSection slides over this
+          // section, so the pill was left floating over the next section.
+          // While it is visible, check what is actually under the pointer
+          // and hide it unless that is one of this section's project links.
+          // Started once and left to run: re-issuing it every tick restarts
+          // the ease each frame and the pill only crawls out.
+          let hideTween: gsap.core.Tween | null = null;
+          guardTick = () => {
+            if (lastX < 0 || hideTween?.isActive()) return;
+            if (parseFloat(cursor.style.opacity || "0") < 0.05) return;
+            const hit = document
+              .elementFromPoint(lastX, lastY)
+              ?.closest("[data-cursor-target]");
+            if (hit && containerRef.current?.contains(hit)) return;
+            hideTween = gsap.to(cursor, {
+              scale: 0,
+              autoAlpha: 0,
+              duration: 0.2,
+              ease: "power3.inOut",
+              overwrite: "auto",
+            });
+          };
+
           window.addEventListener("mousemove", moveCursor);
+          gsap.ticker.add(guardTick);
         }
 
-        let cleanupAuto: () => void = () => {};
         const track = trackRef.current;
         if (track) {
           // Count panels from the DOM: the "Our Projects" title slide is a
@@ -327,54 +185,6 @@ export default function PortfolioSection() {
             })
             .to({}, { duration: holdPx });
 
-          const st = scrollTween.scrollTrigger;
-          let autoTween: gsap.core.Tween | null = null;
-
-          const stopAuto = () => {
-            autoTween?.kill();
-            autoTween = null;
-          };
-
-          const startAuto = () => {
-            if (!st || autoTween) return;
-            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-              return;
-            }
-            const from = st.scroll();
-            const to = st.start + travelPx;
-            if (from >= to) return;
-
-            const proxy = { y: from };
-            autoTween = gsap.to(proxy, {
-              y: to,
-              duration: ((to - from) / travelPx) * AUTO_ADVANCE_SECONDS,
-              ease: "none",
-              onUpdate: () => st.scroll(proxy.y),
-              onComplete: stopAuto,
-            });
-          };
-
-          const interrupts = ["wheel", "touchstart", "pointerdown", "keydown"];
-          for (const evt of interrupts) {
-            window.addEventListener(evt, stopAuto, { passive: true });
-          }
-
-          ScrollTrigger.create({
-            trigger: containerRef.current,
-            start: "top top",
-            end: () => `+=${travelPx + holdPx}`,
-            onEnter: startAuto,
-            onLeave: stopAuto,
-            onLeaveBack: stopAuto,
-          });
-
-          cleanupAuto = () => {
-            stopAuto();
-            for (const evt of interrupts) {
-              window.removeEventListener(evt, stopAuto);
-            }
-          };
-
           gsap.utils
             .toArray<HTMLElement>(".project-panel")
             .forEach((panel, index) => {
@@ -403,7 +213,7 @@ export default function PortfolioSection() {
           if (moveCursor) {
             window.removeEventListener("mousemove", moveCursor);
           }
-          cleanupAuto();
+          gsap.ticker.remove(guardTick);
         };
       });
       return () => mm.revert();
@@ -445,12 +255,12 @@ export default function PortfolioSection() {
         // itself the scroll container (desktop instead has GSAP translate it).
         className="no-scrollbar flex w-full flex-row max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain md:h-full md:w-max"
       >
-        {/* Mobile slide surface. `md:contents` erases the box on desktop so
-            the GSAP track keeps translating panels directly; below md it is the
-            element the autoplay transition transforms. w-full (not w-max):
-            panels size against the scroller's width, and their overflow still
-            extends the scroller's scrollable range. */}
-        <div ref={panelsRef} className="flex w-full flex-row md:contents">
+        {/* Panel row. `md:contents` erases the box on desktop so the GSAP
+            track keeps translating panels directly; below md the reader swipes
+            the native snap scroller (no autoplay). w-full (not w-max): panels
+            size against the scroller's width, and their overflow still extends
+            the scroller's scrollable range. */}
+        <div className="flex w-full flex-row md:contents">
           {/* Title slide — typographic opener before the case studies. It
             carries the same `project-panel` class so the desktop GSAP (snap
             steps and the reveal loop, both keyed on panel order) treats it as
@@ -491,6 +301,7 @@ export default function PortfolioSection() {
             >
               <Link
                 href={project.href}
+                data-cursor-target
                 className="absolute inset-0 z-20 cursor-none max-md:cursor-pointer"
                 // Same iOS first-tap-is-a-hover problem as ChannelCard: this
                 // cursor pill is `hidden md:flex`, but animating it in during

@@ -1,0 +1,78 @@
+/* Analytics console figure (DashboardFigure). Scoped to .dash-figure; the kit
+   tokens come from components/iso/iso.css (.iso[data-theme="light"]). */
+.dash-figure {
+  --dash-brand: #2e5bff;
+  --dash-brand-2: #149ccb;
+  --dash-glass: #f3f6ff;
+  --dash-bar: #c8d3f7;
+  --dash-bezel: #e4e4e7;
+  width: 100%;
+}
+
+/* Bare on the white section: the kit's paper (the fill that hides what is
+   behind each solid) must match the background, so both are white. */
+.iso.dash-figure[data-theme="light"] {
+  --anatomy-paper: #ffffff;
+  --anatomy-card: #ffffff;
+  background: #ffffff;
+}
+
+.dash-stage {
+  border-radius: 16px;
+  outline: none;
+}
+.dash-stage:focus-visible {
+  outline: 2px solid var(--dash-brand);
+  outline-offset: 6px;
+}
+
+/* Screen. */
+.dash-glass {
+  fill: var(--dash-glass);
+  stroke: none;
+}
+.dash-bezel {
+  fill: var(--dash-bezel);
+  stroke: none;
+}
+.dash-bar {
+  fill: var(--dash-bar);
+}
+.dash-bar[data-now] {
+  fill: var(--dash-brand);
+}
+.dash-trend {
+  fill: none;
+  stroke: var(--dash-brand-2);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.dash-trend-dot {
+  fill: var(--dash-glass);
+  stroke: var(--dash-brand-2);
+  stroke-width: 0.9;
+}
+.dash-header-dot {
+  fill: var(--dash-brand);
+}
+
+/* Needle and status LED. */
+.dash-figure .dash-needle {
+  stroke-width: 1.2;
+}
+.dash-figure [data-part="led"] circle {
+  fill: var(--dash-brand-2);
+  opacity: 0.45;
+  transition: opacity 0.7s ease-out;
+}
+.dash-figure [data-part="led"][data-blink] circle {
+  opacity: 1;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-figure [data-part="led"] circle {
+    transition: none;
+  }
+}

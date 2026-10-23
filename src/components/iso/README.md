@@ -1,0 +1,1 @@
+Vendored from the anatomy skill (C:/Users/sanky/.claude/skills/anatomy/kit): iso-kit.ts, iso.css, react/draw.tsx, react/live.tsx, byte-identical so they can be refreshed from the skill. Excluded from Biome in biome.json for that reason. Used by components/figures/*.

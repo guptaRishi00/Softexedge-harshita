@@ -2,6 +2,7 @@ import Herosection from "@/components/home/Herosection";
 import AboutSection from "@/components/home/AboutSection";
 import BlogSection from "@/components/home/BlogSection";
 import ContactSection from "@/components/home/ContactSection";
+import DashboardFigure from "@/components/figures/dashboard/DashboardFigure";
 import ExperimentalTestimonials from "@/components/home/ExperimentalTestimonials";
 import PortfolioSection from "@/components/home/PortfolioSection";
 import ServiceSection from "@/components/home/ServiceSection";
@@ -17,7 +18,8 @@ export default function HomePage() {
     <SmoothScroll>
       <ScrollAnimator
         hero={<Herosection />}
-        about={<AboutSection />}
+        // Remove `visual` to bring back the original rotating photo stack.
+        about={<AboutSection visual={<DashboardFigure />} />}
         portfolio={<PortfolioSection />}
         stats={<StatsSection />}
         services={<ServiceSection />}

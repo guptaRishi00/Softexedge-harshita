@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, ChevronDown, Mail, MapPin, Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { NO_ENTRY, useIsDesktop, useIsMobile } from "@/lib/useIsDesktop";
 import ChannelCard from "./ChannelCard";
@@ -44,6 +44,30 @@ const channels = [
 // size reduction comes from the padding instead.
 const inputClass =
   "w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-base text-white transition-all placeholder:text-zinc-500 max-md:rounded-xl max-md:px-4 max-md:py-3 focus:border-[#2E5BFF]/50 focus:bg-white/10 focus:outline-none focus:ring-4 focus:ring-[#2E5BFF]/20";
+
+// Form tone, shared by both steps: brand gradient (#2E5BFF -> #149CCB, as on
+// every other CTA), one micro-label style, white-on-black selection, a brand
+// focus ring on every control.
+const BRAND_GRADIENT = "bg-linear-to-r from-[#2E5BFF] to-[#149CCB]";
+const microLabelClass =
+  "text-xs font-medium uppercase tracking-[0.2em] text-zinc-400";
+const labelClass = `pl-1 ${microLabelClass} max-md:text-[0.65rem]`;
+const focusRing =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2E5BFF]";
+// Continue + Send: white rounded-xl; the brand gradient (an overlay span, see
+// PrimaryButtonFill) fades in on hover and the label turns white. Below md
+// there is no hover, so the gradient is the resting state there. A disabled
+// button stays white and does not light up.
+const primaryButtonClass = `${focusRing} group relative inline-flex cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-white px-8 py-4 text-base font-bold text-black transition-colors enabled:hover:text-white disabled:cursor-not-allowed disabled:opacity-35 max-md:bg-linear-to-r max-md:from-[#2E5BFF] max-md:to-[#149CCB] max-md:text-white`;
+
+function PrimaryButtonFill() {
+  return (
+    <span
+      aria-hidden="true"
+      className={`absolute inset-0 ${BRAND_GRADIENT} opacity-0 transition-opacity duration-300 group-enabled:group-hover:opacity-100`}
+    />
+  );
+}
 
 const GRID_COLUMNS = 8;
 
@@ -216,24 +240,20 @@ export default function ContactSection() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 16 }}
                     transition={{ duration: 0.25, ease: premiumEase }}
-                    className="flex min-h-[580px] flex-col p-8 max-md:min-h-0 max-md:p-5 sm:p-10 md:p-12"
+                    className="flex h-full min-h-[580px] flex-col p-8 max-md:min-h-0 max-md:p-5 sm:p-10 md:p-12"
                   >
                     <div className="mb-8">
-                      <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-zinc-500">
-                        Step 1 of 2
-                      </p>
+                      <p className={`mb-3 ${microLabelClass}`}>Step 1 of 2</p>
                       <h3 className="text-3xl font-semibold tracking-tight text-white max-md:text-2xl">
                         Pick a time to talk
-                        <span className="text-[#2F85EA]">.</span>
+                        <span className="text-[#2E5BFF]">.</span>
                       </h3>
                       <p className="mt-3 text-sm text-zinc-400">
                         Choose a day and a time that works for you.
                       </p>
                     </div>
 
-                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">
-                      Select a day
-                    </p>
+                    <p className={`mb-3 ${microLabelClass}`}>Select a day</p>
                     <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
                       {mounted &&
                         dateOptions.map((option) => {
@@ -250,7 +270,7 @@ export default function ContactSection() {
                                   time: "",
                                 })
                               }
-                              className={`flex min-h-[76px] flex-col items-center justify-center rounded-xl border px-2 py-3 transition-colors ${
+                              className={`flex min-h-[76px] flex-col items-center justify-center rounded-xl border px-2 py-3 transition-colors ${focusRing} ${
                                 selected
                                     ? "border-white bg-white text-black"
                                   : "border-white/10 bg-white/[0.03] text-zinc-400 hover:border-white/25 hover:text-white"
@@ -268,7 +288,7 @@ export default function ContactSection() {
                         })}
                     </div>
 
-                    <p className="mb-3 mt-8 text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">
+                    <p className={`mb-3 mt-8 ${microLabelClass}`}>
                       Available times
                     </p>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -286,7 +306,7 @@ export default function ContactSection() {
                                 time,
                               }))
                             }
-                            className={`rounded-full border px-4 py-2.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${
+                            className={`rounded-full border px-4 py-2.5 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${focusRing} ${
                               selected
                                   ? "border-white bg-white text-black"
                                 : "border-white/10 text-zinc-400 hover:border-white/25 hover:text-white"
@@ -306,9 +326,10 @@ export default function ContactSection() {
                           !scheduledDateTime.date || !scheduledDateTime.time
                         }
                         onClick={() => setFormStep(2)}
-                        className="w-full rounded-full bg-gradient-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] px-8 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35 sm:w-auto"
+                        className={`${primaryButtonClass} w-full sm:w-auto`}
                       >
-                        Continue
+                        <PrimaryButtonFill />
+                        <span className="relative z-10">Continue</span>
                       </button>
                     </div>
                   </motion.div>
@@ -324,16 +345,15 @@ export default function ContactSection() {
                     <button
                       type="button"
                       onClick={() => setFormStep(1)}
-                      className="mb-6 text-sm font-medium text-zinc-400 transition-colors hover:text-white"
+                      className={`mb-6 inline-flex items-center gap-2 rounded-md text-sm font-medium text-zinc-400 transition-colors hover:text-white ${focusRing}`}
                     >
-                      ← Back to schedule
+                      <ArrowLeft aria-hidden="true" className="size-4" />
+                      Back to schedule
                     </button>
-                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-zinc-500">
-                      Step 2 of 2
-                    </p>
+                    <p className={`mb-3 ${microLabelClass}`}>Step 2 of 2</p>
                     <h3 className="text-3xl font-semibold tracking-tight text-white max-md:text-2xl">
                       Your details
-                      <span className="text-[#2F85EA]">.</span>
+                      <span className="text-[#2E5BFF]">.</span>
                     </h3>
                     <p className="mb-8 mt-3 text-sm text-zinc-400">
                       {selectedDateLabel} at {scheduledDateTime.time} ·{" "}
@@ -345,13 +365,14 @@ export default function ContactSection() {
                         <div className="flex flex-col gap-3 max-md:gap-3.5">
                           <label
                             htmlFor="name"
-                            className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                            className={labelClass}
                           >
                             Full Name
                           </label>
                           <input
                             type="text"
                             id="name"
+                            autoComplete="name"
                             className={inputClass}
                             required
                           />
@@ -360,13 +381,14 @@ export default function ContactSection() {
                         <div className="flex flex-col gap-3 max-md:gap-3.5">
                           <label
                             htmlFor="email"
-                            className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                            className={labelClass}
                           >
                             Email Address
                           </label>
                           <input
                             type="email"
                             id="email"
+                            autoComplete="email"
                             className={inputClass}
                             required
                           />
@@ -377,13 +399,14 @@ export default function ContactSection() {
                         <div className="flex flex-col gap-3 max-md:gap-3.5">
                           <label
                             htmlFor="phone"
-                            className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                            className={labelClass}
                           >
                             Phone Number
                           </label>
                           <input
                             type="tel"
                             id="phone"
+                            autoComplete="tel"
                             className={inputClass}
                             required
                           />
@@ -392,13 +415,17 @@ export default function ContactSection() {
                         <div className="flex flex-col gap-3 max-md:gap-3.5">
                           <label
                             htmlFor="company"
-                            className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                            className={labelClass}
                           >
-                            Company
+                            Company{" "}
+                            <span className="normal-case tracking-normal text-zinc-500">
+                              (optional)
+                            </span>
                           </label>
                           <input
                             type="text"
                             id="company"
+                            autoComplete="organization"
                             className={inputClass}
                           />
                         </div>
@@ -407,20 +434,26 @@ export default function ContactSection() {
                       <div className="flex flex-col gap-3 max-md:gap-3.5">
                         <label
                           htmlFor="website"
-                          className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                          className={labelClass}
                         >
                           Website{" "}
-                          <span className="normal-case tracking-normal text-zinc-600">
+                          <span className="normal-case tracking-normal text-zinc-500">
                             (optional)
                           </span>
                         </label>
-                        <input type="url" id="website" className={inputClass} />
+                        <input
+                          type="url"
+                          id="website"
+                          autoComplete="url"
+                          placeholder="https://"
+                          className={inputClass}
+                        />
                       </div>
 
                       <div className="flex flex-col gap-3 max-md:gap-3.5">
                         <label
                           htmlFor="service"
-                          className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                          className={labelClass}
                         >
                           What can we help you with?
                         </label>
@@ -440,35 +473,24 @@ export default function ContactSection() {
                             <option value="marketing">Digital Marketing</option>
                             <option value="other">Other Inquiry</option>
                           </select>
-                          <div className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <title>Select dropdown chevron</title>
-                              <path d="m6 9 6 6 6-6" />
-                            </svg>
-                          </div>
+                          <ChevronDown
+                            aria-hidden="true"
+                            className="pointer-events-none absolute right-5 top-1/2 size-5 -translate-y-1/2 text-zinc-500"
+                          />
                         </div>
                       </div>
 
                       <div className="flex flex-col gap-3 max-md:gap-3.5">
                         <label
                           htmlFor="message"
-                          className="pl-1 text-xs font-bold uppercase tracking-wider text-zinc-400 max-md:text-[0.65rem]"
+                          className={labelClass}
                         >
                           Message
                         </label>
                         <textarea
                           id="message"
                           rows={4}
+                          placeholder="A few lines on the project, goals and timeline"
                           className={`${inputClass} resize-none`}
                           required
                         />
@@ -477,9 +499,9 @@ export default function ContactSection() {
                       <div className="pt-2">
                         <button
                           type="submit"
-                          className="group relative inline-flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-white px-8 py-4 text-base font-bold text-black transition-colors hover:text-white max-md:bg-gradient-to-r max-md:from-[#3445E7] max-md:via-[#2F85EA] max-md:to-[#07D6F3] max-md:text-white"
+                          className={`${primaryButtonClass} w-full`}
                         >
-                          <span className="absolute inset-0 bg-gradient-to-r from-[#3445E7] via-[#2F85EA] to-[#07D6F3] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                          <PrimaryButtonFill />
                           <span className="relative z-10">Send Message</span>
                         </button>
                       </div>

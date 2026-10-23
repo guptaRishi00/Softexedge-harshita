@@ -98,14 +98,20 @@ export default function ServiceSection() {
             force3D: true,
           });
 
-          const hideCursor = () =>
-            gsap.to(cursor, {
+          // Started once and left to run: the guard below calls this every
+          // tick, and re-issuing the tween each frame restarts its ease, so
+          // the pill only crawled out.
+          let hideTween: gsap.core.Tween | null = null;
+          const hideCursor = () => {
+            if (hideTween?.isActive()) return;
+            hideTween = gsap.to(cursor, {
               scale: 0,
               autoAlpha: 0,
               duration: 0.2,
               ease: "power3.inOut",
               overwrite: "auto",
             });
+          };
 
           let lastX = -1;
           let lastY = -1;
@@ -120,19 +126,19 @@ export default function ServiceSection() {
             }
           };
 
+          // A bounds check is not enough here: this section stays pinned
+          // (so its box still contains the pointer) while ContactSection
+          // slides over it, and the pill kept floating over Contact. While it
+          // is visible, check what is actually under the pointer and hide it
+          // unless that is one of this section's service rows.
           const guardTick = () => {
-            const el = containerRef.current;
-            if (!el || lastX < 0) return;
+            if (lastX < 0) return;
             if (parseFloat(cursor.style.opacity || "0") < 0.05) return;
-            const r = el.getBoundingClientRect();
-            if (
-              lastX < r.left ||
-              lastX > r.right ||
-              lastY < r.top ||
-              lastY > r.bottom
-            ) {
-              hideCursor();
-            }
+            const hit = document
+              .elementFromPoint(lastX, lastY)
+              ?.closest("[data-cursor-target]");
+            if (hit && containerRef.current?.contains(hit)) return;
+            hideCursor();
           };
 
           window.addEventListener("mousemove", moveCursor);
@@ -240,6 +246,7 @@ export default function ServiceSection() {
                 // so there is nothing to show on touch anyway.
                 onMouseEnter={isMobile ? undefined : handleMouseEnter}
                 onMouseLeave={isMobile ? undefined : handleMouseLeave}
+                data-cursor-target
                 className="group relative flex w-full cursor-none items-center justify-between py-9 md:py-12 max-md:cursor-pointer max-md:pr-11"
               >
                 <div className="flex items-center">
